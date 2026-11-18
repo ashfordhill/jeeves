@@ -1,0 +1,321 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/composition.test.ts (9 tests | 1 failed) 723ms
+   ❯ reusable composition before product completion (9)
+     × exports reusable mechanisms from a saved product design and leaves every product implementation custom 84ms
+ ❯ |generator| src/v2/processes-off.test.ts (4 tests | 3 failed) 263ms
+   ❯ Runnable processes off (4)
+     × keeps frozen-v2's export 108ms
+     × keeps v2-module-design's export 92ms
+     × keeps stub-stack's export 61ms
+ ❯ |server| src/chat/tools.test.ts (27 tests | 1 failed) 1230ms
+   ❯ studio chat tools (27)
+     × adds and connects modules with the canvas's commands and reads their status 37ms
+ ❯ |spec| src/module-generation.test.ts (40 tests | 1 failed) 1703ms
+   ❯ module catalog records (2)
+     × names each template's lead as its only component target 8ms
+ ❯ |spec| src/studio-modules.test.ts (2 tests | 1 failed) 58ms
+   ❯ modules (2)
+     × are offered only on applications and get free names and IDs per host 22ms
+ ❯ |web| src/canvas/ModuleMenu.test.tsx (3 tests | 1 failed) 269ms
+   ❯ ModuleAddButton (2)
+     × toggles the menu, closes it on a press elsewhere, the wheel or Escape, and reports a pick 245ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module catalog records > names each template's lead as its only component target
+AssertionError: expected { …(16) } to deeply equal { …(15) }
+
+- Expected
++ Received
+
+@@ -6,11 +6,11 @@
+      "event-counter",
+    ],
+    "favorites": [
+      "favorites",
+    ],
+-   "module-stub": 20,
++   "module-stub": 21,
+    "owned-multipart": [
+      "multipart-uploads",
+    ],
+    "positive-cache-read": [
+      "cache-reader",
+@@ -30,10 +30,13 @@
+    "verified-identity": [
+      "auth-guard",
+    ],
+    "video-hls": [
+      "video-encoder",
++   ],
++   "webhook-receiver": [
++     "webhook-receiver",
+    ],
+    "youtube-search": [
+      "custom",
+    ],
+    "youtube-upload": [
+
+ ❯ src/module-generation.test.ts:240:7
+    238|         ]),
+    239|       ),
+    240|     ).toEqual({
+       |       ^
+    241|       "owned-multipart": ["multipart-uploads"],
+    242|       "asset-lifecycle": ["lifecycle-writer"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |spec| src/studio-modules.test.ts > modules > are offered only on applications and get free names and IDs per host
+AssertionError: expected [ 'scheduled-task', …(14) ] to have a length of 14 but got 15
+
+- Expected
++ Received
+
+- 14
++ 15
+
+ ❯ src/studio-modules.test.ts:37:44
+     35|     const design = tinyurl();
+     36|     // A service takes the ten generic kinds plus Multipart uploads, S…
+     37|     expect(moduleKinds(design, "shorten")).toHaveLength(14);
+       |                                            ^
+     38|     expect(moduleKinds(design, "shorten")).toEqual(
+     39|       expect.arrayContaining(["multipart-uploads", "search-query", "fa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |generator| src/v2/composition.test.ts > reusable composition before product completion > exports reusable mechanisms from a saved product design and leaves every product implementation custom
+AssertionError: expected [ { ref: { …(3) }, …(1) }, …(12) ] to have a length of 12 but got 13
+
+- Expected
++ Received
+
+- 12
++ 13
+
+ ❯ src/v2/composition.test.ts:49:42
+     47|     // The video preset stays installed for designs that attached it; …
+     48|     expect(registry.installed.presets).toEqual([generationPresets.vide…
+     49|     expect(registry.installed.templates).toHaveLength(12);
+       |                                          ^
+     50|     const a = assembleV2({ designJson: JSON.stringify(design) }, regis…
+     51|     expect(design).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps frozen-v2's export
+AssertionError: expected { files: 80, sha256: { …(80) } } to deeply equal { files: 80, sha256: { …(80) } }
+
+- Expected
++ Received
+
+@@ -1,13 +1,13 @@
+  {
+    "files": 80,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+-     ".jeeves/extensions.md": "1c1b0f362ef6583d1066bd24a600df36cab73ecab20e5459cf3e5e80a61f5996",
++     ".jeeves/extensions.md": "3e55cd39463d96aff303a6fbfa94a31ee7bf5d1ab168fa9de69b7cb6fe3f7e64",
+      ".jeeves/inputs/design.json": "e118df2fdb6a4f1d05d1ef24962a926eb8c75e4219d45c9a6eccdfe87030a87b",
+-     ".jeeves/manifest.json": "3b967df4ae62fa604cdb17349e7e9066e8ba8ed287e549861f96b94be083210e",
++     ".jeeves/manifest.json": "4dfab154869e036129422d73e6606933457a7d008e7cb205432cd62d16c81b7c",
+      ".jeeves/normalized.json": "1253b5ea453e613c5bc03e4b079203e577ad472983290da40428a38e6ef99cf3",
+      ".jeeves/report.json": "ba25d9645ba84f4bff00b99fde0482cd707281ff610da900a005070838eeb36a",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "8a0037b1b77966f5e6aeed60dcd3b6f5fb828d0ee4485bddeeebb025a7e7752d",
+@@ -36,11 +36,11 @@
+      "src/features/positive-cache-bindings.ts": "d59726ee02bd7abb9e2a9851721b553953a211f9d30b863b8ac552027e567249",
+      "src/features/search-bindings.ts": "9e06fd6a6452e62e1ff5a3fa22762a57ec5c1476e80568fe8d561233e9d937cf",
+      "src/features/service-resources.ts": "4fe5506e6b56c49a94d50dca40f339d963f96bec579244ace5db0e5fac354208",
+      "src/features/video-runtime.ts": "f256e3ee7b68783e7029c7cf05e02b205eaad0775c350b282e961803f9efe6c2",
+      "src/http-errors.hooks.ts": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+-     "src/runtime/admission.ts": "003ac615d771e9f88b2662d30698ad26dbc43234d9ee3018882aa481ecbfb6a4",
++     "src/runtime/admission.ts": "3d8ef14c3bc6bfb516a984687fa8a0ff0d3ec11e6ea9eaa6f39020ea60f91543",
+      "src/runtime/amqp.ts": "83131dfe0a6748f9e8b92d2d9256ba5aebf10c92e302f46b42d1491d081fa523",
+      "src/runtime/asset-identity.ts": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+      "src/runtime/asset-lifecycle.ts": "de00471d099387c77a6c4d2063331090365915ff8aee30831ed74270ce7aeb0b",
+      "src/runtime/asset-sql.ts": "5ec4904f1e1dd57fc911fc58bd7ae6d727b6de8b82e79c40b988f0c7a03afca6",
+      "src/runtime/asset-worker.ts": "0988efa530faa51a146e4062d6135c181d9fe908ddb7a95480c65e3a265b2f78",
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps v2-module-design's export
+AssertionError: expected { files: 87, sha256: { …(87) } } to deeply equal { files: 87, sha256: { …(87) } }
+
+- Expected
++ Received
+
+@@ -1,13 +1,13 @@
+  {
+    "files": 87,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+-     ".jeeves/extensions.md": "1c1b0f362ef6583d1066bd24a600df36cab73ecab20e5459cf3e5e80a61f5996",
++     ".jeeves/extensions.md": "3e55cd39463d96aff303a6fbfa94a31ee7bf5d1ab168fa9de69b7cb6fe3f7e64",
+      ".jeeves/inputs/design.json": "06fad230900a9e6a8d01cfff295a887617a713ffae0ac9cd6c75e39ef0f7c215",
+-     ".jeeves/manifest.json": "a205ec704c993265ffba919f354a2174b8ca55534e0d8e9bca71e5c8ecd870e5",
++     ".jeeves/manifest.json": "bb8424a934067d332e5b9787b478d48d0f8d3d3104a22efb3763083b9291a052",
+      ".jeeves/normalized.json": "ae852ee823596da8adf46964626cff12c168cf4dc7fe3a7d237e7002f412dcda",
+      ".jeeves/report.json": "35018b8306793c170c8c2d37e9836c3081f78c4554784de98bdf145abb66d196",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "8a0037b1b77966f5e6aeed60dcd3b6f5fb828d0ee4485bddeeebb025a7e7752d",
+@@ -41,11 +41,11 @@
+      "src/modules/dependencies.ts": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+      "src/modules/watch/watch-counts.slots.ts": "34ffca73d74d7f8c231418a9dfb3765ce9a2220062838ba044a510a4b369d2cc",
+      "src/modules/watch/watch-counts.ts": "9ea6a6d01ad1e9dc934cb262fd2bc3aed384e38d4887d0ec394e7f710b79167f",
+      "src/modules/watch/watch-views.slots.ts": "8ddfe10a6e4246f0838e34949e79b3965f457b15dd4904582a443cfcea791c77",
+      "src/modules/watch/watch-views.ts": "07af644d6d729737f8f1ebbec483ab6a8cef83da17d182a599390e32ed1add25",
+-     "src/runtime/admission.ts": "003ac615d771e9f88b2662d30698ad26dbc43234d9ee3018882aa481ecbfb6a4",
++     "src/runtime/admission.ts": "3d8ef14c3bc6bfb516a984687fa8a0ff0d3ec11e6ea9eaa6f39020ea60f91543",
+      "src/runtime/amqp.ts": "83131dfe0a6748f9e8b92d2d9256ba5aebf10c92e302f46b42d1491d081fa523",
+      "src/runtime/asset-identity.ts": "1f65174745929dfb76dca110e73fa900e21886dc1365eabf03c2e1ce8522e1cb",
+      "src/runtime/asset-lifecycle.ts": "de00471d099387c77a6c4d2063331090365915ff8aee30831ed74270ce7aeb0b",
+      "src/runtime/asset-sql.ts": "5ec4904f1e1dd57fc911fc58bd7ae6d727b6de8b82e79c40b988f0c7a03afca6",
+      "src/runtime/asset-worker.ts": "0988efa530faa51a146e4062d6135c181d9fe908ddb7a95480c65e3a265b2f78",
+@@ -57,11 +57,11 @@
+      "src/runtime/event-counter.ts": "40be1d8d6c77139ce7acb998d789e1451dbbcc2e7a11fd16aa0282dfec1bc418",
+      "src/runtime/event-identity.ts": "3de66a89c65728bf404831c60bb81e00cc71693b0cd23555f71462eaf9140eda",
+      "src/runtime/hook-boundary.ts": "bd29fb8f7d6f08baf62c03150b9a60417b397f3cbb4b62603a8e8ddbde22c884",
+      "src/runtime/http.ts": "a42dc09b69130c3bee40419e79d1cba682cb0057e957ddf01098a1feb2e80d94",
+      "src/runtime/identity.ts": "399f3de5f18da69ca6ecd03861050e51d18a6b4b5c49e701824a69afaf68b5f6",
+-     "src/runtime/keys.ts": "1ccdbbf2415ebb4768130e5e128c9bb5f4f357b5c67e61f46c19d2fc0c0133fb",
++     "src/runtime/keys.ts": "d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82",
+      "src/runtime/local.ts": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+      "src/runtime/media-objects.ts": "76276ecafe97097bc0ae2d4035e35d03d9aa7e606da50b79f7483a879e31c6cf",
+      "src/runtime/media-process.ts": "2d6b9291ac69ba058a485b41b8b07f57b10c451f3e9daaa0fc6c27aee9854a66",
+      "src/runtime/media-worker.ts": "6621a1776ef8d80360b2e43fa8986ad2ab32dd709b7f735956332e1d3f3030d6",
+      "src/runtime/multipart-http.ts": "95b8dadb6c24f46d084b726ec49f04c204474618e3f85b7a1c2646e14b79b906",
+@@ -79,11 +79,11 @@
+      "src/runtime/search-indexer.ts": "2951bcf02101fc7f334975128faac79fdfbebd8dccb0abc8a569582a8358dece",
+      "src/runtime/search-projection.ts": "2a0e9e053a59ea422e682828ff643cadcbf9baf484b225ef72e1362de70e923f",
+      "src/runtime/search-query.ts": "d1527b6300bc2c561e2483ea699c7bcbf6482c681723c22268ffdf05512a2746",
+      "src/runtime/search-schema.ts": "3dcfc74ab4891bbb1928ec16018d61f2bee09f95e238b3efdc647603e7c762f9",
+      "src/runtime/search.ts": "7dc8817bce1cea1ca630351db9366279edd0a9d44e52aee274773f266005a1ad",
+-     "src/runtime/settings.ts": "446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90",
++     "src/runtime/settings.ts": "b22f36fadeb0e437845754c7f227a83f3c0a7a653f27b4a6d2e4066398214630",
+      "src/runtime/transaction.ts": "9b37439c3dca06eaa463c549ac064fe14a9f10836ac09a0c4e91bc4c16c65f2c",
+      "src/runtime/upload-sql.ts": "3e87c8c532eaa1abd6d6e9cedd2e60206250f86689bb0bf7a6cca8bcf38845cc",
+      "src/runtime/valkey.ts": "c4efb7fd1a5dcd8dafb2daad929b9a57d4808efacb3021aca167ec6963bb3e2b",
+      "src/runtime/video-hls.ts": "106a528f4c56c71c59fccad456cde7711477c5b4faac2505d6612a9e2f3c0e74",
+      "src/runtime/video-result.ts": "c87c2957f1996712d08d9d6db0b047d1bdcdab69c9272f521d0243b6885d341b",
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |generator| src/v2/processes-off.test.ts > Runnable processes off > keeps stub-stack's export
+AssertionError: expected { files: 60, sha256: { …(60) } } to deeply equal { files: 60, sha256: { …(60) } }
+
+- Expected
++ Received
+
+@@ -1,13 +1,13 @@
+  {
+    "files": 60,
+    "sha256": {
+      ".dockerignore": "52f8ad66f17f79ce24d54cf39dc707e6473b5cef369b9539bba645bd2cda0c2c",
+      ".gitignore": "4f97f2038e8c1b0e1e21fab5f17c40a8d70bd6ca9ce90ed75c8cf158671c0c3e",
+-     ".jeeves/extensions.md": "1c1b0f362ef6583d1066bd24a600df36cab73ecab20e5459cf3e5e80a61f5996",
++     ".jeeves/extensions.md": "3e55cd39463d96aff303a6fbfa94a31ee7bf5d1ab168fa9de69b7cb6fe3f7e64",
+      ".jeeves/inputs/design.json": "58b00d48cd109f4f0d22bc71c578dae74ee1a481f6dd13172fdd27757417915e",
+-     ".jeeves/manifest.json": "a8e92cb3be75345cb095c31e57971e22bf33654e715b6e557472e647ef91f654",
++     ".jeeves/manifest.json": "f9869068f55ffe0a172fbff519f0f17c1483576b0901dc0b8a6aa75b9105a6c5",
+      ".jeeves/normalized.json": "f8b3d0ccf4d03989ebf60849e3053d691acb1acc3516400cae76231f6da33b36",
+      ".jeeves/report.json": "e2fd9af3482d361c7138c07bc5850597516fcc36dcd70800ba530be0ffaa874c",
+      "Dockerfile": "4cc432cdadda678f9a85b5855f9e6a49769c32299744be8878adf38add4cf4a0",
+      "README.md": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "compose.yaml": "e15a715007167bb92b4cd42fe6fd8126751e2385af530b353cc0ebcf40c9e6e5",
+@@ -54,12 +54,12 @@
+      "src/modules/visit-worker/archiver.ts": "f60098b339e0e94812f3e232a823388c1146c057a8defb056b85c78a69a4e552",
+      "src/modules/visit-worker/visit-consumer.slots.ts": "1be39418e722c7684594633aeacced1a6062857c26e2cf1c4c097c991363d341",
+      "src/modules/visit-worker/visit-consumer.ts": "89c9970083c5407032524b28d983410c023696c21b51e3f13dd288084c2ed44b",
+      "src/modules/visit-worker/visit-writer.slots.ts": "65d0bf58efdc047b4ecb9ac1c26d57af04876587fcec38f1f30e08172b098bf5",
+      "src/modules/visit-worker/visit-writer.ts": "d0dad7d14c96cc5598feaec6b0ac88431eb9c30f19c00be5ac27b2784fd141ee",
+-     "src/runtime/keys.ts": "1ccdbbf2415ebb4768130e5e128c9bb5f4f357b5c67e61f46c19d2fc0c0133fb",
++     "src/runtime/keys.ts": "d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82",
+      "src/runtime/local.ts": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+      "src/runtime/operation.ts": "bf5a7d5614586237139692eec2a36f8d8c271d874fc11e78d14ecb64b8768133",
+-     "src/runtime/settings.ts": "446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90",
++     "src/runtime/settings.ts": "b22f36fadeb0e437845754c7f227a83f3c0a7a653f27b4a6d2e4066398214630",
+      "tsconfig.json": "cb75a166099ee7fd34729d9a132a1858486436054003bd5ac936fa5378d0268d",
+    },
+  }
+
+ ❯ src/v2/processes-off.test.ts:14:44
+     12|   for (const [name, designJson] of Object.entries(designs))
+     13|     it(`keeps ${name}'s export`, () => {
+     14|       expect(offPin(designJson, registry)).toEqual((pins as Record<str…
+       |                                            ^
+     15|     });
+     16|   it("pins all three designs", () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |server| src/chat/tools.test.ts > studio chat tools > adds and connects modules with the canvas's commands and reads their status
+AssertionError: expected [ …(21) ] to have a length of 20 but got 21
+
+- Expected
++ Received
+
+- 20
++ 21
+
+ ❯ src/chat/tools.test.ts:462:21
+    460|       generation: { kind: string };
+    461|     }[];
+    462|     expect(catalog).toHaveLength(20);
+       |                     ^
+    463|     expect(catalog.find((item) => item.kind === "video-encoder")).toMa…
+    464|       hosts: ["worker"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |web| src/canvas/ModuleMenu.test.tsx > ModuleAddButton > toggles the menu, closes it on a press elsewhere, the wheel or Escape, and reports a pick
+AssertionError: expected [ <button …(8)>…(2)</button>, …(14) ] to have a length of 14 but got 15
+
+- Expected
++ Received
+
+- 14
++ 15
+
+ ❯ src/canvas/ModuleMenu.test.tsx:132:45
+    130|       ["Custom", "generic"],
+    131|     ]);
+    132|     expect(screen.getAllByRole("menuitem")).toHaveLength(14);
+       |                                             ^
+    133|     const data = screen.getByRole("menuitem", { name: "Data access" });
+    134|     expect(data.dataset.family).toBe("data");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  6 failed | 134 passed (140)
+      Tests  8 failed | 1251 passed (1259)
+   Start at  18:37:16
+   Duration  95.59s (tests 79%, import 16%, environment 3%, transform 2%)
+
+    Isolate  140 workers spawned · ~170ms startup each (spawn + environment, per file)
+             at least ~5.77s faster with isolate: false — reuses workers across files instead of one per file
+

@@ -18991,3 +18991,38 @@ workload settings the same way.
   startup and interval lookup; work identity remains module-based. Aliased actual scratch export,
   focused identity/client wiring28/28 and foreign-owner/schedule10/10 pass. Final pnpm check rerun
   uses this emitter correction; normal mouse/web-build inputs are unchanged. No scope expansion.
+
+## 2026-11-17 — RG17 webhook lifecycle active, unaccepted/uncommitted
+
+- Sole assigned RG17 on accepted RG16 `f75304e`; Service receiver, finite byte/window controls,
+  private RG08 HMAC verification and pure mapper scaffold now reuse protected052 work processing.
+  Authentication precedes decoding; raw-body hash conflicts refuse; 202 follows durable storage.
+- Initial focused Fastify/PGlite checks4/6 pass; remaining failures were expected terminal-code/
+  test-control API assertions. Initial actual scratch checker passes, TypeScript exposed a mount
+  metadata dependency being corrected. Repository typecheck passes before final additions.
+- Final signed-byte/recovery/fence checks, scratch build, D11/offline/browser evidence and final
+  handoff/local commit remain pending. Preserve this unit diff if interrupted; no later unit,
+  native generated matrix, owner service/database, root edit, paid/live call, push or deployment.
+
+## 2026-11-17 — RG17 verified webhook inbox complete for coordinator review
+
+- Service Webhook receiver now generates bounded raw ingress, exact receiver-bound RG08 HMAC,
+  pure mapping and opaque processing declaration. Finite body/window controls share mouse/chat/
+  blueprint/export consumers. Required-user host guards explicitly refuse composition.
+- Durable202 follows protected052 acceptance COMMIT; duplicate delivery returns the same acceptance,
+  changed raw bytes refuse409. Private registered inbox domain plus compiled module/work identity
+  prevents unsigned generic work/copied receiver IDs colliding. Ordinary RG15/16 namespaces and
+  accepted052 migration stay unchanged. Service lifecycle runs processing independently of arrivals.
+- Final pnpm check140files/1261tests plus lint/types, focused97/97, actual67file aliased scratch
+  checker/TS7.0.2/negative public-boundary checks, final web build and offline eval pass. Browser
+  full81/84 plus affected3/3 and final corrected receiver1/1 account for84 unique cases, including
+  TinyURL/both long rebuilds; new-test save-race correction uses persisted-state polling. Final
+  web types/prose lint/off-pins are checked separately. [Evidence](plans/reliable-generation/evidence/rg17/README.md).
+- Limits: generic HMAC only; seven-day completed dedupe, then reacceptance possible; unfinished/
+  failed/unknown retained. No independent receiver→Worker handoff/public replay/admin. RG15 remote
+  tickets, same executing-process authority and secret-result refusals remain; PGlite is controlled
+  SQL/protocol proof, with native process-kill/two-copy checkpoint still deferred as assigned.
+- Six original non-README root hashes, exact34001byte original28-path owner patch, frozen v1 and42
+  original container ID/name/states preserved. Ongoing owner README archive/new39 .docs changes and
+  feedback parentf15e5af are preserved/excluded. No later unit, owner service/DB, paid/live call,
+  root edit, push/deploy. One local commit follows: `RG17: generate authenticated webhook ingestion and durable inbox processing`.

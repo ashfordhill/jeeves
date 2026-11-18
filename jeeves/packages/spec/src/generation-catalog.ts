@@ -124,6 +124,7 @@ export const generationTemplates = freezeRecord({
   favorites: template("favorites", [generationPolicies.favorites.ref]),
   "rate-limiter": template("rate-limiter", []),
   "scheduled-task": template("scheduled-task", []),
+  "webhook-receiver": template("webhook-receiver", []),
   "youtube-upload": template("youtube-upload", [generationPolicies.publicVideo.ref]),
   "youtube-watch": template("youtube-watch", [generationPolicies.publicVideo.ref]),
   "youtube-search": template("youtube-search", [generationPolicies.publicVideo.ref]),

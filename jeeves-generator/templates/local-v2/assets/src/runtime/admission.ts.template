@@ -144,7 +144,7 @@ export function classifyHttpError(error: unknown) {
   const headers: Record<string, string> = { "Cache-Control": "no-store" };
   if (unknown) headers["X-Jeeves-Outcome"] = "unknown";
   if (retryable) headers["Retry-After"] = limited?.retryAfterMs !== undefined ? String(Math.ceil(limited.retryAfterMs / 1000)) : "1";
-  if (status === 401) headers["WWW-Authenticate"] = "Bearer";
+  if (status === 401) headers["WWW-Authenticate"] = code === "WEBHOOK_AUTHENTICATION" ? "Jeeves-HMAC" : "Bearer";
   if (status === 405 && allow) headers.Allow = allow;
   return { status, code, message, retryable, headers };
 }

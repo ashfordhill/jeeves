@@ -614,3 +614,7 @@ coalesce to one current database-time tick, with one unfinished tick per task ac
 Failed/unknown ticks halt new admission and log that outcome. The generated scaffold keeps
 seven-day completed retention, independent of the interval. Changing the interval preserves
 unfinished accepted work; changing the handler/version/identity needs explicit migration.
+
+### Webhook receiver (RG17)
+
+The Service-only **Webhook receiver** exposes **Body limit** (`bodyLimitBytes`: string choice `1024`, `16384`, `65536`; default `65536`) and **Signature window** (`replayWindowSeconds`:30–300; default300). Inspector/chat/blueprint and generated receiver limits use these same values. HMAC-SHA256 is the fixed installed protocol; no provider/verifier/ACK/retry setting is offered. The private RG08 ring is configured through a secret file, outside the diagram and product settings. Required user guards refuse this host combination. [Protocol, secret filename and retention](plans/reliable-generation/evidence/rg17/README.md).

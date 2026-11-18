@@ -1,455 +1,50 @@
 # Jeeves <!-- omit from toc -->
 
-- [11/15/2026 (part II)](#11152026-part-ii)
-  - [Metrics](#metrics)
-    - [Lines of Code](#lines-of-code)
-    - [Design Review](#design-review)
-  - [Bugs](#bugs)
-  - [Next Steps](#next-steps)
-- [11/15/2026 (part I)](#11152026-part-i)
-  - [Agents on the Loose!](#agents-on-the-loose)
-  - [Results (part I)](#results-part-i)
-- [11/14/2026](#11142026)
-  - [qrwty](#qrwty)
-  - [Improving Jeeves](#improving-jeeves)
-    - [UI](#ui)
-- [11/11/2026](#11112026)
-  - [YouTube V3](#youtube-v3)
-  - [Birds-Eye Viewership](#birds-eye-viewership)
-  - [Chat Agent Diagram Generation](#chat-agent-diagram-generation)
-    - [Podcast](#podcast)
-    - [Video](#video)
-    - [Spec](#spec)
-  - [Measurements](#measurements)
-  - [UI Improvements](#ui-improvements)
-    - [Simple vs Detailed view](#simple-vs-detailed-view)
-- [V1](#v1)
-  - [Strategy](#strategy)
-    - [YouTube V2 (11/9/2026)](#youtube-v2-1192026)
-    - [YouTube V1](#youtube-v1)
-      - [Diagrams](#diagrams)
-      - [Features](#features)
-      - [Missing features:](#missing-features)
-      - [Lines of Code](#lines-of-code-1)
-- [Archive](#archive)
-  - [V0](#v0)
-    - [Notes](#notes)
-  - [Mattermost example](#mattermost-example)
-    - [C1](#c1)
-    - [C2](#c2)
-    - [C3](#c3)
-  - [Planned Features](#planned-features)
-  - [AI methods](#ai-methods)
-  - [Challenges](#challenges)
-  - [UI/UX of generated apps](#uiux-of-generated-apps)
+- [Current](#current)
+- [README Archives](#readme-archives)
+  - [Jeeves v0](#jeeves-v0)
 
+## Current
 
-## 11/15/2026 (part II)
+Jeeves going through next iteration of improvements. 
 
-Qrwty is now live at [qrwty.io](https://qrwty.io), using the Jeeves-based implementation.
+TODO:
 
-### Metrics
+- Regen QRWTY with new diagramming. 
+  - Reanalyze finished project before deploying this time. Get feedback from variety of LLMs
+  - Trial run the deployment contract that will be part of Jeeves v1. Does it help?
+  - Compare this new iteration with the QRWTY generation that didn't use Jeeves (don't regenerate it)
 
-#### Lines of Code
+Depending on results from there, may start to work on the Jeeves Chat Agent and getting it 'smart' about Jeeves diagramming.
 
-<p align="left"><img src=".docs/qrwty/loc-a-and-b.png" width="400"/></p>
+## README Archives
 
-- `A` == Jeeves-generated + agent impl of qrwty, **this is what is hosted on qrwty.io**.
-- `B` == No diagram, no Jeeves generations. Just agent impl of qrwty
+### Jeeves v0
 
-- **41.52% of `A`'s code is Jeeves generated**
-    - There is opportunity to extract templates from qrwty's hand-written code to increase this percentage, particularly in the 'Sessions & Accounts' and 'Billing' sections, probably.
+- [C4 modeling](https://c4model.com/) used as initial inspiration but deviated from that 
+- Extracted [Automation Illustrator](https://github.com/ashfordhill/automation-illustrator) grid as library and reused to get better visuals
+- Code generation tested with YouTube and [QRWTY](https://github.com/ashfordhill/qrwty) concepts, along with some loose metric recording
+  - QRWTY was deployed to [qrwty.io](https://qrwty.io/) 
+  - Google Cloud Platform, Cloudflare and Stripe were utilized for non-deterministic and deployment pieces of QRWTY's system
+- A QRWTY implementation without Jeeves templates achieved better design according to Fable 5.2 and Astra 6 [reviews](.docs/readme/v0/qrwty/evaluations/). This is a result of Jeeves codegen needing improvements which will also involve some diagramming option updates
+- Connecting Jeeves Chat Agent to LLMs working but have not used yet; this is not important until Jeeves diagramming & codegen is in a more mature state
 
-#### Design Review
 
-I used Astra 6 (max) and Fable 5.2 (xhigh) to independently evaluate the backend architecture, design and layouts of the qrwty implementations.
+**Several things were not accounted for at enterprise design level when trialing QRWTY creation:**
+  - Database connections that will support pooling for primary/replica patterns
+  - Missing caches and standby caches in several places that you'd probably want one
+  - Maintaining user authorization state across microservices; Fable advises giving them a 'stamp' of authorization, which Cloudflare/Google would need to provide. So part Jeeves, part deployment
+  - This: 
+    - <p align="left"><img src=".docs/readme/edge-run-app-open.png" width="400"/></p>
+  - Load balancers with firewall (and to help with routing traffic to desired regions). Seems to cost money and be more of a deployment scope.
+  - Deployment plans/guides as part of project generation, in-depth end2end tests; these are going to be accounted for in future iterations of Jeeves
 
-The full reports as well as the prompt fed to them can be found in [.docs/qrwty/evaluations](.docs/qrwty/evaluations/).
+Jeeves can help with several of these, which is what will be included in the next plan.
 
-They both concluded that `B`, the non-Jeeves implementation, was ***superior** as far as design quality. The reason for this seems to involve the Jeeves template designs and how they communicate with one another. Agents for `A` were forced to use Jeeves templates and stubs (they were specifically told to save the Jeeves-generated part separately and also to follow those parts without modifying them outside of stubs/things that needed to be filled). By pigeonholing them into a system that **needs design and architecture improvements** for its generated code, it affected the quality of the system design implementation. 
+A fun HTML-based artifact was created and uploaded to [claude.ai/artifact](https://claude.ai/artifact) as part of a UI rework when using Opus 5.5:
 
-The agents both came up with several ways to extract code from qrwty implementations to help Jeeves offer higher quality generated code.
-
-### Bugs
-
-After playing with the UI a bit, there are some bugs likely related to the backend:
-
-  - Sign in is a bit finicky. 
-      - Signing in using a Google account via the `auth0` implemention
-      - Navigated to a different page and it signed me out, but signed me back in again at some point
-      - **There is a smell in the 'Identity' tile in the Jeeves diagram** for qrwty (too many microservices connecting to the Identity/sign-in tile) that I noticed before all this and I wonder if it's related.
-        - <p align="left"><img src=".docs/qrwty/identity-smell.png" width="400"/></p>
-
-
-  - Click count for a link I generated told me to come back later for analytics but eventually showed:
-      - <p align="left"><img src=".docs/qrwty/click-count.png" width="400"/></p>
-
-
-### Next Steps
-
-I'm pleased with the progress and measurements so far - I think the next iteration of Jeeves can produce a better qrwty.
-
-- Updating Jeeves to include more templates extracted from the qrwty implementation
-- Updating some of Jeeves UI/UX for better readability with the arrows overlapping
-- Regenerating qrwty with improved Jeeves and measure design again against `B` (not going to regenerated `B`).
-
-And later on: 
-
-- Working on **dropshipping project**, but in *small* chunks
-    - Instead of doing all in one, I want it to do a chunk of impl, learn from that chunk to improve Jeeves. Then retry generation again as needed.
-    - I have purposely **not** spent resources on heavy testing over Jeeves components; with the code changing so often early on and still figuring out what's going to work, I don't want the agents fussing over  tests and  spending long periods of time running tests.
-      - One goal with testing would be end2end tests with mix and matching pieces of generated code to ensure things behave as expected **when linked together** and not just in isolation. So it could get pretty in-depth and time-consuming.
- 
-
-## 11/15/2026 (part I)
-
-### Agents on the Loose!
-
-I had an agent orchestrating lanes of other agents for the past couple days to see if I could get away with doing more initial planning upfront with some rules instead of my usual way of doing things (create 1 build plan at a time with a decent size goal, maybe equivalent to a Jira Epic or multiple large tickets. Each unit executs on a fresh agent and this is overseen by a parent agent). Then I would do my human review and poke around the results.
-
-Unfortunately, the multi-lane agents and larger-than-usual-build-goals kept leading to more units of work getting added and agents chasing a goalpost that kept moving. When I checked in on the status, it'd gotten off course in the same way SWE engineers get off course without a clear concrete goal and vague tickets.
-
-> Anthropic has recently boasted about letting 1000+ agents run with Fable 5.2 to build an operating system that could 'boot on a machine'. Actual details about the qualtiy of that operating system are not being transparently presented. I don't think throwing 1000+ agents to build anything over a week is a going to lead to anything you want to put in production. Cat herding, lack of human understanding of architecture designs, probably only generating diagrams after the fact (I mean hopefully they'd go for diagrams of some sort...right...? RIGHT?)
->
-> In any case, one of the goals with Jeeves is to keep the humans in control and informed of decisions, but merely moving them up a level of abstraction, which I've cited in one of my earlier writeups last year, praising diagrams. We should be architects because code monkeys and ticket grinding is handled by computers now. Basically we need to get good at understanding our intentions, communicating those intentions clearly and able to steer back to course when paths start to deviate too far from the goal. 
-
-<p align="center"><img src=".docs/qrwty/whee.gif" width="400"/></p>
-
-I cut things off to get the data I was looking for which was:
-
-1. Build qrwty. 
-    - How good is it from an enterprise software design standpoint?
-        - Not expecting perfection (even though such a thing doesn't exist in the software world anyway). But anything decent can be built upon and improved. Lock down good patterns into reuseable templates that **source from** a human-readable diagram source of truth.
-2. Build qrwty without Jeeves. Is it inferior? Spaghetti?
-   - In the future I might pause this type of investigation just because of the amount of resources (tokens, time) it can consume. I think it is safe to assume that diagram-based prompting will probably offer better results than just text-based prompting alone. This is evident even when working with human engineers.
-3. Calculate lines of code differences to see where we're at for deterministic vs non-deterministic code usage
-4. See opportunities to lift patterns out of qrwty and back into Jeeves templates if they are generic enough concepts to be used for other types of projects
-
-### Results (part I)
-
-> The agents are currently rebuilding QRWTY after doing #4 above. The UI never got finished (it's not important to make the UI perfect but it does help me faster evaluate features as a human). So we are regenerating and deploying QRWTY while relying on the $300 free trial credits from GCP; this should be able to keep it up and running for a month or two, supposedly.
-
-The results from before #4 can be seen in the [qrwty repo](https://www.github.com/ashfordhill/qrwty). Here's a tl;dr:
-
-1. 80% code from Jeeves (not including UI and test code)
-2. non-Jeeves had 5x more LOC for tests (~10k vs ~2k)
-    - Doesn't really say much about reliability but I'm assuming the agents were more paranoid about testing everything from non-Jeeves and more trusting about 'reliable' solutions from Jeeves
-3. Around the same amount of UI code in both Jeeves and non-Jeeves impls of qrwty.
-
-Both projects will be saved in the qrwty repo.
-
-Hoping things will be ready for a human evaluation later this evening.
-
-## 11/14/2026
-
-### qrwty
-
-Generation for a production-level grade deployment of my repo [qrwty](https://www.github.com/ashfordhill/qrwty) has begun.
-
-The plan has 2 phases:
-
-1.  Get qrwty built with a Jeeves diagram and deployed to the qrwty.io domain '
-    - This involves actually using unpaid features/trials of Google Cloud Platform and Stripe, as well as Cloudflare.
-    - Qrwty is designed to horizontally scale its microservices
-    - Although the backend is built in TypeScript; looking into Rust or Go implementations for certain types of microservices as an option for Jeeves code generation could be useful/interesting. Maybe.
-2.  Get qrwty built without a Jeeves diagram and make comparisons
-    - How much time and clarity is Jeeves saving?
-    - Do the Jeeves diagrams and generated code provide value in code organization vs pure prompting?
-
-#1 and #2 are in their own lanes of work unit execution, my favorite style of feeding large scopes of work. At first I had everything in a queue but it was going to take 3 days, so I took a parallel route this time s ince there are 2 different projects being generated.
-
-Qrwty will be getting a UI but I won't be spending time fussing over it because that does not benefit Jeeves and qrwty is not a project I want to pursue. I will be trialing the dropshipping project next once qrwty has been fully evaluated and in an acceptable state.
-
-### Improving Jeeves
-
-I have also started a third lane (#3) to work on Jeeves improvements - there's no reason to wait until lanes #1 and #2 are done since #2 doesn't even use Jeeves and #1 only needed to use Jeeves in the beginning.
-
-<p align="center"><img src=".docs/qrwty/parallel-agents.png" width="600"/></p>
-
-Lane #1 will be recording any feedback and data that could be used to improve Jeeves in a sort of "lessons learned". I will also be using Astra and Fable to help me find areas of improvement.
-
-<p align="center"><img src=".docs/qrwty/lessons-learned-1.png" width="600"/></p>
-
-#### UI
-
-UI improvements were a part of the chunk of work executed Friday night - mostly just making the diagrams prettier but there were some organizational improvements in the Tiles/options and categories of templates/modules. Though this might seem like a vain difference, it's important to me because I'm less visually engaged when something looks like bland slop vs something that catches my attention. And 'attention is all you need'!
-
-**Qrwty diagram**
-
-<p align="center"><img src=".docs/qrwty/qrwty-diagram.png" width="900"/></p>
-
-
-Some UI improvements I would like:
-
-- The paths/arrows are easy to see once you click on them, since they light up. But from a static diagram, it's hard to see which arrows are which when there is so much overlap
-- 'Generate project' brings up a confusing, AI-sloppish list of things..there is probably a better way of doing this and helping guide the generated output better. Safeguarding against impossible/bad design generations has somewhat been accounted for in the diagramming options themselves..not really sure. Something is yucky here and needs fixin'.
-
-
-## 11/11/2026
-
-### YouTube V3
-
-Added sign in/identity aspect for viewers, not just publishers. This involved a favorites addition as well. Thought it would be good to address this issue where only the producers had an 'identity'. That'll be an issue for the 'Marketplace' application where there will be buyers and sellers.
-
-### Birds-Eye Viewership            
-
-Ideally you wouldn't craft a diagram from scratch - even if you probably had superior system design skills, it would be difficult to think of the path for every little piece without investing a significant amount of time.
-
-**It'd probably be easier to review an agent's attempt at diagramming a detailed prompt from the user rather than have a user build a system diagram from scratch**. Then you can find issues or missing details and have the agent fix it. You could also remove or add things yourself and have the agent calculate judgement or suggestions based on your actions.
-
-I'm not sure that I like the idea of all these paths touching 1 Tile, the video metadata database.  
-
-<p align="center"><img src=".docs/youtube-v3/metadata-lots-of-connections.gif" width="800"/></p>
-
- 
-Is this a cause for concern? Software principles tell me yes. Maybe this is an issue. Maybe I'll ask an agent to investigate. Would I have been able to see this easily without diagrams or with narrow-scoped diagrams? **Visual representations of systems help find oversights, redundancy and design smells**. They can also provide an efficient way of getting a newcomer understand what they're walking into instead of throwing them a bunch of repositories and text.
-
-### Chat Agent Diagram Generation
-
-> Task carried out by agents, so bullets are also writen by agents. Wanted any differences pointed out between models and their designs on a given prompt
-
-#### Podcast
-
-| Luna (gpt-6-luna) · 92.4 | Sol (gpt-6.1-sol) · 84.7 | Haiku 5.5 · 94.4 | Sonnet 5.5 · 100 |
-| :---: | :---: | :---: | :---: |
-| <img src=".docs/chat-agent-diagrams/podcast-luna.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/podcast-sol.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/podcast-haiku.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/podcast-sonnet.png" width="100%"/> |
-
-- Sonnet: the only full marks. Listeners can optionally sign in on the Episode API.
-- Haiku: kept most of the patterns' generic names (Ingest API, Records, Jobs, Processor, Outputs). No optional listener sign-in.
-- Luna: two identity tiles (hosts and listeners) and no CDN; the Episode API reads audio straight from storage. No optional listener sign-in.
-- Sol: splits listening into three services (Episode pages → Playback, Followed shows), with the CDN behind Playback. No lifecycle worker, so episodes reach search from the upload service before processing finishes.
-
-#### Video
-
-| Luna (gpt-6-luna) · 100 | Sol (gpt-6.1-sol) · 100 | Haiku 5.5 · 100 | Sonnet 5.5 · 100 |
-| :---: | :---: | :---: | :---: |
-| <img src=".docs/chat-agent-diagrams/video-luna.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/video-sol.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/video-haiku.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/video-sonnet.png" width="100%"/> |
-
-- All four have the same 21 tiles; they differ in names and one link.
-- Sol and Sonnet: the favorites service also reads the video records, to check a video can be favorited. Luna and Haiku skip that link.
-- Haiku: generic pattern names left in (Records, Jobs, Results, Lifecycle, Login).
-- Luna: viewers sign in through "Creator Identity", a name that only fits creators.
-
-#### Spec
-
-| Luna (gpt-6-luna) · 99.4 | Sol (gpt-6.1-sol) · 100 | Haiku 5.5 · 100 | Sonnet 5.5 · 100 |
-| :---: | :---: | :---: | :---: |
-| <img src=".docs/chat-agent-diagrams/spec-luna.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/spec-sol.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/spec-haiku.png" width="100%"/> | <img src=".docs/chat-agent-diagrams/spec-sonnet.png" width="100%"/> |
-
-- The brief names every tile, so all four match the reference's 21 tiles and 25 links almost exactly.
-- Luna: missing the Publish → Sign-in link.
-- Haiku: names the search index "Videos index" instead of "Videos".
-- Sol and Sonnet: identical to the reference.
-
-> /end agent code
-
-### Measurements
-
-I'll be relying on trialing multiple types of projects to be generated with Jeeves diagrams and utilizing the following measurements:
-
-- num tokens to get a YouTube clone via just prompting
-- num tokens get a YouTube clone with Jeeves generations + prompting
-  - Taking note of tokens used for Jeeves chat agent helping with diagramming
-
-The lines of code with Jeeves coverage is no longer an immediate concern so I won't bother looking at that, though I'll probably revisit the count at a later stage in the project:
-
-<p align="center"><img src=".docs/youtube-v2/loc-metrics.png" width="400"/></p>
-
+  - <p align="left"><img src=".docs/readme/ui-refresh-preview.png" width="150" height="300"/></p>
 
 ---
 
-### UI Improvements
-
-<img src=".docs/ui-v2/view-simple.png" width="49%" />&nbsp;<img src=".docs/ui-v2/view-detailed.png" width="49%" />
-
-#### Simple vs Detailed view
-
-Now can view modules inside of a tile/template piece. 
-
-Detailed view also shows connections/arrows at a more granular level to see the flow a bit better.
-
-## V1
-
-The C4-Modeling architecture has been a good inspiration and thought tool. However, my intention with generated code templates likely benefits more from simplifying diagram view into 1 diagram per system (or subsystem, I suppose), offering configuration options.
-
-Additionally, I've extracted the custom grid library logic from my other project automation-illustrator to give a better starting point with Tiles, Lines, and UX experience. If I can't read and interact with the diagrams easily then there's no point in trying to build out the backend.
-
-<img src=".docs/user-consume-produce.gif" width="49%" />&nbsp;<img src=".docs/menu-options.gif" width="49%" />
-
-### Strategy
-
-I am having frontier models (Astra, Opus 5.5, @ xhigh or max) handle build plans and then spawning off sequential steps to have fresh, cheaper agents execute each segment of the build plan (not in parallel). 
-
->> When planning, I always push the agent to ask any questions to clarify things with me in any ambiguous or unclear areas, instead of just assuming the best path forward.
-
-There are 3 field projects I would like to work with:
-
-  - YouTube
-  - Marketplace (a generic buy/sell portal. Apparently Etsy is heavily PHP so not a good patternt to follow for microservices..Amazon is disgusting and eBay is probably crusty as well)
-  - TinyURL
-
-Each project will go through V1, V2, etc. where the diagrams become generated code.
-
-Benchmarks against generated template code via Jeeves Generator (the deterministic code) vs the non-deterministic custom code added later that glues/enhances the project, will be compared via # lines of source code. **The goal is to get V2 of YouTube to use less non-deterministic code than V1, etc.** 
-
-When executing, builder agents will:
-
-- Screenshot the diagram used to make the V# of that project.
-- Adjust diagram and config options on Jeeves as necessary to adjust original diagram 
-- Update possible generated code template options if it seems like a good use case
-- **Not** spend a bunch of time on unit testing Jeeves Generator nor the Templates code; why waste tokens testing a moving target?
-
-#### YouTube V2 (11/9/2026)
-
-Astra max fixed some of the YouTube implementation specific code from the templates and did a recount of LOC. I'm happy with this, for now - though this field project is still missing several features that YouTube has. I don't intend to create a perfect clone since I don't want
-<p align="center"><img src=".docs/youtube-v2/loc-metrics.png" width="400"/></p>
-
-**Ideas**
-
-Making tiles generic - instead of having Jeeves be an 'all-in-one' web app builder, have it be able to focus on specific applications. For instance, a company is not interested in building everything - only implementation around their domain. You could make a JeevesForTumblr, for instance. Or a JeevesForSpotify.
-
-But that would sort of break code generation templates. Not sure if this is worth pursuing.
-
-**Next Steps**
-
-I need to make some Jeeves UI updates so I can see the component/tile structure more easily to get an idea of what reuseable pieces I have and how they connect.
-
-Then I will try another field project.
-
-Then I need to try field project implementations that actually use cloud services and deploy.
-
-Then I need to stress test traffic to make sure these are fairly robust - enough for production. Not just toy projects.
-
-There will be more projects to test. I would like to build personal projects qrwty and dropshipping once my case studies look solid.
-
-Creating UI templates is something I will look into - there are existing tools but I would prefer a custom style. For the copycat projects like YouTube I want to see if I can get an agent to make a UI look like YouTube.
-
-
-#### YouTube V1
-
-Lives [here](field-projects\youtube\v1\README.md).
-
-<p align="center"><img src=".docs/youtube-v1/watch-monster-hunter.png" width="400"/></p>
-
-
-##### Diagrams
-
-Original / Modified during build process
-
-<img src=".docs/youtube-v1/diagram-original.png" width="49%" />&nbsp;<img src=".docs/youtube-v1/diagram-modified.png" width="49%" />
-
-
-##### Features
-
-- Account sign in (no account creation option)
-- Upload
-- Playback
-- View count
-- Search videos (search needs some help tho; searching `f` results in nothing while `fixtures` does, for instance)
-
-##### Missing features:
-
-- Cloud connections were intentionally not targeted as part of V1; would need further testing around this later on. Docker locally suffices for now
-- **Account creation**; prob should have a template anyway
-- Deeper video **analytics** besides view count; might be useful to have generic analytics microservice (?)
-- **General browsing** of random/all video **inventory**; could see generic template opportunity for 'inventory browsing', unsure
-- Further **video editing** options when uploading (would need to check YouTube for ideas); might be useful for a generic video editing or upload template
-- **and much more**!
-
-##### Lines of Code
-
-**Does not include UI-specific code since Jeeves is not a UI build helper**
-
-- **5.53% src code is from Jeeves Generator**
-  - 159 lines deterministic
-  - 2,715 non-deterministic
-
-Note that tests for the templated code are not really in place so 'deterministic'/reliable code is being used liberally here.
-
-This is below my target of wanting at least 60% templated code, but it's a start.
-
-## Archive
-
-### V0
-
-#### Notes
-
-Jeeves is a web-application architecture studio intended to help Software Engineers design & generate software using [C4 modeling](https://www.visual-paradigm.com/guide/what-is-the-c4-model-a-comprehensive-guide-to-visualizing-software-architecture/)-inspired diagramming. This is intended to provide a balance between human design and AI-generated code, reducing the amount of non-deterministic code generation for better maintability.
-
-<p align="center"><img src=".docs/c4-flow.svg" width="600"/></p>
-
-1. At C2 and C3, software engineers would diagram a new system by connecting & configuring Jeeves components
-
-2. At C4(a), the architecture design would generate into templated solutions that utilize a common testing framework and pattern to support black box and stress testing, i.e. - pieces of reliable code to work with.
-
-3. At C4(b), features not provided at the template levels, or generated C2/C3 components that include stubs would be written via humans/agents. Ideally C4(b) bugs would be created much more frequently than C4(a) bugs.
-
-The intention is to **reduce the amount of non-deterministic code/behavior** when designing the foundations of [web-based] software systems.
-
-By maintaining a diagram-based source of truth, we can reduce the amount of unpredictable 'slop', whether that is introduced by humans or coding agents. This can be useful when designing new systems at a high level via LLMs, which can often times lead to high-quality looking slop that sort of looks right at first glance. AI is better suited to well-defined small to medium scoped tasks where the outcome is clearly defined.
-
-![](.docs/mvp-flow.gif)
-
-### Mattermost example
-
-```sh
-docker pull ghcr.io/ashfordhill/jeeves:latest
-docker run --rm --name jeeves -p 4300:4300 ghcr.io/ashfordhill/jeeves:latest
-```
-
-Example of C1,C2,C3 diagramming for Mattermost, courtesy of Astra:
-
-#### C1
-<p align="center"><img src=".docs/mattermost-c1.png" width="600"/></p>
-
-#### C2
-<p align="center"><img src=".docs/mattermost-c2.png" width="600"/></p>
-
-#### C3
-<p align="center"><img src=".docs/mattermost-c3.png" width="600"/></p>
-
-### Planned Features
-
-- A chat helper on the side to help guide C2 and C3 design decisions
-
-  - <p align="center"><img src=".docs/chat-assistant.png" width="300"/></p>
-
-- A library of pre-tested C2 and C3 components to mix, configure and connect together
-
-  - <p align="center"><img src=".docs/component-library.png" width="300"/></p>
-
-
-- Configurable options within C2 and C3 components to indicate expected load at certain bottlenecks (keep design MVP level, enterprise level or flexible enough to change later on?)
-
-- Deployment target configurations (cloud or local, containerization, Kubernetes)
-
-### AI methods
-
-- I have access to about 70k of GPT tokens through a friend, which enables me to plan on Astra 6 max without worrying about cost, at least until December 31st. It still always falls short of executing very large goals and needs hammering.
-  - Code generation handled by **Sol 6.1** (`codex CLI`) and **DeepSeek v4.1 Flash 1017** (`opencode`) and **Opus 5.5** (`claude CLI`), though sometimes I will use Fable or Astra for a bit of code generation out of curiosity. So far I don't think it's worth the higher cost; leave as planning models.
-
-- Feeding images of diagrams of my intent is definitely still a very effective way of getting better output.
-
-- Frontier models not capable of giving me decent starting points from scratch
-  - This something I want to solve with Jeeves; if I can diagram my system, it helps me find issues in my own design. If I can trust the foundation of my design (if I'm trusting the Jeeves component library), then I would say that's a way better 
-  - Using existing solutions as a starting point (Excalidraw, automation-illustrator) is always more useful than just a long essay of descriptions. I do this at work a lot when creating new projects that are similar to existing projects. It helps a lot!
-
-- For UI-based work, I tell the agent to stop fussing about unit and Playwright tests until the future. For the most part, even economic LLMs generate decent code that I'll manually evaluate from a UI/UX POV. Agents seem to spend an awful lot of time generating unit tests that don't provide a lot of value but end up eating into tokens and time. I don't need a unit test to confirm a button is clicking - I'm gonna assume the LLM can take care of a simple task like that. I also have grown to really despise unit testing getting spammed everywhere.
-
-### Challenges
-
-- My own limited system architecture knowledge. Ideally I would have decades of experience under my belt and be able to tell whether a design is 'good' from peeking at the diagrams, but I'm not there. Leaning on AI judgement more than I'd like to for some of this. Hoping to learn through this.
-
-- UX/UI design is (as always) a huge challenge with prompting. I tried to work off of my [automation-illustrator](https://github.com/ashfordhill/automation-illustrator) application as as starting point for the Jeeves design studio, which had required much manual back and forth prompting for UX improvements ([visual improvements](https://github.com/ashfordhill/automation-illustrator/blob/main/.docs/VISUAL_IMPROVEMENTS.md)). AI is still pretty bad at building desired user interfaces with good UX. Since UX has intuition/'feel' based needs, it makes sense why AI isn't great at it. Playwright interactions and AI-captured screenshots seem to help but don't paint the full picture.
-
-- So far the non-frontier LLMs haven't been good at providing example diagram projects from scratch, which could affect how useful the design chat helper is.
-
-- Jeeves is a really large scope project, though once the foundation is decent, extending the C2 and C3 component libraries with new pieces should hopefully not be too bad
-
-### UI/UX of generated apps
-
-C4 modelling doesn't cover UI design; `'How does the page look? Where does the video player go? What are the page routes?'` It's still alright to vibe-code this for the most part, but getting a custom 'feel' of your own proprietary app requires a lot of prompt massaging since AI-generated web applications kind of all look the same after a while. 
-
-You *could* have an additional studio alongside Jeeves for that but I think there are existing solutions and I think maintaining such an editor would be very labor intensive. UI can be painful.
-
-
+[Full README](.docs/readme/README.md).

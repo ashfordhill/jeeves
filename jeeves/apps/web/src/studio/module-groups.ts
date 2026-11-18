@@ -32,7 +32,7 @@ const groups: readonly ModuleGroup[] = [
   {
     label: "Events",
     family: "messaging",
-    kinds: ["scheduled-task", "event-publisher", "event-consumer"],
+    kinds: ["webhook-receiver", "scheduled-task", "event-publisher", "event-consumer"],
   },
   {
     label: "Files & media",

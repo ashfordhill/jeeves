@@ -1,0 +1,49 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3589303) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3589373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3592154) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 2 workers
+
+(node:3593004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3593007) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/callable.spec.ts:8:1 › Custom call connects only to complete Favorites by mouse and adds no capability endpoint (7.0s)
+  ✘  2 [chromium] › jeeves/apps/web/e2e/webhook.spec.ts:20:1 › RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity (7.2s)
+
+
+  1) [chromium] › jeeves/apps/web/e2e/webhook.spec.ts:20:1 › RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity 
+
+    Error: Mouse receiver addition failed
+
+      49 |         | undefined
+      50 |     )?.find((c) => c.settings.kind === "webhook-receiver");
+    > 51 |     if (!added) throw Error("Mouse receiver addition failed");
+         |                       ^
+      52 |     const receiverId = added.id;
+      53 |
+      54 |     await page.getByRole("button", { name: "Connect", exact: true }).click();
+        at /home/ash/github/jeeves/jeeves/apps/web/e2e/webhook.spec.ts:51:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › jeeves/apps/web/e2e/webhook.spec.ts:20:1 › RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity 
+  1 passed (10.6s)

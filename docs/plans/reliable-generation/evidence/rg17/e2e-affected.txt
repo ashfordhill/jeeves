@@ -1,0 +1,22 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3531432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3531451) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3531542) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 3 workers
+
+(node:3531599) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3531600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3531598) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › jeeves/apps/web/e2e/callable.spec.ts:8:1 › Custom call connects only to complete Favorites by mouse and adds no capability endpoint (7.2s)
+  ✓  3 [chromium] › jeeves/apps/web/e2e/webhook.spec.ts:20:1 › RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity (9.2s)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:158:1 › adds compatible module kinds to a Service and Worker and refuses a Required-user webhook host by mouse (16.8s)
+
+  3 passed (20.1s)

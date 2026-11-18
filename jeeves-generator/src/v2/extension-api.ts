@@ -40,6 +40,11 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
           'export { defineDurableWork } from "../runtime/durable-work.ts";',
           'export type { DurableWork, WorkStatus, WorkState } from "../runtime/durable-work.ts";',
         );
+      if (has("webhook-receiver"))
+        publicLines.push(
+          'export { defineWebhookWork } from "../runtime/webhook.ts";',
+          'export type { WebhookEvent, WebhookWork } from "../runtime/webhook.ts";',
+        );
       if (has("rate-limiter"))
         publicLines.push(
           'export type { RateLimiterCapability, RateLimiterHooks, RateLimitDecision } from "../runtime/rate-limiter.ts";',
@@ -72,7 +77,7 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
       ];
       for (const [file, names, used] of safeTypes)
         if (used) publicLines.push(`export type { ${names} } from "../runtime/${file}.ts";`);
-      if (has("module-stub") || has("scheduled-task"))
+      if (has("module-stub") || has("scheduled-task") || has("webhook-receiver"))
         publicLines.push(
           'export type { CacheClient, ObjectReader, ObjectWriter, ObjectStore, QueuePublisher, SearchReader, SearchWriter, SearchIndex, ModuleCall } from "../modules/dependencies.ts";',
           'export { declareSettings, text, integer, url, optional, signingKeys, sealingKeys } from "../runtime/settings.ts";',

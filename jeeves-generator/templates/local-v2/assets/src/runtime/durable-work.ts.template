@@ -50,6 +50,22 @@ interface Definition<Input, Dependencies> {
 }
 type StoredDefinition = Definition<unknown, Record<string, unknown>>;
 const definitions = new WeakMap<object, StoredDefinition>();
+// Private ingress classification: generic public work cannot choose this namespace domain.
+const webhookInboxes = new WeakSet<object>();
+export function protectWebhookInbox(work: object) {
+  if (!definitions.has(work)) throw new Error("Invalid webhook work engine");
+  webhookInboxes.add(work);
+}
+export function durableWorkNamespace(resource: string, owner: string, work: object, module: string) {
+  const definition = definitions.get(work);
+  if (!definition) throw new Error("Invalid durable work engine");
+  if (webhookInboxes.has(work)) {
+    if (typeof module !== "string" || !module) throw new Error("Webhook requires compiled module identity");
+    return JSON.stringify([resource, owner, "webhook-v1", module, definition.id]);
+  }
+  return JSON.stringify([resource, owner, definition.id]);
+}
+
 const bindings = new WeakMap<object, { work: object; store: ReturnType<typeof createWorkStore> }>();
 const snapshot = (row: { state: WorkState; attempts: number; error: string | null }): WorkStatus =>
   Object.freeze({ state: row.state, attempts: row.attempts, error: row.error });

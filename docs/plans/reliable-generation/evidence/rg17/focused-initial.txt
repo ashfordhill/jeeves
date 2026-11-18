@@ -1,0 +1,69 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+stdout | src/v2/webhook.test.ts > RG17 generic verified webhook inbox > expired holders cannot commit webhook effects; transient processing retries and terminal failure stays visible and uncleaned
+{"service":"webhook","level":"info","event":"request-completed","requestId":"3384a9f4-af89-427e-88f5-cb61f96e25be","correlationId":"3384a9f4-af89-427e-88f5-cb61f96e25be","method":"POST","route":"/modules/receive-events","status":202,"durationMs":5}
+
+stdout | src/v2/webhook.test.ts > RG17 generic verified webhook inbox > expired holders cannot commit webhook effects; transient processing retries and terminal failure stays visible and uncleaned
+{"service":"webhook","level":"info","event":"request-completed","requestId":"3882021e-7c31-4b26-83c8-aa9baed99754","correlationId":"3882021e-7c31-4b26-83c8-aa9baed99754","method":"POST","route":"/modules/receive-events","status":202,"durationMs":4}
+
+stdout | src/v2/webhook.test.ts > RG17 generic verified webhook inbox > expired holders cannot commit webhook effects; transient processing retries and terminal failure stays visible and uncleaned
+{"service":"webhook","level":"info","event":"http-draining"}
+{"service":"webhook","level":"info","event":"http-draining"}
+
+stdout | src/v2/webhook.test.ts > RG17 generic verified webhook inbox > expired holders cannot commit webhook effects; transient processing retries and terminal failure stays visible and uncleaned
+{"service":"webhook","level":"info","event":"http-drained"}
+{"service":"webhook","level":"info","event":"http-drained"}
+
+ ❯ |generator| src/v2/webhook.test.ts (6 tests | 2 failed) 5536ms
+   ❯ RG17 generic verified webhook inbox (5)
+     × expired holders cannot commit webhook effects; transient processing retries and terminal failure stays visible and uncleaned 2064ms
+   ❯ RG17 installed authoring and emitted boundaries (1)
+     × consumes both settings, stable module identity and private processor without a public verifier/replay route 53ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/webhook.test.ts > RG17 generic verified webhook inbox > expired holders cannot commit webhook effects; transient processing retries and terminal failure stays visible and uncleaned
+AssertionError: expected { …(24) } to match object { state: 'failed', …(2) }
+(25 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "attempts": 4,
+-   "error": "WORK_HANDLER_FAILED",
++   "error": "WORK_ATTEMPTS_EXHAUSTED",
+    "state": "failed",
+  }
+
+ ❯ src/v2/webhook.test.ts:316:33
+    314|       await g.run(() => g.store.runBatch((event: string) => logs.push(…
+    315|     }
+    316|     expect((await g.rows())[0]).toMatchObject({
+       |                                 ^
+    317|       state: "failed",
+    318|       error: "WORK_HANDLER_FAILED",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |generator| src/v2/webhook.test.ts > RG17 installed authoring and emitted boundaries > consumes both settings, stable module identity and private processor without a public verifier/replay route
+TypeError: installed.templates is not iterable
+ ❯ resolveGeneration ../jeeves/packages/spec/src/generation-resolver.ts:549:36
+    547|         );
+    548|   }
+    549|   for (const template of installed.templates) {
+       |                                    ^
+    550|     const entries = installed.templates.filter((entry) => sameContract…
+    551|     if (entries.length !== 1)
+ ❯ normalGenerationControls ../jeeves/packages/spec/src/supported-authoring.ts:22:10
+ ❯ src/v2/webhook.test.ts:338:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  18:30:25
+   Duration  6.41s (tests 87%, transform 8%, import 5%)
+

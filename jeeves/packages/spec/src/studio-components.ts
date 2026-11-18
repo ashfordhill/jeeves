@@ -22,6 +22,7 @@ export const studioComponentLimits = {
   description: 240,
   action: 60,
   intervalSeconds: { min: 1, max: 604_800 },
+  replayWindowSeconds: { min: 30, max: 300 },
   rateLimit: { min: 1, max: 1_000_000 },
   windowSeconds: { min: 1, max: 604_800 },
   l1MaxEntries: { min: 1, max: 10_000_000 },
@@ -42,6 +43,7 @@ const bounded = ({ min, max }: { min: number; max: number }) => z.int().min(min)
 
 export const studioComponentKinds = [
   "scheduled-task",
+  "webhook-receiver",
   "rate-limiter",
   "cache-reader",
   "id-generator",
@@ -86,6 +88,11 @@ export const authCredentialSchema = z.enum(["jwt", "api-key", "session"]);
 export const authSignInSchema = z.enum(["required", "optional"]);
 
 /** Every kind is a strict object; omitted optional numbers mean "unspecified", never zero. */
+export const studioWebhookReceiverSettingsSchema = z.strictObject({
+  kind: z.literal("webhook-receiver"),
+  bodyLimitBytes: z.enum(["1024", "16384", "65536"]),
+  replayWindowSeconds: bounded(studioComponentLimits.replayWindowSeconds),
+});
 export const studioScheduledTaskSettingsSchema = z.strictObject({
   kind: z.literal("scheduled-task"),
   intervalSeconds: bounded(studioComponentLimits.intervalSeconds),
@@ -208,6 +215,7 @@ export const studioFavoritesSettingsSchema = z.strictObject({ kind: z.literal("f
 
 export const studioComponentSettingsSchemas = {
   "scheduled-task": studioScheduledTaskSettingsSchema,
+  "webhook-receiver": studioWebhookReceiverSettingsSchema,
   "rate-limiter": studioRateLimiterSettingsSchema,
   "cache-reader": studioCacheReaderSettingsSchema,
   "id-generator": studioIdGeneratorSettingsSchema,
@@ -230,6 +238,7 @@ export const studioComponentSettingsSchemas = {
 } as const;
 export const studioComponentSettingsSchema = z.discriminatedUnion("kind", [
   studioScheduledTaskSettingsSchema,
+  studioWebhookReceiverSettingsSchema,
   studioRateLimiterSettingsSchema,
   studioCacheReaderSettingsSchema,
   studioIdGeneratorSettingsSchema,
@@ -261,6 +270,11 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
 ): StudioComponentSettingsByKind[K] {
   const defaults: StudioComponentSettingsByKind = {
     "scheduled-task": { kind: "scheduled-task", intervalSeconds: 60 },
+    "webhook-receiver": {
+      kind: "webhook-receiver",
+      bodyLimitBytes: "65536",
+      replayWindowSeconds: 300,
+    },
     "rate-limiter": {
       kind: "rate-limiter",
       algorithm: "sliding-window",
@@ -341,7 +355,11 @@ export type StudioComponentTargetKind =
   | "object-store"
   | "cdn"
   | "external-api";
-type ComponentFieldBase = { label: string; group: "General" | "Options"; help?: string };
+type ComponentFieldBase = {
+  label: string;
+  group: "General" | "Options";
+  help?: string;
+};
 export type StudioComponentField =
   | (ComponentFieldBase & {
       path: "component.name" | "component.description";
@@ -381,6 +399,7 @@ export const studioModuleTemplates = [
   "search-query",
   "favorites",
   "scheduled-task",
+  "webhook-receiver",
   "rate-limiter",
 ] as const;
 export type StudioModuleTemplate = (typeof studioModuleTemplates)[number];
@@ -607,6 +626,31 @@ function component<K extends StudioComponentKind>(
 export const studioComponentDefinitions: {
   readonly [K in StudioComponentKind]: StudioComponentDefinition<K>;
 } = Object.freeze({
+  "webhook-receiver": component("webhook-receiver", {
+    name: "Webhook receiver",
+    description:
+      "Authenticates the generic Jeeves HMAC envelope before decoding and durably accepts events for fenced background processing.",
+    thirdParty: ["PostgreSQL"],
+    browserHost: false,
+    hosts: ["service"],
+    scope: "generic",
+    slots: [
+      slot("state", ["database"], "read-write"),
+      slot("target", ["application"], "request", "optional"),
+    ],
+    generation: lead("webhook-receiver"),
+    targets: ["database", "application"],
+    fields: [
+      select("bodyLimitBytes", "Body limit", ["1024", "16384", "65536"]),
+      integer(
+        "replayWindowSeconds",
+        "Signature window",
+        L.replayWindowSeconds,
+        "s",
+        "Maximum past or future timestamp difference. Generic Jeeves HMAC only.",
+      ),
+    ],
+  }),
   "scheduled-task": component("scheduled-task", {
     name: "Scheduled task",
     description:
@@ -998,6 +1042,8 @@ export function studioComponentRequirements(settings: StudioComponentSettings): 
 }[] {
   const need = (kinds: readonly StudioComponentTargetKind[], reason: string) => [{ kinds, reason }];
   switch (settings.kind) {
+    case "webhook-receiver":
+      return need(["database"], "A Webhook receiver requires writable owned database state.");
     case "scheduled-task":
       return need(["database"], "A Scheduled task requires writable owned database state.");
     case "rate-limiter":

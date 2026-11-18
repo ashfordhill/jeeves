@@ -1,0 +1,7 @@
+{
+  "keyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "timestamp": "1800000000",
+  "receiver": "receive-events",
+  "raw": "{ \r\n \"id\":\"evt-1\", \"type\":\"item.changed\", \"payload\":{\"name\":\"café\",\"n\":1.0} }",
+  "signature": "v1=df406fdfdee3ce4497a15ea7bc035d1d7a4577c599fdaf111869ea63c9d4a74c"
+}

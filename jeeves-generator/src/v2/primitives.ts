@@ -75,6 +75,8 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
         add(["transaction"], ["generation", "processes"]);
       if (model.selections.some((selection) => durableKinds.includes(selection.binding.kind)))
         modules.delete("transaction");
+      if (model.selections.some((s) => s.binding.kind === "webhook-receiver"))
+        add(["webhook"], ["generation", "processes"]);
       for (const selection of model.selections) {
         if ("host.requestTimeoutMs" in selection.inputs)
           add(["admission", "http"], selection.sourcePath);

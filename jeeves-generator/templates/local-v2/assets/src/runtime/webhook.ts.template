@@ -1,0 +1,99 @@
+/** Private generated webhook accept/store/process adapter. No product ACK or verifier hook. */
+import { createHash } from "node:crypto";
+import { defineDurableWork, protectWebhookInbox, validateDurableWorkBinding, type DurableWork } from "./durable-work.ts";
+import type { ScopedCommands } from "./product-mutation.ts";
+import { normalizedJsonDto } from "./hook-boundary.ts";
+import { withLocalPolicy } from "./operation.ts";
+import { HttpError } from "./admission.ts";
+import type { HttpRoutes, HttpBodyLimit } from "./http.ts";
+export interface WebhookEvent {
+  readonly id: string;
+  readonly type: string;
+  readonly payload: unknown;
+}
+interface StoredEvent extends WebhookEvent { readonly contentHash: string }
+declare const webhookHandle: unique symbol;
+/** Opaque processing declaration; only the generated authenticated ingress can accept it. */
+export interface WebhookWork { readonly [webhookHandle]: true }
+const declarations = new WeakMap<object, DurableWork<unknown, object>>();
+/** Private compiler bridge. Never exported through the product API. */
+export function webhookWorkEngine(value: unknown) {
+  const work = value && typeof value === "object" ? declarations.get(value) : undefined;
+  if (!work) throw new Error("Invalid webhook declaration");
+  return work;
+}
+function event(value: unknown): WebhookEvent {
+  if (!value || typeof value !== "object" || Object.keys(value).sort().join() !== "id,payload,type") throw new Error("Invalid webhook event");
+  const e = value as WebhookEvent;
+  if (typeof e.id !== "string" || !/^[\x21-\x7e]{1,255}$/.test(e.id) || typeof e.type !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/.test(e.type)) throw new Error("Invalid webhook event");
+  return normalizedJsonDto({ id: e.id, type: e.type, payload: e.payload }) as WebhookEvent;
+}
+/** Pure mapping is separate from this scoped product operation. Fixed retry/retention policy. */
+export function defineWebhookWork<Dependencies extends object>(definition: {
+  readonly database: keyof Dependencies & string;
+  readonly id: string;
+  readonly version: number;
+  readonly integration: null | {
+    readonly target: keyof Dependencies & string;
+    readonly operation: string;
+    map(input: Readonly<WebhookEvent>): unknown;
+  };
+  complete(input: Readonly<WebhookEvent>, commands: ScopedCommands, caller: Readonly<{ subject?: string }>, remote: Readonly<{ status: number; body: unknown }> | null): Promise<void>;
+}): WebhookWork {
+  if (!definition || Object.keys(definition).sort().join() !== "complete,database,id,integration,version" || Object.keys(definition).some((k) => !("value" in (Object.getOwnPropertyDescriptor(definition, k) ?? {})))) throw new Error("Invalid webhook declaration");
+  // Snapshot the registered callbacks; later mutation cannot change a configured capability.
+  const { database, id, version, complete } = definition;
+  const integration = definition.integration && Object.freeze({ ...definition.integration });
+  if (integration && (Object.keys(integration).sort().join() !== "map,operation,target" || typeof integration.map !== "function")) throw new Error("Invalid webhook integration");
+  const work = defineDurableWork<StoredEvent, Dependencies>({
+    database, id, version, retentionSeconds: 604800, maxAttempts: 4,
+    integration: integration && { ...integration, map: (input) => integration.map(event({id: input.id, type: input.type, payload: input.payload})) },
+    validate(input) {
+      const e = input as StoredEvent;
+      if (!e || Object.keys(e).sort().join() !== "contentHash,id,payload,type" || typeof e.contentHash !== "string" || !/^[a-f0-9]{64}$/.test(e.contentHash)) throw new Error("Invalid webhook input");
+      return { ...event({id: e.id, type: e.type, payload: e.payload}), contentHash: e.contentHash };
+    },
+    complete: (input, commands, caller, remote) => complete(event({id: input.id, type: input.type, payload: input.payload}), commands, caller, remote),
+  });
+  protectWebhookInbox(work);
+  const handle = Object.freeze({}) as WebhookWork;
+  declarations.set(handle, work as unknown as DurableWork<unknown, object>);
+  return handle;
+}
+export function validateWebhookBinding(work: unknown, properties: readonly string[], targets: readonly string[]) {
+  if (!work || typeof work !== "object" || !declarations.has(work)) throw new Error("Webhook receiver requires defineWebhookWork; migrate explicitly");
+  validateDurableWorkBinding(webhookWorkEngine(work), properties, targets);
+}
+export function webhookRoutes<Dependencies extends object>(options: {
+  routes: HttpRoutes;
+  module: string;
+  dependencies: Dependencies;
+  work: WebhookWork;
+  map(input: unknown): WebhookEvent;
+  verify(timestamp: unknown, signature: unknown, body: Uint8Array, window: number): boolean;
+  bodyLimitBytes: HttpBodyLimit;
+  replayWindowSeconds: number;
+}) {
+  if (!declarations.has(options.work) || ![1024, 16384, 65536].includes(options.bodyLimitBytes) || !Number.isInteger(options.replayWindowSeconds) || options.replayWindowSeconds < 30 || options.replayWindowSeconds > 300) throw new Error("Invalid webhook binding");
+  options.routes.route({method: "POST", url: `/modules/${options.module}`, rawBody: true, bodyLimit: options.bodyLimitBytes, async handler(request, reply) {
+    const bytes = request.rawBody;
+    if (!bytes || bytes.length > options.bodyLimitBytes) throw new HttpError(413, "WEBHOOK_BODY_LIMIT", "Request body too large.");
+    if (!options.verify(request.headers["x-jeeves-timestamp"], request.headers["x-jeeves-signature"], bytes, options.replayWindowSeconds)) throw new HttpError(401, "WEBHOOK_AUTHENTICATION", "Webhook authentication refused.");
+    let mapped: WebhookEvent;
+    try {
+      // Authentication precedes UTF-8 decoding, JSON parsing and every product callback.
+      const text = bytes.toString("utf8");
+      if (!Buffer.from(text, "utf8").equals(bytes)) throw new Error("Invalid UTF-8");
+      const decoded = normalizedJsonDto(JSON.parse(text));
+      mapped = withLocalPolicy(() => {
+        const value = options.map(decoded);
+        if (value && typeof (value as unknown as { then?: unknown }).then === "function") { void Promise.resolve(value).catch(() => {}); throw new Error("Async mapper"); }
+        return event(normalizedJsonDto(value));
+      });
+    } catch { throw new HttpError(400, "WEBHOOK_EVENT", "Invalid webhook event."); }
+    await webhookWorkEngine(options.work).accept(options.dependencies, {key: mapped.id, input: {...mapped, contentHash: createHash("sha256").update(bytes).digest("hex")}});
+    // Same immutable acceptance for lost-2xx redeliveries, even after processing settles.
+    reply.code(202);
+    return { accepted: true, id: mapped.id };
+  }});
+}

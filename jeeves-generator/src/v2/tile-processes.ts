@@ -331,10 +331,10 @@ function reportRow(
     templates: [
       ...mounts.flatMap((mount) => (mount.template ? [mount.template] : [])),
       ...process.stubs
-        .filter((s) => s.role === "scheduled-task")
+        .filter((s) => ["scheduled-task", "webhook-receiver"].includes(s.role))
         .map((s) => ({
           selection: s.selection,
-          template: "scheduled-task",
+          template: s.role,
           level: "mounted" as const,
         })),
     ],

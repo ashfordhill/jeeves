@@ -1,0 +1,228 @@
+$ pnpm db:up && playwright test -c jeeves/playwright.config.ts
+$ docker compose -f jeeves/compose.yaml up -d --wait
+ Container jeeves-postgres-1 Running 
+ Container jeeves-postgres-1 Waiting 
+ Container jeeves-postgres-1 Healthy 
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3502452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3502533) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3505154) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 84 tests using 3 workers
+
+(node:3506542) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3506548) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3506545) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [chromium] › jeeves/apps/web/e2e/blueprint-chat.spec.ts:4:1 › serves the read-only blueprint (3.4s)
+  ✓   1 [chromium] › jeeves/apps/web/e2e/blueprint-chat.spec.ts:52:1 › shows pattern lookup and unsupported obligations without changing the design (3.8s)
+  ✓   3 [chromium] › jeeves/apps/web/e2e/blueprint-chat.spec.ts:41:1 › applies a chat turn from the scripted model as one edit (3.9s)
+  ✓   4 [chromium] › jeeves/apps/web/e2e/blueprint-chat.spec.ts:72:1 › adds a tile through chat with the lane commands (3.9s)
+  ✓   6 [chromium] › jeeves/apps/web/e2e/blueprint-chat.spec.ts:139:1 › names a refused command, keeps nothing of its batch, and saves the corrected one (V3-19) (4.0s)
+  ✓   5 [chromium] › jeeves/apps/web/e2e/blueprint-chat.spec.ts:90:1 › saves a warned proposal with readable review details and one mouse Undo (4.2s)
+  ✓   7 [chromium] › jeeves/apps/web/e2e/blueprint-chat.spec.ts:168:1 › offers Anthropic in Settings with a key field, and saves it as the design model (3.7s)
+  ✓   9 [chromium] › jeeves/apps/web/e2e/cache-reader.spec.ts:93:1 › RG14 refuses HTTP reader exposure on an internal host by mouse (8.0s)
+  ✓   8 [chromium] › jeeves/apps/web/e2e/cache-reader.spec.ts:6:1 › RG13 selects freshness/exposure and connects a callable cache read by mouse (9.0s)
+  ✓  11 [chromium] › jeeves/apps/web/e2e/canvas.spec.ts:18:1 › shows the TinyURL study on the lane canvas (2.9s)
+  ✓  12 [chromium] › jeeves/apps/web/e2e/canvas.spec.ts:53:1 › New project offers the marketplace study (3.9s)
+  ✘  10 [chromium] › jeeves/apps/web/e2e/callable.spec.ts:8:1 › Custom call connects only to complete Favorites by mouse and adds no capability endpoint (11.9s)
+(node:3511613) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  13 [chromium] › jeeves/apps/web/e2e/canvas.spec.ts:99:1 › New project offers the YouTube study (5.3s)
+  ✓  14 [chromium] › jeeves/apps/web/e2e/canvas.spec.ts:198:1 › preserves inferred access in source and blueprint without exposing ineffective writer controls (6.1s)
+  ✓  15 [chromium] › jeeves/apps/web/e2e/connect.spec.ts:40:1 › C, V, Escape and the toolbar's two tools switch modes without touching the design (3.3s)
+  ✓  16 [chromium] › jeeves/apps/web/e2e/connect.spec.ts:84:1 › links two tiles by dragging; the design gains exactly that link, and Undo (5.5s)
+  ✓  18 [chromium] › jeeves/apps/web/e2e/connect.spec.ts:174:1 › removes a line from its menu in Connect mode, then Undo; the user's lines have none (8.3s)
+  ✓  17 [chromium] › jeeves/apps/web/e2e/connect.spec.ts:137:1 › a refused end fades with its reason, and nothing changes (8.8s)
+  ✓  19 [chromium] › jeeves/apps/web/e2e/connect.spec.ts:217:1 › a click selects in Connect mode, and dragging empty paper pans in both modes (7.3s)
+  ✓  20 [chromium] › jeeves/apps/web/e2e/connect.spec.ts:248:1 › connects containers from anywhere in the Detailed view (6.4s)
+  ✓  21 [chromium] › jeeves/apps/web/e2e/connection-dots.spec.ts:149:1 › at the fit, a module connects from anywhere in its dot's hit area (7.3s)
+  ✓  22 [chromium] › jeeves/apps/web/e2e/connection-dots.spec.ts:223:1 › a dot drag held past the canvas edge pans, then connects on release (11.2s)
+  ✓  23 [chromium] › jeeves/apps/web/e2e/connection-dots.spec.ts:286:1 › a tile drag held past the canvas edge pans, then links on release (11.9s)
+  ✓  25 [chromium] › jeeves/apps/web/e2e/detailed-view.spec.ts:265:1 › a module row opens its module and marks only its own row and its own lines (10.5s)
+  ✓  26 [chromium] › jeeves/apps/web/e2e/detailed-view.spec.ts:425:1 › Choose relationship offers a relationship once, and port marks follow their lines (6.4s)
+  ✓  24 [chromium] › jeeves/apps/web/e2e/detailed-view.spec.ts:111:1 › Detailed draws YouTube's modules by mouse, maps lines to relationships and leaves the design alone (25.0s)
+  ✓  28 [chromium] › jeeves/apps/web/e2e/detailed-view.spec.ts:533:1 › a new project opens in Detailed, on the left, and an old Overview choice reads as Simple (8.8s)
+  ✓  27 [chromium] › jeeves/apps/web/e2e/detailed-view.spec.ts:504:1 › a Detailed line's Remove link goes through the relationship declarations confirmation (12.1s)
+  ✓  31 [chromium] › jeeves/apps/web/e2e/diagram-export.spec.ts:68:1 › canonical process export retains ownership; stale revisions, missing fonts and cancelled captures refuse downloads (10.2s)
+  ✓  30 [chromium] › jeeves/apps/web/e2e/diagram-export.spec.ts:29:1 › PNG contains full YouTube routes after mouse selection, pan, zoom and dark mode without changing state (12.4s)
+  ✓  32 [chromium] › jeeves/apps/web/e2e/diagram-export.spec.ts:124:1 › PNG draws the studio glyphs in their colours and no black shape (the loader arrow, an icon) (8.1s)
+  ✓  29 [chromium] › jeeves/apps/web/e2e/detailed-view.spec.ts:566:1 › export follows the view: Detailed says so, and the Simple view's bytes don't change (22.8s)
+  ✓  33 [chromium] › jeeves/apps/web/e2e/edit-history.spec.ts:5:1 › a historical preset design autosaves its useful TTL and pool controls through Undo, Redo and reload (15.8s)
+  ✓  34 [chromium] › jeeves/apps/web/e2e/edit-history.spec.ts:97:1 › legacy unsupported settings stay hidden and unchanged while names/history remain usable (9.9s)
+  ✓  35 [chromium] › jeeves/apps/web/e2e/edit-history.spec.ts:130:1 › Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y press Undo and Redo, but not in a field or under a dialog (10.1s)
+  ✓  37 [chromium] › jeeves/apps/web/e2e/generation.spec.ts:139:1 › normal TinyURL source reports unsupported and keeps the mouse canvas usable (5.7s)
+  ✓  38 [chromium] › jeeves/apps/web/e2e/generation.spec.ts:184:1 › mouse exports the selected supported v2 source and rejects changed ZIP bytes (11.0s)
+  ✓  36 [chromium] › jeeves/apps/web/e2e/generation.spec.ts:21:1 › mouse previews and downloads the actual partial scaffold; stale source and project switch cannot download (19.9s)
+  ✓  39 [chromium] › jeeves/apps/web/e2e/ids-follow-names.spec.ts:49:1 › renaming a new Worker and its module preserves runtime IDs, selection and Undo (13.8s)
+  ✓  40 [chromium] › jeeves/apps/web/e2e/ids-follow-names.spec.ts:155:1 › renaming a study's tile keeps its ID (6.7s)
+  ✓  42 [chromium] › jeeves/apps/web/e2e/inspector.spec.ts:94:1 › the system page: Name, Description, then warnings; an action lists its lines (7.2s)
+  ✓  43 [chromium] › jeeves/apps/web/e2e/logical-ownership.spec.ts:6:1 › chooses shared logical ownership and precise product permissions by mouse (8.1s)
+  ✓  41 [chromium] › jeeves/apps/web/e2e/inspector.spec.ts:31:1 › a tile is one page: Name, Description and Modules autosave, grow and undo (10.0s)
+  ✓  45 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:245:1 › connects a module from its dot, refuses with the reason, and disconnects from its line's menu (13.0s)
+  ✓  46 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:331:1 › the Cache reader's loader is a row-to-row drag, drawn as a gutter arrow (13.8s)
+  ✘  44 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:158:1 › adds a module of every menu kind to a Service and a Worker by mouse (20.8s)
+  ✓  47 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:402:1 › looking, hovering and cancelled drags change neither the design nor the blueprint (7.8s)
+(node:3525932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  48 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:463:1 › a module added to a study tile shows its kept Service identity as Refused (7.9s)
+  ✓  50 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:498:1 › an Auth guard is a Template once it verifies an Identity: Sign-in Required, or Optional by mouse (11.2s)
+  ✓  51 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:677:1 › a cache read built by mouse previews its template for the lead and its part (15.2s)
+  ✓  49 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:561:1 › Favorites is a Template beside a Required Auth guard; its items are a row-to-row drag onto a Data access (19.5s)
+  ✓  53 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:857:1 › with Runnable processes on, Preview lists the versioned product migration scaffold (9.7s)
+  ✓  52 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:748:1 › Runnable processes is saved by its checkbox: Preview lists the processes and loops, Undo unticks it and a study refuses it (16.0s)
+  ✓  54 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:914:1 › with Runnable processes on, a stub tile's Options show what its process runs, typing saves on the tile and Undo restores it (10.7s)
+  ✓  55 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:986:1 › Generate project lists each module's status and previews its stubs (7.4s)
+  ✓  56 [chromium] › jeeves/apps/web/e2e/module-menu.spec.ts:60:1 › an empty Service is a container with a + at its bottom; it toggles the menu and adds a module (7.0s)
+  ✓  57 [chromium] › jeeves/apps/web/e2e/module-menu.spec.ts:149:1 › the selected tile's + in Simple adds a module, clear of its kind label (6.1s)
+  ✓  58 [chromium] › jeeves/apps/web/e2e/module-menu.spec.ts:185:1 › the inspector's + opens the same menu left of the rail and adds a module (4.1s)
+  ✓  59 [chromium] › jeeves/apps/web/e2e/module-menu.spec.ts:241:1 › the link fan opens by a click, toggles and closes like the menu, and adds a tile (4.7s)
+  ✓  60 [chromium] › jeeves/apps/web/e2e/module-menu.spec.ts:278:1 › in a narrow canvas the link fan sits beside its tile, never over it (5.6s)
+  ✓  62 [chromium] › jeeves/apps/web/e2e/modules.spec.ts:192:1 › an open module is chat's selection, and its host's when it closes (3.1s)
+  ✓  61 [chromium] › jeeves/apps/web/e2e/modules.spec.ts:38:1 › module cards open a module page; Back, other selections, Remove and Undo return to its tile (8.7s)
+  ✓  63 [chromium] › jeeves/apps/web/e2e/ownership.spec.ts:16:1 › preserves one source owner, keeps canonical resource selection, refuses excess access and undoes exact removal (9.1s)
+  ✓  64 [chromium] › jeeves/apps/web/e2e/rate-limiter.spec.ts:5:1 › RG12 edits the consumed limiter settings and connects new-work admission by mouse (8.4s)
+  ✓  65 [chromium] › jeeves/apps/web/e2e/relationship-tracing.spec.ts:47:1 › selection traces YouTube relationships, ends when cleared and leaves the design alone (6.7s)
+  ✓  66 [chromium] › jeeves/apps/web/e2e/relationship-tracing.spec.ts:113:1 › a shared stem asks which relationship the mouse intends (4.3s)
+  ✓  67 [chromium] › jeeves/apps/web/e2e/relationship-tracing.spec.ts:151:1 › removing a selected tile traces its surviving neighbour and Undo restores the route (4.4s)
+  ✓  68 [chromium] › jeeves/apps/web/e2e/remove.spec.ts:3:1 › the user's line to an action has no menu, and Delete leaves it (3.3s)
+  ✓  69 [chromium] › jeeves/apps/web/e2e/remove.spec.ts:33:1 › removes a tile from its menu with the tile it cuts off, and undoes (3.5s)
+  ✓  72 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:39:1 › clicks the link tab, then a kind, to add a linked tile (3.7s)
+  ✓  71 [chromium] › jeeves/apps/web/e2e/scheduled-task.spec.ts:120:1 › RG16 creates an independent scheduled Worker from its lane menu by mouse (7.9s)
+  ✓  73 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:73:1 › greys the kinds the rules refuse there, with the reason (3.0s)
+  ✓  70 [chromium] › jeeves/apps/web/e2e/scheduled-task.spec.ts:21:1 › RG16 edits both task intervals and connects a queue-free timer Worker by mouse with export parity (9.8s)
+  ✓  74 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:104:1 › a greyed kind's tip never hides the kind below it (3.8s)
+  ✓  75 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:127:1 › a link tab pulled and released on a tile changes nothing (3.5s)
+  ✓  77 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:217:1 › builds both actions from a blank design (4.2s)
+  ✓  76 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:143:1 › an action's link tab adds an entry; a drag in Connect mode adds one too (6.2s)
+  ✓  78 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:285:1 › creates each of the eleven kinds by mouse, with its icon and label, and Undo removes one (9.4s)
+  ✓  79 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:404:1 › a tile takes five links and refuses a sixth, and no line crosses a tile (7.3s)
+  ✘  82 [chromium] › jeeves/apps/web/e2e/webhook.spec.ts:20:1 › RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity (30.4s)
+(node:3528907) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  83 [chromium] › jeeves/apps/web/e2e/workload.spec.ts:5:1 › workload links fix private-network generation refusal by mouse without a user Sign-in (8.2s)
+  ✓  84 [chromium] › jeeves/apps/web/e2e/workload.spec.ts:91:1 › Auth guard adds workload identity by mouse after its user identity is connected (5.3s)
+  ✓  80 [chromium] › jeeves/apps/web/e2e/v2-rebuild.spec.ts:30:1 › rebuilds YouTube v2 from a blank project by mouse (1.8m)
+  ✓  81 [chromium] › jeeves/apps/web/e2e/v3-build.spec.ts:28:1 › designs YouTube v3 from a blank project by mouse (2.2m)
+
+
+  1) [chromium] › jeeves/apps/web/e2e/callable.spec.ts:8:1 › Custom call connects only to complete Favorites by mouse and adds no capability endpoint 
+
+    Error: expect(locator).toBeChecked() failed
+
+    Locator:  getByRole('checkbox', { name: 'Runnable processes', exact: true })
+    Expected: checked
+    Received: unchecked
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeChecked" getByRole('checkbox', { name: 'Runnable processes', exact: true }) with timeout 5000ms
+      - waiting for getByRole('checkbox', { name: 'Runnable processes', exact: true })
+        14 × locator resolved to <input type="checkbox"/>
+           - unexpected value "unchecked"
+
+
+      62 |     await expect(runnable).not.toBeChecked();
+      63 |     await runnable.click();
+    > 64 |     await expect(runnable).toBeChecked();
+         |                            ^
+      65 |     await expect
+      66 |       .poll(
+      67 |         async () =>
+        at /home/ash/github/jeeves/jeeves/apps/web/e2e/callable.spec.ts:64:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    jeeves/test-results/callable-Custom-call-conne-b40cc-adds-no-capability-endpoint-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: jeeves/test-results/callable-Custom-call-conne-b40cc-adds-no-capability-endpoint-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    jeeves/test-results/callable-Custom-call-conne-b40cc-adds-no-capability-endpoint-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace jeeves/test-results/callable-Custom-call-conne-b40cc-adds-no-capability-endpoint-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:158:1 › adds a module of every menu kind to a Service and a Worker by mouse 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  locator('.studio-inspector').getByLabel('Name', { exact: true })
+    Expected: "Webhook receiver"
+    Received: "Microservice"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" locator('.studio-inspector').getByLabel('Name', { exact: true }) with timeout 5000ms
+      - waiting for locator('.studio-inspector').getByLabel('Name', { exact: true })
+        14 × locator resolved to <input aria-invalid="false" value="Microservice" id="_r_4r_-element.name"/>
+           - unexpected value "Microservice"
+
+
+      140 |   await addModuleFrom(page, tile(page, host), kind);
+      141 |   const name = inspector(page).getByLabel("Name", { exact: true });
+    > 142 |   await expect(name).toHaveValue(kind);
+          |                      ^
+      143 |   await expect(name).toBeFocused();
+      144 |   await expect(inspector(page).getByRole("button", { name: `Back to ${host}` })).toBeVisible();
+      145 | }
+        at addModule (/home/ash/github/jeeves/jeeves/apps/web/e2e/module-authoring.spec.ts:142:22)
+        at /home/ash/github/jeeves/jeeves/apps/web/e2e/module-authoring.spec.ts:192:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    jeeves/test-results/module-authoring-adds-a-mo-dd1b0-rvice-and-a-Worker-by-mouse-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: jeeves/test-results/module-authoring-adds-a-mo-dd1b0-rvice-and-a-Worker-by-mouse-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    jeeves/test-results/module-authoring-adds-a-mo-dd1b0-rvice-and-a-Worker-by-mouse-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace jeeves/test-results/module-authoring-adds-a-mo-dd1b0-rvice-and-a-Worker-by-mouse-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › jeeves/apps/web/e2e/webhook.spec.ts:20:1 › RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: apiRequestContext.delete: Test timeout of 30000ms exceeded.
+
+      119 |     expect(tinyurl).not.toBe(id);
+      120 |   } finally {
+    > 121 |     await page.request.delete(`/api/projects/${id}`);
+          |                              ^
+      122 |   }
+      123 | });
+      124 |
+        at /home/ash/github/jeeves/jeeves/apps/web/e2e/webhook.spec.ts:121:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace jeeves/test-results/webhook-RG17-connects-and--60e62-ith-blueprint-export-parity-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › jeeves/apps/web/e2e/callable.spec.ts:8:1 › Custom call connects only to complete Favorites by mouse and adds no capability endpoint 
+    [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:158:1 › adds a module of every menu kind to a Service and a Worker by mouse 
+    [chromium] › jeeves/apps/web/e2e/webhook.spec.ts:20:1 › RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity 
+  81 passed (6.1m)
+[ELIFECYCLE] Command failed with exit code 1.

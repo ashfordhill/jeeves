@@ -264,6 +264,10 @@ export function stubClients(
     settingReads.push(`configuredSettings[${text(id)}] = ${read}`);
     types.push(`  ${text(id)}: ${alias};`);
     const properties = stubProperties(module, stub.role === "loop").filter((item) => !item.input);
+    const workValue =
+      stub.role === "webhook-receiver"
+        ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork)`
+        : `(${pascal(id)}Module as { durableWork?: unknown }).durableWork`;
     const workDatabases = properties
       .filter((item) => item.type === "DatabaseReadWriter")
       .map((item) => item.property);
@@ -277,6 +281,16 @@ export function stubClients(
         name: stub.role === "scheduled-task" ? "startScheduledTask" : "startDurableWork",
       });
       imports.push({ from: tileProcess, name: "createFailureLog" });
+      if (stub.role === "webhook-receiver") {
+        imports.push({
+          from: "../runtime/webhook.ts",
+          name: "validateWebhookBinding",
+        });
+        imports.push({ from: "../runtime/webhook.ts", name: "webhookWorkEngine" });
+        localChecks.push(
+          `validateWebhookBinding((${pascal(id)}Module as { durableWork?: unknown }).durableWork, ${JSON.stringify(workDatabases)}, ${JSON.stringify(properties.filter((item) => item.type === "ServiceTarget").map((item) => item.property))});`,
+        );
+      }
       if (stub.role === "scheduled-task") {
         imports.push({ from: "../runtime/durable-work.ts", name: "validateScheduledTaskBinding" });
         imports.push({ from: "../modules/dependencies.ts", name: "scheduledTasks" });
@@ -285,7 +299,7 @@ export function stubClients(
         );
       }
       localChecks.push(
-        `validateDurableWorkBinding((${pascal(id)}Module as { durableWork?: unknown }).durableWork, ${JSON.stringify(workDatabases)}, ${JSON.stringify(properties.filter((item) => item.type === "ServiceTarget").map((item) => item.property))});`,
+        `validateDurableWorkBinding(${workValue}, ${JSON.stringify(workDatabases)}, ${JSON.stringify(properties.filter((item) => item.type === "ServiceTarget").map((item) => item.property))});`,
       );
     } else
       localChecks.push(
@@ -407,7 +421,7 @@ export function stubClients(
               section: "database",
               name: "productDatabaseClient",
               call: `await productDatabaseClient(scope, probe, preparedProduct[${text(`product:${target.element}:${module.component}`)}])`,
-              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation, work: (${pascal(id)}Module as { durableWork?: unknown }).durableWork, owner: ${text(process.productAccess?.find((entry) => entry.resource === store.element)?.owner ?? process.tile)} })`,
+              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation, work: ${workValue}, owner: ${text(process.productAccess?.find((entry) => entry.resource === store.element)?.owner ?? process.tile)} })`,
               check: {
                 name: "databaseEndpoint",
                 call: `databaseEndpoint(${text(store.resource)})`,
@@ -634,7 +648,11 @@ export function stubClients(
           const interval = start.startsWith("await")
             ? `, scheduledTasks[${text(stub.selection)}].intervalSeconds`
             : "";
-          return `${start}((${pascal(id)}Module as { durableWork?: unknown }).durableWork, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields)${interval});`;
+          const engine =
+            stub.role === "webhook-receiver"
+              ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork)`
+              : `(${pascal(id)}Module as { durableWork?: unknown }).durableWork`;
+          return `${start}(${engine}, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields)${interval});`;
         }),
       started: [],
       routes: [],

@@ -150,3 +150,7 @@ DB-time interval identities, one unfinished tick across copies and a scoped prod
 Queue-free timer Workers keep explicit logical ownership and precise credentials. Retry/fence
 bookkeeping stays private. Native competing-worker kill proof remains a later checkpoint;
 cron/cloud/workflow scheduling and RG15's unsupported remote authority/result cases remain unavailable.
+
+### RG17 authenticated generic inbox
+
+RG17 closes generic HMAC accept/store/process through the existing protected052 durable work engine. Generated verifier and acceptance remain private; the separate pure mapper and scoped completion body are product work. Stripe/other provider signatures/SDKs, arbitrary verifier hooks, public replay/admin UI, independent receiver-to-Worker handoff and forever dedupe remain unsupported. Completed retention is seven days; remote authority/checkpoint limits remain RG15’s. [Evidence and protocol](plans/reliable-generation/evidence/rg17/README.md).

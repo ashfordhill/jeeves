@@ -639,3 +639,7 @@ missed intervals with one unfinished tick across copies. Product completion rema
 handler scaffold. Failed/unknown work halts admission; completed retention is fixed at seven days.
 A Worker added from a lane starts with this module and needs no queue. A Worker without a task
 still takes message work from a queue/topic. Logical ownership and exact grants remain explicit.
+
+### Authenticated webhook receiver
+
+`webhook-receiver` (**Webhook receiver**, inbox icon) is installed in Service only, with writable owned PostgreSQL state and Runnable processes. It generates bounded raw ingress, private generic HMAC verification, pure mapping scaffold and an opaque durable processing declaration. Protected052 records provide accept/store/process, recovery/fencing and completed-only retention; no separate inbox framework or provider SDK is added. Two normal controls set body bytes and signature window. Required-user host guards refuse composition. [Exact generic protocol and limits](../docs/plans/reliable-generation/evidence/rg17/README.md).

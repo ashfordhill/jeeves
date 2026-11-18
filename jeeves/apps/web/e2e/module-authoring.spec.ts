@@ -82,6 +82,7 @@ const SERVICE = [
   ["Search query", "Generated"],
   ["Favorites", "Generated"],
   ["Scheduled task", "Generated"],
+  ["Webhook receiver", "Generated"],
   ["Event publisher", "Building block"],
   ["Event consumer", "You write it"],
   ["Multipart uploads", "Generated"],
@@ -154,7 +155,9 @@ const arrowPoint = (arrow: Locator) =>
     return { x: screen.x, y: screen.y };
   });
 
-test("adds a module of every menu kind to a Service and a Worker by mouse", async ({ page }) => {
+test("adds compatible module kinds to a Service and Worker and refuses a Required-user webhook host by mouse", async ({
+  page,
+}) => {
   test.slow();
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(String(error)));
@@ -186,22 +189,32 @@ test("adds a module of every menu kind to a Service and a Worker by mouse", asyn
     await expect(moduleMenu(page)).toHaveCount(0);
     expect((await saved(page, id)).architecture.studio.components ?? []).toEqual([]);
 
-    // Every kind, in the Simple view: each is one step and opens unconnected, as a stub.
-    for (const [index, [kind]] of SERVICE.entries()) {
+    // Compatible kinds open as unconnected stubs. The already-added Required guard refuses
+    // webhook composition; the isolated receiver's successful addition is covered by RG17.
+    const compatibleService = SERVICE.filter(([kind]) => kind !== "Webhook receiver");
+    let serviceCount = 0;
+    for (const [kind] of SERVICE) {
+      if (kind === "Webhook receiver") {
+        await addModuleFrom(page, tile(page, "Microservice"), kind);
+        await expect(page.getByRole("alert")).toContainText("Required user Auth guard");
+        expect((await modules(page, id, "microservice")).length).toBe(serviceCount);
+        continue;
+      }
+      serviceCount++;
       await addModule(page, "Microservice", kind as string);
       await expect(status(page).locator("strong")).toHaveText("You write it");
       await expect
         .poll(async () => (await modules(page, id, "microservice")).length)
-        .toBe(index + 1);
+        .toBe(serviceCount);
     }
     const added = await modules(page, id, "microservice");
-    expect(added.map((item) => item.name)).toEqual(SERVICE.map(([kind]) => kind));
+    expect(added.map((item) => item.name)).toEqual(compatibleService.map(([kind]) => kind));
     expect((await saved(page, id)).schemaVersion).toBe(3);
     // The tile's page lists them as cards.
     await inspector(page).getByRole("button", { name: "Back to Microservice" }).click();
     await expect(
       inspector(page).getByRole("list", { name: "Modules", exact: true }).getByRole("button"),
-    ).toHaveCount(SERVICE.length);
+    ).toHaveCount(compatibleService.length);
 
     // A Worker, in the Detailed view: the `+` in its container, selected or not; its sixteen
     // kinds, each a new row.

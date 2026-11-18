@@ -249,10 +249,11 @@ describe("module catalog records", () => {
       favorites: ["favorites"],
       "rate-limiter": ["rate-limiter"],
       "scheduled-task": ["scheduled-task"],
+      "webhook-receiver": ["webhook-receiver"],
       "youtube-upload": ["custom"],
       "youtube-watch": ["custom"],
       "youtube-search": ["custom"],
-      "module-stub": 20,
+      "module-stub": 21,
     });
     expect(generationCapabilities["module-stub"].role).toBeUndefined();
     expect(generationCapabilities["module-stub"].resources).toEqual([]);

@@ -1,0 +1,127 @@
+Actual emitted files: 67 [
+  '.dockerignore',
+  '.gitignore',
+  '.jeeves/extensions.md',
+  '.jeeves/inputs/design.json',
+  '.jeeves/manifest.json',
+  '.jeeves/normalized.json',
+  '.jeeves/report.json',
+  'Dockerfile',
+  'README.md',
+  'compose.yaml',
+  'diagnostics/generation.json',
+  'ffmpeg-os.lock',
+  'infra/edge/nginx.conf',
+  'infra/local.json',
+  'infra/postgres/event-state/000-foundation.sql',
+  'infra/postgres/event-state/050-jeeves-idempotency.sql',
+  'infra/postgres/event-state/051-jeeves-local-operations.sql',
+  'infra/postgres/event-state/052-jeeves-durable-work.sql',
+  'infra/postgres/event-state/products.json',
+  'infra/postgres/event-state/products/commands/example.sql',
+  'infra/postgres/event-state/products/migrations/p_events_api_owner/0001-initial.sql',
+  'infra/postgres/event-state/products/queries/example.sql',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'scripts/bootstrap.mjs',
+  'scripts/broker-init.mjs',
+  'scripts/check-extensions.mjs',
+  'scripts/common.mjs',
+  'scripts/local.mjs',
+  'scripts/migrate.mjs',
+  'scripts/products.mjs',
+  'scripts/setup.mjs',
+  'scripts/status.mjs',
+  'scripts/storage-config.mjs',
+  'src/contracts/index.ts',
+  'src/extension-api/index.ts',
+  'src/features/local-bindings.ts',
+  'src/http-errors.hooks.ts',
+  'src/modules/dependencies.ts',
+  'src/modules/entry.ts',
+  'src/modules/events-api/receive-events.mapping.hooks.ts',
+  'src/modules/events-api/receive-events.slots.ts',
+  'src/modules/events-api/receive-events.ts',
+  'src/processes/events-api.ts',
+  'src/runtime/admission.ts',
+  'src/runtime/durable-work.ts',
+  'src/runtime/hook-boundary.ts',
+  'src/runtime/http.ts',
+  'src/runtime/idempotency.ts',
+  'src/runtime/keys.ts',
+  'src/runtime/local-operation.ts',
+  'src/runtime/local.ts',
+  'src/runtime/module-clients.ts',
+  'src/runtime/operation.ts',
+  'src/runtime/postgres.ts',
+  'src/runtime/process.ts',
+  'src/runtime/product-contract.ts',
+  'src/runtime/product-mutation.ts',
+  'src/runtime/product-operations.ts',
+  'src/runtime/settings.ts',
+  'src/runtime/tile-http.ts',
+  'src/runtime/tile-process.ts',
+  'src/runtime/transaction.ts',
+  'src/runtime/webhook.ts',
+  'src/runtime/work-integration.ts',
+  'tsconfig.json'
+]
+Actual dependency pins: {
+  '@aws-sdk/client-s3': '3.1156.0',
+  '@aws-sdk/s3-request-presigner': '3.1156.0',
+  '@google-cloud/pubsub': '6.3.2',
+  '@opensearch-project/opensearch': '3.9.0',
+  amqplib: '2.2.0',
+  fastify: '5.12.7',
+  'hls.js': '1.7.3',
+  jose: '6.2.13',
+  pg: '8.23.1',
+  redis: '6.3.0',
+  zod: '4.5.4'
+} {
+  '@types/node': '24.19.2',
+  '@types/pg': '8.23.1',
+  typescript: '7.0.2'
+}
+✓ Lockfile passes supply-chain policies (verified 3d ago)
+Lockfile is up to date, resolution step is skipped
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/ash/.local/share/pnpm/store/v11
+  Virtual store is at:             node_modules/.pnpm
+Packages: +188
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 188, reused 188, downloaded 0, added 188, done
+
+dependencies:
++ @aws-sdk/client-s3 3.1156.0
++ @aws-sdk/s3-request-presigner 3.1156.0
++ @google-cloud/pubsub 6.3.2
++ @opensearch-project/opensearch 3.9.0
++ amqplib 2.2.0
++ fastify 5.12.7
++ hls.js 1.7.3
++ jose 6.2.13
++ pg 8.23.1
++ redis 6.3.0
++ zod 4.5.4
+
+devDependencies:
++ @types/node 24.19.2
++ @types/pg 8.23.1
++ typescript 7.0.2
+
+Done in 395ms using pnpm v12.16.1
+
+Actual scaffold extension checker / pinned TypeScript:
+$ pnpm check:extensions && tsc -p tsconfig.json
+$ node scripts/check-extensions.mjs
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+Actual product-handler extension checker / pinned TypeScript:
+$ pnpm check:extensions && tsc -p tsconfig.json
+$ node scripts/check-extensions.mjs
+Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).
+
+Compiler: Version 7.0.2
+Exact scratch directory removed

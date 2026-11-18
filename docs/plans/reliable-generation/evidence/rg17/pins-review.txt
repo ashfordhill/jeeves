@@ -1,0 +1,19 @@
+frozen-v2 80 unchanged file paths; changed: [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/runtime/admission.ts'
+]
+v2-module-design 87 unchanged file paths; changed: [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/runtime/admission.ts',
+  'src/runtime/keys.ts',
+  'src/runtime/settings.ts'
+]
+stub-stack 60 unchanged file paths; changed: [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/runtime/keys.ts',
+  'src/runtime/settings.ts'
+]
+Reviewed pins updated: guide/provenance, private webhook crypto/ring consumer and HMAC challenge classification; normalized report/dependencies unchanged

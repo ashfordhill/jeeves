@@ -51,6 +51,7 @@ export const generationBindingSchema = z.discriminatedUnion("kind", [
     identity: generationIdentitySchema,
   }),
   z.strictObject({ kind: z.literal("scheduled-task"), state: dep }),
+  z.strictObject({ kind: z.literal("webhook-receiver"), state: dep }),
   z.strictObject({ kind: z.literal("event-counter"), state: dep, events: dep }),
   z.strictObject({ kind: z.literal("search-projection"), index: dep, events: dep }),
   z.strictObject({ kind: z.literal("search-query"), index: dep }),
@@ -155,6 +156,7 @@ export function generationReferences(binding: GenerationBinding) {
       resource("cache", binding.cache, "cache");
       break;
     case "scheduled-task":
+    case "webhook-receiver":
       resource("state", binding.state, "database");
       break;
     case "event-counter":

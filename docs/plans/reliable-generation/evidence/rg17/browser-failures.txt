@@ -1,0 +1,23 @@
+Initial native browser run:81/84 pass, including TinyURL and both long mouse rebuilds.
+
+callable.spec.ts: checkbox click left Runnable processes unchecked (no later mutation request in
+retained trace). No production or test assertion/timing change is made; repeat the affected case.
+
+module-authoring.spec.ts: original all-kinds test had added a default Required Auth guard, then
+expected Webhook receiver to add successfully. The new composition refusal correctly prevented it.
+The test now asserts that explicit reason and unchanged components, while continuing to add every
+compatible kind. The separate RG17 case proves successful isolated receiver addition.
+
+webhook.spec.ts: mouse addition, state connection, both settings, screenshot and blueprint checks
+completed. The final Required-user refusal step tried opening Add module in Connect mode, where
+that action is unavailable. The trace's last action is waitForSelector on Events API's Add module.
+The test now switches back to Pointer by mouse before adding the incompatible guard. No timeout
+or Board assertion changed. Test timeout interrupted finally cleanup; the exact RG17 project
+c1040c10-175b-4bb6-9632-59dd9363b6b2 was deleted through the active4301 e2e API; its response succeeded.
+Only this owned interrupted project was removed. Targeted run repeats all three affected cases.
+
+Final namespace-source affected run: callable passed; webhook failed while immediately reading the
+newly added module before the asynchronous save completed. The trace/snapshot showed the addition
+interaction, with no runtime receiver failure. The new test now awaits the actual persisted module
+through expect.poll before reading its stable ID. This adds a state assertion, not a fixed delay,
+Board/timing relaxation or production change. Repeat the affected webhook case after correction.

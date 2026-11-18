@@ -1,0 +1,16 @@
+frozen-v2: 80 paths, no additions/removals; cumulative accepted-parent to final changes:
+  .jeeves/extensions.md: 1c1b0f362ef6583d1066bd24a600df36cab73ecab20e5459cf3e5e80a61f5996 -> 23d75b42f690d18db819bad843d15bc13a19ccd8b79739f058b8cecff9a521ed
+  .jeeves/manifest.json: 3b967df4ae62fa604cdb17349e7e9066e8ba8ed287e549861f96b94be083210e -> f96ca0f3815061df8c054623197a892bb8131ffd335ea0ea11f5a41931016f42
+  src/runtime/admission.ts: 003ac615d771e9f88b2662d30698ad26dbc43234d9ee3018882aa481ecbfb6a4 -> 3d8ef14c3bc6bfb516a984687fa8a0ff0d3ec11e6ea9eaa6f39020ea60f91543
+v2-module-design: 87 paths, no additions/removals; cumulative accepted-parent to final changes:
+  .jeeves/extensions.md: 1c1b0f362ef6583d1066bd24a600df36cab73ecab20e5459cf3e5e80a61f5996 -> 23d75b42f690d18db819bad843d15bc13a19ccd8b79739f058b8cecff9a521ed
+  .jeeves/manifest.json: a205ec704c993265ffba919f354a2174b8ca55534e0d8e9bca71e5c8ecd870e5 -> 3514cd7cade7494e87d17d47b861449e909b054c591e983eeee1c356a95f088a
+  src/runtime/admission.ts: 003ac615d771e9f88b2662d30698ad26dbc43234d9ee3018882aa481ecbfb6a4 -> 3d8ef14c3bc6bfb516a984687fa8a0ff0d3ec11e6ea9eaa6f39020ea60f91543
+  src/runtime/keys.ts: 1ccdbbf2415ebb4768130e5e128c9bb5f4f357b5c67e61f46c19d2fc0c0133fb -> d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82
+  src/runtime/settings.ts: 446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90 -> b22f36fadeb0e437845754c7f227a83f3c0a7a653f27b4a6d2e4066398214630
+stub-stack: 60 paths, no additions/removals; cumulative accepted-parent to final changes:
+  .jeeves/extensions.md: 1c1b0f362ef6583d1066bd24a600df36cab73ecab20e5459cf3e5e80a61f5996 -> 23d75b42f690d18db819bad843d15bc13a19ccd8b79739f058b8cecff9a521ed
+  .jeeves/manifest.json: a8e92cb3be75345cb095c31e57971e22bf33654e715b6e557472e647ef91f654 -> 401aa439c19591ef38c2a4c6ff94150e535981eb4dd6f385cf09d397a9011d69
+  src/runtime/keys.ts: 1ccdbbf2415ebb4768130e5e128c9bb5f4f357b5c67e61f46c19d2fc0c0133fb -> d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82
+  src/runtime/settings.ts: 446723d8f62079c8f9f49913e60e24d14cc0c0adbcc50804c831d41eeffcaa90 -> b22f36fadeb0e437845754c7f227a83f3c0a7a653f27b4a6d2e4066398214630
+Cumulative differences are guide/provenance, private webhook key-ring/HMAC helpers and HMAC HTTP challenge classification. Normalized model/report and dependency versions unchanged. Frozen local-v1 has no diff.

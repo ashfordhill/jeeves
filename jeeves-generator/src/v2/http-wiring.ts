@@ -17,7 +17,12 @@ type Route = { method: string; path: string; answers: string };
 /** One import binding: a value or a type, from a path relative to `src/processes/`. */
 /** One name a process file imports; `namespace` imports the whole module as `name` (QL05: a
  * stub's file, whose `settings` export may be missing). */
-export type Import = { from: string; name: string; type?: true; namespace?: true };
+export type Import = {
+  from: string;
+  name: string;
+  type?: true;
+  namespace?: true;
+};
 /** One loop a process runs (tile process contract, section 5): the process config's `loops` row
  * its code reads, and what a message that fails there answers, for the report. */
 export type LoopRow = {
@@ -50,7 +55,11 @@ export type ProcessMount = {
   config?: [string, unknown];
   routes: Route[];
   loops: LoopRow[];
-  template?: { selection: string; template: string; level: "mounted" | "placeholder" };
+  template?: {
+    selection: string;
+    template: string;
+    level: "mounted" | "placeholder";
+  };
   /** A template's `started` line, logged just before the ready marker: what its startup ran. */
   startup?: { module: string; checks: string[] };
   hooks?: { file: V2TemplateFile; members: string[] };
@@ -116,7 +125,12 @@ export function hooksFile(
   selection: NormalizedGenerationSelection,
   lead: Lead,
   template: string,
-  body: { imports: string[]; types: string[]; factory: string[]; reached?: string },
+  body: {
+    imports: string[];
+    types: string[];
+    factory: string[];
+    reached?: string;
+  },
 ): V2TemplateFile {
   return {
     path: moduleHooksPath(process.tile, lead.module),
@@ -1115,6 +1129,46 @@ const templates: Record<
   "rate-limiter": rateLimiterMount,
 };
 
+/** Generated HMAC ingress; Required-user host compositions refuse before mounting. */
+function webhookMount(
+  process: NormalizedProcess,
+  selection: NormalizedGenerationSelection,
+  guard: string | undefined,
+): ProcessMount {
+  const module = selection.module;
+  if (!module) throw new Error("Webhook module required");
+  const id = generationLocalIdentity(module.component).local;
+  const name = `${camel(id)}Webhook`;
+  const from = `../modules/${generationLocalIdentity(process.tile).local}/${id}`;
+  return {
+    imports: [
+      { from: "../runtime/webhook.ts", name: "webhookRoutes" },
+      { from: "../modules/dependencies.ts", name: "webhookReceivers" },
+      { from: "../runtime/settings.ts", name: "privateWebhookVerifier" },
+      { from: `${from}.ts`, name: `durableWork as ${name}Work` },
+      { from: `${from}.mapping.hooks.ts`, name: `mapEvent as ${name}Map` },
+    ],
+    validation: [`const ${name}Verify = privateWebhookVerifier(${text(id)});`],
+    setup: [],
+    configure: [
+      `webhookRoutes({ routes: ${guard ? "open" : "routes"}, module: ${text(id)}, dependencies: dependencies[${text(id)}], work: ${name}Work, map: ${name}Map, verify: ${name}Verify, ...webhookReceivers[${text(selection.id)}] });`,
+    ],
+    initialize: [],
+    started: [],
+    routes: [
+      {
+        method: "POST",
+        path: `/modules/${id}`,
+        answers:
+          "202 after durable authenticated inbox acceptance; duplicate returns same acceptance; 409 WORK_IDENTITY_CONFLICT for changed bytes",
+      },
+    ],
+    loops: [],
+    service: service(),
+    local: {},
+  };
+}
+
 /** A route stub: any method on /modules/<module> and below, called with its dependencies
  * (`client-wiring.ts`), the tile's sign-in's caller and a signal bounded by its Request timeout
  * (`config.settings.requestTimeoutMs`). */
@@ -1246,6 +1300,11 @@ export function httpMounts(
   }
   const guard = tileGuard(process, selections);
   for (const stub of process.stubs) {
+    if (stub.role === "webhook-receiver") {
+      const selection = selections.find((item) => item.id === stub.selection);
+      if (selection) mounts.push(webhookMount(process, selection, guard));
+      continue;
+    }
     if (stub.role !== "route") continue;
     const selection = selections.find((item) => item.id === stub.selection);
     if (selection) mounts.push(routeStub(process, selection, guard));

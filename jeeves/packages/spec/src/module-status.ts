@@ -68,6 +68,7 @@ export const moduleTemplateNames: Record<GenerationBinding["kind"], string> = {
   favorites: "Favorites",
   "rate-limiter": "Rate limiter",
   "scheduled-task": "Scheduled task",
+  "webhook-receiver": "Webhook receiver",
   "youtube-upload": "YouTube upload",
   "youtube-watch": "YouTube watch",
   "youtube-search": "YouTube search",

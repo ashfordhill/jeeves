@@ -78,7 +78,11 @@ export type GenerationCapability = {
 export type GenerationInstalledTemplate = {
   ref: ExactContractRef;
   /** Each listed input must actually be wired into the named generated consumer. */
-  consumers: readonly { input: string; consumer: string; outputPaths: readonly string[] }[];
+  consumers: readonly {
+    input: string;
+    consumer: string;
+    outputPaths: readonly string[];
+  }[];
 };
 export type GenerationInstalledSupport = {
   runtime?: ExactContractRef;
@@ -463,6 +467,40 @@ export const generationCapabilities = freezeRecord({
       ),
     ],
     ["cache-reader"],
+  ),
+  "webhook-receiver": capability(
+    "webhook-receiver",
+    "api",
+    ["service"],
+    [{ ...store("state", "database", "read-write"), pool: "fixed" }],
+    [
+      ...host,
+      rule(
+        "webhook.bodyLimitBytes",
+        "component",
+        "bodyLimitBytes",
+        choice("1024", "16384", "65536"),
+        "webhook-receiver.bodyLimitBytes",
+        {
+          component: "webhook-receiver",
+          required: true,
+          userNeed: "Bound raw request bytes before signature verification.",
+        },
+      ),
+      rule(
+        "webhook.replayWindowSeconds",
+        "component",
+        "replayWindowSeconds",
+        integer(30, 300),
+        "webhook-receiver.replayWindowSeconds",
+        {
+          component: "webhook-receiver",
+          required: true,
+          userNeed: "Bound signed timestamp replay before acceptance.",
+        },
+      ),
+    ],
+    ["webhook-receiver"],
   ),
   "scheduled-task": capability(
     "scheduled-task",

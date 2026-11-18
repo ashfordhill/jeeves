@@ -1,0 +1,93 @@
+.nvmrc: MATCH original 73fb1b615e2043a933be1c0895cde4358036acc28d785692509b822aa53c761f
+.gitignore: MATCH original bf2a95d3826849a43bcc8493d0d517b7a55ad8e5e83dfccfab7110c944f7729c
+README.md: OWNER CONCURRENT CHANGE c123466fd79e124ae3c2025ecd444b3ff9e969cbf8e023a406585aafb67f7d3c
+AGENTS.md: MATCH original 93be3161357e473984657582e2fbdee2f9e54fe5d70b2fd3dfd93cb8da70542c
+pnpm-workspace.yaml: MATCH original ac8836b85db1bfd9a2e6dd2240efcdcd89d352b33f3625e8cd3e36091b4ac24c
+package.json: MATCH original 8cb4505922585832ded44f72249851312d609d8dcb605524eb1521f1bd9f5e99
+pnpm-lock.yaml: MATCH original 6335059bacb8c2853e4fe3d728ee89640db951e3c1d3fbfa4d9b554b310f696a
+Original28 protected paths: exact 34001-byte binary diff matches saved owner patch
+New external owner paths beyond original patch: 39; preserved/excluded
+.docs/c4-flow.svg
+.docs/chat-agent-diagrams/podcast-haiku.png
+.docs/chat-agent-diagrams/podcast-luna.png
+.docs/chat-agent-diagrams/podcast-sol.png
+.docs/chat-agent-diagrams/podcast-sonnet.png
+.docs/chat-agent-diagrams/spec-haiku.png
+.docs/chat-agent-diagrams/spec-luna.png
+.docs/chat-agent-diagrams/spec-sol.png
+.docs/chat-agent-diagrams/spec-sonnet.png
+.docs/chat-agent-diagrams/video-haiku.png
+.docs/chat-agent-diagrams/video-luna.png
+.docs/chat-agent-diagrams/video-sol.png
+.docs/chat-agent-diagrams/video-sonnet.png
+.docs/chat-assistant.png
+.docs/component-library.png
+.docs/mattermost-c1.png
+.docs/mattermost-c2.png
+.docs/mattermost-c3.png
+.docs/menu-options.gif
+.docs/mvp-flow.gif
+.docs/qrwty/click-count.png
+.docs/qrwty/evaluations/codex-2026-11-16.md
+.docs/qrwty/evaluations/evaluation-prompt.md
+.docs/qrwty/evaluations/fable-2026-11-16.md
+.docs/qrwty/identity-smell.png
+.docs/qrwty/lessons-learned-1.png
+.docs/qrwty/loc-a-and-b.png
+.docs/qrwty/parallel-agents.png
+.docs/qrwty/qrwty-diagram.png
+.docs/qrwty/whee.gif
+.docs/ui-v2/view-detailed.png
+.docs/ui-v2/view-simple.png
+.docs/user-consume-produce.gif
+.docs/youtube-v1/diagram-modified.png
+.docs/youtube-v1/diagram-original.png
+.docs/youtube-v1/watch-monster-hunter.png
+.docs/youtube-v2/loc-metrics.png
+.docs/youtube-v3/diagram.png
+.docs/youtube-v3/metadata-lots-of-connections.gif
+Frozen v1 diff bytes 0
+All original container ID/name/states match: 42
+Owner main parent f15e5af638588a058d1ec5ab7adeb13f8e8ed7ae
+1dc6a0dd4030 jeeves-youtube-v2-app-watch-1 exited
+99a6538db5a1 jeeves-youtube-v2-app-upload-1 exited
+22d7ade439c0 jeeves-youtube-v2-app-view-counter-1 exited
+6a08e570bd2e jeeves-youtube-v2-app-completion-handler-1 exited
+b13f7f42188b jeeves-youtube-v2-app-search-indexer-1 exited
+1d8158c2b6f1 jeeves-youtube-v2-app-search-1 exited
+44b4f8497527 jeeves-youtube-v2-app-edge-1 exited
+a4e326b25c51 jeeves-youtube-v2-app-transcoder-1 exited
+9c693f3a7ac3 jeeves-youtube-v2-identity-identity-1 exited
+b8a0d609292d jeeves-youtube-v2-local-broker-1 exited
+74650706e71f jeeves-youtube-v2-local-postgres-1 exited
+348a01cfd332 jeeves-youtube-v2-search-search-index-1 exited
+e6a3ce6076dc jeeves-youtube-v2-cache-metadata-cache-1 exited
+271ad65cb4fd jeeves-youtube-v2-local-objects-1 exited
+db167ecfc647 jeeves-youtube-v1-watch-1 exited
+315ffd6ea78f jeeves-youtube-v1-upload-1 exited
+bf0ee6ee70cc jeeves-youtube-v1-view-counter-1 exited
+769ae214b46c jeeves-youtube-v1-completion-handler-1 exited
+e90ad80cb0c9 jeeves-youtube-v1-transcoder-1 exited
+6056b39f8f85 jeeves-youtube-v1-search-indexer-1 exited
+713f74a859a5 jeeves-youtube-v1-search-1 exited
+63a47cac59f9 jeeves-youtube-v1-edge-1 exited
+3d52d7883379 jeeves-youtube-v1-cache-1 exited
+c9e5b6ac4158 jeeves-youtube-v1-identity-1 exited
+525f6339fe98 jeeves-youtube-v1-postgres-1 exited
+bb9baa036b2e jeeves-youtube-v1-broker-1 exited
+78866961e467 jeeves-youtube-v1-search-index-1 exited
+b79fb27061fb jeeves-youtube-v1-objects-1 exited
+15a461f56f53 excalidraw exited
+3a4574bd3547 jeeves-fieldwork-demo-inventory-web-1 exited
+7a18295e66e9 jeeves-fieldwork-demo-inventory-1 exited
+98ee62c65e7d jeeves-fieldwork-demo-inventory-instance-3-1 exited
+81fb75112238 jeeves-fieldwork-demo-inventory-instance-2-1 exited
+8ab155a42644 jeeves-fieldwork-demo-inventory-instance-1-1 exited
+cbb12f4ce70c jeeves-fieldwork-demo-inventory-db-1 exited
+3f6e105d8e9f qrwty-qrwty-web-1 exited
+6b2fa6a33c0c qrwty-qrwty-1 exited
+a57e555727fc qrwty-5174-qrwty-web-1 exited
+47fdbfc0bbc2 qrwty-5174-qrwty-1 exited
+a9f678e7893c qrwty-5174-qrwty-db-1 exited
+7be10d5a9227 qrwty-qrwty-db-1 exited
+c0fbbc2996fe jeeves-postgres-1 running

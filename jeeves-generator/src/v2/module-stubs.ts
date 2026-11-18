@@ -70,6 +70,21 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
     provides: {
       templates: [
         {
+          ref: generationTemplates["webhook-receiver"].ref,
+          consumers: [
+            {
+              input: "binding",
+              consumer: "webhook-receiver",
+              outputPaths: [dependenciesPath],
+            },
+            ...generationCapabilities["webhook-receiver"].settings.map((rule) => ({
+              input: rule.input,
+              consumer: rule.consumer,
+              outputPaths: [dependenciesPath],
+            })),
+          ],
+        },
+        {
           ref: generationTemplates["scheduled-task"].ref,
           consumers: [
             { input: "binding", consumer: "scheduled-task", outputPaths: [dependenciesPath] },
@@ -90,7 +105,7 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
     },
     render: ({ model, asset }) => {
       const selections = model.selections.filter((s) =>
-        ["module-stub", "scheduled-task"].includes(s.binding.kind),
+        ["module-stub", "scheduled-task", "webhook-receiver"].includes(s.binding.kind),
       );
       if (!selections.length) return { files: [] };
       const files: V2TemplateFile[] = [
@@ -102,6 +117,9 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
                 "jeeves-generator/templates/local-v2/assets/src/modules/dependencies.ts.template",
               ),
             ) +
+            (selections.some((s) => s.binding.kind === "webhook-receiver")
+              ? `\n/** Compiled authenticated receiver limits. */\nexport const webhookReceivers = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "webhook-receiver").map((s) => [s.id, { bodyLimitBytes: Number(s.inputs["webhook.bodyLimitBytes"]), replayWindowSeconds: Number(s.inputs["webhook.replayWindowSeconds"]) }])))} as const;\n`
+              : "") +
             (selections.some((s) => s.binding.kind === "scheduled-task")
               ? `\n/** Compiled intervals; protected work retry and fence policy stays private. */\nexport const scheduledTasks = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "scheduled-task").map((s) => [s.id, { intervalSeconds: s.inputs["task.intervalSeconds"] }])))} as const;\n`
               : ""),
@@ -253,9 +271,10 @@ export function stubProperties(module: NormalizedStubModule, loop: boolean) {
 function stubFiles(
   selection: NormalizedGenerationSelection,
   module: NormalizedStubModule,
-  role: "route" | "loop" | "scheduled-task" | undefined,
+  role: "route" | "loop" | "scheduled-task" | "webhook-receiver" | undefined,
 ) {
   const scheduled = selection.binding.kind === "scheduled-task";
+  const webhook = selection.binding.kind === "webhook-receiver";
   const route = role === "route";
   const loop = role === "loop";
   const paths = moduleStubPaths(selection.host, module.component);
@@ -350,60 +369,76 @@ function stubFiles(
     "",
   ].join("\n");
   const entry = moduleEntryName(module.component);
-  const extension = scheduled
+  const extension = webhook
     ? [
-        `// ${named} in ${line(module.hostName)}: durable scheduled reconciliation.`,
-        'import { defineDurableWork, declareSettings } from "../../extension-api/index.ts";',
+        "// @jeeves-extension: operation",
+        `// ${named}: scoped durable webhook processing.`,
+        'import { defineWebhookWork, declareSettings } from "../../extension-api/index.ts";',
         `import type { Dependencies } from "./${file(paths.slots)}";`,
         "export const settings = declareSettings({});",
-        "type Tick = { tick: string; intervalSeconds: number };",
-        "/** Keep id/version stable while work is unfinished. Interval is compiled separately. */",
-        "export const durableWork = defineDurableWork<Tick, Dependencies>({",
+        "export const durableWork = defineWebhookWork<Dependencies>({",
         `  database: ${JSON.stringify(properties.find((p) => p.slot.id === "state")?.property)},`,
-        `  id: ${JSON.stringify(module.component)}, version: 1,`,
-        "  retentionSeconds: 604800, maxAttempts: 4, integration: null,",
-        "  validate(input) {",
-        "    const tick = input as Tick;",
-        '    if (!tick || typeof tick.tick !== "string" || !/^[0-9]+$/.test(tick.tick) || !Number.isInteger(tick.intervalSeconds) || tick.intervalSeconds < 1 || tick.intervalSeconds > 604800) throw new Error("Invalid tick");',
-        "    return { tick: tick.tick, intervalSeconds: tick.intervalSeconds };",
-        "  },",
-        "/** Reconcile current product state with registered commands. This transaction may run again; no network, SQL, lease or timer handles. */",
-        "  async complete(tick, commands, caller, remote) {",
-        `    throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
+        `  id: ${JSON.stringify(module.component)}, version: 1, integration: null,`,
+        "  async complete(event, commands, caller, remote) {",
+        '    throw new Error("Not implemented: process authenticated webhook event");',
         "  },",
         "});",
         "",
       ].join("\n")
-    : [
-        `// ${named} in ${line(module.hostName)}: ${line(description)}`,
-        "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
-        ...(route
-          ? ['import type { ModuleRequest, ModuleResponse } from "../../extension-api/index.ts";']
-          : []),
-        ...(loop ? ['import type { ModuleMessage } from "../../extension-api/index.ts";'] : []),
-        `import type { Dependencies } from "./${file(paths.slots)}";`,
-        'import { declareSettings } from "../../extension-api/index.ts";',
-        "",
-        "/** The settings this module reads: text(), integer(), url(), signingKeys(purpose) or sealingKeys(purpose);",
-        " * optional(kind) for an optional one. Signing/sealing handles keep private ring files internal;",
-        " * bind every value to trusted scope and context. Protected credentials stay generated. */",
-        "export const settings = declareSettings({});",
-        "",
-        ...(route
-          ? [
-              `/** Answers any method on /modules/${generationLocalIdentity(module.component).local} and every path below it. */`,
-              `export async function ${entry}(dependencies: Dependencies, request: ModuleRequest): Promise<ModuleResponse> {`,
-            ]
-          : loop
+    : scheduled
+      ? [
+          `// ${named} in ${line(module.hostName)}: durable scheduled reconciliation.`,
+          'import { defineDurableWork, declareSettings } from "../../extension-api/index.ts";',
+          `import type { Dependencies } from "./${file(paths.slots)}";`,
+          "export const settings = declareSettings({});",
+          "type Tick = { tick: string; intervalSeconds: number };",
+          "/** Keep id/version stable while work is unfinished. Interval is compiled separately. */",
+          "export const durableWork = defineDurableWork<Tick, Dependencies>({",
+          `  database: ${JSON.stringify(properties.find((p) => p.slot.id === "state")?.property)},`,
+          `  id: ${JSON.stringify(module.component)}, version: 1,`,
+          "  retentionSeconds: 604800, maxAttempts: 4, integration: null,",
+          "  validate(input) {",
+          "    const tick = input as Tick;",
+          '    if (!tick || typeof tick.tick !== "string" || !/^[0-9]+$/.test(tick.tick) || !Number.isInteger(tick.intervalSeconds) || tick.intervalSeconds < 1 || tick.intervalSeconds > 604800) throw new Error("Invalid tick");',
+          "    return { tick: tick.tick, intervalSeconds: tick.intervalSeconds };",
+          "  },",
+          "/** Reconcile current product state with registered commands. This transaction may run again; no network, SQL, lease or timer handles. */",
+          "  async complete(tick, commands, caller, remote) {",
+          `    throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
+          "  },",
+          "});",
+          "",
+        ].join("\n")
+      : [
+          `// ${named} in ${line(module.hostName)}: ${line(description)}`,
+          "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
+          ...(route
+            ? ['import type { ModuleRequest, ModuleResponse } from "../../extension-api/index.ts";']
+            : []),
+          ...(loop ? ['import type { ModuleMessage } from "../../extension-api/index.ts";'] : []),
+          `import type { Dependencies } from "./${file(paths.slots)}";`,
+          'import { declareSettings } from "../../extension-api/index.ts";',
+          "",
+          "/** The settings this module reads: text(), integer(), url(), signingKeys(purpose) or sealingKeys(purpose);",
+          " * optional(kind) for an optional one. Signing/sealing handles keep private ring files internal;",
+          " * bind every value to trusted scope and context. Protected credentials stay generated. */",
+          "export const settings = declareSettings({});",
+          "",
+          ...(route
             ? [
-                '/** Handles each message from the queues it consumes. "Not implemented" sends the message to its queue\'s .failed; any other error is retried. */',
-                `export async function ${entry}(dependencies: Dependencies, message: ModuleMessage): Promise<void> {`,
+                `/** Answers any method on /modules/${generationLocalIdentity(module.component).local} and every path below it. */`,
+                `export async function ${entry}(dependencies: Dependencies, request: ModuleRequest): Promise<ModuleResponse> {`,
               ]
-            : [`export async function ${entry}(dependencies: Dependencies): Promise<void> {`]),
-        `  throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
-        "}",
-        "",
-      ].join("\n");
+            : loop
+              ? [
+                  '/** Handles each message from the queues it consumes. "Not implemented" sends the message to its queue\'s .failed; any other error is retried. */',
+                  `export async function ${entry}(dependencies: Dependencies, message: ModuleMessage): Promise<void> {`,
+                ]
+              : [`export async function ${entry}(dependencies: Dependencies): Promise<void> {`]),
+          `  throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
+          "}",
+          "",
+        ].join("\n");
   const linkPaths = module.slots.flatMap((slot) =>
     slot.connections.map((c) => pointer(c.sourcePath)),
   );
@@ -414,6 +449,24 @@ function stubFiles(
       ownership: "generated-scaffold" as const,
       sourcePaths: [selectionPath, modulePath, ...linkPaths],
     },
+    ...(webhook
+      ? [
+          {
+            path: paths.module.replace(/\.ts$/, ".mapping.hooks.ts"),
+            content: [
+              "// @jeeves-extension: policy",
+              'import type { WebhookEvent } from "../../extension-api/index.ts";',
+              "/** Pure mapping of authenticated bounded JSON. Validate product payload and stable id/type. */",
+              "export function mapEvent(input: unknown): WebhookEvent {",
+              '  throw new Error("Not implemented: map authenticated webhook event");',
+              "}",
+              "",
+            ].join("\n"),
+            ownership: "generated-extension" as const,
+            sourcePaths: [selectionPath, modulePath],
+          },
+        ]
+      : []),
     {
       path: paths.module,
       content: extension,

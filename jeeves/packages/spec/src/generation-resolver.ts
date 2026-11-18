@@ -168,7 +168,12 @@ export type NormalizedProcessSetting = {
 export type NormalizedProcess = {
   tile: string;
   /** Explicit issuer selection, independent of user Sign-in. Client/audience IDs use stable IDs. */
-  workload?: { identity: string; client: string; audience: string; sourcePaths: Path[] };
+  workload?: {
+    identity: string;
+    client: string;
+    audience: string;
+    sourcePaths: Path[];
+  };
   serviceCalls?: {
     module: string;
     target: string;
@@ -199,7 +204,7 @@ export type NormalizedProcess = {
   stubs: {
     module: string;
     selection: string;
-    role: "loop" | "route" | "library" | "scheduled-task";
+    role: "loop" | "route" | "library" | "scheduled-task" | "webhook-receiver";
     /** A loop stub's queues, one loop each (section 5): the queue tile with its saved mode and
      * provider, and the module link that consumes it. */
     consumes?: NormalizedLoopQueue[];
@@ -685,13 +690,28 @@ export function resolveGeneration(
         .map((policy) => structuredClone(policy)),
     };
     normalized.push(row);
-    if (selection.binding.kind === "scheduled-task" && !generation.processes)
+    if (
+      selection.binding.kind === "webhook-receiver" &&
+      studio?.components?.some(
+        (c) =>
+          c.host === host && c.settings.kind === "auth-guard" && c.settings.signIn !== "optional",
+      )
+    )
+      report(
+        "CONFIG_INVALID",
+        [...base, "target"],
+        "Webhook HMAC ingress is incompatible with a Required user Auth guard; use a separate Service.",
+      );
+    if (
+      ["scheduled-task", "webhook-receiver"].includes(selection.binding.kind) &&
+      !generation.processes
+    )
       report(
         "CONFIG_REQUIRED",
         ["generation", "processes"],
-        "Scheduled tasks require Runnable processes for their lifecycle.",
+        "Scheduled tasks and webhook receivers require Runnable processes for their lifecycle.",
       );
-    if (["module-stub", "scheduled-task"].includes(selection.binding.kind)) {
+    if (["module-stub", "scheduled-task", "webhook-receiver"].includes(selection.binding.kind)) {
       const target = selection.target;
       const component =
         target.kind === "component"
@@ -1012,6 +1032,7 @@ export function resolveGeneration(
       "module-stub",
       "verified-identity",
       "scheduled-task",
+      "webhook-receiver",
     ].includes(selection.binding.kind);
     const audit = (value: object, path: Path, ignored: string[] = []) => {
       for (const key of Object.keys(value))
@@ -1894,7 +1915,10 @@ function normalizedProcesses(
       ...(shape === "worker" && { worker: { concurrency: limit("concurrency", 1) } }),
       sourcePath: ["architecture", "studio", "elements", index],
       templates: hosted
-        .filter((item) => !["module-stub", "scheduled-task"].includes(item.binding.kind))
+        .filter(
+          (item) =>
+            !["module-stub", "scheduled-task", "webhook-receiver"].includes(item.binding.kind),
+        )
         .map((item) => {
           const target = item.target.kind === "component" ? item.target.component : undefined;
           const lead = target
@@ -1939,8 +1963,10 @@ function normalizedProcesses(
           {
             module: item.module.component,
             selection: item.id,
-            ...(item.binding.kind === "scheduled-task"
-              ? { role: "scheduled-task" as const }
+            ...(["scheduled-task", "webhook-receiver"].includes(item.binding.kind)
+              ? {
+                  role: item.binding.kind as "scheduled-task" | "webhook-receiver",
+                }
               : consumes.length
                 ? { role: "loop" as const, consumes }
                 : { role: shape === "http" ? ("route" as const) : ("library" as const) }),

@@ -79,6 +79,7 @@ const templateWords: Record<StudioModuleTemplate, string> = {
   favorites: "favorites",
   "rate-limiter": "rate limiting",
   "scheduled-task": "scheduled reconciliation",
+  "webhook-receiver": "authenticated webhook ingestion",
 };
 
 type ModuleLink = {
@@ -269,10 +270,20 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
   };
   const isIdentity = (link: ModuleLink) => !!link.tile && view.kindOf(link.tile) === "identity";
   switch (plan.template) {
-    case "scheduled-task": {
+    case "scheduled-task":
+    case "webhook-receiver": {
+      if (
+        plan.template === "webhook-receiver" &&
+        view
+          .inHost(lead.host)
+          .some((c) => c.settings.kind === "auth-guard" && c.settings.signIn !== "optional")
+      )
+        refuse(
+          "Webhook HMAC ingress is incompatible with a Required user Auth guard; use a separate Service.",
+        );
       const state = dependency(view.linksOf(lead, "state")[0]);
       if (!state) needs.push("a writable database connected to its state slot");
-      else plan.binding = { kind: "scheduled-task", state };
+      else plan.binding = { kind: plan.template, state };
       break;
     }
     case "verified-identity": {

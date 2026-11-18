@@ -52,7 +52,12 @@ describe("moduleMenuGroups", () => {
       [
         "Events",
         "messaging",
-        ["Scheduled task: lead", "Event publisher: part", "Event consumer: stub"],
+        [
+          "Scheduled task: lead",
+          "Webhook receiver: lead",
+          "Event publisher: part",
+          "Event consumer: stub",
+        ],
       ],
       ["Files & media", "worker", ["Multipart uploads: lead"]],
       ["Custom", "generic", ["Custom: stub"]],
@@ -124,7 +129,7 @@ describe("ModuleAddButton", () => {
       ["Files & media", "worker"],
       ["Custom", "generic"],
     ]);
-    expect(screen.getAllByRole("menuitem")).toHaveLength(14);
+    expect(screen.getAllByRole("menuitem")).toHaveLength(15);
     const data = screen.getByRole("menuitem", { name: "Data access" });
     expect(data.dataset.family).toBe("data");
     const described = document.getElementById(data.getAttribute("aria-describedby") ?? "");

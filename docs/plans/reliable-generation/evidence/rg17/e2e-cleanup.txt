@@ -1,0 +1,9 @@
+DELETE through active e2e4301 API succeeded for exact interrupted RG17 project
+c1040c10-175b-4bb6-9632-59dd9363b6b2. A later confirmation request found the e2e server already
+closed after the full run, so it did not establish a second readback. Targeted run uses normal
+finally cleanup; its active e2e context can verify this exact UUID before shutting down.
+Exact interrupted RG17 project GET status: 404
+Exact interrupted RG17 project /design GET status: 000
+0
+Final direct read of jeeves_e2e.projects confirmed the exact interrupted UUID and all E2E RG17
+project names have count0. No owner database or other project was changed by that read.

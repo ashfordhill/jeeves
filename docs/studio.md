@@ -1650,3 +1650,7 @@ coalesces and stale completion cannot commit. Failed/unknown ticks halt further 
 fixed safe logs, rather than appearing idle. See the generated extension guide for explicit
 handler migration and RG15 workload recovery limits. Native competing-worker kill evidence is
 reserved for the later approved integration checkpoint.
+
+### Authenticated webhook ingestion (RG17)
+
+A **Webhook receiver** module in a Service uses writable owned database state and Runnable processes. Its Service owns a lifecycle-driven durable processor; no queue is required. The separate mapper receives only authenticated bounded JSON, and the operation receives scoped product commands. Required user Auth guards in the same Service refuse composition. The receiver supports only the documented generic Jeeves HMAC protocol. A 202 follows durable acceptance; completion and bounded retry happen later. Changed raw bytes under one identity refuse409. See the exact envelope and retention limits in [RG17 evidence](plans/reliable-generation/evidence/rg17/README.md).

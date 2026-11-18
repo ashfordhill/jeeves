@@ -25,7 +25,7 @@ import {
 } from "./idempotency.ts";
 import { periodic } from "./process.ts";
 import { bindLocalOperation, localOperationDefinition, sweepWorkTickets } from "./local-operation.ts";
-import { bindDurableWork, durableWorkDefinition } from "./durable-work.ts";
+import { bindDurableWork, durableWorkDefinition, durableWorkNamespace } from "./durable-work.ts";
 import { privateReplayKeys } from "./settings.ts";
 import { prepareProductOperations } from "./product-operations.ts";
 // @database-import-end
@@ -379,11 +379,12 @@ export function prepareProductDatabase(binding: {tile: string; resource: string;
   const operations = prepareProductOperations(maximum, binding);
   const local = localOperationDefinition(binding.operation, binding.property ?? "", binding.writable ?? false);
   const work = durableWorkDefinition(binding.work, binding.property ?? "", binding.writable ?? false);
+  const namespace = work && durableWorkNamespace(binding.resource, binding.owner ?? binding.tile, work.work, binding.module);
   const keys = local?.definition.secret ? privateReplayKeys() : undefined;
   const runtimeLogin = localLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
   if ((local || work) && !runtimeLogin) throw new Error("Missing private replay/work database binding");
   if ((local || work) && runtimeLogin) readSecret(runtimeLogin.secret);
-  return {configuration, operations, binding, local, work, keys, runtimeLogin};
+  return {configuration, operations, binding, local, work, namespace, keys, runtimeLogin};
 }
 export async function productDatabaseClient(
   scope: ProcessScope, log: ProbeLog, prepared: ReturnType<typeof prepareProductDatabase>,
@@ -403,7 +404,7 @@ export async function productDatabaseClient(
       client.on("error", () => {});
       return client;
     });
-    if (prepared.work) bindDurableWork(handle, prepared.work, {namespace: JSON.stringify([binding.resource,binding.owner ?? binding.tile,prepared.work.definition.id]), process: binding.tile, pool: replayPool, productRole: configuration.login.user, commands: operations});
+    if (prepared.work) bindDurableWork(handle, prepared.work, {namespace: prepared.namespace!, process: binding.tile, pool: replayPool, productRole: configuration.login.user, commands: operations});
     if (prepared.local) bindLocalOperation(handle, prepared.local, {...binding, productRole: configuration.login.user, pool: replayPool, keys: prepared.keys, commands: operations});
     if (prepared.local) processClient(scope, "replay-cleanup", runtimeConfiguration, () => {
       periodic(scope, async () => { await sweepExpired(replayPool); await sweepWorkTickets(replayPool); }, idempotencyPolicy.sweepSeconds * 1000,
