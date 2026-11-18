@@ -27,10 +27,12 @@ import {
 } from "./elkGraph.ts";
 import type { BoardLayout } from "./elkLayout.ts";
 import { bandClashes, JUNCTION_PX } from "./junctions.ts";
-import { GRID, type Point } from "./metrics.ts";
+import { GRID, LANE_APPROACH, LANE_GAP, type Point } from "./metrics.ts";
 
 /** How far a line coming back stays from the tiles it passes. */
 const CLEARANCE = 16;
+/** With lanes, runs closer than this count as shared. */
+const LANE_CLEAR = 8;
 /** At most this many grid steps added to either gap for one line. */
 const MAX_WIDEN = 2;
 
@@ -104,17 +106,19 @@ function bestU(
   const [cs, ct] = [col(line.source), col(line.target)];
   const [s, t] = [box(line.source), box(line.target)];
   const [sx, tx] = [s.x + s.w, t.x];
-  const ys = s.y + portOffset(size.get(line.source), line.sourcePort);
-  const yt = t.y + portOffset(size.get(line.target), line.targetPort);
+  const ys = s.y + portOffset(size.get(line.source), line.sourcePort) + (line.lane?.source ?? 0);
+  const yt = t.y + portOffset(size.get(line.target), line.targetPort) + (line.lane?.target ?? 0);
   const after = edges(cs + 1)?.left ?? Number.POSITIVE_INFINITY;
   const before = edges(ct - 1)?.right ?? Number.NEGATIVE_INFINITY;
   const right = edges(cs)?.right ?? sx;
   const left = edges(ct)?.left ?? tx;
 
+  // Slots for the upright runs: on the grid, or with lanes `LANE_GAP` apart past the approach.
+  const [first, step, most] = line.lane ? [LANE_APPROACH, LANE_GAP, 10] : [GRID, GRID, 6];
   const outs: number[] = [];
-  for (let x = right + GRID; x <= after - GRID && outs.length < 6; x += GRID) outs.push(x);
+  for (let x = right + first; x <= after - first && outs.length < most; x += step) outs.push(x);
   const ins: number[] = [];
-  for (let x = left - GRID; x >= before + GRID && ins.length < 6; x -= GRID) ins.push(x);
+  for (let x = left - first; x >= before + first && ins.length < most; x -= step) ins.push(x);
 
   // Free rows: clear of every tile in the columns the level run passes.
   const blocks = input.tiles
@@ -131,12 +135,13 @@ function bestU(
   free.push([top, Number.POSITIVE_INFINITY]);
   const rows = new Set<number>();
   const [near, far] = [Math.min(ys, yt), Math.max(ys, yt)];
+  const rowStep = line.lane ? LANE_GAP : GRID;
   for (const [from, to] of free) {
     const a = Number.isFinite(from) ? from : Math.min(to, near) - 2 * GRID;
     const b = Number.isFinite(to) ? to : Math.max(from, far) + 2 * GRID;
     if (b < a) continue;
     let grid = false;
-    for (let y = Math.ceil(a / GRID) * GRID; y <= b; y += GRID) {
+    for (let y = Math.ceil(a / rowStep) * rowStep; y <= b; y += rowStep) {
       if (y < near - 2 * GRID || y > far + 2 * GRID) continue;
       rows.add(y);
       grid = true;
@@ -168,7 +173,7 @@ function bestU(
         ];
         const crossings = judge(route, line, others, tx, strict);
         if (crossings === undefined) continue;
-        const cost = length(route) + extra + (yc % GRID === 0 ? 0 : GRID / 4);
+        const cost = length(route) + extra + (line.lane || yc % GRID === 0 ? 0 : GRID / 4);
         if (
           !best ||
           crossings < best.crossings ||
@@ -207,7 +212,7 @@ function judge(
     for (const [i, m] of mine.entries()) {
       for (const o of other.segs) {
         if (level(m) === level(o)) {
-          if (axis(m) !== axis(o)) continue;
+          if (line.lane ? Math.abs(axis(m) - axis(o)) >= LANE_CLEAR : axis(m) !== axis(o)) continue;
           const from = Math.max(lo(m), lo(o));
           const to = Math.min(hi(m), hi(o));
           if (to < from) continue;

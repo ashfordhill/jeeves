@@ -357,6 +357,9 @@ describe("wire lanes on the studies", () => {
       for (const line of forward)
         expect(layout.routes[line.id]?.length, line.id).toBeGreaterThanOrEqual(2);
       expect(shared).toBe(0);
+      for (const line of input.lines)
+        expect(layout.routes[line.id]?.length, line.id).toBeGreaterThanOrEqual(2);
+      expect(sharedRuns(layout)).toBe(0);
     });
   }
 });

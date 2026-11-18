@@ -18,6 +18,7 @@ import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import { createLayoutEngine, LayoutSuperseded } from "./engine.ts";
 import { bandClashes, JUNCTION_PX, meetAtPorts } from "./junctions.ts";
 import { dockHint, GRID, newTileHint, type Point, type Rect } from "./metrics.ts";
+import { comesBack } from "./returns.ts";
 
 const elk = new ELK();
 const ENTRY_CHIP = { w: 32, h: 32 };
@@ -1088,5 +1089,76 @@ describe("lanes", () => {
     expect(await engine.request(input)).toEqual(
       await createLayoutEngine(elk, { debounceMs: 0 }).request(input),
     );
+  });
+
+  it("routes a same-column return in its own lane from right edge to left edge", async () => {
+    const input: LayoutInput = {
+      tiles: ["a", "b1", "b2", "c", "s"].map((id) => ({ id, w: 128, h: 128, band: 0 })),
+      lines: board([], ["a>b1", "a>b2", "b1>c", "a>s", "c>s"]).lines.map((line) => ({
+        ...line,
+        band: 0,
+      })),
+      lanes: true,
+    };
+    const column = endColumns(input, bandColumns(input) ?? new Map<string, number>());
+    expect(column.get("s")).toBe(column.get("c"));
+    const returning = input.lines.find((line) => line.id === "c-s") as LayoutLine;
+    expect(comesBack(returning, column)).toBe(true);
+    const layout = await bandsOf(input);
+    const route = layout.routes[returning.id] ?? [];
+    expect(route).toHaveLength(6);
+    const source = rect(input, layout, "c");
+    expect(route[0]?.x).toBe(source.x + source.w);
+    expect(route.at(-1)?.x).toBe(rect(input, layout, "s").x);
+    expect(sharedRuns(layout)).toBe(0);
+  });
+
+  it("keeps two named-port returns 11px or 22px apart and clear of all lines", async () => {
+    const input: LayoutInput = {
+      tiles: ["a", "b1", "b2", "c", "s"].map((id) =>
+        id === "c"
+          ? {
+              id,
+              w: 256,
+              h: 192,
+              band: 0,
+              ports: [
+                { id: "r1", side: "out" as const, y: 64 },
+                { id: "r2", side: "out" as const, y: 96 },
+              ],
+            }
+          : { id, w: 128, h: 128, band: 0 },
+      ),
+      lines: [
+        ...board([], ["a>b1", "a>b2", "b1>c", "a>s"]).lines.map((line) => ({ ...line, band: 0 })),
+        { id: "c-s-r1", source: "c", target: "s", sourcePort: "r1", band: 0 },
+        { id: "c-s-r2", source: "c", target: "s", sourcePort: "r2", band: 0 },
+      ],
+      lanes: true,
+    };
+    const column = endColumns(input, bandColumns(input) ?? new Map<string, number>());
+    expect(column.get("s")).toBe(column.get("c"));
+    const returning = input.lines.filter((line) => line.source === "c");
+    expect(returning).toHaveLength(2);
+    for (const line of returning) expect(comesBack(line, column), line.id).toBe(true);
+    const layout = await bandsOf(input);
+    const rows = returning.map((line) => {
+      const route = layout.routes[line.id] ?? [];
+      expect(route, line.id).toHaveLength(6);
+      const source = rect(input, layout, "c");
+      expect(route[0], line.id).toEqual({
+        x: source.x + source.w,
+        y:
+          source.y +
+          portOffset(
+            input.tiles.find((tile) => tile.id === "c"),
+            line.sourcePort,
+          ),
+      });
+      expect(route.at(-1)?.x, line.id).toBe(rect(input, layout, "s").x);
+      return route[2]?.y ?? Number.NaN;
+    });
+    expect([11, 22]).toContain(Math.abs((rows[0] as number) - (rows[1] as number)));
+    expect(sharedRuns(layout)).toBe(0);
   });
 });

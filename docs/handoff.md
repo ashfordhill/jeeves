@@ -19468,3 +19468,26 @@ workload settings the same way.
   two old E2E rows are preserved. Own projects 0; E2E servers exited, owner 4300/4310 untouched.
   No later brief/unit, dependency, paid/live call, push or deployment. One explicit-path local
   commit follows: `WD02: board lanes through ELK`. Stop for coordinator review.
+
+
+## 2026-11-18 — WD03 board returns in lanes complete for coordinator review
+
+- Applied the exact optional return-routing changes in `returns.ts`: lane endpoints, 11px slots/
+  rows past the approach, 8px parallel-run clearance and no grid penalty. Sharing/widening/fallback
+  and defaults stay unchanged; generic board only, studio lanes still off. No other production edit.
+- Exact fixture premise passes before edits and in both new real-ELK cases: s/c column2 and
+  c→s comes back. Six-point edge-to-edge U and two named out-port returns with 11px/22px level-run
+  separation pass. Both fixtures and every route in all three studies have zero shared runs.
+  Existing board test bodies/assertions/fixtures stay unchanged; WD02 assertions only strengthened.
+- Corrected focused13/13 (30 skip), pnpm check146files/1369tests, native E2E87/87 (TinyURL and both
+  mouse rebuilds), web build and preservation pass. Required full gates ran once; inherited lint/
+  chunk warnings remain. [Evidence](plans/wires-and-deployment/evidence/wd03/progress.md).
+- Initial focused run caught my new fixture’s omitted out-side declarations before ELK; added
+  `side: "out"` to match the brief and retained the failure log. Biome wrapping only otherwise;
+  no moved-find/type/algorithm correction, false premise, design stop or alternative design.
+- All7235 protected tracked states, own modes, owner/root changes, original apps/historical evidence,
+  accepted SQL/dependencies/frozenv1,42 full container triples/9 networks/23 volumes/43 images and
+  both old E2E rows preserved. Own projects0; E2E ports free, owner4300/4310 PIDs unchanged.
+- No schema/blueprint/chat/generation/settings/template/dependency change, root/owner studio edit,
+  later unit, paid/live call, push or deployment. One scoped local commit follows:
+  `WD03: board returns in lanes`. Stop for coordinator review.
