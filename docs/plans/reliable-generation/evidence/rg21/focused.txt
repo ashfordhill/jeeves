@@ -1,0 +1,39 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/workload.test.ts (25 tests | 1 failed) 6130ms
+   × RG10 authenticated internal POST and the in-process core share replay identity and ordering 1786ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/workload.test.ts > RG10 authenticated internal POST and the in-process core share replay identity and ordering
+AssertionError: expected { status: 201, …(2) } to deeply equal { status: 201, …(1) }
+
+- Expected
++ Received
+
+  {
+    "body": {
+      "present": false,
+    },
++   "headers": {
++     "content-type": "application/json; charset=utf-8",
++   },
+    "status": 201,
+  }
+
+ ❯ src/v2/workload.test.ts:861:20
+    859|     });
+    860|     const absent = await call("presence", undefined);
+    861|     expect(absent).toEqual({ status: 201, body: { present: false } });
+       |                    ^
+    862|     const nullableContext = op.operation({ maximumMs: 10000, caller: {…
+    863|     try {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 89 passed (90)
+   Start at  21:45:51
+   Duration  43.24s (tests 91%, import 4%, transform 4%)

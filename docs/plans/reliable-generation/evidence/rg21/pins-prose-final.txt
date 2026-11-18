@@ -1,0 +1,22 @@
+frozen-v2 80 unchanged paths; reviewed [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/extension-api/index.ts',
+  'src/runtime/admission.ts',
+  'src/runtime/http.ts',
+  'src/runtime/operation.ts'
+]
+v2-module-design 87 unchanged paths; reviewed [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/extension-api/index.ts',
+  'src/runtime/admission.ts',
+  'src/runtime/http.ts',
+  'src/runtime/operation.ts'
+]
+stub-stack 60 unchanged paths; reviewed [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/extension-api/index.ts',
+  'src/runtime/operation.ts'
+]

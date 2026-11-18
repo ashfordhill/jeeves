@@ -34,6 +34,7 @@ import {
   generationProcessSettings,
   generationProcessShapes,
   generationStubQueueProvider,
+  sessionForwardingRefusal,
 } from "./generation-support.ts";
 import { idSchema } from "./ids.ts";
 import { sameContractRef } from "./operation-records.ts";
@@ -179,6 +180,8 @@ export type NormalizedProcess = {
     target: string;
     operations: string[];
     forwardUser: boolean;
+    /** Private request-scoped Browser session bridge; never background user authority. */
+    sessionUser?: true;
     sourcePath: Path;
   }[];
   workloadCallers?: string[];
@@ -707,7 +710,7 @@ export function resolveGeneration(
         report(
           "CONFIG_INVALID",
           [...base, "target"],
-          "Browser session cannot share a Service with bearer Auth guard, webhook ingress or JWT-only Required-user templates. Session forwarding is unavailable.",
+          "Browser session cannot share a Service with bearer Auth guard, webhook ingress or JWT-only Required-user templates. Forwarding requires a separate matching-Identity bearer-guard callee.",
         );
     }
     if (
@@ -1403,33 +1406,44 @@ export function resolveGeneration(
                   link.sourcePath,
                   `Service call ${target.element} requires an HTTP process with a route stub; no installed cross-process adapter exists for its other operations.`,
                 );
-              if (
-                normalized.some(
-                  (s) =>
-                    [process.tile, target.element].includes(s.host) &&
-                    s.binding.kind === "browser-session",
-                )
-              )
-                report(
-                  "NEEDS_TEMPLATE",
-                  link.sourcePath,
-                  "Browser session service forwarding is unavailable; keep browser operations in their owning Service.",
-                );
+              const sourceSession = normalized.find(
+                (entry) => entry.host === process.tile && entry.binding.kind === "browser-session",
+              );
+              const targetSession = normalized.find(
+                (entry) =>
+                  entry.host === target.element && entry.binding.kind === "browser-session",
+              );
               const userGuard = normalized.find(
                 (s) => s.host === target.element && s.binding.kind === "verified-identity",
               );
               const sourceGuard = normalized.find(
                 (s) => s.host === process.tile && s.binding.kind === "verified-identity",
               );
+              const sessionRefusal = sessionForwardingRefusal(
+                sourceSession?.identity?.element,
+                userGuard?.identity?.element,
+                !!targetSession,
+              );
+              if (sessionRefusal) report("NEEDS_TEMPLATE", link.sourcePath, sessionRefusal);
+              const callerRole = process.stubs.find(
+                (stub) => stub.module === s.module?.component,
+              )?.role;
+              if (sourceSession && callerRole && !["route", "library"].includes(callerRole))
+                report(
+                  "NEEDS_TEMPLATE",
+                  link.sourcePath,
+                  "Browser session forwarding requires an authorized request scope; background work cannot retain user authority.",
+                );
               if (
                 userGuard &&
                 userGuard.inputs["guard.signIn"] !== "optional" &&
-                (!sourceGuard || sourceGuard.identity?.element !== userGuard.identity?.element)
+                (!sourceGuard || sourceGuard.identity?.element !== userGuard.identity?.element) &&
+                (!sourceSession || sourceSession.identity?.element !== userGuard.identity?.element)
               )
                 report(
                   "CONFIG_REQUIRED",
                   link.sourcePath,
-                  `Service call ${target.element} requires an end-user credential as well as workload identity; connect matching user Auth guards on caller and callee to verify and privately forward the incoming bearer.`,
+                  `Service call ${target.element} requires an end-user credential as well as workload identity; connect a matching caller Auth guard or Browser session and callee Auth guard to verify and privately forward the user identity.`,
                 );
               if (destination)
                 destination.workloadCallers = [
@@ -1444,6 +1458,11 @@ export function resolveGeneration(
                     !!userGuard &&
                     !!sourceGuard &&
                     sourceGuard.identity?.element === userGuard.identity?.element,
+                  ...(sourceSession &&
+                  userGuard &&
+                  sourceSession.identity?.element === userGuard.identity?.element
+                    ? { sessionUser: true as const }
+                    : {}),
                   sourcePath: link.sourcePath,
                 },
               ];

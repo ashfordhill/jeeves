@@ -1,0 +1,8 @@
+subject refused by actual pinned JWT verifier before credential forwarding
+issuer refused by actual pinned JWT verifier before credential forwarding
+audience refused by actual pinned JWT verifier before credential forwarding
+expired refused by actual pinned JWT verifier before credential forwarding
+signature refused by actual pinned JWT verifier before credential forwarding
+workload refused by actual pinned JWT verifier before credential forwarding
+one maintained-SDK refresh POST; replacement verified; cached JWKS reused; no token values printed
+actual public extension checker refuses private token-provider import

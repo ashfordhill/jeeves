@@ -131,6 +131,7 @@ export async function createHttpService(options: {
     reply.code(selected.status);
     // Product headers cannot override generated retry/authentication semantics.
     reply.removeHeader?.("Retry-After");
+    reply.removeHeader?.("X-Jeeves-User-Authentication");
     reply.removeHeader?.("Content-Length");
     reply.header("Content-Type", "application/json; charset=utf-8");
     for (const [name, value] of Object.entries(selected.headers)) reply.header(name, value);

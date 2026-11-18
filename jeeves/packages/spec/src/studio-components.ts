@@ -661,7 +661,7 @@ export const studioComponentDefinitions: {
   "browser-session": component("browser-session", {
     name: "Browser session",
     description:
-      "OIDC code+PKCE sign-in, secure cookie sessions and CSRF on declared owned state. Invalid supplied cookies refuse; refresh and forwarding are unavailable.",
+      "OIDC code+PKCE sign-in, secure cookie sessions and CSRF on declared owned state. Invalid supplied cookies refuse. Private coordinated refresh and request-scoped calls to declared matching-Identity bearer-guard service operations keep credentials out of hooks.",
     thirdParty: ["openid-client", "PostgreSQL"],
     browserHost: false,
     hosts: ["service"],

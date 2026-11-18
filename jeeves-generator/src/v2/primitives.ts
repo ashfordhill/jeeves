@@ -129,7 +129,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
             status: "custom" as const,
             required: true,
             sourcePaths: [`/${s.sourcePath.join("/")}`],
-            description: `Configure selected Keycloak Identity ${s.identity?.element} through a trusted HTTPS issuer at /realms/${s.identity?.element}, register confidential code+S256 client jeeves-browser-${s.host}-${s.target.kind === "component" ? s.target.component : s.id} with the exact HTTPS callback, and mount its private client secret/RG08 ring. Plain-HTTP local Keycloak/edge defaults cannot provide secure browser sessions. No production TLS bypass, automatic issuer provisioning or forwarding is claimed; see .jeeves/extensions.md.`,
+            description: `Configure selected Keycloak Identity ${s.identity?.element} through a trusted HTTPS issuer at /realms/${s.identity?.element}, register confidential code+S256 client jeeves-browser-${s.host}-${s.target.kind === "component" ? s.target.component : s.id} with the exact HTTPS callback, and mount its private client secret/RG08 ring. Plain-HTTP local Keycloak/edge defaults cannot provide secure browser sessions. For declared session forwarding, configure caller and callee to the exact same HTTPS issuer and ${s.identity?.element}-web user audience, including the browser confidential client audience mapper. No production TLS bypass or automatic issuer provisioning is claimed; see .jeeves/extensions.md.`,
           })),
         files: [...modules]
           .sort(([a], [b]) => v2Compare(a, b))

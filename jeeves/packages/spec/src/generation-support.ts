@@ -683,3 +683,13 @@ export const generationCapabilities = freezeRecord({
     [...studioComponentKinds],
   ),
 } satisfies Record<GenerationBindingKind, GenerationCapability>);
+
+/** Finite installed session-to-bearer operation pairing, shared by authoring and export. */
+export function sessionForwardingRefusal(
+  sourceIdentity: string | undefined,
+  targetIdentity: string | undefined,
+  targetSession: boolean,
+): string | undefined {
+  if (targetSession || (sourceIdentity && (!targetIdentity || sourceIdentity !== targetIdentity)))
+    return "Browser session forwarding requires a matching-Identity bearer Auth guard on the callee and its generated HTTP route operations; cookie-session callees and unverified user recipients are unavailable.";
+}

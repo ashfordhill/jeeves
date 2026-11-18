@@ -3355,6 +3355,21 @@ describe("RG10 captured capability isolation and independent cleanup", () => {
         await expect(async () =>
           withLocalMutation(() => withEffect("read", call)),
         ).rejects.toMatchObject({ outcome: "refused", code: "EFFECT_NOT_ALLOWED" });
+      // RG21's retryable GET contract uses pure read authority, independently of a local tx.
+      for (const call of [
+        () => queue.publish(new Uint8Array()),
+        () => pubsub.publish(new Uint8Array()),
+        () => cache.set("key", "value"),
+        () => cache.delete("key"),
+        () => objects.put("key", new Uint8Array()),
+        () => search.index("key", {}),
+        () => search.remove("key"),
+        () => http.request("/", { method: "POST", body: "{}" }),
+      ])
+        await expect(async () => withEffect("read", call)).rejects.toMatchObject({
+          outcome: "refused",
+          code: "EFFECT_NOT_ALLOWED",
+        });
       expect(fake.calls).toHaveLength(before);
     } finally {
       for (const close of scope.owned.reverse()) await close();

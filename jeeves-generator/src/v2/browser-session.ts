@@ -63,7 +63,7 @@ export function browserSessionMount(
     offlineAccess: selection.inputs["session.offlineAccess"],
   };
   const make = (pool: string, settings: string, issuer: string) =>
-    `createBrowserSession({namespace:${text(namespace)},module:${text(lead.module)},scope,pool:${pool},settings:${settings},issuer:${issuer}})`;
+    `createBrowserSession({namespace:${text(namespace)},module:${text(lead.module)},audience:${text(`${selection.identity?.element}-web`)},targets:${JSON.stringify([...new Set(process.serviceCalls?.filter((call) => call.sessionUser).map((call) => call.target) ?? [])])},scope,pool:${pool},settings:${settings},issuer:${issuer}})`;
   return {
     imports: [
       { from: "../runtime/browser-session.ts", name: "createBrowserSession" },
@@ -74,6 +74,11 @@ export function browserSessionMount(
     ],
     validation: [
       `const ${name}Settings = browserSettings(${text(lead.module)}, ${JSON.stringify({ realm: selection.identity?.element, client: `jeeves-browser-${process.tile}-${lead.module}` })}, ${JSON.stringify(policy)});`,
+      ...(process.serviceCalls?.some((call) => call.sessionUser)
+        ? [
+            `if (${name}Settings.audience !== undefined && ${name}Settings.audience !== ${text(`${selection.identity?.element}-web`)}) throw new Error("Incompatible browser forwarding audience");`,
+          ]
+        : []),
     ],
     setup: [
       `const ${name} = ${make(`pool(scope, selected("browser-session", ${text(selection.id)}), "state")`, `${name}Settings`, `createBrowserIssuer(${name}Settings)`)};`,

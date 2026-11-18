@@ -23,10 +23,15 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
         "/** Registered parameterized product operations; no raw SQL, transaction or lifecycle handle. */",
         "export interface ProductQueries { call(name: string, parameters: readonly unknown[]): Promise<Readonly<{ rows: readonly unknown[]; rowCount: number }>>; }",
         "export interface UnavailableCapability { call(input: unknown): Promise<never>; }",
-        "export interface ServiceTarget { call(operation: string, request: Readonly<{ method: 'GET' | 'POST'; body?: unknown; key?: string }>): Promise<Readonly<{ status: number; body: unknown }>>; }",
+        "export interface ServiceResult { readonly status: number; readonly body: unknown; readonly headers: Readonly<Record<string,string>>; }",
+        "export type ServiceHeaders = Readonly<Partial<Record<'accept' | 'if-match' | 'if-none-match' | 'if-modified-since', string>>>;",
+        "export interface ServiceOperation { read(headers?: ServiceHeaders): Promise<ServiceResult>; mutate(body: unknown, key?: string): Promise<ServiceResult>; }",
+        "export interface ServiceTarget<Operation extends string = string> { readonly operations: Readonly<Record<Operation, ServiceOperation>>; call(operation: string, request: Readonly<{ method: 'GET' | 'POST'; body?: unknown; key?: string; headers?: ServiceHeaders }>): Promise<ServiceResult>; }",
         "export interface FavoritesHooks { eligible(itemId: string): boolean; }",
         "export type DatabaseReader = ProductQueries; export type DatabaseReadWriter = ProductQueries; export type QueueConsumer = UnavailableCapability; export type TokenVerifier = UnavailableCapability; export type HttpTarget = UnavailableCapability;",
       ];
+      if (model.processes?.some((p) => p.workload))
+        publicLines.push('export { serviceResponse } from "../runtime/service-contract.ts";');
       if (
         model.processes?.some((p) =>
           p.stubs.some((s) => s.stores?.some((store) => store.kind === "database")),

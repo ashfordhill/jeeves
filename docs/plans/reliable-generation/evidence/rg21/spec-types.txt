@@ -1,0 +1,8 @@
+$ tsc -p .
+src/module-generation.ts(243,77): error TS2339: Property 'resource' does not exist on type '{ element: string; guard: string; }'.
+src/module-generation.ts(244,79): error TS2339: Property 'resource' does not exist on type '{ element: string; guard: string; }'.
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves/packages/
+  │ spec

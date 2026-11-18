@@ -156,7 +156,15 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
       for (const selection of selections) {
         const module = selection.module;
         if (module) {
-          files.push(...stubFiles(selection, module, roles.get(module.component)));
+          files.push(
+            ...stubFiles(
+              selection,
+              module,
+              roles.get(module.component),
+              model.processes?.find((process) => process.tile === selection.host)?.serviceCalls ??
+                [],
+            ),
+          );
           gaps.push(stubGap(selection, module));
         }
       }
@@ -273,6 +281,11 @@ function stubFiles(
   selection: NormalizedGenerationSelection,
   module: NormalizedStubModule,
   role: "route" | "loop" | "scheduled-task" | "webhook-receiver" | undefined,
+  serviceCalls: readonly {
+    module: string;
+    target: string;
+    operations: readonly string[];
+  }[],
 ) {
   const scheduled = selection.binding.kind === "scheduled-task";
   const webhook = selection.binding.kind === "webhook-receiver";
@@ -315,7 +328,23 @@ function stubFiles(
         `  // ${slot.id}: ${what}, ${words(use)}`,
         input
           ? `  // ${property}: its loop delivers each message to the entry point.`
-          : `  ${property}: ${type};`,
+          : `  ${property}: ${type}${
+              type === "ServiceTarget" &&
+              target.kind === "element" &&
+              serviceCalls.some(
+                (call) => call.module === module.component && call.target === target.element,
+              )
+                ? `<${
+                    serviceCalls
+                      .find(
+                        (call) =>
+                          call.module === module.component && call.target === target.element,
+                      )
+                      ?.operations.map((id) => JSON.stringify(id))
+                      .join(" | ") || "never"
+                  }>`
+                : ""
+            };`,
       );
       descriptors.push(
         `  ${JSON.stringify(

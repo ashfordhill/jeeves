@@ -58,7 +58,13 @@ const keys = (ids = ["old"]) => ({
   sign: createSigningKeys(ring(ids), "jeeves.browser.csrf.v1"),
 });
 async function setup(
-  input: { signIn?: string; guest?: boolean; keys?: ReturnType<typeof keys>; issuer?: object } = {},
+  input: {
+    signIn?: string;
+    guest?: boolean;
+    keys?: ReturnType<typeof keys>;
+    issuer?: object;
+    targets?: readonly string[];
+  } = {},
 ) {
   const f = await fixture();
   await f.pg.exec(
@@ -68,6 +74,7 @@ async function setup(
   let authorizing: unknown;
   const issuer = {
     async start() {},
+    async verifyAccess() {},
     async authorize(values: unknown) {
       authorizing = values;
       return "https://issuer.test/authorize";
@@ -109,6 +116,8 @@ async function setup(
   };
   const session = runtime.createBrowserSession({
     namespace: "owner-browser",
+    targets: input.targets,
+    audience: "identity-web",
     module: "sign-in",
     pool: f.pool,
     settings,
@@ -1356,4 +1365,43 @@ it("RG20 private query timeout exceeds the bounded row-lock wait without changin
   expect((await f.app.inject({ url: "/product", headers: { cookie: a.cookie } })).statusCode).toBe(
     200,
   );
+});
+
+it("RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations", async () => {
+  const verify = vi.fn(async () => {}),
+    refresh = vi.fn(async () => refreshTokens);
+  const f = await setup({ targets: ["callee"], issuer: { verifyAccess: verify, refresh } }),
+    a = await login(f);
+  const op = await import(load("operation"));
+  await run(async () => {
+    const who = await f.session.caller({ headers: { cookie: a.cookie } });
+    expect(JSON.stringify(who)).not.toMatch(/private|token|generation/);
+    expect(Object.isFrozen(who)).toBe(true);
+    await expect(op.sessionAccess("other")).rejects.toMatchObject({
+      code: "SESSION_AUDIENCE_FORBIDDEN",
+    });
+    const initial = await op.sessionAccess("callee");
+    expect(initial.token).toBe("private-access");
+    expect(refresh).not.toHaveBeenCalled();
+    const child = op.operation({ maximumMs: 5000 });
+    try {
+      const rotated = await op.withOperation(child.context, () =>
+        op.sessionAccess("callee", initial.generation),
+      );
+      expect(rotated.token).toBe("rotated-access");
+      expect((await op.sessionAccess("callee", initial.generation)).generation).toBe(
+        rotated.generation,
+      );
+      expect(refresh).toHaveBeenCalledTimes(1);
+    } finally {
+      child.close();
+    }
+    await expect(
+      Promise.resolve().then(() => op.withProcess(undefined, () => op.sessionAccess("callee"))),
+    ).rejects.toMatchObject({ code: "SESSION_REQUEST_REQUIRED" });
+  });
+  expect(verify).toHaveBeenCalledWith("private-access", "identity-web", "alice");
+  await expect(run(() => op.sessionAccess("callee"))).rejects.toMatchObject({
+    code: "SESSION_REQUEST_REQUIRED",
+  });
 });

@@ -3,7 +3,7 @@ import { dependency, currentProcess, OperationError, assertOperation, rememberVe
 // Export rewrites this file. Required: every module route needs a valid token. Optional: a request
 // without one is anonymous, and a token that fails verification is still refused.
 import type { FastifyRequest } from "fastify";
-import { HttpError } from "./admission.ts";
+import { userAuthenticationRefusal } from "./admission.ts";
 import type { HttpRoutes } from "./http.ts";
 import type { VerifiedPrincipal } from "./identity.ts";
 
@@ -18,7 +18,7 @@ export interface TileGuard {
   require(request: FastifyRequest): Promise<VerifiedPrincipal>;
 }
 
-const refused = () => new HttpError(401, "SIGN_IN_REQUIRED", "Sign in to continue.");
+const refused = userAuthenticationRefusal;
 const anonymous: Caller = { signedIn: false };
 
 /** The sign-in's settings from the environment (Compose sets the local ones), checked in this

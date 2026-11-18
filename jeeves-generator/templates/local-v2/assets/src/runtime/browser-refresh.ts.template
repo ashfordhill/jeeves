@@ -14,7 +14,7 @@ export interface BrowserSessionRow {
 }
 export function browserRefresh() {
   let pending=0;
-  return async (options:{pool:TransactionPool; namespace:string; authority:string; cookieHash:string; settings:BrowserConfiguration; issuer:BrowserIssuer; binding:(field:string)=>{scope:string;context:string}}):Promise<BrowserSessionRow|null> => {
+  return async (options:{rejectedGeneration?:string; pool:TransactionPool; namespace:string; authority:string; cookieHash:string; settings:BrowserConfiguration; issuer:BrowserIssuer; binding:(field:string)=>{scope:string;context:string}}):Promise<BrowserSessionRow|null> => {
     assertOperation();
     if(pending>=32)throw new OperationError("refused","SESSION_REFRESH_SATURATED");
     const caller=currentOperation(),scope=currentProcess(),attempt=randomUUID();
@@ -62,7 +62,7 @@ export function browserRefresh() {
               if((caller && (caller.signal.aborted||caller.remainingMs()<=0)))throw new OperationError("refused","CONTEXT_EXPIRED");
               return row.refresh_attempt && row.attempt_live?{waiting:true}:{failure:new OperationError("unknown","SESSION_REFRESH_UNKNOWN")};
             }
-            if(!row.refresh_uncertain && row.fresh)return {row};
+            if(!row.refresh_uncertain && row.fresh && row.refresh_generation!==options.rejectedGeneration)return {row};
             const refresh=row.refresh_sealed?s.keys.seal.open(row.refresh_sealed,binding("refresh")):undefined;
             if(!refresh){await revoke();return {row:null};}
             if((caller && (caller.signal.aborted||caller.remainingMs()<=0))){

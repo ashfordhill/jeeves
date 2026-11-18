@@ -1,0 +1,126 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/workload.test.ts (24 tests | 2 failed | 19 skipped) 57ms
+   ❯ RG21 declared session operation forwarding (5)
+     × compiles only matching-Identity route operations and preserves stable IDs on renames 33ms
+     × uses one forced-generation refresh/read retry, finite headers and remaining budgets 16ms
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"request-completed","requestId":"aa24e957-33eb-4874-b89c-e2b14226594a","correlationId":"aa24e957-33eb-4874-b89c-e2b14226594a","method":"GET","route":"/modules/sign-in/login","status":302,"durationMs":6}
+
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"request-completed","requestId":"d274bcdb-ca74-47a3-ad6f-4c9688782ad9","correlationId":"d274bcdb-ca74-47a3-ad6f-4c9688782ad9","method":"GET","route":"/modules/sign-in/callback","status":302,"durationMs":8}
+
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"http-draining"}
+
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"http-drained"}
+
+ ❯ |generator| src/v2/browser-session.test.ts (50 tests | 1 failed | 49 skipped) 1400ms
+   × RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations 1399ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+OperationError: Operation refused: SESSION_REQUEST_REQUIRED
+ ❯ Module.sessionAccess ../[emitted runtime data URL omitted]:66:24
+ ❯ src/v2/browser-session.test.ts:1399:53
+    1397|       child.close();
+    1398|     }
+    1399|     await expect(op.withProcess(undefined, () => op.sessionAccess("cal…
+       |                                                     ^
+    1400|       { code: "SESSION_REQUEST_REQUIRED" },
+    1401|     );
+ ❯ Module.withProcess ../[emitted runtime data URL omitted]:85:17
+ ❯ src/v2/browser-session.test.ts:1399:21
+ ❯ run src/v2/browser-session.test.ts:181:12
+ ❯ src/v2/browser-session.test.ts:1376:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |generator| src/v2/workload.test.ts > RG21 declared session operation forwarding > compiles only matching-Identity route operations and preserves stable IDs on renames
+ZodError: [
+  {
+    "code": "invalid_union",
+    "errors": [],
+    "note": "No matching discriminator",
+    "discriminator": "type",
+    "options": [
+      "addAction",
+      "renameAction",
+      "removeAction",
+      "addTile",
+      "linkTiles",
+      "removeTile",
+      "removeLink",
+      "changeKind",
+      "setEntryLane",
+      "shareOwner",
+      "setDatabaseAccess",
+      "edit",
+      "editSystem",
+      "editConnection",
+      "createComponent",
+      "editComponent",
+      "connectComponent",
+      "disconnectComponent",
+      "removeComponent",
+      "addModule",
+      "connectModule",
+      "disconnectModule",
+      "removeModule",
+      "setRunnableProcesses"
+    ],
+    "path": [
+      "type"
+    ],
+    "message": "Invalid discriminator value. Expected 'addAction' | 'renameAction' | 'removeAction' | 'addTile' | 'linkTiles' | 'removeTile' | 'removeLink' | 'changeKind' | 'setEntryLane' | 'shareOwner' | 'setDatabaseAccess' | 'edit' | 'editSystem' | 'editConnection' | 'createComponent' | 'editComponent' | 'connectComponent' | 'disconnectComponent' | 'removeComponent' | 'addModule' | 'connectModule' | 'disconnectModule' | 'removeModule' | 'setRunnableProcesses'"
+  }
+]
+ ❯ buildStudioCommand ../jeeves/packages/spec/src/studio-operations.ts:214:37
+    212| ): OperationBatchInput {
+    213|   const draft = structuredClone(design);
+    214|   const input = studioCommandSchema.parse(command);
+       |                                     ^
+    215|   if (input.type === "shareOwner" || input.type === "setDatabaseAccess…
+    216|     return operationBatchSchema.parse({
+ ❯ runStudioCommand ../jeeves/packages/spec/src/fixtures/v2-modules.ts:25:17
+ ❯ ../jeeves/packages/spec/src/fixtures/v2-modules.ts:31:41
+ ❯ runStudioCommands ../jeeves/packages/spec/src/fixtures/v2-modules.ts:31:12
+ ❯ src/v2/workload.test.ts:1527:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |generator| src/v2/workload.test.ts > RG21 declared session operation forwarding > uses one forced-generation refresh/read retry, finite headers and remaining budgets
+AssertionError: expected [ [ 'callee', undefined ], …(1) ] to deeply equal [ [ 'callee' ], [ 'callee', '0' ] ]
+
+- Expected
++ Received
+
+@@ -1,8 +1,9 @@
+  [
+    [
+      "callee",
++     undefined,
+    ],
+    [
+      "callee",
+      "0",
+    ],
+
+ ❯ src/v2/workload.test.ts:1640:31
+    1638|     expect(Object.isFrozen(result)).toBe(true);
+    1639|     expect(Object.isFrozen((result as { headers: object }).headers)).t…
+    1640|     expect(access.mock.calls).toEqual([["callee"], ["callee", "0"]]);
+       |                               ^
+    1641|     expect(seen).toHaveLength(2);
+    1642|     expect(new Set(seen.map((r) => r.url))).toEqual(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 3 passed | 68 skipped (74)
+   Start at  21:40:06
+   Duration  2.40s (tests 43%, transform 35%, import 23%)

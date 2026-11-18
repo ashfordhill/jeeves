@@ -128,6 +128,7 @@ describe("local.tile-processes", () => {
       "src/runtime/receipt-consumer.ts",
       "src/runtime/receipts.ts",
       "src/runtime/search.ts",
+      "src/runtime/service-contract.ts",
       "src/runtime/tile-http.ts",
       "src/runtime/tile-loop.ts",
       "src/runtime/tile-process.ts",

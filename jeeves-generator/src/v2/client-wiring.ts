@@ -473,7 +473,7 @@ export function stubClients(
             key: `${target.element}:${module.component}`,
             section: "http",
             name: "serviceTarget",
-            call: `serviceTarget({ tile: ${text(target.element)}, operations: ${JSON.stringify(call.operations)}, forwardUser: ${call.forwardUser}, credentials: workload })`,
+            call: `serviceTarget({ tile: ${text(target.element)}, operations: ${JSON.stringify(call.operations)}, forwardUser: ${call.forwardUser}, ${call.sessionUser ? "sessionUser: true, " : ""}credentials: workload })`,
             check: { name: "serviceEndpoint", call: `serviceEndpoint(${text(target.element)})` },
           }),
         ];

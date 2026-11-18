@@ -1,0 +1,33 @@
+/home/ash/github/jeeves/jeeves/packages/spec/src/studio-operations.ts:214
+  const input = studioCommandSchema.parse(command);
+                                    ^
+
+ZodError: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "tile"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "code": "unrecognized_keys",
+    "keys": [
+      "element"
+    ],
+    "path": [],
+    "message": "Unrecognized key: \"element\""
+  }
+]
+    at buildStudioCommand (/home/ash/github/jeeves/jeeves/packages/spec/src/studio-operations.ts:214:37)
+    at runStudioCommand (/home/ash/github/jeeves/jeeves/packages/spec/src/fixtures/v2-modules.ts:25:17)
+    at <anonymous> (/home/ash/github/jeeves/jeeves/packages/spec/src/fixtures/v2-modules.ts:31:41)
+    at Array.reduce (<anonymous>)
+    at runStudioCommands (/home/ash/github/jeeves/jeeves/packages/spec/src/fixtures/v2-modules.ts:31:12)
+    at <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg21/standalone.ts:14:11)
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves-generator

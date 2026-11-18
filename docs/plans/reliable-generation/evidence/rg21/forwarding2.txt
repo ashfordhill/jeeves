@@ -1,0 +1,57 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/workload.test.ts (25 tests | 1 failed | 19 skipped) 115ms
+   × RG21 actual emitted HTTP adapter preserves safe failure headers and refuses forged auth provenance/read effects 8ms
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"request-completed","requestId":"7bf66d5e-4e72-4b0b-933f-787dabbbbe94","correlationId":"7bf66d5e-4e72-4b0b-933f-787dabbbbe94","method":"GET","route":"/modules/sign-in/login","status":302,"durationMs":5}
+
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"request-completed","requestId":"aa2b2a9a-a83f-4a70-877c-ac4431d51101","correlationId":"aa2b2a9a-a83f-4a70-877c-ac4431d51101","method":"GET","route":"/modules/sign-in/callback","status":302,"durationMs":7}
+
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"http-draining"}
+
+stdout | src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+{"service":"browser","level":"info","event":"http-drained"}
+
+ ❯ |generator| src/v2/browser-session.test.ts (50 tests | 1 failed | 49 skipped) 1401ms
+   × RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations 1401ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/browser-session.test.ts > RG21 request-only bridge keeps tokens private and coordinates rejected fresh generations
+OperationError: Operation refused: SESSION_REQUEST_REQUIRED
+ ❯ Module.sessionAccess ../[emitted runtime data URL omitted]:66:24
+ ❯ src/v2/browser-session.test.ts:1399:53
+    1397|       child.close();
+    1398|     }
+    1399|     await expect(op.withProcess(undefined, () => op.sessionAccess("cal…
+       |                                                     ^
+    1400|       { code: "SESSION_REQUEST_REQUIRED" },
+    1401|     );
+ ❯ Module.withProcess ../[emitted runtime data URL omitted]:85:17
+ ❯ src/v2/browser-session.test.ts:1399:21
+ ❯ run src/v2/browser-session.test.ts:181:12
+ ❯ src/v2/browser-session.test.ts:1376:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |generator| src/v2/workload.test.ts > RG21 actual emitted HTTP adapter preserves safe failure headers and refuses forged auth provenance/read effects
+Error: Missing src/runtime/tile-guard.ts
+ ❯ Object.load src/v2/workload.test.ts:118:22
+    116|     if (urls.has(path)) return urls.get(path) as string;
+    117|     const file = bundle.files.find((f) => f.path === path);
+    118|     if (!file) throw Error(`Missing ${path}`);
+       |                      ^
+    119|     let source = new TextDecoder().decode(file.bytes);
+    120|     if (path === "src/modules/caller/send.ts" || path === "src/modules…
+ ❯ src/v2/workload.test.ts:1737:46
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 5 passed | 68 skipped (75)
+   Start at  21:42:07
+   Duration  2.49s (tests 42%, transform 36%, import 22%)

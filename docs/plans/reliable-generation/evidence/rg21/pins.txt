@@ -1,0 +1,22 @@
+frozen-v2 80 unchanged paths; reviewed [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/extension-api/index.ts',
+  'src/runtime/admission.ts',
+  'src/runtime/http.ts',
+  'src/runtime/operation.ts'
+]
+/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg21/pins.ts:38
+  if (changed.some((path) => !allowed.has(path))) throw Error("Unexpected substantive output");
+                                                        ^
+
+Error: Unexpected substantive output
+    at <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg21/pins.ts:38:57)
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves-generator

@@ -1,0 +1,17 @@
+/home/ash/github/jeeves/jeeves-generator/src/json.ts:17
+  throw new GeneratorRefusal(code, path, message);
+        ^
+
+GeneratorRefusal: INVALID_GENERATION at /generation: [{"code":"LANE_INVALID","message":"Read can't link to Caller; an action reaches a service (not a worker), an API or the CDN.","severity":"error","target":{"path":["architecture","studio","entries",0]}}]
+
+    at refuse (/home/ash/github/jeeves/jeeves-generator/src/json.ts:17:9)
+    at assembleV2 (/home/ash/github/jeeves/jeeves-generator/src/v2/assemble.ts:33:26)
+    at <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg21/standalone.ts:22:16) {
+  code: 'INVALID_GENERATION',
+  path: '/generation'
+}
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves-generator

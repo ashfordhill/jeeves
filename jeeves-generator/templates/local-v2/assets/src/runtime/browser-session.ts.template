@@ -6,7 +6,7 @@ import type { HttpRoutes } from "./http.ts";
 import type { TileGuard, Caller, SignIn } from "./tile-guard.ts";
 import type { SigningKeys, SealingKeys } from "./keys.ts";
 import { transaction, type TransactionPool } from "./transaction.ts";
-import { assertOperation, operation, withOperation } from "./operation.ts";
+import { assertOperation, operation, withOperation, rememberSessionAccess } from "./operation.ts";
 import { periodic, type ProcessScope } from "./process.ts";
 import type { BrowserIssuer } from "./browser-oidc.ts";
 import { browserRefresh } from "./browser-refresh.ts";
@@ -43,9 +43,10 @@ function cookie(request:FastifyRequest,name:string):string|undefined {
 }
 const equal = (a:string,b:string) => {const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length && timingSafeEqual(x,y);};
 const unsafe = (method:string) => !["GET","HEAD","OPTIONS"].includes(method);
-export function createBrowserSession(options:{namespace:string;module:string;scope?:ProcessScope;pool:TransactionPool;settings:BrowserConfiguration;issuer:BrowserIssuer}) {
+export function createBrowserSession(options:{namespace:string;module:string;audience?:string;targets?:readonly string[];scope?:ProcessScope;pool:TransactionPool;settings:BrowserConfiguration;issuer:BrowserIssuer}) {
   const {namespace,settings:s,pool,issuer}=options;
   const scope=options.scope;
+  if(options.targets?.length && (!options.audience || (s.audience!==undefined && s.audience!==options.audience)))throw new Error("Incompatible browser forwarding audience");
   const authority=hash(JSON.stringify([s.issuer,s.clientId]));
   const prefix=`__Host-jeeves-${options.module}`;
   const names={session:`${prefix}-session`,login:`${prefix}-login`,guest:`${prefix}-guest`};
@@ -92,6 +93,15 @@ export function createBrowserSession(options:{namespace:string;module:string;sco
       return null;
     });
     if (!result) {if(reply)clear(reply,names.session);throw refused();}
+    rememberSessionAccess(async (target,rejectedGeneration)=>{
+      if (!options.targets?.includes(target)) throw new HttpError(403,"SESSION_AUDIENCE_FORBIDDEN","Service recipient is not declared.");
+      const row=await coordinateRefresh({pool,namespace,authority,cookieHash,settings:s,issuer,rejectedGeneration,binding:field=>bind(`session:${cookieHash}:${field}`)});
+      if(!row || row.subject!==result.subject)throw refused();
+      const access=row.access_sealed?s.keys.seal.open(row.access_sealed,bind(`session:${cookieHash}:access`)):undefined;
+      if(!access || access.length>16384 || /\s/.test(access))throw refused();
+      await issuer.verifyAccess(access,options.audience!,result.subject);
+      return Object.freeze({token:access,generation:row.refresh_generation});
+    });
     guest(request); // declared guest state must also be valid when supplied alongside a session
     return Object.freeze({signedIn:true,principal:Object.freeze({subject:result.subject,claims:Object.freeze({sub:result.subject,email:result.email,name:result.name})})});
   };
@@ -117,7 +127,7 @@ export function createBrowserSession(options:{namespace:string;module:string;sco
     ...guard,
     signIn:s.signIn,
     /** Private generated token-availability boundary. Local identity lookup never needs refresh.
-     * No HTTP route or product capability exposes it; forwarding is not implemented here. */
+     * No HTTP route or product capability exposes it. Forwarding uses a private request bridge. */
     async refresh(request:FastifyRequest){
       assertOperation();
       if(request.headers.authorization!==undefined)throw refused();

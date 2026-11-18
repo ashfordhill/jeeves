@@ -17,7 +17,7 @@ import {
   generationReferences,
 } from "./generation.ts";
 import { generationTemplates } from "./generation-catalog.ts";
-import { generationCapabilities } from "./generation-support.ts";
+import { generationCapabilities, sessionForwardingRefusal } from "./generation-support.ts";
 import type { OperationInput } from "./operations.ts";
 import { accessAllows, type DeclaredAccess, designOwnership, type Ownership } from "./ownership.ts";
 import {
@@ -226,6 +226,42 @@ export function planModules(
         `${sentence(view.name(host))} already generates a ${templateWords[plan.template]} template as a tile; ${plan.lead.name} can't make another.`,
       );
   }
+  // Normal mouse/chat connections refuse only the installed request-scoped session pairing.
+  for (const link of view.links) {
+    if (!link.tile || !["service", "microservice"].includes(view.kindOf(link.tile) ?? "")) continue;
+    const source = leads.find(
+      (plan) => plan.lead.host === link.module.host && plan.binding?.kind === "browser-session",
+    );
+    const targetSession = leads.some(
+      (plan) => plan.lead.host === link.tile && plan.template === "browser-session",
+    );
+    if (!source && !targetSession) continue;
+    const target = leads.find(
+      (plan) => plan.lead.host === link.tile && plan.binding?.kind === "verified-identity",
+    );
+    const refusal = sessionForwardingRefusal(
+      source?.binding?.kind === "browser-session" ? source.binding.identity.element : undefined,
+      target?.binding?.kind === "verified-identity" ? target.binding.identity.element : undefined,
+      targetSession,
+    );
+    if (refusal) refuse(refusal);
+    if (
+      source &&
+      !view
+        .inHost(link.tile)
+        .some(
+          (module) =>
+            !leads.some(
+              (plan) =>
+                plan.binding &&
+                (plan.lead.id === module.id || plan.parts.some((part) => part.id === module.id)),
+            ),
+        )
+    )
+      refuse(
+        `Service call ${link.tile} requires an HTTP process with a route stub; no installed cross-process adapter exists for its other operations.`,
+      );
+  }
   return { leads, refusals };
 }
 
@@ -286,7 +322,7 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
           )
       )
         refuse(
-          "Browser session cannot share a Service with bearer Auth guard, webhook ingress or JWT-only Required-user templates (Favorites, Rate limiter, Multipart uploads). Use a separate Service; session forwarding is unavailable.",
+          "Browser session cannot share a Service with bearer Auth guard, webhook ingress or JWT-only Required-user templates (Favorites, Rate limiter, Multipart uploads). Use a separate Service; forwarding requires a matching-Identity bearer Auth guard on its callee.",
         );
       const state = dependency(view.linksOf(lead, "state")[0]);
       const identity = view.linksOf(lead, "identity").find(isIdentity);

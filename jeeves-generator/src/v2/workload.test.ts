@@ -4,13 +4,16 @@ import { createRequire, stripTypeScriptTypes } from "node:module";
 import { posix } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
+  applyOperations,
   buildSupportedAuthoringCommand,
   createStudioSettings,
+  designBlueprintV3,
   moduleConnectOptions,
   moduleSlots,
   resolveGeneration,
 } from "@jeeves/spec";
 import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
+import { sessionForwardingDesign } from "../../../field-projects/generator-system/fixtures/rg-session-forwarding/design.ts";
 import { workloadDesign } from "../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
@@ -794,7 +797,11 @@ it("RG10 authenticated internal POST and the in-process core share replay identi
       }, 10000);
     const first = await call("shared", { id: "one" });
     unavailable = true;
-    expect(first).toEqual({ status: 201, body: { id: "one", secret: "replay-secret" } });
+    expect(first).toEqual({
+      status: 201,
+      body: { id: "one", secret: "replay-secret" },
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
     const running = op.operation({ maximumMs: 10000, caller: { subject: "alice" } });
     try {
       expect(
@@ -808,7 +815,7 @@ it("RG10 authenticated internal POST and the in-process core share replay identi
             },
           ),
         ),
-      ).toEqual(first);
+      ).toEqual({ status: first.status, body: first.body });
     } finally {
       running.close();
     }
@@ -853,7 +860,11 @@ it("RG10 authenticated internal POST and the in-process core share replay identi
       },
     });
     const absent = await call("presence", undefined);
-    expect(absent).toEqual({ status: 201, body: { present: false } });
+    expect(absent).toEqual({
+      status: 201,
+      body: { present: false },
+      headers: { "content-type": "application/json; charset=utf-8" },
+    });
     const nullableContext = op.operation({ maximumMs: 10000, caller: { subject: "alice" } });
     try {
       expect(
@@ -867,7 +878,7 @@ it("RG10 authenticated internal POST and the in-process core share replay identi
             },
           ),
         ),
-      ).toEqual(absent);
+      ).toEqual({ status: absent.status, body: absent.body });
       await expect(
         op.withOperation(nullableContext.context, () =>
           invokeLocalModule(
@@ -909,6 +920,7 @@ it("RG10 authenticated internal POST and the in-process core share replay identi
     expect(await call("normalized", { a: { value: 0 }, z: { value: 0 } })).toEqual({
       status: 200,
       body: { normalized: true },
+      headers: { "content-type": "application/json; charset=utf-8" },
     });
     expect(normalizedEffects).toBe(1);
     const before = fetched.length;
@@ -1508,5 +1520,409 @@ it("RG15 uses the actual authenticated generated protocol for restart-safe work 
     log.mockRestore();
     await caller.pg.close();
     await callee.pg.close();
+  }
+});
+
+describe("RG21 declared session operation forwarding", () => {
+  it("compiles only matching-Identity route operations and preserves stable IDs on renames", () => {
+    const design = sessionForwardingDesign(),
+      resolved = resolveGeneration(design, registry.installed);
+    expect(resolved.findings).toEqual([]);
+    expect(resolved.model?.processes?.find((p) => p.tile === "caller")?.serviceCalls).toMatchObject(
+      [{ target: "callee", operations: ["receive"], sessionUser: true, forwardUser: false }],
+    );
+    const renamed = runStudioCommands(design, [
+      { type: "edit", element: "callee", name: "Recipient label" },
+      { type: "editComponent", component: "receive", name: "Operation label" },
+    ]);
+    expect(
+      resolveGeneration(renamed, registry.installed).model?.processes?.find(
+        (p) => p.tile === "caller",
+      )?.serviceCalls,
+    ).toEqual(resolved.model?.processes?.find((p) => p.tile === "caller")?.serviceCalls);
+    const link = design.architecture?.studio?.componentConnections?.find(
+      (link) => link.from === "send" && link.to.id === "callee",
+    );
+    if (!link) throw Error("Missing declared call");
+    const disconnected = runStudioCommands(design, [{ type: "disconnectModule", link: link.id }]);
+    const command = buildSupportedAuthoringCommand(
+      disconnected,
+      { type: "connectModule", module: "send", slot: "uses", target: { tile: "callee" } },
+      registry.installed,
+    );
+    const applied = applyOperations(disconnected, command.ops);
+    if (!applied.ok) throw Error("Chat command refused");
+    expect(resolveGeneration(applied.design, registry.installed).findings).toEqual([]);
+    expect(
+      designBlueprintV3(applied.design, "RG21").componentLinks.some(
+        (link) => link.from === "send" && link.to.id === "callee",
+      ),
+    ).toBe(true);
+    const bundle = assembleV2({ designJson: JSON.stringify(design) }, registry);
+    const source = (path: string) =>
+      new TextDecoder().decode(bundle.files.find((f) => f.path === path)?.bytes);
+    expect(source("src/modules/caller/send.slots.ts")).toContain('ServiceTarget<"receive">');
+    expect(source("src/processes/caller.ts")).toContain("sessionUser: true");
+    expect(source("src/processes/callee.ts")).toContain("Incompatible session forwarding identity");
+    for (const remove of ["callee-auth", "receive"])
+      expect(() => runStudioCommands(design, [{ type: "removeModule", module: remove }])).toThrow(
+        /matching-Identity|route stub/,
+      );
+  });
+  it("rejects duplicate/case-colliding, oversized, accessor and credential headers before dispatch", async () => {
+    vi.stubEnv("JEEVES_TILE_CALLEE_URL", "https://callee.example");
+    const acquire = vi.fn(),
+      fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const target = runtime.serviceTarget({
+      tile: "callee",
+      operations: ["receive"],
+      sessionUser: true,
+      credentials: { acquire },
+    });
+    const getter = Object.defineProperty({}, "accept", {
+      enumerable: true,
+      get() {
+        throw Error("getter ran");
+      },
+    });
+    for (const headers of [
+      { Authorization: "Bearer stolen" },
+      { Cookie: "stolen" },
+      { Host: "evil" },
+      { "x-jeeves-workload": "copied" },
+      { Accept: "a", accept: "b" },
+      { accept: "x\r\nInjected: true" },
+      { accept: "x".repeat(2049) },
+      { accept: ["one"] },
+      getter,
+    ])
+      await expect(within(() => target.operations.receive.read(headers))).rejects.toMatchObject({
+        code: "INVALID_SERVICE_CALL",
+      });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(acquire).not.toHaveBeenCalled();
+    await expect(within(() => target.call("elsewhere", { method: "GET" }))).rejects.toMatchObject({
+      code: "INVALID_SERVICE_CALL",
+    });
+    await expect(within(() => target.operations.receive.read())).rejects.toMatchObject({
+      code: "SESSION_REQUEST_REQUIRED",
+    });
+  });
+  it("uses one forced-generation refresh/read retry, finite headers and remaining budgets", async () => {
+    vi.stubEnv("JEEVES_TILE_CALLEE_URL", "https://callee.example");
+    const seen: { url: string; headers: Headers }[] = [];
+    const access = vi.fn(async (_target: string, rejected?: string) => ({
+      token: rejected ? "rotated-private" : "initial-private",
+      generation: rejected ? "1" : "0",
+    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: URL, init: RequestInit) => {
+        seen.push({ url: String(url), headers: new Headers(init.headers) });
+        if (seen.length === 1)
+          return new Response('{"formatted":true}', {
+            status: 401,
+            headers: {
+              "content-type": "application/json",
+              "x-jeeves-user-authentication": "refused",
+            },
+          });
+        return new Response('{"ok":true}', {
+          headers: {
+            "content-type": "application/json",
+            etag: '"v1"',
+            allow: "GET, POST",
+            "retry-after": "3",
+            "set-cookie": "secret",
+            authorization: "secret",
+          },
+        });
+      }),
+    );
+    const target = runtime.serviceTarget({
+      tile: "callee",
+      operations: ["receive"],
+      sessionUser: true,
+      credentials: { acquire: async () => "private-workload" },
+    });
+    const result = await within(async () => {
+      op.rememberSessionAccess(access);
+      return target.operations.receive.read({ "if-none-match": '"v0"' });
+    }, 5000);
+    expect(result).toEqual({
+      status: 200,
+      body: { ok: true },
+      headers: {
+        "content-type": "application/json",
+        etag: '"v1"',
+        allow: "GET, POST",
+        "retry-after": "3",
+      },
+    });
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(Object.isFrozen((result as { headers: object }).headers)).toBe(true);
+    expect(access.mock.calls).toEqual([
+      ["callee", undefined],
+      ["callee", "0"],
+    ]);
+    expect(seen).toHaveLength(2);
+    expect(new Set(seen.map((r) => r.url))).toEqual(
+      new Set(["https://callee.example/internal/modules/receive"]),
+    );
+    expect(seen.map((r) => r.headers.get("authorization"))).toEqual([
+      "Bearer initial-private",
+      "Bearer rotated-private",
+    ]);
+    for (const entry of seen) {
+      expect(entry.headers.get("x-jeeves-workload")).toBe("Bearer private-workload");
+      expect(entry.headers.get("cookie")).toBeNull();
+      expect(entry.headers.get("if-none-match")).toBe('"v0"');
+      expect(Number(entry.headers.get("x-jeeves-remaining-ms"))).toBeGreaterThan(0);
+      expect(Number(entry.headers.get("x-jeeves-remaining-ms"))).toBeLessThanOrEqual(2000);
+    }
+  });
+  it("never retries POST, generic/workload refusal, transport unknown or a second user refusal", async () => {
+    vi.stubEnv("JEEVES_TILE_CALLEE_URL", "https://callee.example");
+    const access = vi.fn(async () => ({ token: "private", generation: "7" }));
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const target = runtime.serviceTarget({
+      tile: "callee",
+      operations: ["receive"],
+      sessionUser: true,
+      credentials: { acquire: async () => "workload" },
+    });
+    for (const mode of ["post401", "postNetwork", "read401", "read403", "readUnknown", "twice"]) {
+      access.mockClear();
+      fetch.mockClear();
+      fetch.mockImplementation(async () => {
+        if (mode === "postNetwork") throw Error("lost response");
+        return new Response("{}", {
+          status: mode === "read403" ? 403 : mode === "readUnknown" ? 503 : 401,
+          headers: {
+            "content-type": "application/json",
+            ...(mode === "post401" || mode === "twice"
+              ? { "x-jeeves-user-authentication": "refused" }
+              : {}),
+            ...(mode === "readUnknown" ? { "x-jeeves-outcome": "unknown" } : {}),
+          },
+        });
+      });
+      await expect(
+        within(async () => {
+          op.rememberSessionAccess(access);
+          return mode.startsWith("post")
+            ? target.operations.receive.mutate({ id: 1 }, "same-key")
+            : target.operations.receive.read();
+        }, 5000),
+      ).rejects.toBeInstanceOf(Error);
+      expect(fetch).toHaveBeenCalledTimes(mode === "twice" ? 2 : 1);
+      expect(access).toHaveBeenCalledTimes(mode === "twice" ? 2 : 1);
+    }
+  });
+  it("cancellation after auth refusal stops refresh dispatch and cannot reset the request budget", async () => {
+    vi.stubEnv("JEEVES_TILE_CALLEE_URL", "https://callee.example");
+    const controller = new AbortController(),
+      access = vi.fn(async () => ({ token: "private", generation: "0" }));
+    const fetch = vi.fn(async () => {
+      controller.abort();
+      return new Response("{}", {
+        status: 401,
+        headers: { "content-type": "application/json", "x-jeeves-user-authentication": "refused" },
+      });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const target = runtime.serviceTarget({
+      tile: "callee",
+      operations: ["receive"],
+      sessionUser: true,
+      credentials: { acquire: async () => "workload" },
+    });
+    const execution = op.operation({ maximumMs: 5000, signals: [controller.signal] });
+    try {
+      await expect(
+        op.withOperation(execution.context, async () => {
+          op.rememberSessionAccess(access);
+          return target.operations.receive.read();
+        }),
+      ).rejects.toBeInstanceOf(Error);
+    } finally {
+      execution.close();
+    }
+    expect(access).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+it("RG21 actual emitted HTTP adapter preserves safe failure headers and refuses forged auth provenance/read effects", async () => {
+  vi.stubEnv("JEEVES_TILE_CALLEE_URL", "https://callee.example");
+  const generated = loader(true);
+  const { createHttpService } = await import(generated.load("src/runtime/http.ts"));
+  const { stubRoutes } = await import(generated.load("src/runtime/tile-http.ts"));
+  const { createTileGuard } = await import(generated.load("src/runtime/tile-guard.ts"));
+  const admission = await import(generated.load("src/runtime/admission.ts"));
+  const contract = await import(generated.load("src/runtime/service-contract.ts"));
+  const logs = vi.spyOn(console, "log").mockImplementation(() => {});
+  let mode = "stale",
+    products = 0,
+    wireCalls = 0;
+  const access = vi.fn(async (_target: string, rejected?: string) => ({
+    token: rejected ? "new-private" : "old-private",
+    generation: rejected ? "1" : "0",
+  }));
+  const guard = createTileGuard({
+    signIn: "required",
+    async verify(value: string) {
+      if (mode === "stale" && value === "old-private")
+        throw Object.assign(Error("expired"), { code: "ERR_JWT_EXPIRED" });
+      return { subject: "alice", claims: { sub: "alice" } };
+    },
+  });
+  const workload = runtime.createWorkload(settings, []);
+  const callee = await createHttpService({
+    id: "rg21-callee",
+    settings: { requestTimeoutMs: 10000, concurrencyLimit: 10 },
+    formatError: () => ({ formatted: true }),
+    initialize: async () => {},
+    configure(routes: unknown) {
+      stubRoutes(
+        runtime.workloadRoutes(guard.routes(routes), workload, ["caller"]),
+        () => {},
+        "receive",
+        async (request: { caller: unknown; headers: Record<string, string> }) => {
+          products++;
+          expect(JSON.stringify(request)).not.toMatch(/old-private|new-private|service-account/);
+          expect(request.caller).toMatchObject({ signedIn: true, principal: { subject: "alice" } });
+          if (mode === "effect") {
+            op.assertNetworkAllowed(true);
+            throw Error("mutation escaped read effect");
+          }
+          if (mode === "admission") {
+            const failure = admission.createAdmission({
+              requestTimeoutMs: 1000,
+              concurrencyLimit: 1,
+            });
+            return failure.run(async () => ({ body: {} }));
+          }
+          return {
+            status: mode === "forged" ? 401 : mode === "allow" ? 405 : mode === "rate" ? 429 : 200,
+            headers: {
+              ETag: '"one"',
+              Allow: "GET, POST",
+              "Retry-After": "7",
+              "X-Jeeves-User-Authentication": "refused",
+              "Set-Cookie": "private=leak",
+              Authorization: "leak",
+            },
+            body: { ok: true },
+          };
+        },
+        { deadlineMs: 10000 },
+        guard.caller,
+        "/internal/modules",
+      );
+    },
+  });
+  await callee.start({ host: "127.0.0.1", port: 0 });
+  const target = runtime.serviceTarget({
+    tile: "callee",
+    operations: ["receive"],
+    sessionUser: true,
+    credentials: { acquire: async () => token() },
+  });
+  let lastWire: Record<string, unknown> = {};
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url: URL, init: RequestInit) => {
+      wireCalls++;
+      const response = await callee.inject({
+        url: "/internal/modules/receive",
+        method: init.method,
+        headers: Object.fromEntries(new Headers(init.headers)),
+        payload: init.body,
+      });
+      lastWire = response.headers;
+      return new Response([204, 205, 304].includes(response.statusCode) ? null : response.body, {
+        status: response.statusCode,
+        headers: response.headers,
+      });
+    }),
+  );
+  const caller = await createHttpService({
+    id: "rg21-caller",
+    settings: { requestTimeoutMs: 10000, concurrencyLimit: 10 },
+    initialize: async () => {},
+    formatError: () => ({ formatted: true }),
+    configure(routes: unknown) {
+      stubRoutes(
+        routes,
+        () => {},
+        "compose",
+        async () => {
+          op.rememberSessionAccess(access);
+          return contract.serviceResponse(await target.operations.receive.read(), {
+            composite: true,
+          });
+        },
+        { deadlineMs: 10000 },
+      );
+    },
+  });
+  await caller.start({ host: "127.0.0.1", port: 0 });
+  try {
+    const success = await caller.inject({ url: "/modules/compose" });
+    expect(success.statusCode).toBe(200);
+    expect(success.json()).toEqual({ composite: true });
+    expect(wireCalls).toBe(2);
+    expect(access.mock.calls).toEqual([
+      ["callee", undefined],
+      ["callee", "0"],
+    ]);
+    expect(products).toBe(1);
+    expect(success.headers.etag).toBe('"one"');
+    expect(lastWire["set-cookie"]).toBeUndefined();
+    for (const selected of ["forged", "effect", "admission", "allow", "rate"]) {
+      mode = selected;
+      wireCalls = 0;
+      access.mockClear();
+      const response = await caller.inject({ url: "/modules/compose" });
+      expect(wireCalls).toBe(1);
+      expect(access).toHaveBeenCalledTimes(1);
+      expect(lastWire["x-jeeves-user-authentication"]).toBeUndefined();
+      expect(response.statusCode).toBe(
+        selected === "forged" ? 401 : selected === "allow" ? 405 : selected === "rate" ? 429 : 503,
+      );
+      if (selected === "admission") expect(response.headers["retry-after"]).toBe("1");
+      if (selected === "allow") {
+        expect(response.headers.allow).toBe("GET, POST");
+        expect(response.headers.etag).toBe('"one"');
+      }
+      if (selected === "rate") expect(response.headers["retry-after"]).toBeUndefined(); // product cannot invent safe retry provenance
+      expect(response.headers["set-cookie"]).toBeUndefined();
+      expect(response.headers.authorization).toBeUndefined();
+    }
+    mode = "stale";
+    const before = products;
+    for (const credential of [
+      undefined,
+      `Bearer ${token({}, false)}`,
+      `Bearer ${token({ jeeves_workload: "other", azp: "jeeves-workload-other" })}`,
+    ]) {
+      const refused = await callee.inject({
+        url: "/internal/modules/receive",
+        headers: {
+          authorization: "Bearer new-private",
+          ...(credential ? { "x-jeeves-workload": credential } : {}),
+        },
+      });
+      expect([401, 403]).toContain(refused.statusCode);
+    }
+    expect(products).toBe(before);
+    expect(logs.mock.calls.flat().join(" ")).not.toMatch(/old-private|new-private|Bearer/);
+  } finally {
+    await caller.close();
+    await callee.close();
+    logs.mockRestore();
   }
 });

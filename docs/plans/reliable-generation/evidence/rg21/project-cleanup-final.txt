@@ -1,0 +1,9 @@
+ rg21_projects_remaining
+-------------------------
+                       0
+(1 row)
+
+ all_unit_period_projects_remaining
+------------------------------------
+                                  0
+(1 row)

@@ -24,6 +24,7 @@ const scaffolds = {
   core: ["src/runtime/tile-process.ts", "src/runtime/tile-process.ts.template"],
   entry: ["src/modules/entry.ts", "src/modules/entry.ts.template"],
   http: ["src/runtime/tile-http.ts", "src/runtime/tile-http.ts.template"],
+  contract: ["src/runtime/service-contract.ts", "src/runtime/service-contract.ts.template"],
   loop: ["src/runtime/tile-loop.ts", "src/runtime/tile-loop.ts.template"],
   clients: ["src/runtime/module-clients.ts", "src/runtime/module-clients.ts.template"],
   guard: ["src/runtime/tile-guard.ts", "src/runtime/tile-guard.ts.template"],
@@ -184,6 +185,7 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
                 ? [scaffolds.core]
                 : []),
             ...(http ? [scaffolds.http] : []),
+            ...(http || processes.some((process) => process.workload) ? [scaffolds.contract] : []),
             ...(guarded ? [scaffolds.guard] : []),
             ...(looping ? [scaffolds.loop] : []),
             ...(searching ? [scaffolds.search] : []),

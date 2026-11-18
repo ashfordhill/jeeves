@@ -19148,3 +19148,39 @@ workload settings the same way.
 - Bounds:4500ms row lock,5000ms statement/idle transaction,5500ms private client query,6500ms total internal attempt including completion; SDK3000ms. Original caller budget gates dispatch; received tokens can persist despite browser disconnect. Actual pg proof confirms subsequent ordinary queries retain2500ms default; process shutdown keeps its existing10s bound.
 - Final pnpm check lint/types143files/1328tests (49 session cases), full browser86/86 plus final session mouse/export1/1, web build/offline chat, actual69/66-file checker/TS7.0.2 exports and pinned SDK50-POST/driver proofs pass. Earlier Board mount race, private driver timeout correction and targeted reruns remain in [evidence](plans/reliable-generation/evidence/rg20/README.md). Native competing-process proof remains the assigned later checkpoint.
 - All42 original containers, six non-README roots, original owner patch/archive mapping, accepted050–054/counter/receipt builders, generated dependency pins and frozenv1 are preserved. Owner README edits and old e2e projects are excluded/preserved; unit projects remaining0. One explicit-path local commit follows: `RG20: coordinate session refresh and distinguish issuer failure outcomes`; no later unit, push or deployment.
+
+## 2026-11-17 — RG21 session forwarding active, unaccepted/uncommitted
+
+- Sole assigned RG21 on accepted RG20 `ecef0c2`; binding generated callee-operation handles to
+  request-scoped private session credentials and independent RG09 workload authentication.
+- Supported pairing is Browser session caller to matching-Identity bearer-guard HTTP route stubs.
+  Bounded JSON contracts/finite headers/remaining budgets apply; only reads may refresh/retry once.
+  POST and uncertain outcomes remain unretried; no arbitrary mutation replay guarantee is inferred.
+- Focused emitted proofs, actual scratch checker/TypeScript, D11/mouse/chat, preservation evidence,
+  final handoff and one explicit-path local commit remain. No later unit, root/owner service edit,
+  native matrix, paid/live call, push or deployment.
+
+## 2026-11-17 — RG21 declared session forwarding complete for coordinator review
+
+- Browser session requests now bind private access-token availability to actual generated callee
+  operation handles, matching Identity/user audience and independent RG09 workload credentials.
+  Tokens stay out of immutable hooks/contexts/logs; independent work scopes cannot inherit them.
+- Finite conditional/request and ETag/Allow/JSON content-type/Retry-After response contracts preserve
+  safe error/composite metadata. Generated read effect authority refuses product mutations.
+  Only a generated user-verifier401 on GET permits one generation-aware coordinated refresh/retry;
+  POST, workload/product refusals and unknown outcomes never automatically replay. No new controls,
+  provider, product route map, migration or background user authority. API8 string-call bodies remain
+  compatible; new per-operation properties are additive and statically enumerate declared IDs.
+- Final pnpm check lint/types143files/1335tests; full browser87/87 plus final new mouse/export1/1;
+  web build/plain offline chat; actual75-file old/new-API and55-file Worker checker/TS7.0.2 exports;
+  actual pinned JOSE/OIDC/private-import proof all pass. Final guide-only corrections receive focused
+  off-pin/actual export checks. Initial harness/type/exact-header/file-list failures and limits are
+  retained in [evidence](plans/reliable-generation/evidence/rg21/README.md); no weakened assertions.
+- Normal mouse/chat/export share session-Identity refusals; renamed labels preserve target/operation
+  identities. Callee/user audience and exact shared HTTPS issuer/client mapping remain required
+  integration work. Generic POST keys prove no replay guarantee; native composition remains later.
+- Six original roots, original owner patch/archive mapping, all42 containers, accepted050–055 and
+  receipt/counter builders, dependency pins and frozenv1 match. Unit-period e2e projects remaining0;
+  old projects preserved. External owner48776d6/new plan and unrelated owner work are excluded;
+  no later-unit execution, owner studio/database, root edit, paid/live call, push or deployment.
+- One explicit-path local commit follows: `RG21: forward session identity through declared authenticated operations`.

@@ -1,6 +1,7 @@
 // Private OIDC adapter. Protocol checks belong to maintained openid-client, never product hooks.
 import { AsyncLocalStorage } from "node:async_hooks";
 import * as oidc from "openid-client";
+import { createRemoteJWKSet, jwtVerify, customFetch as joseFetch } from "jose";
 import { HttpError } from "./admission.ts";
 import { currentProcess, dependency, OperationError } from "./operation.ts";
 import { probeDependency } from "./process.ts";
@@ -40,10 +41,15 @@ export function createBrowserIssuer(settings: BrowserConfiguration) {
       return new Response(Buffer.concat(chunks),{status:response.status,statusText:response.statusText,headers:response.headers});
     } catch(error){void reader?.cancel().catch(()=>{});throw error;} finally {reader?.releaseLock();}
   };
+  let userKeys: ReturnType<typeof createRemoteJWKSet> | undefined;
   const discover = async () => {
     const next = await oidc.discovery(new URL(settings.issuer), settings.clientId,
       {client_secret:settings.clientSecret, id_token_signed_response_alg:"RS256"}, undefined,
       {timeout:3, [oidc.customFetch]:customFetch, execute:[oidc.enableNonRepudiationChecks]});
+    const jwks=next.serverMetadata().jwks_uri;
+    if(jwks && (!userKeys || config?.serverMetadata().jwks_uri!==jwks))
+      userKeys=createRemoteJWKSet(new URL(jwks), {timeoutDuration:3000,cacheMaxAge:60000,cooldownDuration:30000,
+        [joseFetch]:(url,options)=>customFetch(url,{...options,headers:Object.fromEntries(options.headers),body:undefined})});
     config = next;
     scope?.dependencyReady?.(health,true);
     return next;
@@ -52,6 +58,22 @@ export function createBrowserIssuer(settings: BrowserConfiguration) {
   const required = () => { if (!config) throw unavailable(); return config; };
   return {
     async start() { try { await bounded(discover); } catch { throw unavailable(); } },
+    /** Selected Keycloak access JWT only: signature, exact issuer/audience, expiry and same
+     * stored user. A workload-marked JWT can never acquire user authority. No token in result. */
+    async verifyAccess(token:string,audience:string,subject:string) {
+      return bounded(async()=>{
+        required(); if(!userKeys)throw unavailable();
+        try {
+          const {payload}=await jwtVerify(token,userKeys,{issuer:settings.issuer,audience,algorithms:["RS256"],requiredClaims:["exp","sub"]});
+          if(payload.sub!==subject || "jeeves_workload" in payload)throw new Error("Invalid user");
+        } catch(error) {
+          const code=(error as {code?:string})?.code;
+          if(error instanceof Error && (error.message==="Invalid user" || ["ERR_JWT_EXPIRED","ERR_JWT_CLAIM_VALIDATION_FAILED","ERR_JWT_INVALID","ERR_JWS_INVALID","ERR_JWS_SIGNATURE_VERIFICATION_FAILED","ERR_JOSE_ALG_NOT_ALLOWED","ERR_JOSE_NOT_SUPPORTED","ERR_JWKS_NO_MATCHING_KEY"].includes(code??"")))
+            throw Object.assign(new HttpError(403,"SESSION_IDENTITY_INCOMPATIBLE","User identity cannot reach this recipient."),{outcome:"refused"});
+          throw unavailable();
+        }
+      });
+    },
     async authorize(input: {state:string;nonce:string;verifier:string}) {
       const parameters: Record<string,string> = {redirect_uri:settings.callback, response_type:"code", scope:settings.offlineAccess ? "openid profile email offline_access" : "openid profile email", state:input.state, nonce:input.nonce,
         code_challenge:await oidc.calculatePKCECodeChallenge(input.verifier), code_challenge_method:"S256"};

@@ -154,3 +154,8 @@ cron/cloud/workflow scheduling and RG15's unsupported remote authority/result ca
 ### RG17 authenticated generic inbox
 
 RG17 closes generic HMAC accept/store/process through the existing protected052 durable work engine. Generated verifier and acceptance remain private; the separate pure mapper and scoped completion body are product work. Stripe/other provider signatures/SDKs, arbitrary verifier hooks, public replay/admin UI, independent receiver-to-Worker handoff and forever dedupe remain unsupported. Completed retention is seven days; remote authority/checkpoint limits remain RG15’s. [Evidence and protocol](plans/reliable-generation/evidence/rg17/README.md).
+
+RG21 closes request-scoped Browser session forwarding for declared matching-Identity bearer-guard
+callee route operations. Generic POST remains unretried: an arbitrary key does not establish a
+callee replay/recovery contract. HTTPS/client/audience registration remains required integration
+work. See [the exact forwarding boundary](plans/reliable-generation/evidence/rg21/protocol.md).

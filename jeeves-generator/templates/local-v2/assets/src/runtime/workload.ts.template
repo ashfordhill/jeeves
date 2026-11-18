@@ -1,6 +1,6 @@
 import { createRemoteJWKSet, customFetch, jwtVerify } from "jose";
 import { readSecret } from "./local.ts";
-import { immutable, jsonBody } from "./hook-boundary.ts";
+import { jsonBody } from "./hook-boundary.ts";
 import {
   assertNetworkAllowed,
   assertOperation,
@@ -9,12 +9,14 @@ import {
   dependency,
   OperationError,
   verifiedBearer,
+  sessionAccess,
   withEffect,
   withProcess,
   withWorkload,
 } from "./operation.ts";
+import { serviceHeaders, requestHeaderNames, responseHeaderNames, serviceBody, registeredServiceResult } from "./service-contract.ts";
 import { registerWorkTarget } from "./work-integration.ts";
-import { HttpError } from "./admission.ts";
+import { HttpError, serviceHttpFailure } from "./admission.ts";
 import type { HttpRoutes } from "./http.ts";
 
 type Binding = Readonly<{ identity: string; client: string; audience: string }>;
@@ -311,99 +313,84 @@ async function boundedJson(response: Response): Promise<unknown> {
   }
   return size ? JSON.parse(Buffer.concat(chunks).toString("utf8")) : null;
 }
-/** Generated scoped handle: no URL, audience, header or credentials in the product API. */
-export function serviceTarget(binding: {
+/** Generated scoped handle: no URL, audience or credentials in the product API. Every operation
+ * is an actual compiled route root with bounded JSON@1. GET is read authority, POST is external
+ * mutation authority. Generic POST never attests a generated replay/recovery contract. */
+export function serviceTarget<const Operations extends readonly string[]>(binding: {
   tile: string;
-  operations: readonly string[];
+  operations: Operations;
   forwardUser?: boolean;
+  sessionUser?: boolean;
   credentials: Workload;
 }) {
   const base = serviceEndpoint(binding.tile);
   const allowed = new Set(binding.operations);
-  if (
-    new URL(base).pathname !== "/" ||
-    !safeId(binding.tile) ||
-    [...allowed].some((id) => !safeId(id))
-  )
-    throw new Error("Invalid service target binding");
-  const send = async (operation: string, request: Readonly<{ method: "GET" | "POST"; body?: unknown; key?: string }>, prefix = "/internal/modules", background = false, observe?: (actual:Promise<unknown>) => void, beforeDispatch?: () => Promise<void>) => {
-      assertOperation();
-      assertNetworkAllowed();
-      if (
-        !allowed.has(operation) ||
-        !request ||
+  if (new URL(base).pathname !== "/" || !safeId(binding.tile) ||
+      !allowed.size || allowed.size !== binding.operations.length || [...allowed].some(id => !safeId(id)) ||
+      (binding.sessionUser && binding.forwardUser)) throw new Error("Invalid service target binding");
+  type Request = Readonly<{ method: "GET" | "POST"; body?: unknown; key?: string; headers?: Readonly<Record<string,string>> }>;
+  const send = async (operation: string, request: Request, prefix = "/internal/modules", background = false, observe?: (actual:Promise<unknown>) => void, beforeDispatch?: () => Promise<void>) => {
+    assertOperation(); assertNetworkAllowed();
+    if (!allowed.has(operation) || !request ||
+        Object.getOwnPropertyNames(request).some(name=>!("value" in (Object.getOwnPropertyDescriptor(request,name)??{}))) ||
         !["GET", "POST"].includes(request.method) ||
-        Object.keys(request).some((key) => !["method", "body", "key"].includes(key)) ||
+        Object.keys(request).some(key=>!["method","body","key","headers"].includes(key)) ||
         (request.method === "GET" && (request.body !== undefined || request.key !== undefined)) ||
-        (request.key !== undefined && (typeof request.key !== "string" || !/^[\x21-\x7e]{1,255}$/.test(request.key)))
-      )
-        throw new OperationError("refused", "INVALID_SERVICE_CALL");
-      let body: string | undefined;
-      try {
-        body = jsonBody(request.body);
-      } catch {
-        throw new OperationError("refused", "INVALID_SERVICE_CALL");
-      }
-      return withEffect(request.method === "GET" ? "read" : "durable-external-work", async () => {
-        const token = await binding.credentials.acquire(binding.tile);
-        const context = currentOperation();
-        const user = !background && binding.forwardUser ? verifiedBearer() : undefined;
-        const headers = {
-          ...(request.key === undefined ? {} : {"idempotency-key": request.key}),
-          ...(body === undefined ? {} : { "content-type": "application/json" }),
-          "x-jeeves-workload": `Bearer ${token}`,
-          ...(user ? { authorization: `Bearer ${user}` } : {}),
-          ...(context
-            ? {
-                "x-jeeves-remaining-ms": String(Math.floor(context.remainingMs())),
-                "x-correlation-id": context.correlationId,
-              }
-            : {}),
-        };
+        (request.key !== undefined && (typeof request.key !== "string" || !/^[\x21-\x7e]{1,255}$/.test(request.key))))
+      throw new OperationError("refused", "INVALID_SERVICE_CALL");
+    let body:string|undefined, selected:Readonly<Record<string,string>>;
+    try {body=jsonBody(request.body); selected=serviceHeaders(request.headers,requestHeaderNames);}
+    catch {throw new OperationError("refused","INVALID_SERVICE_CALL");}
+    // Capture immutable wire input/target once; a retry cannot change recipient, input or key.
+    const method=request.method,key=request.key;
+    return withEffect(method === "GET" ? "read" : "durable-external-work", async () => {
+      const dispatch = async (user?:string) => {
+        const token=await binding.credentials.acquire(binding.tile);
         await beforeDispatch?.();
-        const result = await dependency({ mutation: request.method === "POST", observe }, async (signal) => {
-          const response = await fetch(new URL(`${prefix}/${operation}`, base), {
-            method: request.method,
-            body,
-            headers,
-            signal,
-            credentials: "omit",
-            redirect: "manual",
+        assertOperation();
+        return dependency({mutation:method === "POST",observe},async(signal,remaining)=>{
+          const context=currentOperation();
+          const response=await fetch(new URL(`${prefix}/${operation}`,base), {
+            method,body,signal,credentials:"omit",redirect:"manual",
+            headers:{...selected,...(key===undefined?{}:{"idempotency-key":key}),
+              ...(body===undefined?{}:{"content-type":"application/json"}),
+              "x-jeeves-workload":`Bearer ${token}`,...(user?{authorization:`Bearer ${user}`} : {}),
+              "x-jeeves-remaining-ms":String(Math.floor(Math.min(remaining,context?.remainingMs()??remaining))),
+              ...(context?{"x-correlation-id":context.correlationId}:{})},
           });
-          let value: unknown;
+          let value:unknown,headers:Readonly<Record<string,string>>;
           try {
-            value = await boundedJson(response);
-          } catch {
-            throw new OperationError(
-              request.method === "POST" ? "unknown" : "definite-failure",
-              "INVALID_SERVICE_RESPONSE",
-            );
-          }
-          if (
-            response.headers.get("x-jeeves-outcome") === "unknown" ||
-            (request.method === "POST" && response.status >= 500) ||
-            (value &&
-              typeof value === "object" &&
-              "error" in value &&
-              value.error === "OUTCOME_UNKNOWN")
-          )
-            throw new OperationError("unknown", "REMOTE_OUTCOME_UNKNOWN");
-          if (response.status >= 500)
-            throw new OperationError("definite-failure", "SERVICE_UNAVAILABLE");
-          return immutable({ status: response.status, body: value });
+            headers=serviceHeaders(Object.fromEntries(responseHeaderNames.flatMap(name=>{
+              const value=response.headers.get(name);return value===null?[]:[[name,value]];
+            })),responseHeaderNames);
+            if(binding.sessionUser && ![204,205,304].includes(response.status) && !/^application\/json(?:\s*;|$)/i.test(headers["content-type"]??""))throw Error("Invalid service content type");
+            value=serviceBody(await boundedJson(response));
+          } catch {throw new OperationError(method==="POST"?"unknown":"definite-failure","INVALID_SERVICE_RESPONSE");}
+          if(response.headers.get("x-jeeves-outcome")==="unknown" || (method==="POST" && response.status>=500) ||
+              (value && typeof value==="object" && "error" in value && value.error==="OUTCOME_UNKNOWN"))
+            throw new OperationError("unknown","REMOTE_OUTCOME_UNKNOWN");
+          return {status:response.status,body:value,headers,authRefused:response.status===401 && response.headers.get("x-jeeves-user-authentication")==="refused"};
         });
-        if (result.status === 401)
-          throw new HttpError(
-            401,
-            "SERVICE_SIGN_IN_REQUIRED",
-            "Service call authentication required.",
-          );
-        if (result.status === 403)
-          throw new HttpError(403, "SERVICE_CALL_FORBIDDEN", "Service call is not allowed.");
-        return result;
-      });
-    };
-  const handle = Object.freeze({call: (operation:string,request: Readonly<{method:"GET"|"POST";body?:unknown;key?:string}>) => send(operation,request)});
-  registerWorkTarget(handle,(operation,body,observe,beforeDispatch) => send(operation,{method:"POST",body},"/internal/work",true,observe,beforeDispatch));
+      };
+      // Session access is strictly request-scoped; durable work can never borrow its authority.
+      if(background && binding.sessionUser)throw new OperationError("refused","SESSION_REQUEST_REQUIRED");
+      const initial=binding.sessionUser?await sessionAccess(binding.tile):undefined;
+      let result=await dispatch(initial?.token ?? (!background && binding.forwardUser?verifiedBearer():undefined));
+      // A read cannot perform a generated mutation. No retry on generic401, workload refusal,
+      // transport/uncertain outcomes or POST, even if an arbitrary caller supplied a key.
+      if(binding.sessionUser && method==="GET" && result.authRefused){
+        const replacement=await sessionAccess(binding.tile,initial!.generation);
+        result=await dispatch(replacement.token); // exactly one retry, using remaining budget
+      }
+      if(result.status===401 || result.status===403 || result.status>=500)throw serviceHttpFailure(result.status,result.headers);
+      return registeredServiceResult(result.status,result.body,result.headers);
+    });
+  };
+  const operations=Object.freeze(Object.fromEntries([...allowed].map(operation=>[operation,Object.freeze({
+    read:(headers?:Readonly<Record<string,string>>)=>send(operation,{method:"GET",headers}),
+    mutate:(body:unknown,key?:string)=>send(operation,{method:"POST",body,key}),
+  })]))) as Readonly<Record<Operations[number],Readonly<{read:(headers?:Readonly<Record<string,string>>)=>ReturnType<typeof send>;mutate:(body:unknown,key?:string)=>ReturnType<typeof send>}>>>;
+  const handle=Object.freeze({operations,call:(operation:string,request:Request)=>send(operation,request)});
+  registerWorkTarget(handle,(operation,body,observe,beforeDispatch)=>send(operation,{method:"POST",body},"/internal/work",true,observe,beforeDispatch));
   return handle;
 }

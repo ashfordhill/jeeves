@@ -1,0 +1,97 @@
+docs/plans/reliable-generation/evidence/rg21/pins.ts:44:5 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    42 │   await writeFile(
+    43 │     new URL(`../../../../../${path}`, import.meta.url),
+  > 44 │     JSON.stringify(after, null, 2) + "\n",
+       │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    45 │   );
+    46 │
+
+  i Unsafe fix: Use a template literal.
+
+    42 42 │     await writeFile(
+    43 43 │       new URL(`../../../../../${path}`, import.meta.url),
+    44    │ - ····JSON.stringify(after,·null,·2)·+·"\n",
+       44 │ + ····`${JSON.stringify(after,·null,·2)}\n`,
+    45 45 │     );
+    46 46 │
+
+
+docs/plans/reliable-generation/evidence/rg21/protocol.mjs:111:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    109 │ await writeFile(
+    110 │   extension,
+  > 111 │   original + '\nimport {sessionAccess} from "../../runtime/operation.ts";\nvoid sessionAccess;\n',
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    112 │ );
+    113 │ try {
+
+  i Unsafe fix: Use a template literal.
+
+    109 109 │   await writeFile(
+    110 110 │     extension,
+    111     │ - ··original·+·'\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n',
+        111 │ + ··`${original}\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n`,
+    112 112 │   );
+    113 113 │   try {
+
+
+docs/plans/reliable-generation/evidence/rg21/standalone.ts:5:8 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━
+
+  ! This import is unused.
+
+    3 │ import { join } from "node:path";
+    4 │ import { workloadWorkerDesign } from "../../../../../field-projects/generator-system/fixtures/rg-session-forwarding/design.ts";
+  > 5 │ import { workloadDesign } from "../../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
+      │        ^^^^^^^^^^^^^^^^^^
+    6 │ import { exportNewDirectory } from "../../../../../jeeves-generator/src/export.ts";
+    7 │ import { assembleV2 } from "../../../../../jeeves-generator/src/v2/assemble.ts";
+
+  i Unused imports might be the result of an incomplete refactoring.
+
+  i Unsafe fix: Remove the unused imports.
+
+     3  3 │   import { join } from "node:path";
+     4  4 │   import { workloadWorkerDesign } from "../../../../../field-projects/generator-system/fixtures/rg-session-forwarding/design.ts";
+     5    │ - import·{·workloadDesign·}·from·"../../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
+     6  5 │   import { exportNewDirectory } from "../../../../../jeeves-generator/src/export.ts";
+     7  6 │   import { assembleV2 } from "../../../../../jeeves-generator/src/v2/assemble.ts";
+
+
+docs/plans/reliable-generation/evidence/rg21/docker-after.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+
+      1   1 │   [
+      2     │ - ··[
+      3     │ - ····"15a461f56f5397fa513a12c1b2390ba6e27e9c069190732b4c2770eeaa1d4e47",
+      4     │ - ····"excalidraw",
+      5     │ - ····"exited"
+      6     │ - ··],
+          2 │ + ··["15a461f56f5397fa513a12c1b2390ba6e27e9c069190732b4c2770eeaa1d4e47",·"excalidraw",·"exited"],
+      7   3 │     [
+      8   4 │       "1d8158c2b6f1ed8a6bbb4800fb06ff478113fd16f0396f36535d6cf1ba2f15f4",
+    ······· │
+     80  76 │       "exited"
+     81  77 │     ],
+     82     │ - ··[
+     83     │ - ····"6b2fa6a33c0cc18ae230a54d53fd3e9076cd8ffdfcc2649972e2cedc6651331a",
+     84     │ - ····"qrwty-qrwty-1",
+     85     │ - ····"exited"
+     86     │ - ··],
+         78 │ + ··["6b2fa6a33c0cc18ae230a54d53fd3e9076cd8ffdfcc2649972e2cedc6651331a",·"qrwty-qrwty-1",·"exited"],
+     87  79 │     [
+     88  80 │       "713f74a859a54595313a360f09221d7afe62657a7af758e43071674c39ac58ce",
+
+
+Checked 7 files in 13ms. No fixes applied.
+Found 1 error.
+Found 1 warning.
+Found 2 infos.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.

@@ -1,0 +1,35 @@
+// Generated root-operation wire contract: bounded JSON@1 and finite, value-checked headers.
+import { immutable, jsonBody, normalizedJsonDto } from "./hook-boundary.ts";
+export const requestHeaderNames = ["accept", "if-match", "if-none-match", "if-modified-since"] as const;
+export const responseHeaderNames = ["etag", "allow", "content-type", "retry-after"] as const;
+export function serviceHeaders(value: unknown, names: readonly string[]): Readonly<Record<string,string>> {
+  if (value === undefined) return Object.freeze({});
+  if (!value || typeof value !== "object" || Array.isArray(value) || ![Object.prototype,null].includes(Object.getPrototypeOf(value))) throw Error("Invalid service headers");
+  const result:Record<string,string> = {}; let bytes=0;
+  for(const name of Reflect.ownKeys(value)) {
+    if(typeof name!=="string")throw Error("Invalid service headers");
+    const property=Object.getOwnPropertyDescriptor(value,name);
+    const key=name.toLowerCase(), text=property && "value" in property ? property.value : undefined;
+    if(!names.includes(key) || Object.hasOwn(result,key) || typeof text!=="string" || text.length>2048 || /[^\x20-\x7e]/.test(text))throw Error("Invalid service headers");
+    bytes+=key.length+text.length;if(bytes>8192)throw Error("Invalid service headers");
+    result[key]=text;
+  }
+  return Object.freeze(result);
+}
+export function serviceBody(value:unknown):unknown {
+  // Validation is structural as well as byte bounded, before freezing or stringification.
+  jsonBody(value);
+  return normalizedJsonDto(value === undefined ? null : value);
+}
+
+interface ServiceResult { readonly status:number; readonly body:unknown; readonly headers:Readonly<Record<string,string>>; }
+const results=new WeakMap<object,Readonly<Record<string,string>>>();
+export function registeredServiceResult(status:number,body:unknown,headers:Readonly<Record<string,string>>):ServiceResult {
+  const result=immutable({status,body,headers});results.set(result,headers);return result;
+}
+export const serviceResultHeaders=(value:object)=>results.get(value);
+/** Application-owned composition preserves verified finite metadata, without status/auth overrides. */
+export function serviceResponse(result:ServiceResult,body:unknown=result.body):ServiceResult {
+  const headers=results.get(result);if(!headers)throw Error("Invalid service result");
+  return registeredServiceResult(result.status,serviceBody(body),headers);
+}

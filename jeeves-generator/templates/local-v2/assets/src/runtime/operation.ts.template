@@ -52,6 +52,20 @@ export function rememberVerifiedBearer(token: string): void {
   if (context) verifiedBearers.set(context, token);
 }
 export const verifiedBearer = () => { const context = currentOperation(); return context ? verifiedBearers.get(context) : undefined; };
+/** Private request-only credential provider. Child budgets inherit it; independent process/work
+ * scopes never do. Product contexts contain no provider, token or session identifier. */
+type SessionAccess = (target: string, rejectedGeneration?: string) => Promise<Readonly<{ token: string; generation: string }>>;
+const sessionAccessors = new WeakMap<OperationContext, SessionAccess>();
+export function rememberSessionAccess(provider: SessionAccess): void {
+  const context = currentOperation();
+  if (context) sessionAccessors.set(context, provider);
+}
+export function sessionAccess(target: string, rejectedGeneration?: string) {
+  assertOperation();
+  const context = currentOperation(), provider = context && sessionAccessors.get(context);
+  if (!provider) throw new OperationError("refused", "SESSION_REQUEST_REQUIRED");
+  return provider(target, rejectedGeneration);
+}
 export const currentOperation = () => active.getStore()?.context;
 export const currentProcess = () => active.getStore()?.scope;
 /** Private local mutation scope also refuses captured database handles/transactions. */
@@ -122,12 +136,16 @@ export function operation(options: {
     remainingMs: () => (controller.signal.aborted ? 0 : Math.max(0, expires - performance.now())),
   });
   contexts.add(context);
+  const parentContext = currentOperation();
+  const provider = parentContext && sessionAccessors.get(parentContext);
+  if (provider) sessionAccessors.set(context, provider);
   const bearer = verifiedBearer();
   if (bearer) verifiedBearers.set(context, bearer);
   return {
     context,
     close() {
       verifiedBearers.delete(context);
+      sessionAccessors.delete(context);
       clearTimeout(timer);
       for (const signal of parents) signal.removeEventListener("abort", cancel);
     },

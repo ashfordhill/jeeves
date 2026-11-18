@@ -25,6 +25,20 @@ export class HttpError extends Error {
   }
 }
 
+// Only generated user verification can attest this pre-product authentication refusal.
+const userRefusals = new WeakSet<object>();
+export function userAuthenticationRefusal() {
+  const error = new HttpError(401, "SIGN_IN_REQUIRED", "Sign in to continue.");
+  userRefusals.add(error);
+  return error;
+}
+const serviceFailures = new WeakMap<object, Readonly<Record<string,string>>>();
+/** Private verified generated-target metadata; product cannot manufacture this provenance. */
+export function serviceHttpFailure(status:number,headers:Readonly<Record<string,string>>) {
+  const code=status===401?"SERVICE_SIGN_IN_REQUIRED":status===403?"SERVICE_CALL_FORBIDDEN":status===405?"METHOD_NOT_ALLOWED":status===429?"RATE_LIMITED":"UNAVAILABLE";
+  const error=new HttpError(status,code,status===401?"Service call authentication required.":"Service request refused.",status===405?headers.allow:undefined);
+  serviceFailures.set(error,headers); return error;
+}
 const rateLimitRefusals = new WeakMap<object, { retryAfterMs?: number; outcome: "refused" | "unknown" }>();
 /** Private generated refusal: body formatters receive no status/retry/header authority. */
 export function rateLimitRefusal(code: "RATE_LIMITED" | "RATE_LIMIT_UNAVAILABLE" | "RATE_LIMIT_SATURATED" | "RATE_LIMIT_UNKNOWN", outcome: "refused" | "unknown", retryAfterMs?: number) {
@@ -142,11 +156,14 @@ export function classifyHttpError(error: unknown) {
   if (limited?.outcome === "unknown") unknown = true;
   const retryable = (error instanceof HttpError && admissionRefusals.has(error)) || limited?.retryAfterMs !== undefined;
   const headers: Record<string, string> = { "Cache-Control": "no-store" };
+  if (error && typeof error === "object" && userRefusals.has(error)) headers["X-Jeeves-User-Authentication"] = "refused";
   if (unknown) headers["X-Jeeves-Outcome"] = "unknown";
   if (retryable) headers["Retry-After"] = limited?.retryAfterMs !== undefined ? String(Math.ceil(limited.retryAfterMs / 1000)) : "1";
   if (status === 401) headers["WWW-Authenticate"] = code === "WEBHOOK_AUTHENTICATION" ? "Jeeves-HMAC" : "Bearer";
   if (status === 405 && allow) headers.Allow = allow;
-  return { status, code, message, retryable, headers };
+  const forwarded=error && typeof error === "object" ? serviceFailures.get(error) : undefined;
+  if(forwarded)for(const [name,value] of Object.entries(forwarded))headers[name]=value;
+  return { status, code, message, retryable:retryable || !!forwarded?.["retry-after"], headers };
 }
 /** A pure formatter can change only a bounded JSON body. Failure retains the safe fallback. */
 export function formatHttpError(error: PublicHttpError, formatter?: HttpErrorFormatter): unknown {

@@ -1,8 +1,9 @@
 import { operation, withOperation, withEffect, assertOperation, OperationError } from "./operation.ts";
 import type { OperationContext } from "./operation.ts";
+import { serviceHeaders, responseHeaderNames, serviceResultHeaders } from "./service-contract.ts";
 import { immutable, jsonBody } from "./hook-boundary.ts";
 import type { FastifyRequest } from "fastify";
-import { HttpError } from "./admission.ts";
+import { HttpError, serviceHttpFailure } from "./admission.ts";
 import type { HttpRoutes } from "./http.ts";
 import { isNotImplemented, type NotImplementedLog } from "./tile-process.ts";
 import type { Caller, ModuleRequest, ModuleResponse } from "../modules/entry.ts";
@@ -73,6 +74,7 @@ async function moduleRequest(
             "accept",
             "content-type",
             "if-none-match",
+            "if-match",
             "if-modified-since",
             "idempotency-key",
           ].includes(name.toLowerCase()),
@@ -133,11 +135,16 @@ export function stubRoutes(
           // A child budget may expire just before its parent timer; never let a late
           // empty/success response win the outer admission deadline race.
           assertOperation(running.context);
+          const forwarded=serviceResultHeaders(response);
+          if(forwarded && (response.status??200)>=400)throw serviceHttpFailure(response.status!,forwarded);
           reply.code(response.status ?? 200);
           if (prefix === "/modules")
             for (const [name, value] of Object.entries(response.headers ?? {}))
               reply.header(name, Array.isArray(value) ? [...value] : value);
           if (prefix !== "/modules") {
+            // Product can choose only finite contract headers; credential/retry provenance stays generated.
+            const supplied=Object.fromEntries(Object.entries(response.headers??{}).filter(([name])=>responseHeaderNames.includes(name.toLowerCase() as typeof responseHeaderNames[number])));
+            for(const [name,value] of Object.entries(serviceHeaders(supplied,responseHeaderNames)))reply.header(name,value);
             if ([204, 205, 304].includes(response.status ?? 200)) return undefined;
             try {
               const body = jsonBody(response.body === undefined ? null : response.body);

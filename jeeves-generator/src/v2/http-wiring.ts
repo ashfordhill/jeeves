@@ -209,7 +209,10 @@ function rateLimiterMount(
       { from: "../runtime/process.ts", name: "ownResource" },
       { from: "../runtime/process.ts", name: "processClient" },
       { from: "../runtime/operation.ts", name: "withLocalPolicy" },
-      { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
+      {
+        from: `../modules/${process.tile}/${lead.module}.hooks.ts`,
+        name: hooks,
+      },
     ],
     validation: [`cacheEndpoint(${text(cache)});`, `readSecret(${text(`cache-${cache}`)});`],
     setup: [
@@ -231,7 +234,10 @@ function rateLimiterMount(
     routes: [],
     loops: [],
     template: { selection: id, template: "rate-limiter", level: "mounted" },
-    startup: { module: lead.module, checks: ["PING on required admission cache"] },
+    startup: {
+      module: lead.module,
+      checks: ["PING on required admission cache"],
+    },
     hooks: {
       members: ["key"],
       file: hooksFile(process, selection, lead, "rate-limiter", {
@@ -285,7 +291,10 @@ function positiveCacheRead(
       { from: resources, name: "prepareCacheSource" },
       { from: resources, name: "cacheSource" },
       { from: resources, name: "selected" },
-      { from: "../features/positive-cache-bindings.ts", name: "positiveCacheBindings" },
+      {
+        from: "../features/positive-cache-bindings.ts",
+        name: "positiveCacheBindings",
+      },
       { from: "../runtime/http.ts", name: "HttpError" },
       { from: "../runtime/positive-cache.ts", name: "createCacheReader" },
       { from: "../runtime/positive-cache.ts", name: "cacheReaderNamespace" },
@@ -296,7 +305,10 @@ function positiveCacheRead(
       { from: "../runtime/process.ts", name: "ownResource" },
       { from: "../runtime/process.ts", name: "processClient" },
       { from: tileHttp, name: "notImplementedRoutes" },
-      { from: `../modules/${process.tile}/${lead.module}.hooks.ts`, name: hooks },
+      {
+        from: `../modules/${process.tile}/${lead.module}.hooks.ts`,
+        name: hooks,
+      },
     ],
     validation: [
       `const ${name}Source = prepareCacheSource(selected("positive-cache-read", ${text(id)}), ${text(lead.module)});`,
@@ -478,9 +490,11 @@ export function tileGuard(
 /** Auth guard: the tile's sign-in. Every module route checks its caller, Required or Optional,
  * and GET /modules/<guard>/me answers who it is. */
 function verifiedIdentity(
-  _process: NormalizedProcess,
+  process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
   lead: Lead,
+  _selections: readonly NormalizedGenerationSelection[],
+  processes: readonly NormalizedProcess[],
 ): ProcessMount {
   const id = selection.id;
   const name = camel(id);
@@ -494,7 +508,16 @@ function verifiedIdentity(
       { from: "../runtime/tile-guard.ts", name: "createTileGuard" },
       { from: "../runtime/tile-guard.ts", name: "signInSettings" },
     ],
-    validation: ["signInSettings();"],
+    validation: [
+      "signInSettings();",
+      ...(processes.some((caller) =>
+        caller.serviceCalls?.some((call) => call.target === process.tile && call.sessionUser),
+      )
+        ? [
+            `if (signInSettings().audience !== ${text(`${identity}-web`)} || new URL(signInSettings().issuer).protocol !== "https:" || new URL(signInSettings().issuer).pathname !== ${text(`/realms/${identity}`)}) throw new Error("Incompatible session forwarding identity");`,
+          ]
+        : []),
+    ],
     setup: [
       `// ${line(lead.name)}: the tile's sign-in, ${signIn === "required" ? "Required: every module route needs a valid token" : "Optional: a token sent with a request is verified; none is anonymous"}.`,
       `const ${name} = (() => {`,
