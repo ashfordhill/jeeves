@@ -5,8 +5,9 @@ import { type OffPin, offDesigns, offPin } from "./fixtures/processes-off.ts";
 
 const registry = loadLocalV2Registry();
 
-/** Off means unchanged (tile process contract, section 1): pinned before TP04 changed the
- * generator. Every payload byte, and the provenance files apart from their inventory. */
+/** Off retains runtime payload bytes (tile process contract, section 1). WD09 additionally
+ * pins its two deployment scaffolds and normalized resource display labels. Provenance files
+ * are compared apart from their implementation inventory. */
 describe("Runnable processes off", () => {
   const designs = offDesigns(registry);
   for (const [name, designJson] of Object.entries(designs))

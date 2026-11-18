@@ -266,11 +266,16 @@ describe("generation semantic resolution and actual support", () => {
     });
   });
 
-  it("ignores human labels and rejects unsafe or ambiguous identities/consumer paths", () => {
+  it("retains display labels without changing runtime identities and rejects unsafe or ambiguous paths", () => {
     const design = localSource(),
       baseline = resolveGeneration(design, installed());
     for (const element of design.elements) element.name = "Go cloud tus";
-    expect(resolveGeneration(design, installed()).model).toEqual(baseline.model);
+    const expected = structuredClone(baseline.model);
+    if (!expected) throw Error("Missing normalized fixture");
+    // WD09 adds only resource display metadata; IDs, settings and access stay exact.
+    for (const selection of expected.selections)
+      for (const resource of selection.resources) Object.assign(resource, { name: "Go cloud tus" });
+    expect(resolveGeneration(design, installed()).model).toEqual(expected);
     expect(generationLocalIdentity("a-b")).toEqual({ local: "a-b", sql: "a_b" });
     expect(generationLocalIdentity(`a${"b".repeat(62)}`).sql).toHaveLength(63);
     for (const bad of ["a_b", "../a", "a--b", `a${"b".repeat(63)}`])

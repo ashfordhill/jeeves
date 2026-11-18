@@ -61,6 +61,36 @@ with cold adoption proved only.
 The rest of this page is reference. Sections describing frozen-v1 exports and private runtime
 internals do not authorize hook imports from `src/runtime/`; current application code uses API8.
 
+## Deployment contract
+
+Every current v2 export contains generated scaffolds `deploy/contract.json` (version 1) and
+`deploy/README.md`. The foundation derives these from normalized processes/resource bindings and
+installed runtime contributions, without executing application hooks. Both files participate in
+the manifest and `update:v2`: normal updates replace them; manual edits refuse an update.
+Frozen v1 exports keep their existing bytes.
+
+The JSON lists application processes, exposure, HTTP port and liveness/readiness paths, store
+access, process calls, and environment **names only**. Arrays are ordered by stable identifiers
+(environment names and call IDs sort lexically; uses sort by store and access). Optional TLS,
+credential-file locations and supported conditional replay reads are included. Workload identity
+environment names appear only with a service-to-service call. Application settings and third-party
+SDK environment conventions require separate review; unexecuted handwritten code cannot extend
+this generated inventory. The page has process/store sections, source-folder links and a clickable
+Mermaid graph; channel use is dashed.
+
+`alwaysOn` is conservative: consumers, scheduled/template background work and write-capable
+modules that can activate generated durable work, receipt maintenance or replay cleanup require
+a continuously running host. The generator does not inspect whether a hook enables those options.
+An installed source-backed positive cache is rebuildable; admission/coordination and unknown
+application state remain original. An event feed alone does not prove that a search index can be
+fully rebuilt after loss, so current search bindings remain original. Fixed loss descriptions
+explain the consequence without claiming recovery tooling. Resource display labels are retained
+in the existing normalized binding records for this output.
+
+This is a runtime inventory, with no provisioning, sizing, replica counts or deployment approval.
+Runnable processes off still exports the two files, with no application processes unless an
+installed contribution actually emits one; unresolved support remains in `.jeeves/report.json`.
+
 The separate v2 API now accepts explicit schema3 generation selections. See
 [v2 registry and export](#v2-registry-and-export) for its standalone local foundation;
 the frozen v1 API, CLI and emitted bytes below retain their original contract.

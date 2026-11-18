@@ -1,0 +1,19 @@
+{
+  "changed": [
+    ".jeeves/inputs/design.json",
+    ".jeeves/manifest.json",
+    ".jeeves/normalized.json",
+    ".jeeves/report.json",
+    "deploy/README.md",
+    "deploy/contract.json",
+    "diagnostics/generation.json",
+    "src/modules/catalog/product.slots.ts",
+    "src/modules/timer/timer-scheduled-task.slots.ts"
+  ],
+  "displayCommentOnlyChanges": [
+    "src/modules/catalog/product.slots.ts",
+    "src/modules/timer/timer-scheduled-task.slots.ts"
+  ],
+  "runtimePayloadsUnchanged": true,
+  "processPoolAndDurableCompiledConfigurationUnchanged": true
+}

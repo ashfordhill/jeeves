@@ -97,7 +97,9 @@ describe("isolated versioned v2 assembly", () => {
     for (const element of renamed.elements) element.name = "Unrelated human label";
     const changed = assembleV2({ designJson: JSON.stringify(renamed, null, 2) }, registry);
     expect(changed.manifest.input.sourceSha256).not.toBe(first.manifest.input.sourceSha256);
-    expect(changed.manifest.input.normalizedInputSha256).toBe(
+    // WD09 consumes resource display names in deployment contracts, so these labels now
+    // participate in normalized identity rather than being discarded as unrelated text.
+    expect(changed.manifest.input.normalizedInputSha256).not.toBe(
       first.manifest.input.normalizedInputSha256,
     );
     const unknown = source();

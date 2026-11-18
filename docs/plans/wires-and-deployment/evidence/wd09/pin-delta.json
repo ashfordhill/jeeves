@@ -1,0 +1,32 @@
+{
+  "frozen-v2": {
+    "before": 80,
+    "after": 82,
+    "changed": [
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      "deploy/README.md",
+      "deploy/contract.json",
+      "diagnostics/generation.json"
+    ],
+    "removed": []
+  },
+  "v2-module-design": {
+    "before": 87,
+    "after": 89,
+    "changed": [
+      ".jeeves/manifest.json",
+      ".jeeves/normalized.json",
+      "deploy/README.md",
+      "deploy/contract.json",
+      "diagnostics/generation.json"
+    ],
+    "removed": []
+  },
+  "stub-stack": {
+    "before": 60,
+    "after": 62,
+    "changed": [".jeeves/manifest.json", "deploy/README.md", "deploy/contract.json"],
+    "removed": []
+  }
+}

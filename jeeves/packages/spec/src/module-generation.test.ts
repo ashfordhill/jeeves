@@ -1468,11 +1468,18 @@ describe("module status and older designs", () => {
         with: { type: "json" },
       }
     );
-    const { model } = resolveGeneration(v2());
+    const design = v2();
+    const { model } = resolveGeneration(design);
     const expected = structuredClone(normalized.default);
-    for (const selection of expected.selections)
+    for (const selection of expected.selections) {
+      // WD09 display metadata comes from source labels; the historical fixture stays frozen.
+      for (const resource of selection.resources)
+        Object.assign(resource, {
+          name: design.elements.find((e) => e.id === resource.element)?.name ?? resource.element,
+        });
       if (selection.binding.kind === "event-counter")
         Object.assign(selection.inputs, { "receipt.deliveryHorizonSeconds": 604800 });
+    }
     expect(JSON.parse(JSON.stringify(model))).toEqual({
       ...expected,
       productState: [],

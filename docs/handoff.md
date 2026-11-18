@@ -19631,3 +19631,39 @@ workload settings the same way.
   template/dependency change, new activation/design, later brief/unit, branch/worktree/stash/delegation,
   unrelated cleanup, paid/live call, push or deployment. One explicit-path local commit follows:
   `WD08: review of the wire canvas`. Stop here; no WD09.
+
+## 2026-11-18 — WD09 deployment contract complete
+
+- Current v2 exports now include generated `deploy/contract.json` version 1 and `deploy/README.md`,
+  from normalized resource/process facts and actual installed runtime contributions. Sorted names,
+  uses/calls, HTTP health, source-folder links and declared Mermaid nodes/heading clicks; public
+  updates replace both scaffolds and refuse manual edits. Frozen v1 remains unchanged.
+- New `wd-deployment` fixture has an independent handwritten expectation and seven focused tests.
+  Actual emitted configuration readers are audited per process across optional TLS/credential
+  branches, including compiled dynamic names and import closures; no hooks/clients/network execute.
+  Browser maintenance and mounted-but-unused credential coverage prevent false runtime facts.
+- Resource labels extend the existing normalized records as display metadata. Reviewed three v2
+  pins change only +2 scaffolds, manifest and applicable normalized/diagnostic labels. Label-only
+  renames leave executable process/pool/durable bindings unchanged (two existing slot comments move).
+  Old fixtures and all old runtime payload hashes stay intact; four prior display/count assertions
+  now account exactly for the added surface, without changing operational expectations.
+- Nearest-detail choices preserve RG guarantees: `alwaysOn` conservatively includes hosts capable
+  of hook-enabled generated background work; source-backed positive caches are rebuildable, while
+  admission/coordination, unknown custom state and indexes without full rebuild guarantees are
+  original. Application-owned settings and SDK env conventions require their own review.
+- Final `pnpm check`: 150 files / 1,398 tests, 183.86s; native E2E 87/87, 6.6m, including TinyURL and
+  both mouse rebuilds; web build pass, 1.85s. Initial full check found the old file-count and two
+  label expectations; focused corrections passed, then the final full check passed. Inherited eight
+  lint warnings / twelve infos and Vite chunk warning remain. Public CLI export (94 files, no
+  findings, 12 explicit application gaps), generated API8 checker, TypeScript 7.0.2 and public
+  update check pass offline; no install, native generated matrix or completeness claim.
+- [Evidence](plans/wires-and-deployment/evidence/wd09/README.md) records exact pin/label deltas,
+  checks, limits and preservation. All other starting byte/mode/absence states, owner/root work,
+  historical evidence, accepted SQL/dependencies and frozen v1 preserved; original 42 container
+  triples / 9 networks / 23 volumes / 43 images and two old E2E rows match. Own projects zero,
+  E2E ports free. Owner listener addresses and web PID unchanged; API child 471674→656661 under
+  the pre-existing Nov-10 `tsx watch` parent 1124324, consistent with required source edits
+  (inference). No owner-port request or service control action. Read-only RG21 audit passes
+  with process-local Git abbreviation.
+- One explicit-path local commit follows: `WD09: emit a deployment contract with every export`.
+  No provisioning, deployment, dependency, studio wire activation or later unit. Stop for acceptance.

@@ -92,6 +92,8 @@ export type NormalizedGenerationSelection = {
   resources: {
     field: string;
     element: string;
+    /** Human label retained for the generated deployment contract. */
+    name: string;
     connection: string;
     sourcePath: Path;
     permissionPaths: Path[];
@@ -821,6 +823,9 @@ export function resolveGeneration(
         row.resources.push({
           field: requirement.field,
           element: dependency.resource,
+          name:
+            design.elements.find((entry) => entry.id === dependency.resource)?.name ??
+            dependency.resource,
           connection: dependency.connection,
           sourcePath: path,
           permissionPaths: [
@@ -844,6 +849,9 @@ export function resolveGeneration(
         row.resources.push({
           field: requirement.field,
           element: dependency.resource,
+          name:
+            design.elements.find((entry) => entry.id === dependency.resource)?.name ??
+            dependency.resource,
           connection: dependency.connection,
           sourcePath: path,
           permissionPaths: [],

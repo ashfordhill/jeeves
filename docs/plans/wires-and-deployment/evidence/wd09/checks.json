@@ -1,0 +1,82 @@
+{
+  "unit": "WD09",
+  "base": "a115abdf9a8c4fbfa8561525351b15c0ae575f5e",
+  "node": "24.21.0",
+  "typescript": "7.0.2",
+  "standardChecks": {
+    "pnpm check": {
+      "result": "pass",
+      "testFiles": 150,
+      "tests": 1398,
+      "testSeconds": 183.86,
+      "inheritedLintWarnings": 8,
+      "inheritedLintInfos": 12
+    },
+    "pnpm test:e2e": {
+      "result": "pass",
+      "native": true,
+      "tests": 87,
+      "elapsed": "6.6m",
+      "includes": ["TinyURL lane canvas", "YouTube v2 mouse rebuild", "YouTube v3 mouse rebuild"]
+    },
+    "pnpm --filter @jeeves/web build": {
+      "result": "pass",
+      "seconds": 1.85,
+      "inheritedChunkWarning": true
+    }
+  },
+  "focused": {
+    "deploymentTests": 7,
+    "emittedReaderBranches": "TLS off/on x default/named credential locations; generated config only",
+    "publicUpdateOwnership": "replace generated scaffolds; refuse both manual edits",
+    "publicExportFiles": 94,
+    "publicExportFindings": 0,
+    "explicitRequiredApplicationGaps": 12,
+    "generatedExtensionCheck": "API8 pass",
+    "generatedTypecheck": "TypeScript7.0.2 pass",
+    "publicUpdateCheck": "no refused/create/replace/remove/orphan",
+    "existingDependenciesReusedOffline": true,
+    "newInstall": false
+  },
+  "fixture": {
+    "processes": 4,
+    "stores": 4,
+    "perProcessEnvNames": {
+      "catalog": 21,
+      "front": 8,
+      "indexer": 4,
+      "timer": 10
+    }
+  },
+  "emittedSurface": [
+    {
+      "path": "deploy/contract.json",
+      "sha256": "eafd72ad47b3a68b2971440d767cfcbb5439c622ceceb70156adc695c79229a8",
+      "bytes": 3250,
+      "ownership": "generated-scaffold"
+    },
+    {
+      "path": "deploy/README.md",
+      "sha256": "60e888367979ee69e87da29a2984cfae76dd1fe6c4a9ed08a7734e3b33a7c1f8",
+      "bytes": 5274,
+      "ownership": "generated-scaffold"
+    }
+  ],
+  "initialFullCheck": {
+    "result": "failed",
+    "failures": 3,
+    "reasons": [
+      "old60file count assertion",
+      "two exact normalized-model expectations without new display metadata"
+    ],
+    "targetedCorrections": "11HTTP wiring tests and44semantic/module tests pass before final full check"
+  },
+  "limits": [
+    "No hook execution or application-defined settings inventory",
+    "No third-party SDK env inventory",
+    "Conservative alwaysOn for conditional generated background work",
+    "Admission and unknown custom state original; event feed alone does not establish full index rebuild",
+    "No runtime completeness, provisioning or deployment certification"
+  ],
+  "rawLogs": "/tmp/jeeves-wd09/"
+}

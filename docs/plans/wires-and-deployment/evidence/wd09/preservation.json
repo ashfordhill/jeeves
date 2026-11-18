@@ -1,0 +1,30 @@
+{
+  "unit": "WD09",
+  "startingHead": "a115abdf9a8c4fbfa8561525351b15c0ae575f5e",
+  "protectedByteModeAbsenceStatesVerified": 7306,
+  "protectedPathChanges": [],
+  "ownStartingModesPreserved": true,
+  "oldHandoffPrefixPreserved": true,
+  "resourceCounts": {
+    "containers": 42,
+    "networks": 9,
+    "volumes": 23,
+    "images": 43,
+    "projects": 2
+  },
+  "exactOriginalResourcesAndProjectRowsPreserved": true,
+  "ownProjectsRemaining": 0,
+  "ownerPortAddressesUnchanged": true,
+  "ownerWebPidUnchanged": true,
+  "ownerApiPidChanged": {
+    "before": 471674,
+    "after": 656661,
+    "preexistingWatchParent": 1124324,
+    "watchParentStarted": "2026-11-10 15:33:20 local",
+    "childStarted": "2026-11-18 03:57:53 local",
+    "explanation": "Child reload under the pre-existing tsx watch parent, consistent with required shared generator/spec source changes (inference); no owner-port requests or service control actions performed."
+  },
+  "e2ePortsFree": true,
+  "primaryBranch": "main",
+  "newUnrelatedPaths": []
+}
