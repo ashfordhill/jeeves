@@ -1,8 +1,8 @@
-import { studioStudySeedOperations } from "@jeeves/spec";
+import { designGeneration, designSchema, studioStudySeedOperations } from "@jeeves/spec";
 import { workloadDesign } from "../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
 import { createStudy, design, dragOnto, expect, ready, stillBoard, test, tile } from "./studio.ts";
 
-test("workload links fix private-network generation refusal by mouse without a user Sign-in", async ({
+test("workload links fix atomic runnable refusal by mouse without a user Sign-in", async ({
   page,
   tinyurl,
 }) => {
@@ -34,15 +34,15 @@ test("workload links fix private-network generation refusal by mouse without a u
       return (await response).json();
     };
     await page.getByRole("button", { name: "Generate project", exact: true }).click();
+    const before = await design(page, id);
     await page.getByRole("checkbox", { name: "Runnable processes", exact: true }).click();
     await expect(
       page.getByRole("checkbox", { name: "Runnable processes", exact: true }),
-    ).toBeChecked();
-    const refused = await preview();
-    expect(refused.findings.map((f: { message: string }) => f.message)).toContainEqual(
-      expect.stringContaining("Private network does not replace workload identity"),
+    ).not.toBeChecked();
+    await expect(page.getByRole("alert")).toContainText(
+      "Private network does not replace workload identity",
     );
-    expect(refused.code).toBe("UNSUPPORTED_SOURCE");
+    expect(await design(page, id)).toEqual(before);
     await page.getByRole("button", { name: "Close generate experimental project" }).click();
     await page.getByRole("button", { name: "Connect", exact: true }).click();
     for (const module of ["send", "receive"]) {
@@ -75,6 +75,13 @@ test("workload links fix private-network generation refusal by mouse without a u
       blueprint.componentLinks.filter((link: { slot?: string }) => link.slot === "workload"),
     ).toHaveLength(2);
     await page.getByRole("button", { name: "Generate project", exact: true }).click();
+    await page.getByRole("checkbox", { name: "Runnable processes", exact: true }).click();
+    await expect(
+      page.getByRole("checkbox", { name: "Runnable processes", exact: true }),
+    ).toBeChecked();
+    await expect
+      .poll(async () => designGeneration(designSchema.parse(await design(page, id)))?.processes)
+      .toBe(true);
     const result = await preview();
     expect(result.report.findings).toEqual([]);
     expect(result.report.processes.runnable).toBe(true);

@@ -1,14 +1,21 @@
 /** Normal authoring uses installed consumers. Raw source commands remain available for
  * preserving/importing custom intent; reading a design never rewrites that intent. */
 import type { z } from "zod";
+import { applyOperations } from "./apply.ts";
 import { canonicalJson } from "./content-hash.ts";
 import type { DesignDocument } from "./design.ts";
-import { resolveGeneration } from "./generation-resolver.ts";
+import type { Finding } from "./findings.ts";
+import { designGeneration } from "./generation.ts";
+import { generationExportBlockers, resolveGeneration } from "./generation-resolver.ts";
 import { callableContractRefusal, type GenerationInstalledSupport } from "./generation-support.ts";
 import { hasModuleSelections } from "./module-generation.ts";
 import { studioComponentDefinitions } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
-import { buildStudioCommand, studioCommandSchema } from "./studio-operations.ts";
+import {
+  buildStudioCommand,
+  moduleAuthoringBaseline,
+  studioCommandSchema,
+} from "./studio-operations.ts";
 import { studioLinkFanKinds } from "./studio-tiles.ts";
 
 /** What the mouse and chat may send: the studio's commands, refused below where unsupported. */
@@ -66,6 +73,33 @@ export function buildSupportedAuthoringCommand(
   installed: GenerationInstalledSupport,
 ) {
   const command = supportedAuthoringCommandSchema.parse(raw);
+  // Validate a disposable result before returning any operations. Imported custom intent stays
+  // readable/repairable; a normal edit may not introduce a new unsupported composition.
+  const checked = (batch: ReturnType<typeof buildStudioCommand>) => {
+    const next = applyOperations(design, batch.ops, { baseRevision: batch.baseRevision });
+    if (!next.ok) throw new Error(next.errors.map((entry) => entry.message).join("\n"));
+    if (
+      (command.type === "edit" && !command.settings && command.owner === undefined) ||
+      (command.type === "editComponent" && !command.settings) ||
+      command.type === "editSystem" ||
+      command.type === "renameAction"
+    )
+      return batch;
+    const baseline =
+      !designGeneration(design) && designGeneration(next.design)
+        ? moduleAuthoringBaseline(design)
+        : design;
+    const existing = new Set(
+      generationExportBlockers(baseline, installed).map((entry) =>
+        refusalIdentity(baseline, entry),
+      ),
+    );
+    const introduced = generationExportBlockers(next.design, installed).find(
+      (entry) => !existing.has(refusalIdentity(next.design, entry)),
+    );
+    if (introduced) throw new Error(introduced.message);
+    return batch;
+  };
   // The link fan's kinds are what a new tile can be by mouse; the legacy kinds keep working on
   // existing tiles but are never added (module authoring contract, D6).
   if (command.type === "addTile" && !studioLinkFanKinds.includes(command.tile.kind)) {
@@ -122,7 +156,7 @@ export function buildSupportedAuthoringCommand(
     }
   }
   if ((command.type !== "edit" && command.type !== "editComponent") || !command.settings)
-    return buildStudioCommand(design, command);
+    return checked(buildStudioCommand(design, command));
   const studio = design.architecture?.studio;
   const target =
     command.type === "edit"
@@ -173,5 +207,22 @@ export function buildSupportedAuthoringCommand(
           next[String(control.sourcePaths[0]?.at(-1))];
       }
   }
-  return batch;
+  return checked(batch);
+}
+
+/** Array positions can move during a repair. Compare the addressed source identity instead. */
+function refusalIdentity(design: DesignDocument, entry: Finding): string {
+  let value: unknown = design;
+  const path = (entry.target.path ?? []).map((key) => {
+    const next = value && typeof value === "object" ? Reflect.get(value, key) : undefined;
+    const stable =
+      typeof key === "number" && next && typeof next === "object"
+        ? ["id", "element", "connection", "role", "resource"].flatMap((field) =>
+            typeof Reflect.get(next, field) === "string" ? [[field, Reflect.get(next, field)]] : [],
+          )
+        : [];
+    value = next;
+    return stable.length ? stable : key;
+  });
+  return canonicalJson({ code: entry.code, path, message: entry.message });
 }

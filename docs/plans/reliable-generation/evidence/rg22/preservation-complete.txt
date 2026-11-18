@@ -1,0 +1,17 @@
+Six original non-README root files unchanged; owner README current SHA256 7cee84a454f220152e8c973b4c2062c603c82067f334ad628beeae0332c0aa40
+Original 28-path 34001-byte owner patch preserved exactly after owner archive mapping; normalized patch: 34021 bytes 41ae1b776e3d9e3f27d0d44560f3a4f9f61f60fea78e2b5abef813809cbe3f15
+All 42 original container IDs/names/states unchanged
+Saved RG19 container triples also match
+Frozen v1 untouched
+Accepted receipt/counter SQL builders unchanged
+Accepted migration unchanged: idempotencyMigration 5536b754b6eef9b3404c4773904695e8e96f04ae8a34cd0e7b97b344d2fdc150
+Accepted migration unchanged: localOperationMigration 3d5e0b90b4c716124c0f9745908db98970716a5699671fde02d94bb0c649ea87
+Accepted migration unchanged: durableWorkMigration 75707a0b45af22539c77359dd9ea9543fa63e44e62213c630b8dbeee205ccf3c
+Accepted migration unchanged: consumerReceiptMigration 0ad83161a2a97986df870acddd41981acbaddfae194b19cc523f310db29a3237
+HEAD 326e3491fb3830bf9f060fb3b091c9bbfae37198
+Index paths: (empty)
+Accepted054 session migration unchanged 3ad845b85588ac1e7b27842594c693cf1abfb7024bfdb6fb4874f2e2b0b253bb
+Accepted generated dependency asset unchanged jeeves-generator/templates/local-v2/assets/package.json
+Accepted generated dependency asset unchanged jeeves-generator/templates/local-v2/assets/pnpm-lock.yaml
+Accepted generated dependency asset unchanged jeeves-generator/templates/local-v2/assets/pnpm-workspace.yaml
+Accepted055 refresh migration unchanged 974264afe572c13cea0fc5c9d962a2f2c5da39799c3989c2d97eb1a7f17e5a65

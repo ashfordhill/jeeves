@@ -90,12 +90,12 @@ test("RG13 selects freshness/exposure and connects a callable cache read by mous
   }
 });
 
-test("RG14 refuses HTTP reader exposure on an internal host by mouse", async ({
+test("RG22 refuses unsupported HTTP reader edit atomically by mouse", async ({
   page,
   tinyurl,
-}) => {
+}, testInfo) => {
   await expect(tile(page, "Redirect service")).toBeVisible();
-  const id = await createStudy(page, "E2E RG14 internal reader", "blank");
+  const id = await createStudy(page, "E2E RG22 internal reader", "blank");
   try {
     const source = foundationsDesign();
     if (source.schemaVersion !== 3 || !source.generation) throw Error("generation");
@@ -114,34 +114,30 @@ test("RG14 refuses HTTP reader exposure on an internal host by mouse", async ({
       .click();
     const inspector = page.locator(".studio-inspector");
     await expect(inspector.getByLabel("Exposure", { exact: true })).toHaveValue("in-process");
+    const before = await design(page, id);
     await inspector.getByLabel("Exposure", { exact: true }).selectOption("http");
-    await expect
-      .poll(async () => JSON.stringify(await design(page, id)))
-      .toContain('"transport":"http"');
+    await expect(page.getByRole("alert")).toContainText(
+      "Change not saved: HTTP Cache reader exposure on an internal service has no workload-authenticated template adapter; select in-process and call it through an authenticated route module.",
+    );
+    expect(await design(page, id)).toEqual(before);
+    await page.screenshot({
+      path: testInfo.outputPath("rg22-mouse-composition.png"),
+      fullPage: true,
+    });
+    await page.getByRole("button", { name: "Discard", exact: true }).click();
+    await expect(inspector.getByLabel("Exposure", { exact: true })).toHaveValue("in-process");
+    expect(await design(page, id)).toEqual(before);
     await page.getByRole("button", { name: "Generate project", exact: true }).click();
     const preview = page.waitForResponse((r) =>
       r.url().endsWith("/experimental-generation/preview"),
     );
     await page.getByRole("button", { name: "Preview scaffold", exact: true }).click();
-    const refused = await preview;
-    expect(refused.status()).toBe(422);
-    const result = await refused.json();
-    expect(result.code).toBe("UNSUPPORTED_SOURCE");
-    expect(result.findings).toContainEqual(
-      expect.objectContaining({
-        code: "NEEDS_TEMPLATE",
-        message: expect.stringContaining(
-          "internal service has no workload-authenticated template adapter",
-        ),
-      }),
-    );
-    await expect(
-      page
-        .getByText(
-          "HTTP Cache reader exposure on an internal service has no workload-authenticated template adapter; select in-process and call it through an authenticated route module.",
-        )
-        .first(),
-    ).toBeVisible();
+    const response = await preview;
+    expect(response.status()).toBe(200);
+    const result = await response.json();
+    expect(result.report.findings).toEqual([]);
+    expect(result.report.extensionApi.version).toBe(8);
+    expect(result.report.applicationComplete).toBe(false);
     expect(tinyurl).not.toBe(id);
   } finally {
     await page.request.delete(`/api/projects/${id}`);

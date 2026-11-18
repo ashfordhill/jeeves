@@ -183,7 +183,7 @@ export function planModules(
         reader.binding.cache.resource === limiter.binding.cache.resource
       )
         refuse(
-          `${reader.lead.name} and ${limiter.lead.name} cannot share a cache: the immutable reader uses LRU eviction; admission requires no eviction. Connect separate caches.`,
+          `${reader.lead.name} and ${limiter.lead.name} cannot share a cache: cache reads require LRU eviction; admission requires no eviction. Connect separate caches.`,
         );
   }
 

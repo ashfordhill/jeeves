@@ -397,6 +397,52 @@ export function assembleV2(inputValue: V2Input, registry: V2Registry) {
 
 Extension API version: ${model.extensionApi.version} (${model.extensionApi.boundary}).
 
+## Application-writing packet
+
+1. Read .jeeves/report.json and the generated .slots.ts declarations. Required custom/unfinished gaps remain your work even when this guide, checker and TypeScript all pass. An unfilled hook still throws NotImplemented. Diagram validation cannot establish your product policy or inspect unwritten application semantics.
+2. Edit only application-owned extensions: src/modules/<process>/*.ts, their hooks/helpers, src/contracts/, src/http-errors.hooks.ts and declared product SQL/migrations. The manifest identifies generated-extension versus template-owned generated-scaffold files. Change the diagram/template and regenerate scaffold files; do not patch them. Never copy a private implementation into a hook.
+3. Import generated helpers/types from src/extension-api/index.ts and your generated sibling .slots.ts. Share pure DTOs/definitions through src/contracts/. Same-process application helpers stay in their own module directory. Direct drivers, runtime/features/processes, another process's modules, filesystem/env access, dynamic imports, timers and raw fetch are refused. The finite external import allowlist is zod, node:crypto, node:buffer and node:url; these imports do not grant credentials or effect authority.
+4. Keep policy/mapping hooks synchronous and DTO-only. Operation entrypoints and read-only cache loaders carry the generated @jeeves-extension: operation marker and receive only their declared handles. The marker selects the source check; it does not override runtime effect guards, grants, caller checks or DTO validation. Shared contracts and the HTTP error formatter remain pure regardless of markers.
+5. Register exact product tables/views, named parameterized queries/commands and appended checksummed migrations in products.json. Supply positional values through commands.call or the scoped query handle. Never interpolate SQL or touch protected framework tables. Run pnpm check:extensions, then pnpm build; run application tests for completed hooks and actual integrations separately.
+
+| Effect/context | Allowed | Refused |
+| --- | --- | --- |
+| Pure policy/mapping | Immutable DTO validation, keys, eligibility, codec, request/response mapping | Async policies, clients, I/O, credentials, lifecycle/transaction/ACK controls |
+| Read operation | Declared registered SELECT and installed read handles | Product commands, publish/cache/object/search writes, nested mutation handles |
+| Local atomic mutation | Same-database registered commands supplied by generated callback | Captured ordinary DB handles, a second database, network (including remote GET), callback retry |
+| Durable external work | Persisted intent and the installed generated workload-only ticket/recovery target | Arbitrary provider/URL, generic keyed POST retry, replacing expired/missing selected tickets, secret remote-result checkpoints |
+
+Accepted operation shape (inside the generated module entrypoint; property names come from its .slots.ts):
+
+~~~ts
+const result = await dependencies.callee.operations.receive.read({ accept: "application/json" });
+return serviceResponse(result, { result: result.body });
+~~~
+
+Accepted local mutation body (inside defineLocalOperation.mutate or defineDurableWork.complete):
+
+~~~ts
+await commands.call("insert_item", [input.id]);
+// The framework drains commands and commits product state with replay/work completion.
+~~~
+
+Refused code and the boundary that refuses it:
+
+~~~ts
+import pg from "pg"; // Offline checker: direct driver import.
+import { pool } from "../../runtime/private.ts"; // Offline checker: private runtime.
+const eligible = async () => true; // Pure .hooks.ts: checker and runtime synchronous policy guard.
+await dependencies.callee.operations.receive.mutate(input); // In a GET/read: runtime effect refusal.
+await dependencies.otherDatabase.call("insert_item", [input.id]); // Inside local mutate: captured DB refusal.
+await fetch("https://provider.example/effect"); // Checker; no installed recovery binding.
+~~~
+
+These are contextual examples, not declarations to paste over generated scaffolds. A receipt declaration must have retentionSeconds >= deliveryHorizonSeconds including delivery, retries and quarantine/operator delay; invalid declarations refuse before clients open. A cache loader for mutable data must choose versioned freshness and provide its version/absolute expiry policies. Immutable-positive is an application promise that records never change; neither the diagram nor the checker proves it. Mixing admission and either cache-reader mode on one store refuses because their eviction requirements conflict.
+
+For upgrades, keep the old export/data and inventory the affected hook paths first. Run update:v2 --check against the new diagram to see the target API and identity changes. Migrate handwritten bodies/imports/DTOs and product SQL explicitly; drain or reconcile accepted work/session state under the old identities before any namespace/version change. Use --ack-extension-api=<reported target version> only for a genuine version change, then require the staged checker/TypeScript build. The updater never rewrites bodies, executes migrations, moves product data or lets acknowledgement bypass stable-identity refusal. Current extension API remains v8; saved design schema versions are separate. Label-only edits preserve IDs, mounts, credentials and durable namespaces.
+
+## Installed mechanism reference
+
 Import product types/helpers only through ${model.extensionApi.publicApi}. Shared application DTOs and pure definitions belong only in src/contracts/; same-service helpers stay inside their own src/modules/<process>/ directory. API v5 requires moving older shared src/helpers/ code into src/contracts/. Run pnpm check:extensions offline (also part of new-export build). The check rejects private cross-service/runtime/driver imports, forbidden policy effects and generated-file edits. Product policies are synchronous and receive copied DTOs; registered product SQL handles are scoped by module and compiled grants; authenticated route-stub target handles use the API v8 boundary below; other target adapters remain explicit gaps. Each process validates settings before connections, owns compatible clients by full configuration and credential identity, then stops admission and signals cancellation before reverse-order cleanup. The final shutdown budget is 10 seconds from first stop, including unfinished startup; expiry exits 1 and does not establish that effects rolled back. It checks cooperative mistakes, not hostile JavaScript.
 
 API v1 is legacy-unrestricted. Migrating from v1 requires replacing raw pools, transactions, credentials, guard controls and arbitrary HTTP/SQL calls. Transaction policy/mapping hooks receive immutable DTO copies, never transaction controls. Raw SQL and arbitrary target calls remain unavailable. Authenticated route-stub targets use the API8 contract below. Registered SQL is available on declared stub database links and cache-reader source bindings. Legacy files remain readable; an acknowledgement does not rewrite them. Package files are application-owned: add the check:extensions script and build precheck from .jeeves/generated/package.json when updating an old export.
@@ -495,7 +541,7 @@ The whole mutation callback runs under the product-only database role. Its comma
 
 Stable identity protection also applies when the extension API version is unchanged: update refuses removed/replaced process, selection, target, resource or caller namespaces. Label edits preserve them. Snapshot Undo/import can restore historical IDs but never migrates an existing exported app. Export to a fresh directory and migrate application/data explicitly; --ack-extension-api cannot bypass this refusal.
 
-API v4 unifies HTTP errors through one runtime classification. Every HTTP process imports the application-owned synchronous body formatter from src/http-errors.hooks.ts; it receives only frozen public status/code/message/retryability and request/correlation IDs. It cannot change status or mandatory headers; invalid/throwing/async/oversized output falls back safely. Keep this shared file and its imports pure; the offline boundary check follows them. Updates from v3 require explicit --ack-extension-api=4, preserve existing hooks and add the formatter scaffold without rewriting product code. Returned error bodies are replaced with generated safe defaults. Only genuine pre-dispatch admission refusal carries Retry-After: 1; a deadline, unknown outcome or generic failure never authorizes blind replay. Token/claim/signature failure is 401 with WWW-Authenticate: Bearer; unavailable JWKS/native read dependencies are 503.
+API v4 unifies HTTP errors through one runtime classification. Every HTTP process imports the application-owned synchronous body formatter from src/http-errors.hooks.ts; it receives only frozen public status/code/message/retryability and request/correlation IDs. It cannot change status or mandatory headers; invalid/throwing/async/oversized output falls back safely. Keep this shared file and its imports pure; the offline boundary check follows them. When migrating older HTTP hooks, acknowledge the reported target API version, preserve existing bodies and add the formatter scaffold explicitly. Returned error bodies are replaced with generated safe defaults. Only genuine pre-dispatch admission refusal carries Retry-After: 1; a deadline, unknown outcome or generic failure never authorizes blind replay. Token/claim/signature failure is 401 with WWW-Authenticate: Bearer; unavailable JWKS/native read dependencies are 503.
 
 HTTP /livez answers 200 while the process can answer requests, including drain. /readyz and the compatibility alias /healthz answer 200 only after successful initialization/listen, and 503 during drain. These routes bypass product admission/guards. Required dependency startup failure never becomes ready; this is not a continuous deep dependency probe. Structured completion/failure lines carry safe route patterns (no URL/query), status/code and request/correlation IDs; credentials, bodies and original exceptions are excluded. Process/HTTP drain milestones record admission stop, cancellation and completion within the existing final bound.
 
@@ -505,7 +551,7 @@ API v3 adds runtime-owned OperationContext to ModuleRequest and ModuleMessage. M
 
 Adapters refuse dispatch after expiry/cancellation. OperationError.outcome distinguishes refused, definite-failure and unknown; a timed-out mutation/publish or lost COMMIT response is unknown even if cancellation or ROLLBACK was attempted. PostgreSQL/amqplib/Pub/Sub cannot cancel an already dispatched operation through the installed promise APIs; its actual driver promise remains tracked through drain. Fetch/S3/OpenSearch request cancellation is best effort. Publisher attributes have at most 32 entries, 64-byte names, 1024-byte values and 8192 total bytes; messageId is 1–128 safe ASCII characters and must remain stable during recovery. Runtime correlation/identity fields are reserved. SDK mutation retries are disabled. Private target transport allows only its declared origin, disables redirect following and credential overrides, and buffers at most 64 KiB of response data. Raw SQL and arbitrary external targets remain unavailable; registered product operations use the v7 boundary. Authenticated route-stub calls use the v8 boundary.
 
-Unknown queue effects are sent to .failed with OUTCOME_UNKNOWN instead of intentionally retried by the current runner. This is not durable recovery: a crash/broker redelivery can still repeat an unguarded Custom effect. Such effects require a later installed idempotency/reconciliation mechanism and remain unsupported custom gaps. Do not blindly replay them. The process waits for actual unsettled driver operations until its existing 10-second final shutdown bound; termination never establishes rollback or absence of an effect.
+Unknown queue effects are sent to .failed with OUTCOME_UNKNOWN instead of intentionally retried by the current runner. This is not durable recovery: a crash/broker redelivery can still repeat an unguarded Custom effect. Such effects require an actual installed idempotency/recovery binding and remain unsupported custom gaps until explicitly migrated to it. Do not blindly replay them. The process waits for actual unsettled driver operations until its existing 10-second final shutdown bound; termination never establishes rollback or absence of an effect.
 
 Handwritten hooks, stubs and product SQL remain application-owned. Incompatible version updates refuse and list affected paths. Migrate the code yourself, then run update:v2 with --ack-extension-api=<target version>. The updater validates a temporary copy against the new generated files with TypeScript before applying. Install the target export's dependencies offline first if required. --check never changes the checkout; an acknowledgement is not a build bypass.
 

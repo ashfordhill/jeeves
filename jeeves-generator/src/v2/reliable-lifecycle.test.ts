@@ -283,6 +283,17 @@ describe("RG02 process ownership and public boundary", () => {
     const initial = await check();
     expect(initial.stderr).toBe("");
     expect(initial.stdout).toContain("Extension boundaries passed");
+    expect(initial.stdout).toContain("API v8");
+    expect(initial.stdout).toContain("Hook completeness and runtime behavior are not assessed");
+    for (const source of [
+      "export interface Payload { async: boolean }; export const payload: Payload = { async: false };",
+      "const async = () => true; export const eligible = () => async();",
+      "export const policy = { async() { return true; } };",
+      "export const example = 'async () => true'; // async function is just text\n",
+    ]) {
+      await writeFile(join(app, hook), source);
+      expect((await check()).stderr).toBe("");
+    }
     for (const [source, api] of [
       ['import pg from "pg";', "pg"],
       ['import "../../runtime/local.ts";', "private runtime import"],
@@ -292,6 +303,11 @@ describe("RG02 process ownership and public boundary", () => {
       ['import "../other/private.ts";', "private cross-service import"],
       ['export const effect = () => fetch("https://example.test");', "fetch"],
       ['export const effect = (db: any) => db.query("COMMIT");', "policy effect API query"],
+      ["export async function eligible() { return true; }", "asynchronous policy"],
+      ["export const eligible = async () => true;", "asynchronous policy"],
+      ["export const eligible = async input => true;", "asynchronous policy"],
+      ["export const policy = { async eligible() { return true; } };", "asynchronous policy"],
+      ["export const eligible = async (): Promise<boolean> => true;", "asynchronous policy"],
     ] as const) {
       await writeFile(join(app, hook), source);
       const result = await check();

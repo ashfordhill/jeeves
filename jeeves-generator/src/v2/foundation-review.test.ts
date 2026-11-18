@@ -1,4 +1,4 @@
-import { applyOperations, buildSupportedAuthoringCommand } from "@jeeves/spec";
+import { buildSupportedAuthoringCommand } from "@jeeves/spec";
 import { expect, test } from "vitest";
 import { foundationsDesign } from "../../../field-projects/generator-system/fixtures/rg-foundations/design.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
@@ -22,12 +22,11 @@ test("RG14: an internal HTTP reader refuses the missing workload adapter; the au
       transport: "http" as const,
     },
   };
-  // Mouse and chat share command construction and the resolver; unsupported intent stays
-  // saveable, while generation is refused with the same finding on both authoring paths.
-  const batch = buildSupportedAuthoringCommand(source, command, registry.installed);
-  const authored = applyOperations(source, batch.ops, { baseRevision: batch.baseRevision });
-  if (!authored.ok) throw Error(JSON.stringify(authored.errors));
-  const authoredExport = assembleV2({ designJson: JSON.stringify(authored.design) }, registry);
+  // RG22 rejects new unsupported combinations at normal authoring; imported source remains
+  // readable through diagnostic assembly and is refused by the actual export boundaries.
+  expect(() => buildSupportedAuthoringCommand(source, command, registry.installed)).toThrow(
+    "internal service has no workload-authenticated template adapter",
+  );
   const invalid = runStudioCommands(source, [
     {
       type: "editComponent",
@@ -51,6 +50,4 @@ test("RG14: an internal HTTP reader refuses the missing workload adapter; the au
     }),
   );
   expect(refused.report.processes?.runnable).toBe(false);
-  expect(authoredExport.report.findings).toEqual(refused.report.findings);
-  expect(authoredExport.report.processes?.runnable).toBe(false);
 });

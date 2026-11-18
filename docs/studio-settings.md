@@ -46,6 +46,13 @@ settings. Unsupported chat changes refuse without modifying source. Explicit cus
 remain visible unresolved generation gaps. The low-level source schemas/commands below remain
 available for imports and diagnostics.
 
+Normal edits also check the resulting composition against the installed resolver before returning
+operations. A new incompatibility refuses the whole mouse command or chat batch. Existing imported
+findings may remain during repair, and label edits preserve their source identities. Incomplete
+module scaffolds and unwritten product hooks remain explicit custom work; they are not certified
+by the settings check. Preview, download and the CLI refuse the same unsupported saved source
+before producing an export. There is no Advanced settings section or alternate chat bypass.
+
 ## Rules
 
 - Each kind has one immutable definition, `studio-<kind>@1.0.0`: display name, icon and colour,

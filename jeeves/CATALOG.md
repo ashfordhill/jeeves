@@ -577,10 +577,18 @@ blueprint 3, and neither the studio nor chat shows or edits them. The TinyURL fo
 Base video selects upload/lifecycle/HLS and requires custom product/service hooks. YouTube
 adapters, public-video policy, service entry point and browser edge are no longer templates.
 The same historical v2 design can export its reusable modules with explicit custom gaps. Normal
-mouse/chat attachment offers video only; existing generic settings remain editable. Unknown refs,
+mouse/chat authoring selects installed templates through modules; existing generic settings remain editable. Unknown refs,
 invalid bindings and unsupported settings still refuse export. Exact-v1 compatibility and strict
 readiness semantics remain separate.
 [Corrected generation boundary and count](../docs/plans/reliable-foundations/youtube-v2-generic-baseline.md).
+
+Normal commands refuse newly introduced installed-composition blockers before returning operations;
+chat batches are atomic. Saved incompatible source remains readable and repairable. Preview,
+download and CLI use the same resolver export blockers; custom hooks and integration gaps remain
+truthful partial scaffolds. Cache-reader/admission eviction conflicts and unsupported stub-link
+retry/budget overrides are also checked on imported source. Extension API remains v8; the generated
+application guide/checker explains its import/effect/migration boundaries without certifying
+unwritten hooks.
 
 Rate limiter uses one store-time rolling log with an atomic TIME/ZSET script. It needs its cache
 and its own host's Required Auth guard; its key policy sees only validated immutable subject facts.

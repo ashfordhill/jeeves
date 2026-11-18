@@ -1,0 +1,27 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/foundation-review.test.ts (1 test | 1 failed) 262ms
+   × RG14: an internal HTTP reader refuses the missing workload adapter; the authenticated in-process composition remains runnable 261ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/foundation-review.test.ts > RG14: an internal HTTP reader refuses the missing workload adapter; the authenticated in-process composition remains runnable
+Error: HTTP Cache reader exposure on an internal service has no workload-authenticated template adapter; select in-process and call it through an authenticated route module.
+ ❯ checked ../jeeves/packages/spec/src/supported-authoring.ts:82:27
+     80|       (entry) => !existing.has(refusalIdentity(next.design, entry)),
+     81|     );
+     82|     if (introduced) throw new Error(introduced.message);
+       |                           ^
+     83|     return batch;
+     84|   };
+ ❯ buildSupportedAuthoringCommand ../jeeves/packages/spec/src/supported-authoring.ts:192:10
+ ❯ src/v2/foundation-review.test.ts:27:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 13 passed (14)
+   Start at  22:13:50
+   Duration  3.25s (transform 40%, tests 37%, import 22%)

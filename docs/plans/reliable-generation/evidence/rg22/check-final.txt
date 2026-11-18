@@ -1,0 +1,233 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+docs/plans/reliable-generation/evidence/rg21/pins.ts:44:5 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    42 │   await writeFile(
+    43 │     new URL(`../../../../../${path}`, import.meta.url),
+  > 44 │     JSON.stringify(after, null, 2) + "\n",
+       │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    45 │   );
+    46 │
+
+  i Unsafe fix: Use a template literal.
+
+    42 42 │     await writeFile(
+    43 43 │       new URL(`../../../../../${path}`, import.meta.url),
+    44    │ - ····JSON.stringify(after,·null,·2)·+·"\n",
+       44 │ + ····`${JSON.stringify(after,·null,·2)}\n`,
+    45 45 │     );
+    46 46 │
+
+
+docs/plans/reliable-generation/evidence/rg21/protocol.mjs:111:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    109 │ await writeFile(
+    110 │   extension,
+  > 111 │   original + '\nimport {sessionAccess} from "../../runtime/operation.ts";\nvoid sessionAccess;\n',
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    112 │ );
+    113 │ try {
+
+  i Unsafe fix: Use a template literal.
+
+    109 109 │   await writeFile(
+    110 110 │     extension,
+    111     │ - ··original·+·'\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n',
+        111 │ + ··`${original}\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n`,
+    112 112 │   );
+    113 113 │   try {
+
+
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+jeeves-generator/src/v2/browser-session.test.ts:584:9 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    582 │     await expect(
+    583 │       run(() =>
+  > 584 │         callback!(
+        │         ^^^^^^^^^
+    585 │           {
+    586 │             url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+     582  582 │       await expect(
+     583  583 │         run(() =>
+     584      │ - ········callback!(
+          584 │ + ········callback?.(
+     585  585 │             {
+     586  586 │               url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+
+jeeves-generator/src/v2/browser-session.test.ts:675:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    673 │     expect(calls).toBe(1);
+    674 │     expect(results.every((r) => (r as { signedIn: boolean }).signedIn)).toBe(true);
+  > 675 │     const row = (
+        │                 ^
+  > 676 │       await f.pg.query<{
+         ...
+  > 681 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 682 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    683 │     expect(Number(row.refresh_generation)).toBe(1);
+    684 │     expect(row.revoked_at).toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:721:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    719 │             },
+    720 │       );
+  > 721 │       const row = (
+        │                   ^
+  > 722 │         await f.pg.query<{
+         ...
+  > 726 │         }>("SELECT * FROM jeeves.browser_sessions")
+  > 727 │       ).rows[0]!;
+        │       ^^^^^^^^^^
+    728 │       if (kind === "definitive") {
+    729 │         expect(row.revoked_at).not.toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:782:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    780 │       signedIn: true,
+    781 │     });
+  > 782 │     const row = (
+        │                 ^
+  > 783 │       await f.pg.query<{
+         ...
+  > 787 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 788 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    789 │     expect(row.access_sealed).toMatch(/^jke1.new\./);
+    790 │     expect(row.refresh_sealed).toMatch(/^jke1.new\./);
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1137:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1135 │     ).rejects.toBeDefined();
+    1136 │     f.pool.connect = connect;
+  > 1137 │     const row = (
+         │                 ^
+  > 1138 │       await f.pg.query<{
+          ...
+  > 1142 │       }>("SELECT refresh_uncertain,refresh_attempt,refresh_generation FROM jeeves.browser_sessions")
+  > 1143 │     ).rows[0]!;
+         │     ^^^^^^^^^^
+    1144 │     expect(row.refresh_uncertain).toBe(true);
+    1145 │     expect(row.refresh_attempt).toBeTruthy();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1227:50 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1225 │     .update(JSON.stringify([f.settings.issuer, f.settings.clientId]))
+    1226 │     .digest("hex");
+  > 1227 │   const cookieHash = createHash("sha256").update(a.cookie.split("=")[1]!).digest("hex");
+         │                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+    1228 │   const binding = (field: string) => ({
+    1229 │     scope: createHash("sha256")
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1339:10 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1337 │   expect(expiry).toBeInstanceOf(Date);
+    1338 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1339 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │          ^^^^^^^
+    1340 │ });
+    1341 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1337 1337 │     expect(expiry).toBeInstanceOf(Date);
+    1338 1338 │     expect(providerObserved).toBeInstanceOf(Date);
+    1339      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1339 │ + ··expect(expiry?.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+    1340 1340 │   });
+    1341 1341 │
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1339:49 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1337 │   expect(expiry).toBeInstanceOf(Date);
+    1338 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1339 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │                                                 ^^^^^^^^^^^^^^^^^
+    1340 │ });
+    1341 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1337 1337 │     expect(expiry).toBeInstanceOf(Date);
+    1338 1338 │     expect(providerObserved).toBeInstanceOf(Date);
+    1339      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1339 │ + ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved?.getTime()·+·3600000);
+    1340 1340 │   });
+    1341 1341 │
+
+
+Checked 2173 files in 892ms. No fixes applied.
+Found 8 warnings.
+Found 3 infos.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+
+ Test Files  145 passed (145)
+      Tests  1353 passed (1353)
+   Start at  22:32:29
+   Duration  210.78s (tests 85%, import 11%, transform 2%, environment 2%)

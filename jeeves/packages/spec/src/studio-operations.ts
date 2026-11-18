@@ -461,6 +461,15 @@ function runnableProcessesBatch(design: DesignDocument, on: boolean): OperationB
  * A module command needs schema 3 and a generation for the local runtime: a schema-2 design is
  * upgraded with an empty scope, and a design without a generation gets an empty one.
  */
+/** The same implicit upgrade/derivation as a first module command, before its requested edit.
+ * Normal authoring uses it only to distinguish revealed legacy intent from new incompatibility. */
+export function moduleAuthoringBaseline(design: DesignDocument): DesignDocument {
+  const draft = structuredClone(design);
+  upgradeForModules(draft, []);
+  deriveModuleGeneration(design, draft);
+  return draft;
+}
+
 function upgradeForModules(draft: DesignDocument, ops: OperationInput[]) {
   if (draft.schemaVersion === 2) {
     const scope = emptyDesignScope();

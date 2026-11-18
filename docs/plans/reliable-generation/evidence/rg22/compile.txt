@@ -1,0 +1,79 @@
+Actual emitted file count 75 API 8 applicationComplete false
+Exact generated dependency pins {
+  dependencies: {
+    '@aws-sdk/client-s3': '3.1156.0',
+    '@aws-sdk/s3-request-presigner': '3.1156.0',
+    '@google-cloud/pubsub': '6.3.2',
+    '@opensearch-project/opensearch': '3.9.0',
+    amqplib: '2.2.0',
+    fastify: '5.12.7',
+    'hls.js': '1.7.3',
+    jose: '6.2.13',
+    pg: '8.23.1',
+    redis: '6.3.0',
+    zod: '4.5.4',
+    'openid-client': '6.8.9'
+  },
+  devDependencies: {
+    '@types/node': '24.19.2',
+    '@types/pg': '8.23.1',
+    typescript: '7.0.2'
+  },
+  engines: { node: '24.21.0' },
+  name: 'generated-local-v2',
+  packageManager: 'pnpm@12.16.1',
+  private: true,
+  scripts: {
+    build: 'pnpm check:extensions && tsc -p tsconfig.json',
+    'first-run': 'node scripts/local.mjs first-run',
+    start: 'node scripts/local.mjs start',
+    stop: 'node scripts/local.mjs stop',
+    'check:extensions': 'node scripts/check-extensions.mjs'
+  },
+  type: 'module',
+  version: '0.0.0-experimental.2'
+}
+✓ Lockfile passes supply-chain policies (verified 1h ago)
+Lockfile is up to date, resolution step is skipped
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/ash/.local/share/pnpm/store/v11
+  Virtual store is at:             node_modules/.pnpm
+Packages: +190
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 190, reused 190, downloaded 0, added 190, done
+
+dependencies:
++ @aws-sdk/client-s3 3.1156.0
++ @aws-sdk/s3-request-presigner 3.1156.0
++ @google-cloud/pubsub 6.3.2
++ @opensearch-project/opensearch 3.9.0
++ amqplib 2.2.0
++ fastify 5.12.7
++ hls.js 1.7.3
++ jose 6.2.13
++ openid-client 6.8.9
++ pg 8.23.1
++ redis 6.3.0
++ zod 4.5.4
+
+devDependencies:
++ @types/node 24.19.2
++ @types/pg 8.23.1
++ typescript 7.0.2
+
+Done in 355ms using pnpm v12.16.1
+
+$ pnpm check:extensions && tsc -p tsconfig.json
+$ node scripts/check-extensions.mjs
+Extension boundaries passed (API v8; cooperative misuse check; no hostile-code sandbox). Hook completeness and runtime behavior are not assessed.
+
+$ pnpm check:extensions && tsc -p tsconfig.json
+$ node scripts/check-extensions.mjs
+Extension boundaries passed (API v8; cooperative misuse check; no hostile-code sandbox). Hook completeness and runtime behavior are not assessed.
+
+Version 7.0.2
+
+Actual checker refused asynchronous policy at src/contracts/payload.ts
+Actual checker refused private runtime import at src/contracts/payload.ts
+Old API8 dynamic-string call and additive typed operation example compile; API8 retained. Original unfilled hooks compile but report remains partial.
+Own scratch export removed

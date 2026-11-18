@@ -1,0 +1,108 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generator| src/v2/composition-parity.test.ts > RG22 raw selections refuse shared cache eviction requirements and callable effect mismatches 253ms
+ ✓ |generator| src/v2/composition-parity.test.ts > RG22 foundations: label edits retain mount identities and extension API8 321ms
+ ✓ |generator| src/v2/composition-parity.test.ts > RG22 sessions: label edits retain mount identities and extension API8 148ms
+ ✓ |generator| src/v2/composition-parity.test.ts > RG22 scheduled: label edits retain mount identities and extension API8 275ms
+ ✓ |generator| src/v2/composition-parity.test.ts > RG22 receipts: label edits retain mount identities and extension API8 333ms
+ ✓ |generator| src/v2/composition-parity.test.ts > RG22 webhook: label edits retain mount identities and extension API8 114ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > offers the same implemented API owner targets to mouse and commands 65ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > preserves declared permission identities on rename and on later module authoring 435ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > refuses a conflicting owner atomically, and never grants private tables to a foreign reader 93ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > refuses a conflicting owned-state connection with no partial host/module links 79ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > refuses a composed owner namespace over 63 bytes even with no writer files 78ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > refuses owner/template schema collisions even without any product SQL writer files 29ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 receipt lifecycle > uses immutable store-time deadlines, refuses insufficient retention and sweeps bounded indexed backlog without arrivals 2098ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > persists canonical stable identity before acknowledgement, dedupes across replicas and conflicts on changed input 2118ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > clears and regrants permissions without moving an API-only product namespace or SQL file 671ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > replays before failed admission, shares HTTP/callable identity and conflicts on changed input 2190ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 receipt lifecycle > migrates legacy counter scope conservatively and refuses ambiguous cross-date legacy duplicates 1303ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > a crash before dispatch is reclaimable; renewed and expired holders have monotonic exact fences and stable identities 1358ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > authenticates and derives account scope before lookup; another account never obtains the replay 1284ms
+ ✓ |generator| src/v2/logical-ownership.test.ts > RG06 explicit logical ownership and emitted SQL > executes the actual emitted grants: exact API/worker operations, named reader and no DDL 1890ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 receipt lifecycle > keeps counter identity stable when timestamps change aggregate partitions, with explicit content conflict 1354ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > rolls back the mutation and replay together on callback failure or invalid/oversized result 1353ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > lease expiry after product mutation rolls back both the product effect and completion 1439ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 receipt lifecycle > separates heartbeat, durable progress, unknown backlog and stale workers; bounds reads and stale-row cleanup 1367ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > lost COMMIT response remains unknown and recovers the durable result without another mutation 1285ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > uses a generated registered SELECT binding under product grants, refusing commands 1888ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > refuses a known-superseded fill when rereading fails or returns malformed/private data 3ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > observes rejected async pure hooks without dispatching captured effects or leaking records into logs 3ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > keeps unknown optional-fill outcomes and bounds global waiters without abandoning actual work 14ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > fences a slow old fill across independent readers, including uint64 versions 52ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > keeps absolute validity through query, fill, hit and a later awaited operation 2ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > normalizes equal-version bytes and rejects conflicting contents 1ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > does not share authorization across inputs/callers and rechecks every waiter 2ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > bounds actual fills and same-key waiters after caller timeout; cancellation releases only waiters 4ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > recovers optional cache failure without restart and does not back off healthy saturation 1ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > guards getter snapshots, captured effects, async policies and reserved keys before load 1ms
+ ✓ |generator| src/v2/cache-reader.test.ts > RG13 callable freshness > generates common callable bindings with explicit exposure and finite freshness 283ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > commits registered product effect/receipt/progress together, safely redelivers after lost COMMIT and conflicts on changed content 1336ms
+ ✓ |generator| src/v2/callable.test.ts > RG05 checked callable bindings > emits typed declared targets and calls the one core from actual handwritten caller without HTTP 4ms
+ ✓ |generator| src/v2/callable.test.ts > RG05 checked callable bindings > shares input/auth/effect refusals and verifies output before returning 5ms
+ ✓ |generator| src/v2/callable.test.ts > RG05 checked callable bindings > refuses unavailable and incompatible contracts and exposes the same mouse/chat connection 82ms
+ ✓ |generator| src/v2/callable.test.ts > RG05 checked callable bindings > preserves targets, durable namespaces and handwritten paths across tile and module label edits 46ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > coordinates identical callers and returns explicit in-progress; expired rows refuse and cleanup preserves active state 1366ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > keeps every issued command under the product role, drains unawaited commands, and refuses retained/captured handles 4102ms
+ ✓ |spec| src/generation-resolver.test.ts > generation semantic resolution and actual support > normalizes native010 bindings, grants, single-authority settings and fixed policies without mutation 53ms
+ ✓ |spec| src/generation-resolver.test.ts > generation semantic resolution and actual support > keeps catalog-only, unknown, unsupported local/provider/language and unconsumed intent explicit 28ms
+ ✓ |spec| src/generation-resolver.test.ts > generation semantic resolution and actual support > refuses wrong endpoints, insufficient grants, cross-selection mismatches and extra binding permissions 48ms
+ ✓ |spec| src/generation-resolver.test.ts > generation semantic resolution and actual support > ignores human labels and rejects unsafe or ambiguous identities/consumer paths 12ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > preserves quarantine identity and one effect while cleanup remains inside the declared total replay window 1237ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > retained key rotation replays, removed keys and cross-scope ciphertext swaps fail closed 1255ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > refuses startup before readiness when required receipt schema or grants are absent 1239ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > keeps every concurrent command under the restricted role, drains unawaited work and closes the supplied handle 1179ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > checks expiry after the actual unawaited command drain and rolls back the restricted-role product effect 1204ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > attributes two consumers sharing a store and filters their bounded worker observations 1153ms
+stdout | src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > classifies maintenance failure with compiled operation and generated correlation identity
+{"level":"info","event":"drain-started"}
+
+stdout | src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > classifies maintenance failure with compiled operation and generated correlation identity
+{"level":"info","event":"admission-stopped"}
+{"level":"info","event":"operations-cancelled"}
+
+stdout | src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > classifies maintenance failure with compiled operation and generated correlation identity
+{"level":"info","event":"drain-completed"}
+
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > caught command failure poisons the transaction, including failure before SQL dispatch 1144ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > caught/unawaited command failures poison completion, finite retry backs off and terminal failures remain visible 1160ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > classifies maintenance failure with compiled operation and generated correlation identity 1133ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 local operation ownership > refuses captured same/other database handles and network capabilities even through nested reads 1154ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > exhausted crashed claims terminate; unknown and unfinished records survive completed-only bounded retention 1082ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > lost acceptance/completion COMMIT responses recover durable identity/state without another effect 1077ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 observes rejected async validation and refuses invalid inputs before acquiring a connection 1155ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 starts retention at successful storage rather than transaction/admission start 1237ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > refuses getter/async mapping, captured handles, wrong binding and poison without raw ACK or SQL access 3341ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > preserves unresolved dispatches as unknown when a crashed or later failing attempt exhausts its bound 2162ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 refuses accessor DTOs before getters run and never widens a read caller 1160ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > holds the actual transaction after caller timeout and never releases the slot at an uncertain COMMIT 1187ms
+stdout | src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > runs actual lifecycle cleanup and idle heartbeat without deliveries, then exposes stale stopped observation
+{"level":"info","event":"drain-started"}
+
+stdout | src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > runs actual lifecycle cleanup and idle heartbeat without deliveries, then exposes stale stopped observation
+{"level":"info","event":"admission-stopped"}
+{"level":"info","event":"operations-cancelled"}
+
+stdout | src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > runs actual lifecycle cleanup and idle heartbeat without deliveries, then exposes stale stopped observation
+{"level":"info","event":"drain-completed"}
+
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 scoped generic consumer > runs actual lifecycle cleanup and idle heartbeat without deliveries, then exposes stale stopped observation 1223ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 delivery observations and explicit quarantine operation > heartbeats an idle live worker, leaves legacy durable progress/backlog unknown and becomes stale when ticks stop 3ms
+ ✓ |generator| src/v2/receipt-lifecycle.test.ts > RG18 delivery observations and explicit quarantine operation > requeues only explicit quarantine identity after confirmed persistence, preserves bytes/ID and refuses unknown effects 1ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 refuses malformed account encodings before lookup while retaining valid Unicode scopes 1141ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > rejects malformed DTOs, async policies, unsupported external declarations and cross-database claims before acquisition 2269ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 normalizes JSON numeric identity before callbacks 1135ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 hidden function effects stay under the product role and caught concurrent failure cannot commit replay 1028ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > retains the actual completion slot through a timed-out COMMIT, then recovers without poisoning work 1288ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > keeps storage loss distinct from poison and preserves a reclaimable row without logging private errors 1040ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 refuses sparse/undefined/accessor scoped parameters before SQL and poisons caught failures 1002ms
+ ✓ |generator| src/v2/local-operation.test.ts > RG10 executes the emitted same-process dependency binding through the configured operation core 1158ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > uses the existing process lifecycle to stop, drain and reclaim after shutdown without a live request bearer 1004ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > logs actual generated safe operation/correlation/work identifiers for poison and storage failure 1896ms
+ ✓ |generator| src/v2/durable-work.test.ts > RG15 durable local work > preserves safe HTTP conflicts/input errors and refuses cross-scope/batch/configuration misuse 950ms
+
+ Test Files  8 passed (8)
+      Tests  80 passed (80)
+   Start at  22:21:40
+   Duration  25.14s (tests 93%, transform 4%, import 3%)

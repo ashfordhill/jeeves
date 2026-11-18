@@ -7,14 +7,16 @@
   Runnable processes on it has one process per application tile, the providers they use
   (PostgreSQL, RabbitMQ or the Pub/Sub emulator, Valkey, Garage, OpenSearch, Keycloak), an nginx edge, and `.jeeves/`
   with the manifest and report.
-- **Templates (9):** Sign-in, Multipart upload, Upload lifecycle, Video encoding, Cache read,
-  Event counter, Search indexing, Search query and Favorites. Any other module exports as a
-  typed stub.
+- **Templates:** Bearer sign-in, Browser session, Multipart upload, Upload lifecycle, Video
+  encoding, Cache read, Event counter, Search indexing, Search query, Favorites, Rate limiter,
+  Scheduled task and Webhook receiver. Incomplete modules export as explicit typed stubs.
 - **Yours to write:** each template's `<lead>.hooks.ts`, each stub's `<module>.ts` and each
-  writer's product SQL file. `package.json`, `pnpm-lock.yaml` and `pnpm-workspace.yaml` are yours
+  declared product queries and versioned migrations. `package.json`, `pnpm-lock.yaml` and `pnpm-workspace.yaml` are yours
   too: add a package your modules use with `pnpm add <name>@<exact version>`.
 - **Commands:** `pnpm --filter @jeeves/generator export:v2 <design.json> <new directory>`. The
   studio's Generate project dialog produces the same files as a ZIP.
+  Both refuse unsupported saved compositions before writing output; custom hooks/integration
+  gaps remain available as truthful partial scaffolds.
   `pnpm --filter @jeeves/generator update:v2 <design.json> <existing export> [--check]`
   regenerates into an existing export in place
   ([updating an existing export](#updating-an-existing-export)).
@@ -25,18 +27,22 @@
   only for the exact frozen YouTube v1 source, and `export:new` writes it. New module-authored
   projects use `local-v2`.
 
-New exports use extension API **v6 (`checked-extensions`)**. Product code imports types and
+New exports use extension API **v8 (`checked-extensions`)**. Product code imports types and
 helpers from `src/extension-api/index.ts`; shared DTOs and pure definitions belong in the
 application-owned `src/contracts/` directory. Run `pnpm check:extensions` offline (also part of
 `pnpm build`). It checks private runtime/driver/cross-service imports, policy effect APIs and
-template-owned file hashes. This catches cooperative mistakes, not hostile JavaScript.
+template-owned file hashes. This catches cooperative mistakes, not hostile JavaScript. The
+generated `.jeeves/extensions.md` is the application-writing packet, including effect classes,
+allowed hook forms/imports, migration steps and accepted/refused examples. Passing the checker
+and TypeScript does not establish hook completeness or runtime correctness.
 
 Product policy callbacks are synchronous and receive copied, frozen DTO objects. Generated
-bridges retain transaction, guard, credentials and lifecycle authority. Custom SQL, token
-verification and arbitrary HTTP target handles are unavailable public capabilities and appear as
-selection-specific custom gaps; a cache loader's `ProductQueries` handle also remains unavailable
-until a registered query binding is installed. Existing unrestricted exports remain readable;
-an update from API v1 refuses until `--ack-extension-api=6` and a successful staged interface and
+bridges retain transaction, guard, credentials and lifecycle authority. Registered parameterized
+SQL uses scoped product handles and exact declared grants; arbitrary SQL, token verification and
+unregistered HTTP targets are unavailable. Declared route-stub Service targets have bounded
+authenticated GET/POST handles, independently of user identity. Cache loaders receive registered
+read-only queries and must supply product freshness policy. Existing unrestricted exports remain readable;
+an update from an earlier API refuses until `--ack-extension-api=8` and a successful staged interface and
 boundary check. Handwritten bodies are preserved, never rewritten to claim compatibility.
 
 `pnpm test:generated` separately exports, builds and runs the Activity backend with real
@@ -242,12 +248,13 @@ deletes the shadows it no longer needs, and the folder once it is empty.
 **`--check`** runs the preflight and prints the same result, and writes nothing to the export.
 
 The manifest and support report record `extensionApi.version` separately from the saved design
-schema. Missing version metadata means the original unrestricted API, version 1. Existing v1
-updates remain compatible. `.jeeves/extensions.md` describes that contract and names the future
-public API location; it does not claim that the guarded API exists yet. The normalized model and
+schema. Missing version metadata means the original unrestricted API, version 1, and requires
+explicit hook migration before updating to the guarded API. `.jeeves/extensions.md` describes
+the implemented public extension boundary. The normalized model and
 report also list installed callable contracts with stable module/process/owner IDs, source paths,
 effects, declared access, caller requirements and the generated lifecycle mechanism. Currently
-these records cover the existing Favorites HTTP operations, not future capabilities.
+these records cover installed Favorites, Rate limiter and Cache reader capabilities; other
+mechanisms retain their declared selection/process reports and explicit custom gaps.
 
 An incompatible version update refuses and names handwritten hook/stub paths. Migrate those
 files yourself, then pass `--ack-extension-api=<target version>` (also accepted with `--check`).

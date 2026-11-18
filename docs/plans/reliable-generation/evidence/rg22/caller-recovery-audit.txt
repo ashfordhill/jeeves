@@ -1,0 +1,93 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"06472fc3-d250-4e3d-93f9-701510aec070","correlationId":"06472fc3-d250-4e3d-93f9-701510aec070","method":"GET","route":"/internal/modules/receive","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":5}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"84a653ec-915a-42d1-992b-70fe7234620d","correlationId":"84a653ec-915a-42d1-992b-70fe7234620d","method":"POST","route":"/internal/modules/receive","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":1}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"c93b71a0-22ec-4143-8fd6-5ea6f40d1800","correlationId":"c93b71a0-22ec-4143-8fd6-5ea6f40d1800","method":"PUT","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"bb85c951-7319-4c4b-9e92-698c8dbe698c","correlationId":"bb85c951-7319-4c4b-9e92-698c8dbe698c","method":"GET","route":"/internal/modules/receive","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":1}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"54319f96-586c-414d-9d5e-bdc583a2d33f","correlationId":"54319f96-586c-414d-9d5e-bdc583a2d33f","method":"POST","route":"/internal/modules/receive","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":1}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"e27aed85-57af-4230-9607-2e8c13812431","correlationId":"e27aed85-57af-4230-9607-2e8c13812431","method":"PUT","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"4dfbf434-aa79-4291-8fe5-3ba7616a8ada","correlationId":"4dfbf434-aa79-4291-8fe5-3ba7616a8ada","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"8f7efbff-3a6b-4dad-9fd3-14b579a6362f","correlationId":"8f7efbff-3a6b-4dad-9fd3-14b579a6362f","method":"POST","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"aa7d57c3-3e87-4115-86bc-b9e1ee245161","correlationId":"aa7d57c3-3e87-4115-86bc-b9e1ee245161","method":"PUT","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"ee8417d7-9795-498e-82fc-c511c2fbcf8c","correlationId":"ee8417d7-9795-498e-82fc-c511c2fbcf8c","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"d5e55d6a-a185-4fc0-9db5-4c8230d93fbb","correlationId":"d5e55d6a-a185-4fc0-9db5-4c8230d93fbb","method":"POST","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"19cad509-757b-4a9b-ae04-4611c1bec21d","correlationId":"19cad509-757b-4a9b-ae04-4611c1bec21d","method":"PUT","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"66c7e4aa-b1d7-4f1b-8e22-9cbbc0b5eb1f","correlationId":"66c7e4aa-b1d7-4f1b-8e22-9cbbc0b5eb1f","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"b844ce0a-23f3-41ef-ba67-ca67c4d44b3b","correlationId":"b844ce0a-23f3-41ef-ba67-ca67c4d44b3b","method":"POST","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"a7c75311-ca91-432f-b75a-deb6e3f78f76","correlationId":"a7c75311-ca91-432f-b75a-deb6e3f78f76","method":"PUT","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"018b2722-b0c2-4bd5-82ec-87d4dd1d031d","correlationId":"018b2722-b0c2-4bd5-82ec-87d4dd1d031d","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"16214bd7-2921-4c8c-b1bb-e93ee2ec802a","correlationId":"16214bd7-2921-4c8c-b1bb-e93ee2ec802a","method":"POST","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"3c5d169c-0489-4ca9-9a3a-7525c0483f9b","correlationId":"3c5d169c-0489-4ca9-9a3a-7525c0483f9b","method":"PUT","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-failed","requestId":"e12de537-905d-4381-a438-b5984823801a","correlationId":"e12de537-905d-4381-a438-b5984823801a","method":"HEAD","route":"/internal/modules/receive","status":405,"code":"METHOD_NOT_ALLOWED","retryable":false,"durationMs":1}
+
+stdout | src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass
+{"service":"callee","level":"info","event":"request-completed","requestId":"e19d8c39-e214-4a70-b012-dbc1c23a4f26","correlationId":"e19d8c39-e214-4a70-b012-dbc1c23a4f26","method":"GET","route":"/internal/modules/receive","status":200,"durationMs":1}
+
+ ↓ |generator| src/v2/workload.test.ts > RG09 workload contracts and verifier > mouse keeps an Auth guard's first identity choice and reaches workload after it is filled
+ ↓ |generator| src/v2/workload.test.ts > RG09 workload contracts and verifier > hides and refuses confidential workload selection on Browser hosts
+ ↓ |generator| src/v2/workload.test.ts > RG09 workload contracts and verifier > selects a workload issuer without user Sign-in and compiles stable callers/operations
+ ↓ |generator| src/v2/workload.test.ts > RG09 workload contracts and verifier > refuses missing setup even for Private network and keeps source readable
+ ✓ |generator| src/v2/workload.test.ts > RG09 workload contracts and verifier > verifies dedicated workload claims, audience, expiry and maximum caller, independently of user tokens 17ms
+ ↓ |generator| src/v2/workload.test.ts > RG09 workload contracts and verifier > bounds JWKS response size/key count, options and failed refresh frequency
+ ↓ |generator| src/v2/workload.test.ts > RG09 workload contracts and verifier > emits service-only clients and refuses a missing/changed setup record for existing realms
+ ↓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > bounds one waiter without aborting another waiter's shared credential acquisition
+ ✓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > callee enforces the GET read effect before a product command, while POST permits mutation 11ms
+ ✓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > private callee has no anonymous or user-only legacy alias, method or wildcard bypass 229ms
+ ↓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > keeps verified bearer inheritance private and releases credentials when contexts close
+ ↓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > retained private legacy tile transport refuses every request without dispatch
+ ↓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > single-flights refresh per independent process and retains only still-valid credentials during outage
+ ↓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > rejects invalid/non-DTO/oversized inputs before credential or service dispatch
+ ↓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > fixes credentials, paths, audience and budget; preserves mutation uncertainty and effect restrictions
+ ↓ |generator| src/v2/workload.test.ts > RG09 generated caller adapter > runs actual emitted caller and callee routes with independent user/workload authentication
+ ↓ |generator| src/v2/workload.test.ts > RG10 authenticated internal POST and the in-process core share replay identity and ordering
+ ↓ |generator| src/v2/workload.test.ts > RG15 emits and reports the framework-owned opt-in work protocol without making an unfinished stub runnable
+ ✓ |generator| src/v2/workload.test.ts > RG15 uses the actual authenticated generated protocol for restart-safe work and finite ticket recovery 9630ms
+ ↓ |generator| src/v2/workload.test.ts > RG21 declared session operation forwarding > compiles only matching-Identity route operations and preserves stable IDs on renames
+ ↓ |generator| src/v2/workload.test.ts > RG21 declared session operation forwarding > rejects duplicate/case-colliding, oversized, accessor and credential headers before dispatch
+ ↓ |generator| src/v2/workload.test.ts > RG21 declared session operation forwarding > uses one forced-generation refresh/read retry, finite headers and remaining budgets
+ ✓ |generator| src/v2/workload.test.ts > RG21 declared session operation forwarding > never retries POST, generic/workload refusal, transport unknown or a second user refusal 3ms
+ ↓ |generator| src/v2/workload.test.ts > RG21 declared session operation forwarding > cancellation after auth refusal stops refresh dispatch and cannot reset the request budget
+ ↓ |generator| src/v2/workload.test.ts > RG21 actual emitted HTTP adapter preserves safe failure headers and refuses forged auth provenance/read effects
+
+ Test Files  1 passed (1)
+      Tests  5 passed | 20 skipped (25)
+   Start at  22:25:07
+   Duration  14.41s (tests 70%, transform 22%, import 8%)

@@ -1235,6 +1235,36 @@ export function resolveGeneration(
         );
     }
   });
+  // A raw/imported selection must obey the same physical store requirement as module authoring.
+  for (const reader of normalized) {
+    if (reader.binding.kind !== "positive-cache-read") continue;
+    const cache = reader.binding.cache.resource;
+    const limiter = normalized.find(
+      (item) => item.binding.kind === "rate-limiter" && item.binding.cache.resource === cache,
+    );
+    if (limiter)
+      report(
+        "CONFIG_INVALID",
+        [...reader.sourcePath, "binding", "cache"],
+        `Cache reader ${reader.id} and Rate limiter ${limiter.id} cannot share ${cache}: cache reads require LRU eviction; admission requires no eviction. Connect separate caches.`,
+      );
+  }
+  for (const selection of normalized)
+    for (const slot of selection.module?.slots ?? [])
+      for (const link of slot.connections) {
+        const target = link.target;
+        if (target.kind !== "element") continue;
+        const index =
+          studio?.connections.findIndex((item) => item.connection === target.connection) ?? -1;
+        const connection = studio?.connections[index];
+        for (const field of ["timeoutMs", "retry"] as const)
+          if (connection?.settings[field] !== undefined)
+            report(
+              "NEEDS_TEMPLATE",
+              ["architecture", "studio", "connections", index, "settings", field],
+              `Module ${selection.module?.component} link ${link.link} has no installed consumer for ${field}; generated adapters own request budgets and safe recovery.`,
+            );
+      }
   for (const [index, link] of (studio?.componentConnections ?? []).entries()) {
     const source = studio?.components?.find((component) => component.id === link.from);
     if (
@@ -1250,55 +1280,52 @@ export function resolveGeneration(
       report(
         "CONFIG_INVALID",
         ["architecture", "studio", "componentConnections", index],
-        `${source.name} has no standalone product operation for ${moduleLinkSlot(design, link)?.id}; template parts receive no callable handle. Connect from Custom or a standalone Data access instead.`,
+        `Module ${source.id} has no standalone product operation for ${moduleLinkSlot(design, link)?.id}; template parts receive no callable handle. Connect from Custom or a standalone Data access instead.`,
       );
   }
-  // A structurally invalid model must never reach a renderer. Unsupported/uninstalled source
-  // can still yield a partial diagnostic model, but complete stays false.
+  // Finish diagnostic checks even when an earlier setting is invalid. A repair must not mistake
+  // newly revealed existing requirements for new incompatibility. Invalid models are withheld
+  // from renderers at the return boundary below.
   const processes = generation.processes
     ? normalizedProcesses(design, normalized, settings)
     : undefined;
-  const model: NormalizedGeneration | undefined = findings.some(isStructural)
-    ? undefined
-    : {
-        version: 1,
-        extensionApi: structuredClone(generationExtensionApi),
-        capabilities: [],
-        productState: ownership.resources
-          .filter(
-            (resource) =>
-              studio?.elements.some(
-                (item) => item.element === resource.element && item.settings.kind === "database",
-              ) &&
-              ((resource.kind === "source" && resource.productNamespace) ||
-                ownership.grants.some(
-                  (grant) => grant.resource === resource.element && grant.product,
-                )),
-          )
-          .map((resource) => ({
-            resource: resource.element,
-            owner: resource.authority,
-            ...(resource.kind === "source" && resource.productNamespace === "owner"
-              ? { schema: `p_${generationLocalIdentity(resource.authority).sql}` }
-              : {}),
-            access: ownership.grants.flatMap((grant, index) =>
-              grant.resource === resource.element && grant.product
-                ? [
-                    {
-                      host: grant.role,
-                      product: structuredClone(grant.product),
-                      sourcePath: ["ownership", "grants", index],
-                    },
-                  ]
-                : [],
-            ),
-          })),
-        runtime: structuredClone(generation.runtime),
-        ...(generation.preset && { preset: structuredClone(generation.preset) }),
-        selections: normalized,
-        localAdapterTreatments,
-        ...(processes && { processes }),
-      };
+  const model: NormalizedGeneration = {
+    version: 1,
+    extensionApi: structuredClone(generationExtensionApi),
+    capabilities: [],
+    productState: ownership.resources
+      .filter(
+        (resource) =>
+          studio?.elements.some(
+            (item) => item.element === resource.element && item.settings.kind === "database",
+          ) &&
+          ((resource.kind === "source" && resource.productNamespace) ||
+            ownership.grants.some((grant) => grant.resource === resource.element && grant.product)),
+      )
+      .map((resource) => ({
+        resource: resource.element,
+        owner: resource.authority,
+        ...(resource.kind === "source" && resource.productNamespace === "owner"
+          ? { schema: `p_${generationLocalIdentity(resource.authority).sql}` }
+          : {}),
+        access: ownership.grants.flatMap((grant, index) =>
+          grant.resource === resource.element && grant.product
+            ? [
+                {
+                  host: grant.role,
+                  product: structuredClone(grant.product),
+                  sourcePath: ["ownership", "grants", index],
+                },
+              ]
+            : [],
+        ),
+      })),
+    runtime: structuredClone(generation.runtime),
+    ...(generation.preset && { preset: structuredClone(generation.preset) }),
+    selections: normalized,
+    localAdapterTreatments,
+    ...(processes && { processes }),
+  };
   if (processes)
     settings.push(
       ...processSettings(design, processes, settings, runtimeInstalled && !!installed.processes),
@@ -1638,10 +1665,11 @@ export function resolveGeneration(
     const delivery = normalizedDelivery(design);
     if (delivery.length) model.delivery = delivery;
   }
+  const validModel = findings.some(isStructural) ? undefined : model;
   // A refused model hides every control, except one whose own saved value a finding names (out of
   // range, unsupported, or disagreeing with its mirror): that control is the way to fix it, by
   // mouse and by chat (V3-18). Everything else waits until the model resolves.
-  if (!model) {
+  if (!validModel) {
     const named = new Set(
       findings.flatMap((item) => (item.target.path ? [JSON.stringify(item.target.path)] : [])),
     );
@@ -1651,10 +1679,10 @@ export function resolveGeneration(
         decision.sourcePaths.some((path) => named.has(JSON.stringify(path)));
   }
   return freezeRecord({
-    model,
+    model: validModel,
     findings,
     settings,
-    complete: !!model && findings.length === 0 && normalized.length > 0,
+    complete: !!validModel && findings.length === 0 && normalized.length > 0,
   });
 }
 

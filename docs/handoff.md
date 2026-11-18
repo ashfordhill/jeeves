@@ -19184,3 +19184,36 @@ workload settings the same way.
   old projects preserved. External owner48776d6/new plan and unrelated owner work are excluded;
   no later-unit execution, owner studio/database, root edit, paid/live call, push or deployment.
 - One explicit-path local commit follows: `RG21: forward session identity through declared authenticated operations`.
+
+## 2026-11-17 — RG22 composition parity active, unaccepted/uncommitted
+
+- Sole assigned RG22 on accepted RG21 `326e349`; auditing the common installed resolver,
+  normal command paths, preview/CLI exports and checked extension boundary. No later-unit work.
+- Found a concrete parity gap: preview rejects resolver blockers, while the CLI can write a
+  diagnostic partial bundle for the same unsupported source. Normal setting edits can likewise
+  introduce an unsupported installed combination after their field-level allowlist passes.
+- Focused authoring/export table, guide/checker examples, actual pinned scratch compile, D11,
+  mouse/offline evidence, final handoff and one explicit-path commit remain. Original protected
+  roots/owner patch/container triples/applied migrations/dependencies/frozen v1 verified unchanged.
+
+## 2026-11-17 — RG22 composition parity complete for coordinator review
+
+- Existing resolver now enforces raw cache-reader/admission eviction incompatibility and unsupported
+  stub-link retry/budget overrides. Normal mouse/chat commands reject newly introduced blockers
+  atomically; CLI applies the same preview/download export blockers before destination writes.
+- Saved/incomplete designs remain readable and repairable. Diagnostic passes expose latent old
+  requirements while withholding invalid models; the existing module upgrade/derivation supplies
+  the first-module legacy baseline. Original TTL-repair, TinyURL and pattern success assertions
+  remain intact. New caller requirements at the same link still refuse; label/index shifts do not.
+- Generated application guide/checker covers allowed forms/imports/effects, contextual examples
+  and explicit migration. API8 remains; actual retained string-call bodies compile unchanged.
+  Unfilled hooks remain required custom work, never runtime certification. No new normal controls,
+  capability/provider, migration, app policy, analysis model or review screen.
+- Final pnpm check lint/types145files/1353tests, browser87/87 (TinyURL/both full rebuilds), web build,
+  offline chat, actual75-file checker/TypeScript7.0.2 and focused parity/mechanism/repair/mouse
+  checks pass. Honest initial failures/corrections and limits: [RG22 evidence](plans/reliable-generation/evidence/rg22/README.md).
+- Original six roots/current owner README, exact owner patch/archive mapping,42 container triples,
+  accepted050–055/receipt/counter builders/dependency assets and frozenv1 preserved. Final e2e
+  inventory exactly matches both old projects; unit-created projects remaining0. No later-unit,
+  native matrix, owner studio/database, root edit, paid/live call, push or deployment.
+- One explicit-path local commit follows: `RG22: enforce capability composition consistently across authoring and export`.

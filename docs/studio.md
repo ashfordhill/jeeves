@@ -1416,6 +1416,12 @@ scaffold**. Explicit schema3
 `generation` selects local-v2 assembly from the current saved source and the actual installed
 registry. Unknown refs, invalid bindings and unsupported settings refuse export; names never select
 code. Known declarations without implementations export as explicit custom gaps.
+The CLI applies the same saved-source refusal before creating its destination. Normal mouse/chat
+edits reject a newly introduced unsupported combination atomically; imported custom intent stays
+readable and repairable. The generated `.jeeves/extensions.md` is the application-writing packet:
+allowed hook forms/imports, effect boundaries, accepted/refused examples and explicit migration.
+Its checker reports the extension API version separately from design schema and does not establish
+hook completeness or runtime verification.
 The dialog shows support findings before preview, then actual emitted consumer paths, required
 custom hooks, settings, source/registry/archive/manifest hashes and strict/runtime limitations.
 The full report stays in `.jeeves/report.json`. The default export is partial: reusable modules

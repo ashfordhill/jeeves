@@ -90,10 +90,47 @@ async function inspect(file, policy, service, sharedScope = false) {
   for (let kind = scanner.scan(); kind !== SyntaxKind.EndOfFile; kind = scanner.scan())
     tokens.push({ kind, text: scanner.getTokenValue() || scanner.getTokenText() });
   const imports = [];
+  const asynchronous = (index) => {
+    const previous = tokens[index - 1],
+      next = tokens[index + 1],
+      after = tokens[index + 2];
+    if (previous?.kind === SyntaxKind.DotToken || previous?.kind === SyntaxKind.FunctionKeyword)
+      return false;
+    if (next?.kind === SyntaxKind.FunctionKeyword) return true;
+    // async function/arrow/method syntax, not a DTO property or a binding named async.
+    if (
+      next?.kind === SyntaxKind.Identifier &&
+      [
+        SyntaxKind.EqualsGreaterThanToken,
+        SyntaxKind.OpenParenToken,
+        SyntaxKind.LessThanToken,
+      ].includes(after?.kind)
+    )
+      return true;
+    if (next?.kind !== SyntaxKind.OpenParenToken && next?.kind !== SyntaxKind.LessThanToken)
+      return false;
+    let depth = 0;
+    for (let j = index + 1; j < tokens.length; j++) {
+      const kind = tokens[j].kind;
+      if (kind === SyntaxKind.OpenParenToken) depth++;
+      if (kind === SyntaxKind.CloseParenToken) depth--;
+      if (depth === 0 && kind === SyntaxKind.EqualsGreaterThanToken) return true;
+      if (
+        depth === 0 &&
+        [SyntaxKind.OpenBraceToken, SyntaxKind.SemicolonToken, SyntaxKind.EqualsToken].includes(
+          kind,
+        )
+      )
+        return false;
+    }
+    return false;
+  };
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i],
       next = tokens[i + 1],
       previous = tokens[i - 1];
+    if (policy && token.kind === SyntaxKind.AsyncKeyword && asynchronous(i))
+      report(file, "asynchronous policy");
     if (token.kind === SyntaxKind.ImportKeyword) {
       if (next?.kind === SyntaxKind.OpenParenToken) report(file, "dynamic import");
       else if (next?.kind === SyntaxKind.StringLiteral) imports.push(next.text);
@@ -207,4 +244,6 @@ if (errors.size) {
   console.error([...errors].sort().join("\n"));
   process.exitCode = 1;
 } else
-  console.log("Extension boundaries passed (cooperative misuse check; no hostile-code sandbox).");
+  console.log(
+    `Extension boundaries passed (API v${manifest.extensionApi.version}; cooperative misuse check; no hostile-code sandbox). Hook completeness and runtime behavior are not assessed.`,
+  );

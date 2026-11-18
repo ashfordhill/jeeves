@@ -1,0 +1,384 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+docs/plans/reliable-generation/evidence/rg21/pins.ts:44:5 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    42 │   await writeFile(
+    43 │     new URL(`../../../../../${path}`, import.meta.url),
+  > 44 │     JSON.stringify(after, null, 2) + "\n",
+       │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    45 │   );
+    46 │
+
+  i Unsafe fix: Use a template literal.
+
+    42 42 │     await writeFile(
+    43 43 │       new URL(`../../../../../${path}`, import.meta.url),
+    44    │ - ····JSON.stringify(after,·null,·2)·+·"\n",
+       44 │ + ····`${JSON.stringify(after,·null,·2)}\n`,
+    45 45 │     );
+    46 46 │
+
+
+docs/plans/reliable-generation/evidence/rg21/protocol.mjs:111:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    109 │ await writeFile(
+    110 │   extension,
+  > 111 │   original + '\nimport {sessionAccess} from "../../runtime/operation.ts";\nvoid sessionAccess;\n',
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    112 │ );
+    113 │ try {
+
+  i Unsafe fix: Use a template literal.
+
+    109 109 │   await writeFile(
+    110 110 │     extension,
+    111     │ - ··original·+·'\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n',
+        111 │ + ··`${original}\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n`,
+    112 112 │   );
+    113 113 │   try {
+
+
+docs/plans/reliable-generation/evidence/rg22/compile.ts:73:48 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    71 │       refusal = String((error as { stderr: string }).stderr);
+    72 │     }
+  > 73 │     if (!refusal.includes(reason)) throw Error("Expected actual checker refusal: " + reason);
+       │                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    74 │     console.log("Actual checker refused", reason, "at src/contracts/payload.ts");
+    75 │   }
+
+  i Unsafe fix: Use a template literal.
+
+    71 71 │         refusal = String((error as { stderr: string }).stderr);
+    72 72 │       }
+    73    │ - ····if·(!refusal.includes(reason))·throw·Error("Expected·actual·checker·refusal:·"·+·reason);
+       73 │ + ····if·(!refusal.includes(reason))·throw·Error(`Expected·actual·checker·refusal:·${reason}`);
+    74 74 │       console.log("Actual checker refused", reason, "at src/contracts/payload.ts");
+    75 75 │     }
+
+
+docs/plans/reliable-generation/evidence/rg22/pins.ts:41:5 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    39 │   await writeFile(
+    40 │     new URL(`../../../../../${path}`, import.meta.url),
+  > 41 │     JSON.stringify(after, null, 2) + "\n",
+       │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    42 │   );
+    43 │
+
+  i Unsafe fix: Use a template literal.
+
+    39 39 │     await writeFile(
+    40 40 │       new URL(`../../../../../${path}`, import.meta.url),
+    41    │ - ····JSON.stringify(after,·null,·2)·+·"\n",
+       41 │ + ····`${JSON.stringify(after,·null,·2)}\n`,
+    42 42 │     );
+    43 43 │
+
+
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+jeeves-generator/src/v2/browser-session.test.ts:584:9 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    582 │     await expect(
+    583 │       run(() =>
+  > 584 │         callback!(
+        │         ^^^^^^^^^
+    585 │           {
+    586 │             url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+     582  582 │       await expect(
+     583  583 │         run(() =>
+     584      │ - ········callback!(
+          584 │ + ········callback?.(
+     585  585 │             {
+     586  586 │               url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+
+jeeves-generator/src/v2/browser-session.test.ts:675:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    673 │     expect(calls).toBe(1);
+    674 │     expect(results.every((r) => (r as { signedIn: boolean }).signedIn)).toBe(true);
+  > 675 │     const row = (
+        │                 ^
+  > 676 │       await f.pg.query<{
+         ...
+  > 681 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 682 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    683 │     expect(Number(row.refresh_generation)).toBe(1);
+    684 │     expect(row.revoked_at).toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:721:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    719 │             },
+    720 │       );
+  > 721 │       const row = (
+        │                   ^
+  > 722 │         await f.pg.query<{
+         ...
+  > 726 │         }>("SELECT * FROM jeeves.browser_sessions")
+  > 727 │       ).rows[0]!;
+        │       ^^^^^^^^^^
+    728 │       if (kind === "definitive") {
+    729 │         expect(row.revoked_at).not.toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:782:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    780 │       signedIn: true,
+    781 │     });
+  > 782 │     const row = (
+        │                 ^
+  > 783 │       await f.pg.query<{
+         ...
+  > 787 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 788 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    789 │     expect(row.access_sealed).toMatch(/^jke1.new\./);
+    790 │     expect(row.refresh_sealed).toMatch(/^jke1.new\./);
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1137:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1135 │     ).rejects.toBeDefined();
+    1136 │     f.pool.connect = connect;
+  > 1137 │     const row = (
+         │                 ^
+  > 1138 │       await f.pg.query<{
+          ...
+  > 1142 │       }>("SELECT refresh_uncertain,refresh_attempt,refresh_generation FROM jeeves.browser_sessions")
+  > 1143 │     ).rows[0]!;
+         │     ^^^^^^^^^^
+    1144 │     expect(row.refresh_uncertain).toBe(true);
+    1145 │     expect(row.refresh_attempt).toBeTruthy();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1227:50 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1225 │     .update(JSON.stringify([f.settings.issuer, f.settings.clientId]))
+    1226 │     .digest("hex");
+  > 1227 │   const cookieHash = createHash("sha256").update(a.cookie.split("=")[1]!).digest("hex");
+         │                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+    1228 │   const binding = (field: string) => ({
+    1229 │     scope: createHash("sha256")
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1339:10 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1337 │   expect(expiry).toBeInstanceOf(Date);
+    1338 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1339 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │          ^^^^^^^
+    1340 │ });
+    1341 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1337 1337 │     expect(expiry).toBeInstanceOf(Date);
+    1338 1338 │     expect(providerObserved).toBeInstanceOf(Date);
+    1339      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1339 │ + ··expect(expiry?.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+    1340 1340 │   });
+    1341 1341 │
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1339:49 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1337 │   expect(expiry).toBeInstanceOf(Date);
+    1338 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1339 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │                                                 ^^^^^^^^^^^^^^^^^
+    1340 │ });
+    1341 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1337 1337 │     expect(expiry).toBeInstanceOf(Date);
+    1338 1338 │     expect(providerObserved).toBeInstanceOf(Date);
+    1339      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1339 │ + ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved?.getTime()·+·3600000);
+    1340 1340 │   });
+    1341 1341 │
+
+
+Checked 2173 files in 704ms. No fixes applied.
+Found 8 warnings.
+Found 5 infos.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |server| src/chat/tools.test.ts (27 tests | 3 failed) 2023ms
+   ❯ studio chat tools (27)
+     × adds and connects modules with the canvas's commands and reads their status 36ms
+     × refuses a new tile of a legacy kind in plain words, as the link fan never offers one 7ms
+     × previews commands or a pattern without preparing or saving anything 16ms
+ ❯ |spec| src/process-settings.test.ts (7 tests | 1 failed) 2503ms
+   ❯ process settings on stub tiles (v3 contract, section 4, D5) (7)
+     × keeps a template's out-of-range control too, and puts its mirror right in the same step 358ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |spec| src/process-settings.test.ts > process settings on stub tiles (v3 contract, section 4, D5) > keeps a template's out-of-range control too, and puts its mirror right in the same step
+Error: Required callable cache-reader.read@1 is not installed.
+ ❯ checked src/supported-authoring.ts:89:27
+     87|       (entry) => !existing.has(refusalIdentity(next.design, entry)),
+     88|     );
+     89|     if (introduced) throw new Error(introduced.message);
+       |                           ^
+     90|     return batch;
+     91|   };
+ ❯ buildSupportedAuthoringCommand src/supported-authoring.ts:199:10
+ ❯ edit src/process-settings.test.ts:43:17
+ ❯ src/process-settings.test.ts:245:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |server| src/chat/tools.test.ts > studio chat tools > adds and connects modules with the canvas's commands and reads their status
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/chat/tools.test.ts:419:85
+    417|       },
+    418|     ];
+    419|     expect(run(workspace, "applyStudioCommands", { baseRevision: 3, co…
+       |                                                                                     ^
+    420|     // The same batches the mouse sends, one after another.
+    421|     let mouse = base;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |server| src/chat/tools.test.ts > studio chat tools > refuses a new tile of a legacy kind in plain words, as the link fan never offers one
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/chat/tools.test.ts:951:7
+    949|         commands: [{ type: "addModule", host: "redirect", kind: "rate-…
+    950|       }).ok,
+    951|     ).toBe(true);
+       |       ^
+    952|     expect(run(workspace, "listStudioDefinitions").legacyKinds).toEqua…
+    953|       "billing",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |server| src/chat/tools.test.ts > studio chat tools > previews commands or a pattern without preparing or saving anything
+AssertionError: expected { ok: false, …(2) } to match object { ok: true, preview: true, …(3) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "added": {
+-     "modules": [
+-       {
+-         "id": "shorten-auth-guard",
+-         "kind": "auth-guard",
+-         "name": "Auth guard",
+-       },
+-     ],
+-     "tiles": [
+-       {
+-         "id": "login",
+-         "kind": "identity",
+-         "name": "Login",
+-       },
+-     ],
+-   },
+-   "note": StringContaining "Preview only",
+-   "ok": true,
+-   "pattern": "sign-in",
+-   "preview": true,
++   "note": "Nothing changed for this call.",
++   "ok": false,
+  }
+
+ ❯ src/chat/tools.test.ts:1041:21
+    1039|       pattern: { id: "sign-in", tile: "Shorten service" },
+    1040|     });
+    1041|     expect(preview).toMatchObject({
+       |                     ^
+    1042|       ok: true,
+    1043|       preview: true,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 143 passed (145)
+      Tests  4 failed | 1347 passed (1351)
+   Start at  22:22:32
+   Duration  212.61s (tests 84%, import 12%, transform 2%, environment 2%)
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.
