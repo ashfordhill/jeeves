@@ -19532,3 +19532,39 @@ workload settings the same way.
   4300/4310 PIDs unchanged. No schema/blueprint/chat/generation/settings/template/dependency edit,
   later unit, root/owner studio edit, paid/live call, push or deployment. One explicit-path local
   commit follows: `WD05: wire colour rule and saved slots`. Stop for review.
+
+
+## 2026-11-18 — WD06 stopped
+
+- Applied the exact canvas/Workspace/container/CSS/legend wiring, requested new E2E additions and
+  docs, without changing board code/tests or any old E2E assertion. Biome wrapping only. The
+  unchanged Detailed chooser requires CDN plus both Transcoder writes within 2px on a shared run;
+  prescribed 11px lanes/individual arrowheads remove it. Recreating that run or changing the test
+  would contradict the brief. Coordinator independently confirmed this design stop; no workaround.
+- [Stopped binary patch](plans/wires-and-deployment/stopped/WD06.patch) preserves all 33 changed
+  paths, logs, partial browser outcomes and 11 PNGs (screenshots in both views and actual exports).
+  It applies cleanly. Restored all 12 starting own files with their exact bytes and modes and removed
+  own attempted newfiles; only this append and the patch land. No visible WD06 change remains.
+- Attempt: focused 5/5, `pnpm check` 148 files/1389 tests and web build pass; E2E 77 pass/12 fail (6.8m),
+  both mouse rebuilds pass. Other unresolved failures include wire mouse selection, old inline
+  BaseEdge selection stroke and export ink sampling. The new Detailed dot case passed; the own
+  new colour case initially used Simple IDs in Detailed, corrected only its body to select Simple,
+  then left unrerun after the design stop. No old selector/expectation was weakened.
+- Browser: TinyURL Simple/Detailed × light/dark passed source tones, beads, individual heads,
+  tile blue outlines, mouse wire selection and decoded PNG light-tone counts; each view's PNGs
+  are identical across themes. Visually inspected an actual PNG: wires are visible. Old 5×5 ink
+  sampling may miss the outline around the wider colour stroke (inference, unresolved). Larger
+  YouTube Simple/light rendered and was captured, then wire selection failed; remaining matrix
+  stopped. Full required browser matrix is **not passed**. Artifacts live inside the patch under
+  `evidence/wd06/`, including `tinyurl-{simple,detailed}-{light,dark}-matrix.png` and exported PNGs.
+- Restored-tree checks: `pnpm check` 148 files/1389 tests pass (196.51s), E2E 87/87
+  pass (6.4m, TinyURL and both mouse rebuilds), web build pass. Logs:
+  `/tmp/jeeves-wd06-restored-{check,e2e,build}.log`. Inherited lint/chunk warnings remain.
+- Final preservation: all 7256 other byte/mode/absence states and own modes match;
+  root/owner patch, accepted SQL/dependencies and frozen v1 preserved. Original 42 full container
+  triples/9 networks/23 volumes/43 images and both old E2E rows unchanged; own projects 0.
+  E2E ports free, owner 4300/4310 PIDs unchanged. Read-only RG21 audit passes with process-local
+  `core.abbrev=7`; no baseline/config edit. No later unit, root/owner studio/original app/
+  historical evidence/schema/blueprint/chat/generation/settings/template/dependency change,
+  branch/worktree/stash, unrelated cleanup, paid/live call, push or deployment.
+- One scoped local stop commit follows: `WD06: stopped, shared-run test conflicts with lanes`.
