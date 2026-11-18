@@ -19,9 +19,21 @@ Docker, TypeScript, exact providers, codecs, renditions, deadlines and event pol
 | Concurrency limit | HTTP admission: a template's, or (Runnable processes on) the tile's process | 1–100000 |
 | Worker concurrency | AMQP handler admission, except fixed media worker; (Runnable processes on) its stub loops too | 1–1024 |
 | TTL | Positive cache reader | 1–604800 seconds |
+| Freshness / Exposure | Cache reader mode and HTTP/in-process binding | Immutable-positive or versioned; HTTP or in-process |
+| Limit per window / Window | Shared Rate limiter | 1–10000 / 1–604800 seconds |
+| Interval | Scheduled task in Service or Worker | 1–604800 seconds |
+| Body limit / Signature window | Generic HMAC Webhook receiver | 1024, 16384 or 65536 bytes / 30–300 seconds |
+| Delivery horizon | Event counter receipt retention requirement | 1–604800 seconds |
+| Sign-in / Idle expiry / Absolute expiry / Guest cookie context / Request offline access | Browser session | Required or Optional; 60–86400 / 60–604800 seconds, idle ≤ absolute; disabled or enabled |
+| Sign-in | Bearer Auth guard | Required or Optional |
 | Pool size | SQL client of a Data access or Lifecycle writer | 1–1000 |
 | Statement timeout | SQL client of a Data access or Lifecycle writer | 1–300000 ms |
 | Provider (a Queue only stubs use) | (Runnable processes on) its stubs' processes: RabbitMQ, or a Google Cloud Pub/Sub topic | Unspecified, Self-hosted, Google Cloud |
+
+Worker **shareOwner** and named product table/view access are also implemented authoring
+choices; credentials, retry/fence/refresh state and arbitrary setting-name declarations stay out
+of normal controls. See [logical ownership](studio.md#logical-owners-roles-and-access) and the
+[foundation handback](plans/reliable-generation/owner-handback.md) for boundaries/evidence.
 
 Controls additionally require an authoritative saved source field and the installed template's
 matching consumer/output paths. A saved value outside its bound or its template's supported values
@@ -634,7 +646,8 @@ retain identity for seven days after database-time completion. Dates and aggrega
 never scope receipt identity. A repeat with different effect-relevant data conflicts.
 Retention, cleanup batches, heartbeat and ACK controls are generated internals, without inspector
 fields. A standalone Event consumer can connect optional writable owned **state** and declare a
-scoped `receiptConsumer` in its application module; its retention must cover its delivery horizon.
+scoped `receiptConsumer` in its application module; declared retention must cover its delivery
+horizon and is at most 30 days. Event counter's seven-day policy is distinct from that public declaration.
 See [the emitted extension contract](plans/reliable-generation/evidence/rg18/protocol.md).
 
 ### Browser session (RG19)

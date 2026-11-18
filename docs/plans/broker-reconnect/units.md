@@ -1,5 +1,8 @@
 # Broker reconnect: a lost broker never stops a process
 
+> Historical completed sequence (RG26, 2026-11-18): BR01–02 completed; broker recovery remains baseline code improved by RG. The original “nothing implemented” statement below describes planning time. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** planned 2026-11-12 from the owner's decision on follow-up 1 of the
 [production foundations review](../production-foundations/review.md). Written by the
 coordinator from the code at `24c9abb`; not yet checked by an independent reviewer. **Nothing is

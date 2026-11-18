@@ -11,7 +11,8 @@ Normal editor and chat controls share `buildSupportedAuthoringCommand` and the a
 registry reported by `GET /generation-support`. Catalog membership alone enables no control.
 Custom requested behavior can be recorded as an unresolved requirement; it supplies no template.
 Generate uses that same executing registry. Attachment does not certify runtime behavior or
-strict TinyURL readiness.
+strict TinyURL readiness. Current API8 mechanisms and their finite verification/migration limits
+are summarized in the [generated-foundation handback](plans/reliable-generation/owner-handback.md).
 
 The status bar's **Dark mode** button switches the theme (kept in the browser). In the dark theme
 the surfaces step up from the bars to the canvas, then the rails, menus, popovers, the canvas
@@ -1138,7 +1139,7 @@ components, with nothing omitted and no findings.
 video-sharing site with YouTube's core functionality, designed as clean microservices rather than
 copied from YouTube. Version 2 follows Alex Xu's "Design YouTube" (ByteByteGo), mapped to Jeeves
 tiles and templates, after the owner's review of 1.2 (the
-[human feedback](HUMAN_FEEDBACK.md#2026-11-06--youtube-v2-search-feed-upload-forks-layout-xus-design)).
+[human feedback](HUMAN_FEEDBACK.md#2026-11-06--youtube-upload-publication-and-layout)).
 Version 2.2 leaves the kind out of names the tile's kind label shows: Metadata (a database), Hot
 metadata (a cache), Videos (a search index), Video delivery (a CDN). Its core flows, and the tiles
 that carry them:
@@ -1436,8 +1437,8 @@ parts connected exports its installed template exactly as the same template sele
 would, and the lead and its parts read Template. A module without a complete template exports as
 a typed stub under `src/modules/<tile>/`, which throws "Not implemented" until you write it; each
 stub is a required custom gap. A stub's file also declares the settings it reads
-(`export const settings = declareSettings({ ... })`, text, integer, URL, secret or key ring, from
-`src/runtime/settings.ts`); with Runnable processes on, its process reads them before it reaches
+(`export const settings = declareSettings({ ... })` from `src/extension-api/index.ts`, using
+text, integer, URL, purpose-bound signing/sealing keys or optional descriptors); with Runnable processes on, its process reads them before it reaches
 any store and refuses to start, naming the setting and never its value, when one is missing or
 invalid. You give them in your `compose.override.yaml`.
 
@@ -1484,12 +1485,14 @@ installed-template cross-process adapters remain gaps. Internal callees expose o
 `/internal/modules/<moduleId>` root, with no legacy `/modules` alias. Explicitly public callees
 retain browser routes under their user policy. Dedicated workload credentials never count as
 an end user. A verified incoming user bearer is privately forwarded only to declared recipients;
-session lookup, refresh and retries are outside this adapter. Product code can narrow each
+Browser session callers use the separate generated private session/refresh bridge described below;
+the ordinary bearer adapter does not add session lookup or arbitrary retries. Product code can narrow each
 callee's maximum with `allowedCallers`, but cannot replace audiences or attached credentials.
 Local setup adds service-account clients with user grants disabled. Existing Keycloak realms are
 not updated by `--import-realm`: changed workload setup refuses restart until a fresh disposable
 runtime or reviewed external issuer migration. See `.jeeves/extensions.md` for cache/outage bounds
-and the explicit API7→8 hook migration; generated native two-service evidence remains separate.
+and explicit migration to API8. [Native checkpoint results](plans/reliable-generation/evidence/rg23/results.md)
+separately establish the selected two-service authentication/failure cases.
 When an asset lifecycle names an upload, that upload's `reserve`,
 `complete` and `closed` hooks are the lifecycle's, so only its own hooks are left to write. In any tile, a stub connected to consume a queue
 runs a loop on it, and the asset lifecycle, Video HLS, event counter and Index writer run their
@@ -1500,9 +1503,11 @@ subscriber queue, so each receives every message. A message that reaches "Not im
 to its queue's `.failed` at once with one log line (a template's too, with no retries), and the
 process stays healthy; a stub's own error is retried 5 times with backoff before `.failed`. A
 message whose store is unreachable (a lost or stalled database connection) waits 5 s and keeps the attempt,
-in a stub's loop and a template's alike, so an outage never sends it to `.failed`; a failed
-`fetch` to an outside host keeps the normal retries (another HTTP client's socket error still
-waits: see the generator README). A
+in a stub's loop and a template's alike, so an outage never sends it to `.failed`; a known
+retryable failure keeps the normal retries. A typed unknown effect is terminal for
+reconciliation, with no intentional runner replay; broker redelivery after a crash still needs
+the installed recovery/receipt contract. Private historical outside-host transport classification
+does not expose arbitrary HTTP handles to API8 product hooks (see the generator README). A
 process that loses its broker keeps running: its broker publishers and consumers reconnect every
 5 s, a publish fails at once while the broker is away, and consumers resubscribe when it is back. Every database, cache, queue, object storage and search index a stub links to is
 provisioned for its tile with that link's access, and the stub gets real clients, each checked
@@ -1654,8 +1659,9 @@ Service routes are unaffected. Scheduling progresses without HTTP or message tra
 process is running. Database time chooses ticks; all copies share one unfinished intent, downtime
 coalesces and stale completion cannot commit. Failed/unknown ticks halt further admission with
 fixed safe logs, rather than appearing idle. See the generated extension guide for explicit
-handler migration and RG15 workload recovery limits. Native competing-worker kill evidence is
-reserved for the later approved integration checkpoint.
+handler migration and workload recovery limits. [RG23](plans/reliable-generation/evidence/rg23/results.md)
+records actual same-Service remote holder replacement/fencing; it does not make a same-owner
+Worker interchangeable remote authority.
 
 ### Authenticated webhook ingestion (RG17)
 

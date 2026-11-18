@@ -1,0 +1,176 @@
+{
+  "base": "3bfce24e1a0bac1bebd3b3d7f77f77c18c7a61db",
+  "verificationPolicy": "D11 documentation-only: focused links/status/evidence/protected paths; no app/full test/build/browser/native runs",
+  "newOrAddedLocalLinksChecked": 149,
+  "newLinkFailures": [],
+  "inheritedBrokenLocalLinksPreserved": [
+    {
+      "source": "docs/plans/production-foundations/units.md",
+      "target": "docs/plans/production-foundations/units.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/plans/production-foundations/units.md",
+      "target": "evals/v3-19/README.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/plans/production-foundations/units.md",
+      "target": "../docs/template-gaps.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/plans/qrwty-gaps/units.md",
+      "target": "../../evidence/q03/capabilities.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/plans/qrwty-gaps/units.md",
+      "target": "../../evidence/q03/review.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/plans/qrwty-gaps/units.md",
+      "target": "../../evidence/q01/checks.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/plans/qrwty-gaps/units.md",
+      "target": "../../evidence/q03/review.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/handoff.md",
+      "target": "../PLAN.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/handoff.md",
+      "target": "../PLAN.md",
+      "issue": "missing local target"
+    },
+    {
+      "source": "docs/handoff.md",
+      "target": "../CATALOG.md",
+      "issue": "missing local target"
+    }
+  ],
+  "acceptedUnitCommitsVerified": 25,
+  "rg17SourceAbsorptionRecorded": true,
+  "rg26SelfReference": "unique subject lookup; coordinator acceptance pending at write time",
+  "oldHandoffBytePrefixPreserved": true,
+  "protectedExistingPathsVerified": 6348,
+  "protectedPathChanges": [],
+  "rootReadmeSha256": "7cee84a454f220152e8c973b4c2062c603c82067f334ad628beeae0332c0aa40",
+  "dockerInventoryUnchanged": {
+    "containers": 42,
+    "networks": 9,
+    "volumes": 23,
+    "images": 43
+  },
+  "sourceBackedContractChecks": [
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/scripts/check-extensions.mjs",
+      "sha256": "d6dfb7b41c59f8ee9b1324fc40a8a5772f9d217068a8362a28eb494991e1e1b8",
+      "assertions": [
+        "row.ownership !== \"generated-scaffold\"",
+        "createHash(\"sha256\").update(bytes).digest(\"hex\") !== row.sha256"
+      ],
+      "unchangedFromAcceptedRg25": true
+    },
+    {
+      "path": "jeeves-generator/src/update.ts",
+      "sha256": "aa9cdaef31f2d41a3ff0347ef979798c413bfec5b71a9bf90da3328f89051a02",
+      "assertions": [
+        "else if (overrides.length)",
+        "Resolve generated overrides before extension migration:",
+        "validateMigration(root, bundle, plan.actions)"
+      ],
+      "unchangedFromAcceptedRg25": true
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/process.ts.template",
+      "sha256": "0074f3d49abc015bee9a996d3265f6f8ffb8e76818474c065b92fdf44c5c308b",
+      "assertions": [
+        "shutdownBudgetMs = 10000",
+        "options.terminate ?? ((code) => process.exit(code))"
+      ],
+      "unchangedFromAcceptedRg25": true
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/durable-work.ts.template",
+      "sha256": "74de1cc88f0d1be7e6908da23f84eb43bd1a38da6908690daf7f155ffc1aa987",
+      "assertions": ["definition.retentionSeconds < 60", "definition.retentionSeconds > 604800"],
+      "unchangedFromAcceptedRg25": true
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/receipts.ts.template",
+      "sha256": "50fd21989bc71b57ef3b24e60384d4364fb2454f3d9cbf7a7954854c29764c05",
+      "assertions": [
+        "policy.deliveryHorizonSeconds < 1",
+        "policy.retentionSeconds < policy.deliveryHorizonSeconds",
+        "policy.retentionSeconds > 2592000"
+      ],
+      "unchangedFromAcceptedRg25": true
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/delivery.ts.template",
+      "sha256": "7beac97570c15cd6d2fa1ec6f15daa8f2204d45efb91951176dd2c2a4a609b84",
+      "assertions": ["!unknown && unreachable(error)", "unknown ? \"OUTCOME_UNKNOWN\""],
+      "unchangedFromAcceptedRg25": true
+    },
+    {
+      "path": "jeeves-generator/src/v2/assemble.ts",
+      "sha256": "ab6afe067ef1775f98b2e9b46b4377df75e3fb608cf26b47349a16d7ace6d625",
+      "assertions": [
+        "--ack-extension-api=${model.extensionApi.version}",
+        "defineWorkloadOperation",
+        "src/contracts/"
+      ],
+      "unchangedFromAcceptedRg25": true
+    },
+    {
+      "path": "jeeves-generator/src/v2/extension-api.ts",
+      "sha256": "fbb3b8d57f051316c75f5e6136800755eb861a6ca053b0d9a34841c63a1ab5fa",
+      "assertions": ["export interface ProductQueries", "export interface ServiceTarget"],
+      "unchangedFromAcceptedRg25": true
+    }
+  ],
+  "primaryMain": true,
+  "approvedWdQueueUnchanged": true,
+  "ownPaths": {
+    "docs/studio.md": "documentation / focused text or JSON receipt",
+    "docs/studio-settings.md": "documentation / focused text or JSON receipt",
+    "docs/studio-blueprint.md": "documentation / focused text or JSON receipt",
+    "docs/glossary.md": "documentation / focused text or JSON receipt",
+    "docs/template-gaps.md": "documentation / focused text or JSON receipt",
+    "docs/design-playbook.md": "documentation / focused text or JSON receipt",
+    "jeeves/CATALOG.md": "documentation / focused text or JSON receipt",
+    "jeeves/PLAN.md": "documentation / focused text or JSON receipt",
+    "jeeves-generator/README.md": "documentation / focused text or JSON receipt",
+    "docs/plans/broker-reconnect/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/generated-system-tests/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/production-foundations/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/qrwty-gaps/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/qrwty-lessons/README.md": "documentation / focused text or JSON receipt",
+    "docs/plans/qrwty-lessons/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-foundations/backend-first-proof-plan.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-foundations/next-contract-plan.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-foundations/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-foundations/youtube-field-project-plan.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-foundations/youtube-v2-plan.md": "documentation / focused text or JSON receipt",
+    "docs/plans/store-outage/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/ui-followups/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/ui-refresh/units.md": "documentation / focused text or JSON receipt",
+    "docs/plans/README.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/README.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/execution.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/evidence.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/owner-handback.md": "documentation / focused text or JSON receipt",
+    "docs/handoff.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/evidence/rg26/README.md": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/evidence/rg26/unit-status.json": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/evidence/rg26/checks.json": "documentation / focused text or JSON receipt",
+    "docs/plans/reliable-generation/evidence/rg26/preservation.txt": "documentation / focused text or JSON receipt"
+  }
+}

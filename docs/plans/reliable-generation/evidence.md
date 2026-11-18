@@ -47,9 +47,11 @@ otherwise. A/B source is reference-only. New unit filenames are explicitly ident
 
 ## Disposition of unimplemented plans
 
-On sign-off, this packet is the sole queue for this improvement. RG26 records the disposition in
-old documentation without deleting evidence or rewriting history. Do not execute an old unit just
-because its header still says approved or the root AGENTS names its plan.
+This packet was the sole queue for the RG improvement. RG26 records the disposition in the
+[plan index](../README.md) and old documentation without deleting evidence or rewriting history.
+The owner separately approved [Wires and deployment](../wires-and-deployment/units.md) as next
+after RG26 acceptance/commit (`95d60ac`); it is exempt from the inactive-old-queue rule below.
+Do not execute an old unit just because its header still says approved or root AGENTS names it.
 
 | Earlier work | Disposition here |
 | --- | --- |
@@ -66,7 +68,7 @@ because its header still says approved or the root AGENTS names its plan.
 | Open QG38/39 product SQL/grants | Replaced by RG06/07. |
 | Fable C1–C11 / Codex generic candidates | Covered only where named by this contract and RG units; estimates are not an obligation to implement every candidate. |
 | Stripe pack / product erasure saga / provider credentials / cloud adapters | Deferred; no implicit follow-on units. |
-| Other unfinished plans | Inactive unless the owner explicitly selects them later. RG26 classifies actual status from source/handoff, never from stale headers alone. |
+| Other unfinished plans | Inactive unless owner-selected; the approved WD-after-RG26 queue is explicitly selected. RG26 classifies actual status from source/handoff, never from stale headers alone. |
 
 The root README's observations of flaky sign-in and analytics motivate session/progress cases.
 They do not prove the drawn Identity fan caused a live defect. This plan neither diagnoses the

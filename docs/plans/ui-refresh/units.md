@@ -1,5 +1,8 @@
 # UI refresh: tiles, icons, menus, inspector, chat and settings
 
+> Historical completed sequence (RG26, 2026-11-18): refresh UI01–14 completed. The original “nothing implemented” statement below describes planning time; additional design work requires the owner's selected plan. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** planned 2026-11-12 from the owner's request and their sign-off of the
 [preview](preview.md) ("I like everything in the artifact"). Written against `24c9abb`
 (after PF14). **Nothing is implemented.** Only UI01's source and unit-test edits were tried (on a

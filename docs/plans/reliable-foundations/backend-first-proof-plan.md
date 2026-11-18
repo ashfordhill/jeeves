@@ -1,5 +1,8 @@
 # Separate backend: first TinyURL proof plan
 
+> Inactive historical proposal (RG26, 2026-11-18): the separate-backend TinyURL proof was not executed. Same-repository generation and the bounded RG mechanism evidence supersede its role as next work; no separate repository or broad certification is promised. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Superseded as the next execution sequence, 2026-11-07:** the owner now wants
 [YouTube field projects in this repository](youtube-field-project-plan.md), beginning with the
 existing diagram, committed generated output and custom completion. Heavy template certification

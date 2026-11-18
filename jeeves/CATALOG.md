@@ -1,6 +1,7 @@
 # Jeeves catalog
 
-What a design can contain. Tile/module kinds are design vocabulary. Runtime support comes only
+What a design can contain. The [foundation handback](../docs/plans/reliable-generation/owner-handback.md)
+records current API8 capabilities, migration and finite verification limits. Tile/module kinds are design vocabulary. Runtime support comes only
 from selected feature bindings and the actual installed registry; a kind alone claims none. Exact fields and values are in [studio settings](../docs/studio-settings.md);
 the source is [`studio-definitions.ts`](packages/spec/src/studio-definitions.ts) and
 [`studio-components.ts`](packages/spec/src/studio-components.ts).
@@ -11,7 +12,9 @@ Installed templates are reached through modules: a template's lead, with its par
 its tile, selects it (the [module catalog](#components-c3)); there is no feature preset to attach,
 and designs that attached the video feature stay readable and exportable. Product codecs, routes,
 projections and service composition remain custom work after generation. Historical YouTube declarations
-remain readable; their product implementations are not installed. Useful normal settings are HTTP deadline/admission, adjustable worker concurrency, cache TTL,
+remain readable; their product implementations are not installed. Useful normal settings include HTTP deadline/admission, adjustable worker concurrency, cache TTL/freshness/exposure,
+Rate limiter limit/window, Scheduled task interval, webhook body/signature limits, receipt delivery
+horizon and Browser session policy (detailed below),
 SQL pool/statement limits on a bound Data access or a Lifecycle writer (Favorites' items Data
 access too), an Auth guard's Sign-in (Required or Optional), and with Runnable processes on a
 stub-only Queue's Provider (below). Fixed policies/providers/language and unsupported alternatives
@@ -615,7 +618,9 @@ validity/version headers; in-process returns immutable record/freshness/version/
 metadata and adds no endpoint. Registered source SELECTs have a compiled read-only module binding
 and product-only credential. Pure policy, optional-cache recovery, bounded actual fills/waiters,
 compare-version and absolute validity are generated; product SELECTs/eligibility/codec/load/version
-remain hooks, never silently completed. Native shared-cache proof remains RG14.
+remain hooks, never silently completed. Native shared-cache observations are recorded in
+[RG14](../docs/plans/reliable-generation/evidence/rg14/review.md) and
+[RG23](../docs/plans/reliable-generation/evidence/rg23/results.md).
 
 
 HTTP Cache reader exposure on an internal service refuses because no workload-authenticated

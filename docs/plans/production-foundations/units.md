@@ -1,5 +1,8 @@
 # Production foundations: true docs, a smaller surface, sturdier templates, regeneration
 
+> Historical completed sequence (RG26, 2026-11-18): PF01–14 completed. The original “nothing implemented” statement below describes planning time; review follow-ups are not an active queue. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** planned 2026-11-12 from the owner's review of Jeeves after YouTube v3. The owner
 confirmed every decision below the same day. Revised on 2026-11-12 after an independent review
 ([findings](review-findings.md), [response](review-response.md)): every exact string, path, count

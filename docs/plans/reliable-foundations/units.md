@@ -1,5 +1,8 @@
 # Reliable foundations: build plan
 
+> Historical partial plan (RG26, 2026-11-18): RF00–07 completed the studio/review phase; the wider original runtime sequence was superseded. NC01–06/14 and the bounded YouTube iterations followed; deferred TinyURL/separate-backend milestones were never completed as this queue. The old current-next-work text below is historical. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Current next work, 2026-11-07:** follow the owner's
 [YouTube field-project plan](youtube-field-project-plan.md) for same-repository generation,
 committed v1 output/custom completion and measured v2 improvements. The older separate-backend,

@@ -1,5 +1,8 @@
 # QRWTY lessons: generic mechanisms for stubs (QL units)
 
+> Superseded queue (RG26, 2026-11-18): QL01 folded into QG09; QL02–05 completed. Unimplemented QL06–14 are replaced by the guarded RG contracts; wider provider/product suggestions remain deferred. The original order/authorization below is historical and does not dispatch work. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** proposed 2026-11-14 by the JP00 planner from Jeeves at `0a2ee22` (QG24), QRWTY arm A at
 `074d9e8` and arm B at `26e8997`. The evidence is in [analysis.md](analysis.md); this file is the
 build plan. **Nothing is implemented.** Units run one at a time on `main` in the primary checkout,

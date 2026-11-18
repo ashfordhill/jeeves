@@ -1,5 +1,8 @@
 # QRWTY-driven generator gaps (QG units)
 
+> Historical queue, reconciled by RG26 (2026-11-18): QG01–12/17–35 and QGR1–3 completed. QG13–16 outlines remain historical; guarded transaction/scheduling/lifecycle needs are addressed only within RG's finite contracts. QG36/37 remnants are absorbed by QL05/RG02/08, QG38/39 by RG06/07; no old unit is relabelled executed. Remaining provider/cloud/exposure suggestions are deferred, not queued. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** plan, copied 2026-11-14 by the QRWTY execution coordinator from qrwty
 `docs/plans/production-build/jeeves-gaps.md` at commit `ccaca7d` (SHA-256 `78d432cf3eeeab2129cdbad93f68c1233d60204c0546a86bb4fc90b1c3b7a71e`),
 written by QRWTY units Q03 (audit), the Q03 review and Q03b (amendments). The owner authorized

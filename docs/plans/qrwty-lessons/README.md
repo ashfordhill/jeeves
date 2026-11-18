@@ -1,5 +1,8 @@
 # QRWTY lessons for Jeeves (QL)
 
+> Superseded queue (RG26, 2026-11-18): QL01 folded into QG09; QL02–05 completed. QL06–14 were not executed as old units; their included mechanisms/review are replaced by RG08, RG02–04, RG15–16, RG05/13, RG09, RG19–21 and RG14/25. The original planning text below is historical. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 A Jeeves build plan drafted on 2026-11-14 by a Fable (xhigh) planner, JP00, from the QRWTY field
 project: both arms' designs, decisions, code and reviews, together with Jeeves itself.
 

@@ -600,7 +600,7 @@ and AWS's image delivery, AWS multipart uploads, Vitess and Cloudflare R2 pricin
 
 ## 2026-11-06 review addendum: reliable foundations
 
-The owner's next [three-study review](HUMAN_FEEDBACK.md#2026-11-06--three-study-review-and-reliable-code-foundations)
+The owner's next [three-study review](HUMAN_FEEDBACK.md#2026-11-06--reliable-foundations-and-better-assistant-designs)
 exposed limits in the earlier guidance. This addendum qualifies those recommendations without
 rewriting their history. See the [full review and sources](plans/reliable-foundations/review.md)
 and [proposed units](plans/reliable-foundations/units.md). These lessons do not change the current
@@ -868,7 +868,7 @@ put raw identities/JSON in optional details so a small dialog exposes the actual
 Overview zoom still limits the old full studies; selected inspector/focus readability is a
 bounded improvement, not owner usability acceptance.
 
-The owner's [API action sketch](HUMAN_FEEDBACK.md#2026-11-07--api-readpublish-action-views)
+The owner's [API action sketch](HUMAN_FEEDBACK.md#2026-11-07--api-readpublish-responsibilities)
 suggests attached **Read counts** and **Publish view** operation views for the same Watch API.
 Operations should explain responsibilities without inventing consume/produce services or
 processes. Keep these distinct from the actor's lane actions. The sketch uses a data-return
@@ -1898,3 +1898,27 @@ an uncertain copy can itself create duplicate deliveries.
 ## 2026-11-17 RG19: cookie authority and its bootstrap are generated policy
 
 A browser session is one identity authority per Service. Optional means absence can be anonymous; a supplied expired/bad cookie must refuse and be noticed. Keep bootstrap exceptions explicit, and let generated guards run before product formatting. Bind CSRF to every declared active stateful context, including guest identity; a cookieless logout must not clear Lax cookies omitted by a cross-site POST. Session expiry uses store time and persists revocation, without a clock-return exception. The diagram's Identity must drive compiled realm/client setup or an honest required integration gap; a successful protocol stand-in is not a native issuer/TLS deployment proof.
+
+
+## 2026-11-18 RG26: compose checked mechanisms and preserve uncertainty
+
+Choose logical ownership separately from process boundaries. An API and Worker can share owned
+product state explicitly while running independently with exact distinct grants; names or a shared
+database do not confer authority. Keep stable IDs through label changes and compatible updates.
+
+Make a callable template use the same checked core as its transport adapter. Product hooks supply
+DTO/policy/SQL mapping through narrow public handles; generated code owns setup, credentials,
+transaction drain, ACK, replay, fences and shutdown. Private legacy helpers are not another hook API.
+
+Recover committed replay before new-work dependencies. Observe actual COMMIT/ACK/refresh failures;
+a timeout, cancellation or lease is not proof that an effect failed. Preserve one remote work
+identity/selected callee ticket across holders, refuse expired replacement execution, and retain
+unknown outcomes for reconciliation. Same-owner roles are not interchangeable remote principals.
+
+Evidence must name its scope: finite two-copy fixtures prove selected mechanisms; backend LOC
+composition does not measure labor saved or a full application's60% target. Stopped stable-ID
+updates, repaired API1 hook migration and cold legacy SQL adoption are different migration claims.
+The original overly generous drain evaluation stays historical; corrected current shutdown has
+a final10-second stop bound. See the [contract](plans/reliable-generation/contract.md),
+[final review](plans/reliable-generation/evidence/rg25/review.md) and
+[handback](plans/reliable-generation/owner-handback.md) for observations and limits.

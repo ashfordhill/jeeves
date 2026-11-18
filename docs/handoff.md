@@ -19371,3 +19371,56 @@ workload settings the same way.
   e2e identities, accepted SQL/dependencies and frozenv1 preserved; own projects/resources0.
   No root/owner studio/original app/historical evidence/later unit, paid/live call, push or deploy.
   One explicit-path local commit follows: `RG25: review and correct the reliable generation implementation`.
+
+
+## 2026-11-18 — RG26 documentation handback active, unaccepted/uncommitted
+
+- Sole RG26 on accepted RG25 `3bfce24`; no release blocker. Drafted plan index/owner handback
+  with all26 revision/status rows, RG17 source/completion provenance, finite proof/migration/LOC
+  limits and explicit owner-approved WD-after-RG26 queue (`95d60ac`). No WD brief/work/check.
+- Correcting stale current-guide future-checkpoint/API/private-helper claims and older queue
+  headers from actual Git/handoff disposition. Generated API8 guidance was already fixed in RG25;
+  no executable source or exported artifact is edited. Focused link/status/source checks remain.
+- Read-only preservation passes roots/current owner README/exact owner patch,42 container triples,
+ 9 networks/23 volumes/43 images, accepted SQL/dependencies/frozenv1. A6348-path protected baseline
+  is saved at `/tmp/jeeves-rg26-before.json`; histories, original apps and owner studio untouched.
+
+
+## 2026-11-18 — RG26 documentation and owner handback complete for coordinator acceptance
+
+- Updated affected studio/settings/blueprint/catalog/PLAN/generator/glossary/gaps guidance to
+  current API8 and appended durable design lessons. Retired stale older queue authority with
+  preserved planning text/evidence; no executable source, generated artifact or root file changed.
+- [Plan index](plans/README.md) and [owner handback](plans/reliable-generation/owner-handback.md)
+  record all 26 unit statuses/revisions, RG17 owner-absorbed source/completion provenance, capabilities,
+  open gaps, finite failure/LOC evidence and manual/stopped-update migration costs. RG01–25 accepted;
+  RG26 is complete for this coordinator acceptance, not already accepted by its author.
+- D11 focused checks pass: 146 new/changed local links/fragments, all 25 accepted Git refs/subjects,
+  eight unchanged code-backed contract checks, append-only handoff and explicit documentation-only
+  paths. Ten inherited historical references remain separately recorded. Initial own receipt links
+  were materialized then rechecked. No full check/E2E/build/native/app run solely for prose.
+- Original 6348 protected paths, root/current owner README, exact original owner patch/archive
+  mapping, accepted SQL/dependencies/frozenv1, 42 full container triples/9 networks/23 volumes/43
+  images preserved. [Receipt](plans/reliable-generation/evidence/rg26/README.md) carries checks/limits.
+- Carry process-affine workload recovery, stable identity/ticket and no-expired-reexecution, unknown
+  outcomes, refused secret checkpoints, finite retention/cache assumptions, manual legacy live SQL
+  conversion (cold adoption only), repaired API1 migration and backend-composition-only LOC limits.
+- Owner commit `95d60ac` already approves Wires and deployment after RG26 acceptance and commit.
+  Its queue remains intact/unread/unexecuted here; coordinator may dispatch WD01 after acceptance.
+  Other unfinished old queues stay inactive; no additional units, root/owner studio/original app/
+  historical evidence edits, live/paid calls, push or deployment. One explicit-path local commit
+  follows: `RG26: retire stale plan queues and document the generated foundation`.
+- Final link receipt includes the three new handoff targets: 149 checked, zero new failures.
+
+
+## 2026-11-18 — RG26 same-unit JSON formatting correction
+
+- A downstream full check caught three short arrays in RG26 `checks.json` that Biome requires
+  on one line. The original focused documentation checks missed formatting; the targeted check
+  reproduced it, then the actual `tooling/biome.config.json` formatter corrected only whitespace.
+- Targeted Biome check passes for both RG26 JSON files; parsed JSON is exactly unchanged and
+  `unit-status.json` is byte-for-byte unchanged. Earlier handoff entries are preserved.
+- Amend the own latest RG26 commit with only the formatted receipt, own evidence note and this
+  handoff. Pending WD01/owner bytes and modes, protected paths and resource inventories remain
+  unchanged. No WD briefs/work, executable/root edits, full app/test stack, push or deployment.
+  Stop for coordinator reacceptance before the same WD01 worker resumes its required checks.

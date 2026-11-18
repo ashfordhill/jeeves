@@ -1,5 +1,8 @@
 # Next contract milestone: one complete TinyURL foundation first
 
+> Historical partial plan (RG26, 2026-11-18): NC01–06 and NC14 completed. NC07–13 and the separate-backend runtime proof remain deferred/inactive; later field-project and RG work does not retroactively implement this queue. The former current-direction/await-start text below is historical. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Current direction, 2026-11-07:** NC01–NC06 and NC14 are complete. The later owner-directed
 [YouTube field-project plan](youtube-field-project-plan.md) supersedes the TinyURL-first runtime
 sequence and separate-repository assumption below. Start v1 from the current YouTube diagram,

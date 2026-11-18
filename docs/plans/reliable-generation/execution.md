@@ -1,9 +1,12 @@
 # Sequential execution protocol
 
-The owner has approved this protocol and the [plan](README.md). Execution awaits an explicit
-instruction to begin RG01. This replaces the execution queue of unfinished older plans for the
-work in this packet. Their implemented
-code remains the starting point. No agent resumes an old QL/QG/other pending unit on its own.
+The owner approved this protocol and the [plan](README.md), then authorized execution on
+2026-11-16. RG01–25 are accepted; RG26 is complete for coordinator acceptance in its local commit.
+The [handback](owner-handback.md) records revisions and limits. This packet replaced unfinished
+older queues for RG work; implemented code remained the starting point. No agent resumes an old
+QL/QG/other pending unit on its own. Owner commit `95d60ac` separately authorizes the
+[WD queue](../wires-and-deployment/units.md) after RG26 acceptance and commit; the coordinator,
+not the RG26 agent, starts that plan.
 
 ## Fresh-agent packet
 
@@ -122,4 +125,5 @@ Append a short entry to `docs/handoff.md` and create one local commit, staging o
 
 Keep detailed logs under this plan's `evidence/rgNN/` when useful. Preserve earlier handoff entries.
 Do not add an audit system or copy huge logs into handoff. A review unit with no code changes
-commits its review evidence and handoff. Plan approval alone is not an instruction to start RG01.
+commits its review evidence and handoff. The original RG01 await-start condition was satisfied
+by the owner's 2026-11-16 execution authorization; it does not reopen an approval gate.

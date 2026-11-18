@@ -1,5 +1,8 @@
 # Store outage: template workers wait out a lost database
 
+> Historical completed sequence (RG26, 2026-11-18): SO01–05 and SO08 completed. SO06–07 proposed in the review remain inactive suggestions, not executed units. The original “nothing implemented” statement below describes planning time. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** planned 2026-11-13 from GS09's first next unit, which the owner asked to fix
 ("ok fix #2"). Written by the coordinator from the code at `7bef25f` (after GS09). **Nothing is
 implemented.** Read, not run.

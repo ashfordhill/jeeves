@@ -1,5 +1,8 @@
 # Generated system tests: build and run the backend Jeeves actually exports
 
+> Historical completed sequence (RG26, 2026-11-18): GS01–09 completed; the generated-system harness is implemented and reused by RG checkpoints. The original no-runner statement below describes planning time; it does not negate retained results or queue extra certification. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** build plan, 2026-11-12. Requested by the owner after the generator testing review.
 No runner, fixture application or workflow in this plan has been implemented. The repository
 was inspected at `cc27a33` (PF06 complete); later agents must read the latest handoff.

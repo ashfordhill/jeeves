@@ -217,11 +217,17 @@ The web app reaches these under `/api` (Vite proxy in development, nginx in the 
 
 ## Status
 
+The current generated foundation is [Reliable generation](../docs/plans/reliable-generation/README.md):
+RG01–RG25 accepted, RG26 documentation complete for coordinator acceptance in its local commit.
+Its [handback](../docs/plans/reliable-generation/owner-handback.md) records API8 capabilities,
+finite failure/recovery evidence and explicit migration limits. Owner commit `95d60ac` queues
+[Wires and deployment](../docs/plans/wires-and-deployment/units.md) after RG26 acceptance/commit.
+The [plan index](../docs/plans/README.md) reconciles old unit status and superseded queues.
+
 Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-units.md),
 [design polish](../docs/plans/design-polish/units.md),
 [lane actions](../docs/plans/lane-actions/units.md),
 [system design](../docs/plans/system-design/units.md),
-[reliable foundations](../docs/plans/reliable-foundations/units.md),
 [UI overhaul](../docs/plans/ui-overhaul/units.md),
 [module authoring](../docs/plans/module-authoring/units.md),
 [tile processes](../docs/plans/tile-processes/units.md),
@@ -232,9 +238,12 @@ Completed plans, oldest first: [lane grid](../docs/plans/lane-grid/execution-uni
 [generated system tests](../docs/plans/generated-system-tests/units.md) and
 [store outage](../docs/plans/store-outage/units.md).
 
-The active plan is [QRWTY gaps](../docs/plans/qrwty-gaps/units.md) batch 1 (QG01, QG02, QG05, QG17, QG19, QG12, QG11, then the QGR1 review). The last to run was
-[UI follow-ups](../docs/plans/ui-followups/units.md) (UF01–UF06), then the store outage
-amendment (SO04–SO05).
+The earlier [reliable foundations](../docs/plans/reliable-foundations/units.md) runtime queue was
+superseded after RF00–07 and NC01–06/14; its deferred milestones are not completed runtime work.
+[UI follow-ups](../docs/plans/ui-followups/units.md) UF01–06 and store outage SO04–05/08 completed.
+[QRWTY gaps](../docs/plans/qrwty-gaps/units.md) QG01–12/17–35 and QGR1–3 completed; QG36–39
+remnants and unimplemented QL work were absorbed/replaced by RG's guarded contracts, with remaining
+cloud/product suggestions deferred. QL02–05 remain historical baseline, not a second hook API.
 What each unit did is in [the handoff](../docs/handoff.md); the owner's decisions are in
 [HUMAN_FEEDBACK](../docs/HUMAN_FEEDBACK.md); open template gaps are in
 [template gaps](../docs/template-gaps.md).

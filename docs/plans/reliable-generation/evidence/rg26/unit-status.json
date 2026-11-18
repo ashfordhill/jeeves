@@ -1,0 +1,169 @@
+{
+  "basis": "Accepted-unit packet, Git ancestry/subjects and append-only handoffs; no unit brief except RG26 was read for this mapping.",
+  "units": [
+    {
+      "unit": "RG01",
+      "status": "accepted",
+      "commit": "895d3260fb16a21c0e73e4d68973a224ec233eae",
+      "subject": "RG01: version generated capability contracts and guard hook migration"
+    },
+    {
+      "unit": "RG02",
+      "status": "accepted",
+      "commit": "ac2113b2ec742cf93588385e1b9c48ffab3cc0e2",
+      "subject": "RG02: unify process lifecycle and restrict application extension APIs"
+    },
+    {
+      "unit": "RG03",
+      "status": "accepted",
+      "commit": "d3b0e3f58402f0d2192e8f206d0b8607d9569156",
+      "subject": "RG03: propagate operation budgets and preserve unknown effect outcomes"
+    },
+    {
+      "unit": "RG04",
+      "status": "accepted",
+      "commit": "ac251e7a8754ea8ecddada6c17a70299ad2a238d",
+      "subject": "RG04: unify HTTP errors limits health and request logging"
+    },
+    {
+      "unit": "RG05",
+      "status": "accepted",
+      "commit": "7e0b02a5a2041c4bb7a93188c1d038c06eb9039d",
+      "subject": "RG05: bind callable capabilities through stable checked contracts"
+    },
+    {
+      "unit": "RG06",
+      "status": "accepted",
+      "commit": "0a059385ad9223b6c69c0acc73d5ce02c6fcd2a1",
+      "subject": "RG06: enforce logical ownership and precise database access"
+    },
+    {
+      "unit": "RG07",
+      "status": "accepted",
+      "commit": "102da20db4c6b9f6192fef7f24a56d3707546b8e",
+      "subject": "RG07: version product migrations and expose scoped SQL operations"
+    },
+    {
+      "unit": "RG08",
+      "status": "accepted",
+      "commit": "cbac7d80f9a6e8ce28c2832647f54c2088e1902a",
+      "subject": "RG08: provide purpose-bound keys and sealed values"
+    },
+    {
+      "unit": "RG09",
+      "status": "accepted",
+      "commit": "1bc45e0077b106d810df0138e6e878207c35602e",
+      "subject": "RG09: require workload identity on generated service calls"
+    },
+    {
+      "unit": "RG10",
+      "status": "accepted",
+      "commit": "897ccf45393a07986cf7d6786c00d703ad6a7ccc",
+      "subject": "RG10: own replay ordering and local mutation atomicity"
+    },
+    {
+      "unit": "RG11",
+      "status": "accepted",
+      "commit": "a97c776ca0008a9fe61ef82fb597284a5d8a8ec9",
+      "subject": "RG11: add atomic cache operations and distinguish saturation from failure"
+    },
+    {
+      "unit": "RG12",
+      "status": "accepted",
+      "commit": "f11ba8a9233e65c0c59122d2de7241912b21244e",
+      "subject": "RG12: generate an atomic callable rate limiter"
+    },
+    {
+      "unit": "RG13",
+      "status": "accepted",
+      "commit": "925e917e879033196d5f41a3cf1155dfe3afc5f2",
+      "subject": "RG13: expose callable cache reads with enforceable freshness contracts"
+    },
+    {
+      "unit": "RG14",
+      "status": "accepted",
+      "commit": "b8191719e6698ac8735d89b2131527fec276699c",
+      "subject": "RG14: verify generation foundations across independent process copies"
+    },
+    {
+      "unit": "RG15",
+      "status": "accepted",
+      "commit": "307197863d4b886521ea3f22e75b134536622717",
+      "subject": "RG15: persist durable work and fence completion across replicas"
+    },
+    {
+      "unit": "RG16",
+      "status": "accepted",
+      "commit": "f75304e1c430cab021e75f672be68bbd2a8bfb81",
+      "subject": "RG16: generate durable scheduled tasks within explicit ownership"
+    },
+    {
+      "unit": "RG17",
+      "status": "accepted",
+      "commit": "9818976eb45e2aef534fcff35b7bb97f1817b4f8",
+      "subject": "RG17: generate authenticated webhook ingestion and durable inbox processing",
+      "sourceAbsorbedByOwnerCommit": "c8e41d0dd66b25f65379c7c39f16833f2880be4e",
+      "provenance": "External owner archive/index commit absorbed implementation and earlier evidence; RG17 completion commit preserves final evidence and provenance."
+    },
+    {
+      "unit": "RG18",
+      "status": "accepted",
+      "commit": "ba89ff12822a1e3d07bfe62666e6008a52193d5c",
+      "subject": "RG18: bound receipt lifecycle and expose truthful consumer progress"
+    },
+    {
+      "unit": "RG19",
+      "status": "accepted",
+      "commit": "21fb6cac3e2890609400ddc870e3618d2536742d",
+      "subject": "RG19: generate browser sign-in sessions and CSRF protection"
+    },
+    {
+      "unit": "RG20",
+      "status": "accepted",
+      "commit": "ecef0c2bae8a9a7bdf38f2c8c67623852f6ed82a",
+      "subject": "RG20: coordinate session refresh and distinguish issuer failure outcomes"
+    },
+    {
+      "unit": "RG21",
+      "status": "accepted",
+      "commit": "326e3491fb3830bf9f060fb3b091c9bbfae37198",
+      "subject": "RG21: forward session identity through declared authenticated operations"
+    },
+    {
+      "unit": "RG22",
+      "status": "accepted",
+      "commit": "c3192e03f056095b0b37c2d289bf535637c3defe",
+      "subject": "RG22: enforce capability composition consistently across authoring and export"
+    },
+    {
+      "unit": "RG23",
+      "status": "accepted",
+      "commit": "99396d1b63b89b9ec2bc1ebaab3f8f5af6418b17",
+      "subject": "RG23: prove reusable mechanisms under concurrent execution and failures"
+    },
+    {
+      "unit": "RG24",
+      "status": "accepted",
+      "commit": "ed996447993d09f7e8736ebe01074d1691d7c3d1",
+      "subject": "RG24: prove regeneration migration and reduced handwritten infrastructure"
+    },
+    {
+      "unit": "RG25",
+      "status": "accepted",
+      "commit": "3bfce24e1a0bac1bebd3b3d7f77f77c18c7a61db",
+      "subject": "RG25: review and correct the reliable generation implementation"
+    },
+    {
+      "unit": "RG26",
+      "status": "documentation complete for coordinator acceptance; pending at write time",
+      "commitSubject": "RG26: retire stale plan queues and document the generated foundation",
+      "resolveCommand": "git log -1 --format=%H --fixed-strings --grep='RG26: retire stale plan queues and document the generated foundation'"
+    }
+  ],
+  "nextQueue": {
+    "plan": "docs/plans/wires-and-deployment/units.md",
+    "authorizationCommit": "95d60ac4b34a70336b246d30949e5f8ce006fb3c",
+    "condition": "after RG26 acceptance and commit",
+    "status": "owner-approved future queue; not executed in RG26"
+  }
+}

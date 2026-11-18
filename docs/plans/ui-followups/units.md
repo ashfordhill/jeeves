@@ -1,5 +1,8 @@
 # UI follow-ups: menu size, colours, model button, plain module words, CI time budget
 
+> Historical completed sequence (RG26, 2026-11-18): UF01–06 completed. The original “nothing implemented” statement below describes planning time; review follow-ups are not an active queue. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 **Status:** planned 2026-11-13 from the owner's answers to the [UI refresh review](../ui-refresh/review.md)
 follow-ups 1–5 and 13, and to CI's failing `pnpm check`. Written by the coordinator from the code at
 `29458cf`. **Nothing is implemented.** Read, not run. Runs after [store outage](../store-outage/units.md).

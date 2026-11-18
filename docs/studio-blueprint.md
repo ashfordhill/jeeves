@@ -4,9 +4,10 @@ The blueprint is the part of a design that a code generator reads. The
 [experimental generator foundation](../jeeves-generator/README.md) validates saved explicit v2 generation source and assembles in-memory bundles from installed
 implementations. It also retains the exact frozen local-v1 profile and its 19 experimental
 template families. The canvas previews/downloads the selected source; unsupported designs refuse
-without substituting a frozen baseline. The active
-[field-project plan](plans/reliable-foundations/youtube-field-project-plan.md) keeps the package
-separate from the studio; its partial report grants no strict readiness or runtime credit. The studio writes
+without substituting a frozen baseline. The generator remains separate from the studio and
+independently runnable field apps. The [current foundation handback](plans/reliable-generation/owner-handback.md)
+records implemented API8 support and finite evidence; a partial export report grants no strict
+readiness or runtime credit by itself. The studio writes
 through operations; the blueprint is derived on every request and is never stored or edited.
 
 The `studio-tinyurl-foundation@1.0.0` study, which New project no longer offers, stores complete
@@ -259,7 +260,7 @@ source JSON and read-only ownership/access, whose owner buttons select a logical
 Experimental generation support and strict TinyURL/runtime evidence remain distinct.
 
 
-The installed export extension contract is v6. Its HTTP surface includes shared pure body formatting, generated status/
+The installed export extension contract is v8, separately versioned from blueprint/design schema. Its HTTP surface includes shared pure body formatting, generated status/
 headers, bounded/raw route declarations, distinct liveness/readiness and safe request logs. This
 changes generated adapters, not diagram schema or blueprint eligibility. See the
 [generated HTTP contract](../jeeves-generator/README.md#generated-http-contract-extension-api-v4).

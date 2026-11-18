@@ -1,5 +1,8 @@
 # YouTube field projects: learn from v1, improve generation in v2
 
+> Historical completed experiment (RG26, 2026-11-18): FP00–FP07b completed with the recorded partial/listening limits; later v2/v3/v4 evidence remains at its original revision. Further YouTube/TinyURL/Marketplace iterations are not the current queue. The old active-plan text below is historical. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 Owner direction, 2026-11-07. This is the active plan for generation work in the Jeeves repository.
 It supersedes the separate-repository, TinyURL-first sequence and broad template certification
 before the first field project. Build a working YouTube v1, review it with a fresh agent, improve

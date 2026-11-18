@@ -50,7 +50,16 @@ PostgreSQL, RabbitMQ and generated processes. Its core scenario asserts edge pub
 a committed count and matching durable receipt; it does not replace the offline or studio
 regression checks. See [system fixture commands and evidence](../field-projects/generator-system/README.md).
 
-The rest of this page is reference.
+The [foundation handback](../docs/plans/reliable-generation/owner-handback.md) records the
+accepted RG revisions, native checkpoints, migration witnesses and remaining gaps. These are
+finite mechanism observations, not application certification, deployment approval, a full QRWTY
+rebuild or a labor-savings claim. API8 updates with stable identities were proved with old copies
+stopped; rolling mixed versions were not proved. Genuine API1 same-namespace hook migration needs
+manual repair and staged acknowledgement; legacy live m_*→p_* conversion remains guarded/manual,
+with cold adoption proved only.
+
+The rest of this page is reference. Sections describing frozen-v1 exports and private runtime
+internals do not authorize hook imports from `src/runtime/`; current application code uses API8.
 
 The separate v2 API now accepts explicit schema3 generation selections. See
 [v2 registry and export](#v2-registry-and-export) for its standalone local foundation;
@@ -216,8 +225,9 @@ with what `assembleV2` returns, and the pure `planUpdate` decides each file.
 - **Refused:** a generated file edited by hand, a file in the way of a new generated path, an
   edited generated file the export dropped, an application's file the new export would make
   generated (`ownership changed: <path>`), and an override that is in neither manifest and has no
-  file (`unknown override: <path>`). `refused` names each one. Put the file back, or list it as
-  an override; either way the edit is a [template gap](../docs/template-gaps.md).
+  file (`unknown override: <path>`). `refused` names each one. Restore the generated file and
+  fix the template gap through its source. A legacy override may preserve an edit during a
+  same-version update; it does not satisfy API8's scaffold checker and cannot bypass migration.
 
 **Preflight.** Before anything changes, and also with `--check`, the update refuses a path that
 is not an absolute directory, free of symlinks, holding a v2 manifest (`Not a Jeeves v2 export`),
@@ -239,6 +249,9 @@ manifests and the overrides, except `.jeeves/manifest.json` and files under
 Each `reason` is a non-empty string, and no path is under `.jeeves/`. An override is never
 rewritten or recreated, and every update writes its new bytes to `.jeeves/generated/<path>`. An
 edited override the export no longer has is `orphan`, update after update.
+This describes preservation only: `check:extensions` hashes every scaffold without an override
+exception, and incompatible extension-API migration refuses generated overrides. The diagram and
+template remain the source of truth for a conforming guarded export.
 
 **`.jeeves/generated/`** holds those shadows. A shadow stays across updates, and keeps a changed
 file of yours `keepChanged`, until your file equals the new bytes or you delete the shadow to
@@ -342,13 +355,13 @@ dependency-only registry). For each stub module it writes:
 - `src/modules/<host>/<module>.ts` (extension): an entry point named after the module that takes
   `Dependencies` and throws `Not implemented: <name>`, after
   `export const settings = declareSettings({});` (Settings a stub declares, below).
-- one shared `src/modules/dependencies.ts` (scaffold): a minimal interface per tile kind and use
-  (database read or read-write, queue publish or consume, object read or write, cache, search
-  read or write, token verifier, HTTP target, module call).
-- one shared `src/runtime/settings.ts` (scaffold, QL05): `declareSettings`, the kinds and
-  `readSettings`.
+- shared public contracts in `src/extension-api/index.ts` and `src/modules/dependencies.ts`
+  (scaffolds): registered product SQL, bounded cache/object/queue/search/module handles, checked
+  callable capabilities and declared authenticated Service targets. Raw SQL, token verification
+  and arbitrary HTTP targets are unavailable. Private settings parsing remains generated runtime.
 
-Stubs import no template library (only their own `src/runtime/settings.ts`) and, with Runnable
+Stubs import public helpers such as `declareSettings` from `src/extension-api/index.ts`; shared
+DTOs/pure definitions belong in application-owned `src/contracts/`. With Runnable
 processes off, provision nothing, so a stub-only export installs and builds. Each stub is a required `custom` gap. A connection changes only the `.slots.ts` file.
 Export writes only to a new directory, and `planFileWrites` refuses an edited `<module>.ts` with
 `EXISTING_OUTPUT_CHANGED`; [`update:v2`](#updating-an-existing-export) regenerates into an
@@ -612,10 +625,12 @@ puts the message back on its queue with the same `x-delivery-attempt` 5 s later,
 never sends it to `.failed` (a stall that never ends keeps waiting, as any outage does); its
 line's action reads `store unreachable, retry in 5000 ms (attempt not counted)`, and `pnpm stop`
 ends the wait at once, leaving the message in its queue. A query that is only slow still spends
-an attempt: the server's statement timeout (`57014`) comes first. A failed call to an outside
-host keeps the normal retries, an External API's (`externalTarget`) included (a `fetch failed`
-counts as unreachable only when it is `httpTarget`'s call to another tile or `identityTarget`'s
-to the Identity). A failed message logs one JSON
+an attempt: the server's statement timeout (`57014`) comes first. Typed unknown outcomes bypass
+both unreachable-store and ordinary retry paths and become terminal `OUTCOME_UNKNOWN` for
+reconciliation; a broker may still redeliver after a crash. Historical private transports classify
+`externalTarget` fetch failures as ordinary retries and mark `httpTarget`/`identityTarget` failures
+as internal connectivity. Those are private transport details, not API8 hook instructions or an
+arbitrary external-recovery capability. A failed message logs one JSON
 line: `not-implemented` (`tile`, `module`,
 `what`, `queue`, `messageId`, `action`, such as `sent to uploaded.failed (NOT_IMPLEMENTED)`) when
 it reached a hook or stub that isn't written, otherwise `loop-error` with the attempt, the error
@@ -686,8 +701,8 @@ scripts:
 | Cache | `cache-<id>` (Valkey) and its password |
 | Object storage | Garage, the bucket (a website when saved public) and the tile's key `s3-<tile>` with read, write or both (`bootstrap.mjs`) |
 | Search index | `search-<id>` (OpenSearch), with no index: a module's own mapping is custom work (an Index writer's process asserts its own index, above) |
-| External API (QG20) | Nothing runs: the stub gets `externalTarget`, an HTTP client at `JEEVES_EXTERNAL_<ID>_URL`, which the application sets (in `compose.override.yaml` locally; `compose.yaml` sets none) |
-| Identity a sign-in binds (QG20) | Its Keycloak, as the sign-in's: the stub gets `identityTarget`, an HTTP client at `JEEVES_IDENTITY_<ID>_URL`, the Identity's base URL as the process reaches it, which `compose.yaml` sets to Keycloak's address inside the network, `http://identity-<id>:8080` (not the sign-in's `OIDC_ISSUER`, the browser's address, which a container can't reach; QGR2), with no `depends_on` of its own: a lost connection is waited out |
+| External API | Nothing runs. Historical private target adapters are not an API8 capability; arbitrary external targets remain explicit custom gaps. |
+| Identity | Installed identity/session/workload mechanisms configure Keycloak and private transport. API8 hooks get no arbitrary issuer HTTP or token handle. Exact production HTTPS/client registration remains integration work. |
 
 Each process gets its credentials, `depends_on` its providers healthy, and has the endpoints it
 reads set to these local services in its Compose `environment` (Module clients, below). A store whose saved
@@ -697,26 +712,27 @@ provider isn't unspecified or self-hosted, or whose engine isn't unspecified or 
 Cloud that no template binds (`generationTemplateQueues`, `stubPubsub`): it is a Pub/Sub topic,
 below, with its own subscription for each loop stub that consumes it. A queue a
 template binds keeps the template's self-hosted provider, and a stub's link to one saved on Google
-Cloud keeps the gap. An Identity is provisioned for stubs only when a sign-in binds it (an Auth
-guard connected to it is a sign-in template, the tile's only one); a stub's link to an Identity
-no sign-in binds, and a link that verifies a token (a `TokenVerifier`, such as an Auth guard on
-an External API), stay `unavailable`, and CDN tiles aren't provisioned. An External API isn't a
-store and runs nothing; its stub's client only reads its URL. Neither has a gap. Each of the two
-has a `stores` row in the report (`kind` `external-api` or `identity`, `access` `request`) whose
-`provisioned` names the variable it reads.
+Cloud keeps the gap. Installed sign-in, Browser session and workload bindings configure their
+selected Identity; an arbitrary Identity/token-verifier dependency does not become a public
+hook capability. External API tiles run no provider, and a report's private transport/store row
+does not establish an installed API8 adapter. Arbitrary external/issuer HTTP and token handles
+remain unavailable to product code. CDN origin serving is generated only for the supported
+public-object-storage composition described above.
 
-**Keycloak** comes from every guard selection (and from a tile-level multipart, as in v2): each
-binds its Identity, which runs as `identity-<id>` with one realm `<id>` and one public PKCE client
-`<id>-web` whose redirect is the edge origin `/`, written once at setup (`setup.mjs`), with the
-admin and database passwords generated into `.runtime/secrets`. Each guarded process gets
+**Keycloak** setup includes selected bearer guards (and legacy tile-level multipart), workload
+identities and Browser session bindings. The local Identity runs as `identity-<id>` with realm
+`<id>`. Bearer-guard setup has a public PKCE client `<id>-web` whose redirect is the edge origin
+`/`; workload/session clients have the separate contracts below. Setup is written once, with
+admin and database passwords in `.runtime/secrets`. Each bearer-guard process gets
 `OIDC_ISSUER`, `OIDC_AUDIENCE` (`<id>-web`, the audience of that client's tokens) and
 `OIDC_JWKS_URL`, and `depends_on` Keycloak healthy; a deployment sets its own issuer's values.
 One Identity per design.
 
-**Product tables and published views.** With Runnable processes on, database-writing modules
-contribute application-owned SQL files `infra/postgres/<database>/modules/<module>.sql`. A module
-in declared owner-scoped product state keeps its SQL file when its runtime grants become read-only
-or empty. Each file is a `generated-extension`: export never rewrites handwritten SQL.
+**Product tables and published views.** With Runnable processes on, declared product state has
+application-owned `products.json`, versioned namespace migrations and registered query/command
+SQL. Legacy `infra/postgres/<database>/modules/<module>.sql` files remain preserved, never executed
+by the versioned runner. Product declarations/SQL remain application-owned across permission edits;
+the updater does not rewrite them to fit new grants.
 
 Use `shareOwner {worker, api}` (the worker inspector's **Share logical owner with API**) to choose
 shared logical ownership explicitly. Different process IDs keep different runtime logins and
@@ -738,110 +754,38 @@ edit leaves legacy `m_<module>` schemas in place. The final composed identifier 
 and private-template namespace collisions refuse even without writer files. Display renames
 preserve these identities and cannot fix an identity collision.
 
-`infra/local.json` records each database's product owner/schema, exact role audiences and module
-SQL files. Inside the setup-only owner's transaction, `scripts/products.mjs` creates every needed
-schema before any module SQL runs, then runs files in stable module-ID order with the declared
-schema as `search_path`. It revokes old blanket/default product grants before granting exact
-relations. New tables/views grant nothing by default; there are no implicit sequence grants.
-Application logins receive no CREATE, schema/database ownership or migration credential. Reports
-and SQL-file headers describe the actual product permissions, separately from template grants.
+`infra/local.json` records product owner/schema and exact role audiences. `scripts/products.mjs`
+validates declarations and checksums, locks each namespace's migration history and runs only new
+ordered migrations under its namespace DDL role. The generated setup transaction owns ledger and
+grant changes. New tables/views grant nothing implicitly; application logins receive no CREATE,
+schema/database ownership or migration credential. Product permissions remain separate from
+template grants and product-only runtime execution uses its own credential scope.
 
-**Product SQL still runs at every `first-run` and `start`.** Keep it re-runnable, without BEGIN or
-COMMIT; failure rolls back the database setup transaction and names the file. Versioned product
-migrations and registered public SQL execution are not installed yet. Product SQL runs with setup
-authority today; the product grant declarations are not a sandbox for arbitrary migration SQL.
-The checked extension API exposes no raw SQL/transaction handle to application hooks.
+**Product SQL uses versioned migrations and registered operations.** Legacy re-runnable
+`modules/*.sql` files remain preserved but are not executed. The namespace migration role is
+separate from setup/ledger administration and product runtime credentials. See the
+[product SQL contract](#product-sql-contract-extension-api-v7); API8 hooks get scoped registered
+handles and no raw SQL/transaction controls.
 
-API v6 requires explicit extension migration from older exports. Introducing or changing an
+Current API8 requires explicit extension migration from older exports. Introducing or changing an
 existing product SQL namespace refuses even at the same API version, with no acknowledgement
 bypass. Export to a fresh directory and migrate application/data explicitly; never rewrite old
 product SQL or hook bodies to make an update pass. Historical exports remain unchanged.
 
-**Module clients (private implementation).** The scaffold `src/runtime/module-clients.ts` holds
-the internal adapters described below. The public extension API supplies bounded cache/object/
-queue/search/module handles; raw SQL, transaction, token and HTTP target APIs described here
-are not passed to product code and remain explicit custom gaps. Physical clients use the same
-per-process registry as template clients, keyed by complete configuration and credential identity;
-different logins, endpoints or configuration do not share a client. Physical cleanup runs once.
-The private adapters implement the internal interfaces in `src/modules/dependencies.ts`, keeping only the sections a design uses:
-`databaseClient` (a pool on the tile's login, pool size 10 and 2 s statements, `query` and
-`execute`; a query that gets no reply in 2.5 s, as when PostgreSQL stalls, rejects `Query read
-timeout` and the pool discards its connection, and a template's pool has the same bound, 500 ms
-past its statement timeout; and `transaction(fn)` (QL03), which runs `fn`'s statements on one
-reserved connection between BEGIN and COMMIT through `src/runtime/transaction.ts`, which the
-primitives emit when no durable template already does: ROLLBACK when `fn` throws or a statement
-fails, SQL that starts with transaction control (`BEGIN`, `START TRANSACTION`, `COMMIT`, `END`,
-`ROLLBACK`, `ABORT`, `SAVEPOINT`, `RELEASE`, `PREPARE TRANSACTION`) refused before it is sent, a
-serialization failure or deadlock (`40001`, `40P01`) rerunning `fn` on a new transaction after
-20 ms and then 40 ms, the third rethrown, and a COMMIT that lost its connection after `fn`
-resolved (SQLSTATE class `08`, `57P01`, `57P02` or none) rejecting `TransactionOutcomeUnknown`,
-never the result; the pool's statement and query timeouts apply inside it; and `idempotent`,
-below), `queuePublisher` (publisher confirms; each message gets the module's `messageId` when it
-names one, as a deduplicating consumer such as the event counter needs, else a fresh ID; it
-reconnects every 5 s after a lost broker),
-`pubsubPublisher` (a Pub/Sub topic's publisher on the official client, `@google-cloud/pubsub`
-6.3.2, below), `pubsubLoop` (a loop stub's transport on its own Pub/Sub subscription, below), `cacheClient` (`get`, `set` with a TTL in seconds or none, `delete`, through the cache read's
-bounded client, `createValkeyCache` in `src/runtime/valkey.ts`, which the primitives emit when no
-cache read already does: a command settles within 150 ms and at most 32 wait, while no client is
-connected a command fails at once with `Cache unavailable`, a lost or stalled client is destroyed
-and a new one tried every 5 s, and the drain destroys the client, so it never waits on the
-cache), `objectClient`
-(`get`, `undefined` for a missing key, and `put`), `searchClient` (`search`, `index`, `remove`),
-`httpTarget` (another tile's process at `JEEVES_TILE_<ID>_URL`, with no probe or `depends_on`),
-`externalTarget` (an External API at `JEEVES_EXTERNAL_<ID>_URL`) and `identityTarget` (the Identity
-a sign-in binds, at `JEEVES_IDENTITY_<ID>_URL`: locally Keycloak inside the network, so a stub adds
-the realm's paths, `/realms/<id>/...`; a deployment sets its issuer's origin or another address its
-processes reach) (QG20). The three HTTP clients have no probe; each resolves a
-stub's `request(path, init)` against its base URL and passes `init` to `fetch` as it is, so the
-stub bounds a call with `signal: AbortSignal.timeout(ms)` and adds its own headers (a credential
-it reads from a `SECRET_DIR` file: the client reads none). `httpTarget` and `identityTarget` mark a
-rejected `fetch` `Symbol.for("jeeves.internal-call")`, so a loop waits out a lost connection to a
-provisioned service as it does a store's; `externalTarget` doesn't, so an outside call keeps the
-normal retries. Each other
-client runs one bounded startup probe its access allows (5 s): `SELECT 1`, opening the broker and a
-confirm channel, the Pub/Sub topic existing (for a loop, its subscription), `PING`, `HeadBucket` (or, for a write-only key,
-opening and aborting a multipart upload) and cluster health. Each logs one JSON line
-(`{"event":"probe","tile","client","kind","check","result":"ok"}`); a failure logs the error and
-fails startup, so a healthy process has reached every store it uses with its own credentials. A
-cache is the exception: one that is down at startup logs `"level":"warn"` with
-`"result":"unavailable"` (the error is in its `cache <cache>` failure line), and the process
-starts without it; its client connects by itself when the cache is back. After its
-configuration pass (below), the process file builds one client per store before its loops
-subscribe and its service listens, then
-each stub's `dependencies["<module>"]`, named as in its `.slots.ts`. A module link calls the module
-it names (a route stub with the caller's input as its request, a library stub with none). What isn't
-provisioned (another provider, an Identity no sign-in binds, a link that verifies a token, a CDN, a
-tile with no process, a template's part) is `unavailable(...)`: every call answers "Not
-implemented: <tile> for <module> (<why>)". A stub's own "Not implemented" still answers 501 or goes
-to `.failed`.
+**Module clients and public product handles.** Physical clients share the per-process registry
+only when configuration, credentials and access scope match; cleanup closes each physical client
+once. Private adapters live in `src/runtime/module-clients.ts`; they are implementation details,
+not hook imports. API8 slots bind `ProductQueries`/product-only execution, bounded cache/object/
+queue/search handles, checked module calls and declared authenticated Service targets. A missing
+installed binding remains an unavailable/custom gap rather than a raw-client escape hatch.
 
-**Idempotency records** (QL04, owner decision D4). On each database a stub writes, the export has
-Jeeves's own table `jeeves.idempotency_records` (`tile`, `scope_kind`, `scope_id`, `idem_key`,
-`request_hash` bytea, `status`, `response` jsonb, `created_at`, `expires_at`; primary key the
-first four, an index on `expires_at`), created by the migration
-`infra/postgres/<database id>/050-jeeves-idempotency.sql` (`idempotencyMigration` in
-`client-wiring.ts`, a `generated-scaffold`, applied once before any `100-` template migration and
-the product SQL) as the setup-only owner, with no PUBLIC access. Only the logins of the tiles whose
-stubs write that database get USAGE on `jeeves` and SELECT, INSERT, UPDATE and DELETE on it
-(`grants` in `infra/local.json`); a database a stub only reads gets neither, and a stub never
-creates it. A database several tiles' stubs write gets the migration once and a grant for each.
-A stub's `db.idempotent({ scope, key, hash }, fn)` (`src/runtime/idempotency.ts`, which the
-primitives emit with the database client) makes a create or payment request idempotent: `scope`
-is `{ kind, id }` (`kind` `^[a-z][a-z0-9-]{0,31}$`, `id` 1–255 characters) and `key` 1–255
-visible ASCII characters (`[\x21-\x7e]`), else `Invalid idempotency key` before any statement;
-`hash` is `requestHash({ method, route, params?, body? })`, SHA-256 over the canonical request (the
-method upper-cased, params and every object's keys sorted, arrays in order, no body `null`). In one
-`transaction` it deletes the key's expired record, inserts one (status 0, 24 hours) unless the key
-has one (a concurrent holder on another copy keeps it waiting on the primary key), runs `fn(tx)`,
-and stores a 200–299 answer before COMMIT; any other status rolls `fn`'s writes back and is
-returned with `replayed: false`, not stored. A key with a record answers its stored status and body
-with `replayed: true` without running `fn`, or for a different hash rejects `IdempotencyConflict`
-(`name` `"IdempotencyConflict"`, which the stub answers 409) after ROLLBACK. The first call starts
-the sweep (`sweepExpired`): then and every 60 s, under
-`pg_try_advisory_lock(hashtext('jeeves.idempotency'))`, it deletes at most 1,000 expired records
-(any tile's), and a copy without the lock does nothing; a failure logs an
-`idempotency sweep <tile>` failure line; the sweep is owned by the process's scope and stops at
-drain. The values are the generation catalog's `idempotency-policy`. Loop stubs may call it too.
+The private file still contains historical `databaseClient`, `scopedTransaction` and
+`idempotentCall` helpers, and `positive-cache.ts` retains an old internal helper. New guarded
+wiring does not expose them to hooks. The checker refuses private imports; there is no second
+legacy hook runtime. Use `defineLocalOperation` for account-scoped local mutations: generated
+canonical identity, replay-before-admission, product-role command drain, sealed replay and COMMIT
+share the protected mechanism. A lost COMMIT reply remains unknown and uses retained recovery;
+leases or arbitrary idempotency headers do not make external effects exactly once.
 
 **Settings a stub declares.** A product operation module exports
 `settings = declareSettings({ NAME: kind, ... })` from `src/extension-api/index.ts`.
@@ -873,13 +817,13 @@ product-schema checks. Node HKDF-SHA256 separates purpose and mode keys; HMAC-SH
 AES-256-GCM authenticate structured version/key/purpose/scope/context fields. Sealing uses
 random 96-bit nonces and 128-bit tags. Canonical base64url refuses padding/aliases. Removed or
 unknown keys, changed contexts and corrupt envelopes refuse. See `.jeeves/extensions.md`.
-These are reusable primitives; replay, workload identity, webhook ingress and sessions are
-not added by declaring a handle.
+These are reusable primitives; replay, workload identity, webhook ingress and sessions require
+their installed bindings/declarations, rather than appearing merely by declaring a key handle.
 
 **Endpoints from the environment.** A process with stubs checks every variable its stubs' clients
 and its sign-in read, and its stubs' declared settings (QL05), in one pass, `checkConfiguration`
-at the top of its process file, before any client is built or probed (QG31); each client reads its own again as it is built; a template's own
-clients read theirs as each is built. No variable has a default (`<ID>` is the tile ID upper-cased,
+at the top of its process file. Template and stub configuration, including credential files,
+are validated before any client opens through the common process lifecycle. No variable has a default (`<ID>` is the tile ID upper-cased,
 `-` as `_`, so `hot-routes` is `HOT_ROUTES`):
 
 | Endpoint | Variables | Local value in `compose.yaml` |
@@ -888,9 +832,11 @@ clients read theirs as each is built. No variable has a default (`<ID>` is the t
 | A Cache tile | `JEEVES_CACHE_<ID>_HOST`, `JEEVES_CACHE_<ID>_PORT`, `JEEVES_CACHE_<ID>_TLS` | `cache-<id>`, `6379`, `disable` |
 | The broker | `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT` | `local-broker`, `5672` |
 | Another application tile a stub calls | `JEEVES_TILE_<ID>_URL` | `http://app-<id>:3000` |
-| An External API a stub calls (QG20) | `JEEVES_EXTERNAL_<ID>_URL` | None: the application sets it (`compose.override.yaml`), and until then startup fails `Invalid endpoint JEEVES_EXTERNAL_<ID>_URL` |
-| The Identity a stub calls, when a sign-in binds it (QG20) | `JEEVES_IDENTITY_<ID>_URL` | Keycloak inside the network, `http://identity-<id>:8080`: the Identity as the process reaches it, not the sign-in's `OIDC_ISSUER`, which a container can't reach (QGR2); a deployment sets its issuer's origin or another address its processes reach |
 | Pub/Sub, for a process that publishes to or consumes a topic | `JEEVES_PUBSUB_PROJECT` (and only locally `PUBSUB_EMULATOR_HOST` and `METADATA_SERVER_DETECTION`) | `local`, `local-pubsub:8085`, `none` |
+
+Historical private `JEEVES_EXTERNAL_<ID>_URL` / `JEEVES_IDENTITY_<ID>_URL` transport configuration
+does not expose external/issuer request handles to API8 hooks. Current user/session/workload issuer
+configuration and scoped generated Service targets follow their dedicated contracts below.
 
 A host is 1–253 letters, digits, `.` or `-`, or for a database an absolute path (a Unix socket
 directory, as `pg` reads it, such as Cloud SQL's `/cloudsql/<instance>`); a port is an integer
@@ -909,12 +855,11 @@ rule. Every RabbitMQ loop passes `brokerBinding()` to `startModuleLoop` or `loop
 Pub/Sub loop passes `pubsubLoop(probe)`: `tile-loop.ts` compiles no broker endpoint, so each loop
 takes its transport from its process. The foundation sets exactly the
 variables each process reads in its `app-<id>` service's `environment` (`localEndpoints` in
-`local-contract.ts`, a stub Identity client's `JEEVES_IDENTITY_<ID>_URL` among them), beside a
-sign-in's `OIDC_*`. The one it doesn't set is an External API's `JEEVES_EXTERNAL_<ID>_URL`, the
-application's to set (QG20). `processes.tiles[].environment` in the report lists every variable
-a process reads, sorted, that one included, and the export's README lists the same per process
-(QG26); the API's `stores` row names it too. A deployment sets its own values; local stacks
-behave as before. Object storage and search are still reached at their local
+`local-contract.ts`), beside the binding's issuer configuration. `processes.tiles[].environment`
+and the export README inventory those private runtime variables. Historical QG20 external/issuer
+transport variables can appear in preserved source/report records; setting one does not install
+an API8 adapter or grant product access. A deployment supplies the actual supported endpoints.
+Object storage and search are still reached at their local
 names (`local-objects`, `search-<id>`), and the setup scripts keep their own (`migrate.mjs` reads
 `PGHOST`, `PGPORT` and `JEEVES_MIGRATE_TLS`).
 
@@ -1232,18 +1177,21 @@ classified deadline response and unread input closes after that response flushes
 rechecks expiry before calling any module or template handler.
 A generated `rawBody: true` route receives exact bytes as `body` and `rawBody`, including malformed
 JSON; decoding is deferred to its handler. Default routes decode JSON/text as before. These are
-internal route declarations, with no inspector controls. Webhook authentication/storage is absent.
+internal route declarations. The Webhook receiver has its own finite body/signature controls
+and generated HMAC authentication/durable acceptance; ordinary raw routes do not gain that protocol.
 
 `/livez` answers 200 while HTTP can respond, including drain. `/readyz` and `/healthz` answer 200
 after successful initialization/listen, then 503 during drain. Required failed startup prevents
-readiness; these are not continuous deep dependency probes. Health routes bypass product guards
+readiness. Private bounded safe dependency probes also update required-resource readiness after
+startup; optional reader-cache fallback does not make its host unready. See the
+[studio readiness bounds](../docs/studio.md#experimental-project-export). Health routes bypass product guards
 and admission. Safe completion/failure JSON lines contain route patterns (no URL/query), status,
 request/correlation IDs and classification. Authorization, Cookie, request/response bodies and
 original exceptions are excluded. Quoted unwritten-hook labels in the support report identify
 missing implementation; the public 501 body stays generic. Lifecycle milestones identify admission stop, cancellation,
 HTTP/process drain completion and the existing ten-second final deadline.
 
-Updates from API v3 require `--ack-extension-api=4` and the staged interface/boundary check. Hooks
+This HTTP contract was introduced in API4; current updates from older APIs require `--ack-extension-api=8` and the staged interface/boundary check. Hooks
 are preserved; the shared formatter is added as an application-owned scaffold. Review assumptions
 about old provider-detail error bodies and automatic retries. No hook is silently rewritten.
 
@@ -1254,7 +1202,10 @@ migrations under `products/migrations/<schema>/`, and registered SQL under `prod
 and `products/commands/`. Legacy `modules/*.sql` files are preserved but never executed.
 A namespace has one ordered checksum history; add a four-digit version instead of editing an
 applied file. Setup locks execution and commits product DDL and its protected ledger together.
-Failures roll back both. Real concurrent PostgreSQL migrator evidence belongs to RG14.
+Failures roll back both. [RG14](../docs/plans/reliable-generation/evidence/rg14/review.md)
+and [RG23](../docs/plans/reliable-generation/evidence/rg23/results.md) record the selected real
+concurrent PostgreSQL migrator/authority observations. This SQL boundary was introduced in API7;
+current exports target API8.
 
 The declaration lists `version: 1`, `namespaces` (`schema`, `migrations: [{version, file}]`),
 `tables` (`schema`, `name`), `views` (`schema`, published `name`, product view `source`), and
@@ -1286,7 +1237,7 @@ or infers a conversion. A prepared same-namespace update requires the declaratio
 and `.jeeves/product-sql-migration.json` with `version: 1`, `mode: "external-reviewed"`, and
 `legacy: [{file, sha256}]` for every old module SQL file using its current hash. This records the
 application's external review, not database migration proof. Missing or stale material refuses
-without changing existing files, even with `--ack-extension-api=7`. Namespace changes still
+without changing existing files, even with `--ack-extension-api=8`. Namespace changes still
 require a fresh export and explicit application/data migration. The complete generated migration
 guide is `.jeeves/extensions.md`; acknowledgement also requires its staged checker/TypeScript build.
 
@@ -1348,7 +1299,8 @@ and integration mapping are synchronous bounded JSON policies. Reusing a retaine
 changed input conflicts. The completion hook receives frozen input/caller/result DTOs and named
 same-database product commands; it has no client, SQL, commit, ACK, holder, lease or fence control.
 Generated processes drain work independently of the accepting request, under the existing
-bounded lifecycle. This is not a scheduler or webhook feature.
+bounded lifecycle. Scheduled task and Webhook receiver reuse this engine through their
+installed bindings; a standalone work declaration adds neither ingress nor a timer by itself.
 
 Protected `052-jeeves-durable-work.sql` stores intent, attempts, database-time leases and exact
 bigint fences. Restricted-role product effects, every issued command's actual drain and the
@@ -1394,8 +1346,9 @@ work/database/owner identity or remote process identity requires explicit draini
 application migration; old records and handwritten hook bodies are preserved. Safe work-failure
 logs carry operation/correlation IDs and an opaque work hash, excluding keys, inputs, subjects,
 tickets, results and original exception values. Deterministic PGlite/failure-point evidence is in
-`docs/plans/reliable-generation/evidence/rg15/`; native process-kill evidence remains a later
-checkpoint.
+[RG15](../docs/plans/reliable-generation/evidence/rg15/README.md); actual native holder death,
+fencing and same-Service remote recovery are recorded in
+[RG23](../docs/plans/reliable-generation/evidence/rg23/results.md).
 
 RG16 adds the `scheduled-task` module/binding in Service and Worker. Its sole normal setting is
 `intervalSeconds` (1..604800), with a writable owned PostgreSQL state slot and Runnable processes.

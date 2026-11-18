@@ -1,6 +1,8 @@
 # Reliable generation: build plan
 
-**Status: approved and execution authorized by the owner; see docs/handoff.md for accepted-unit progress.**
+**Status: RG01–RG25 accepted; RG26 documentation complete for coordinator acceptance in its local
+commit.** The [owner handback](owner-handback.md) gives every unit's revision, actual capabilities,
+proof and limits. See the [plan index](../README.md) for the approved next queue.
 
 Prepared against Jeeves `73266a1`, after the QRWTY A/B evaluations and the owner's follow-up.
 This is a Jeeves improvement plan. QRWTY and YouTube supply examples and regression cases;
@@ -61,8 +63,17 @@ working together. Generated percentage is secondary to correctness and handwritt
 | D11 | Code units keep existing Jeeves regression checks. Add focused mechanism tests and three bounded integration checkpoints plus final review. Documentation-only work and reviews with no code changes use focused link/status/evidence checks. No exhaustive combination matrix or full generated-system rerun per unit. | Confirmed by owner |
 | D12 | Use generic HMAC webhooks in this plan. Provider-specific signatures/SDKs, including Stripe, wait for a later provider pack. | Confirmed by owner |
 
-The owner approved this packet, including D9–D12 and the contract. Approval alone is not an
-instruction to start RG01. Any subsequent owner change is recorded here before dependent work proceeds.
+The owner approved this packet, including D9–D12 and the contract, and subsequently authorized
+execution on 2026-11-16. The original await-start condition is satisfied. Any subsequent owner
+change is recorded here before dependent work proceeds.
+
+## Owner amendment — 2026-11-17 (next queue)
+
+Owner commit `95d60ac4b34a70336b246d30949e5f8ce006fb3c` authorizes
+[Wires and deployment](../wires-and-deployment/units.md) after RG26 is accepted and committed.
+It is the approved next plan, not an inactive old queue. RG26 closes this RG packet only; its
+agent does not read WD unit briefs or execute WD work/checks. The coordinator dispatches WD01
+after RG26 acceptance. Other unfinished old plans remain inactive unless owner-selected.
 
 ## Packet
 

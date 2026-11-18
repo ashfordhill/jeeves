@@ -1,5 +1,8 @@
 # YouTube v2 build plan
 
+> Historical completed sequence (RG26, 2026-11-18): YV2-01–23 completed, followed by the preserved generic-baseline provenance correction. No new v2 work is authorized by the future-assignment wording below. See the [plan index](../README.md) and
+> [RG handback](../reliable-generation/owner-handback.md) for actual support and next-work authority.
+
 Historical execution plan. The owner subsequently clarified that product-specific code belongs
 after the generated baseline. YV2-15/16 below placed YouTube implementation before YV2-21 and
 caused the misleading 100% credit. Do not repeat that ordering. The
