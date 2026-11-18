@@ -1,0 +1,263 @@
+{
+  "apiVersion": 8,
+  "reportedApplicationOwnedWebhookPathsOnly": true,
+  "generatedScaffoldAndPrivateRuntimeProtectionRetained": true,
+  "attachments": [
+    {
+      "fixture": "link",
+      "source": "owned/forward.ts",
+      "destination": "src/modules/gateway/forward.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "51b44c3a4814a033cce5ad1951f0e41317f161ff07c35c5526a2626cf6120045"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/published.ts",
+      "destination": "src/modules/gateway/published.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "6f3908f9cfc579b9e88e3aa32a1e7a3d2cac6d8bd598d5b2a6df87bae86de0c6"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/create.ts",
+      "destination": "src/modules/items-api/create.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "eb9d796a0ce90110324a5a45c7f9cfe8c38c8234d2170a78a4f590510b2072e1"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/slow.ts",
+      "destination": "src/modules/items-api/slow.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "f062fe88748db81d60935c2ddf88be5f5bba06dd7986f4d341f00cd5d37428c6"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/forbidden.ts",
+      "destination": "src/modules/items-api/forbidden.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "97d8f8f7d4a29e726d019202f1499573362105da10816734aca3d7a4979625be"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/read-record.ts",
+      "destination": "src/modules/items-api/read-record.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "9ce30100cd14238b760c713906e881ceb9eae136d18e4fb5aa202de7a6368cfe"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/worker-access.ts",
+      "destination": "src/modules/items-worker/worker-access.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "9c837e94da3d5dd7d540446208a262c42286c370bb28d11fe49afa66de1ecb2a"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/record-reader.hooks.ts",
+      "destination": "src/modules/items-api/record-reader.hooks.ts",
+      "role": "hooks",
+      "ownership": "generated-extension",
+      "sourceSha256": "50e8db84a1124639bfa0732f4c5e43424d2d2ea490d5fe5ea65f2e70ddee80cb"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/create-limit.hooks.ts",
+      "destination": "src/modules/items-api/create-limit.hooks.ts",
+      "role": "hooks",
+      "ownership": "generated-extension",
+      "sourceSha256": "f20b007e6480786273e5f4b4a3a61761c6ce8a6c6f0bba365be26e354c762309"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/record.ts",
+      "destination": "src/contracts/record.ts",
+      "role": "contract",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "f021c158e088eb4b9369bd04d01c0c59d1acb761501ebef7deac672f315d80f5"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/products.json",
+      "destination": "infra/postgres/items-db/products.json",
+      "role": "product",
+      "ownership": "generated-extension",
+      "sourceSha256": "e00cca507b205d6c3e74ed81ea252826f3e97e5dff19c1b8d3230346c9a619e0"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/0001-initial.sql",
+      "destination": "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql",
+      "role": "product",
+      "ownership": "generated-extension",
+      "sourceSha256": "a1820cce349b10a2fb7a08069e198673b8e1804dbd9a66e6878741ed516f7631"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/create.sql",
+      "destination": "infra/postgres/items-db/products/commands/create.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "80e98a9bad3740704b0d8aaba2300ebb542384dc4e27aac79602d93ab82d799b"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/worker.sql",
+      "destination": "infra/postgres/items-db/products/commands/worker.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "c61cfb5412cf83aa9274fade4c0a7adb6a4a4f1c0d937b90252b6deb843488c4"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/read.sql",
+      "destination": "infra/postgres/items-db/products/queries/read.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "090c61e32a6f1f9dc627637ed6de1f38875e4afecfe5570088210d7d1cc3068c"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/published.sql",
+      "destination": "infra/postgres/items-db/products/queries/published.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "754116f11a7b73981789716e8568b2543e6c13732b9c7c074a467e8da2f47157"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/slow.sql",
+      "destination": "infra/postgres/items-db/products/queries/slow.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "5cc65e3af0e0c21ccb5d9ceb2e2a53268dc8b1bd8394a7890fd3c64e45b0e78c"
+    },
+    {
+      "fixture": "link",
+      "source": "owned/navigate.ts",
+      "destination": "src/modules/browser/navigate.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "c9783ab4f16dc4e2649d5a8cedf0d09462155ae2cde03a327f934522f314c760"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/catalog.ts",
+      "destination": "src/contracts/catalog.ts",
+      "role": "contract",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "c3d1ce2b5cc7c96912f385a8c0ed03bdebd91b522df93cee652d9eb145cb09dc"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/send.ts",
+      "destination": "src/modules/caller/send.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "1947b4f6695fa23590ff819b5e9a315c71e8c78767abde1ef1b2bf589b2a34d0"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/receive.ts",
+      "destination": "src/modules/callee/receive.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "50c0df390dda84107b20002a98fe353624bca93a0a600c1c19a8ef37342dd73f"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/catalog-events.ts",
+      "destination": "src/modules/caller/catalog-events.ts",
+      "role": "hooks",
+      "ownership": "generated-extension",
+      "sourceSha256": "0aefd5a71a981e8f98fda08c8ec07b9027d915a0d22df08e4c5585f9fa20efc7"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/catalog-events.hooks.ts",
+      "destination": "src/modules/caller/catalog-events.mapping.hooks.ts",
+      "role": "hooks",
+      "ownership": "generated-extension",
+      "sourceSha256": "71f5f0d1cfabd344108d6ae40fd9ce22f52e543b5a7b2fdf3c56c3061c56f0e3"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/apply-catalog.ts",
+      "destination": "src/modules/projector/apply-catalog.ts",
+      "role": "stub",
+      "ownership": "generated-extension",
+      "sourceSha256": "96680fb6a63a0e447070f107f5500b6021180484ff4df7f306ddca8fd08bcb93"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/caller-db.json",
+      "destination": "infra/postgres/caller-db/products.json",
+      "role": "product",
+      "ownership": "generated-extension",
+      "sourceSha256": "68a8982bb10b01935cb2b5f18fe3b3be06e13566634e36c1a5ee7f82051d20b8"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/caller-0001.sql",
+      "destination": "infra/postgres/caller-db/products/migrations/p_caller_owner/0001-initial.sql",
+      "role": "product",
+      "ownership": "generated-extension",
+      "sourceSha256": "6593940495c191264f4b4b3095afe3d1ae2eedf65183b69d82c3a01338748746"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/catalog_sync.sql",
+      "destination": "infra/postgres/caller-db/products/commands/catalog_sync.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "dc54dd50619285c0d13701230784e8d779018e34a275d5321e106f6a9b45673a"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/accept_event.sql",
+      "destination": "infra/postgres/caller-db/products/commands/accept_event.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "7af6d26cf7c3a84f6bf8d7750ec528462a57cfaacfd4a9c526c09b4487b17291"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/apply_catalog.sql",
+      "destination": "infra/postgres/caller-db/products/commands/apply_catalog.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "bcc9c0d09d3959f9e392e296227b4e553aab277b173d2f071913cb918e3d2c3b"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/callee-db.json",
+      "destination": "infra/postgres/callee-db/products.json",
+      "role": "product",
+      "ownership": "generated-extension",
+      "sourceSha256": "330a07d08e3a43c72f3b8f59791fec4ea80e0d6c54cbf96851c087415649a00c"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/callee-0001.sql",
+      "destination": "infra/postgres/callee-db/products/migrations/p_callee_owner/0001-initial.sql",
+      "role": "product",
+      "ownership": "generated-extension",
+      "sourceSha256": "b32603820eb3ac0f62770aedcb24482cb0632e5fe955305921265810acc4f16b"
+    },
+    {
+      "fixture": "catalog",
+      "source": "owned/provider_apply.sql",
+      "destination": "infra/postgres/callee-db/products/commands/provider_apply.sql",
+      "role": "product",
+      "ownership": "application-added contract/product SQL",
+      "sourceSha256": "765b6f45ca5b30b3d043424726a0e724b92a702a8b135c423c9584275b5351bb"
+    }
+  ]
+}

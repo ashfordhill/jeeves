@@ -1,0 +1,18 @@
+[
+  {
+    "name": "receipt commit precedes ACK and survives redelivery",
+    "expected": "withheld real AMQP Basic.Ack, committed receipt/effect, kill that consumer, another copy redelivers once; dates cannot bypass ID",
+    "outcome": "passed",
+    "actual": {
+      "killed": "468643ff318c04e5feffe49b743a6291ec28202dc3c7ee1e32d2bb2810eeeb54",
+      "unacknowledgedBeforeKill": 1,
+      "committedReceipt": true,
+      "effectsAfterRedeliveryAndDateChange": 1
+    }
+  },
+  {
+    "name": "retention, idle maintenance and stopped heartbeat",
+    "expected": "receipt remains before immutable DB deadline then idle indexed cleanup deletes after it; graceful stopped state differs from a live idle copy",
+    "outcome": "failed"
+  }
+]

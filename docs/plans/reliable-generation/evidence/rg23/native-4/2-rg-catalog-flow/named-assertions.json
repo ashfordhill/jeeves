@@ -1,0 +1,7 @@
+[
+  {
+    "name": "HMAC durable acceptance survives process death",
+    "expected": "stored work exists while ACK withheld; another same Service processor completes once; changed content409, terminal failure visible",
+    "outcome": "failed"
+  }
+]

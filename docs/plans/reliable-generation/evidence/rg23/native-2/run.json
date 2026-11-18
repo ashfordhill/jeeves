@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-89503b21-7f8b-466f-8ff3-fa23b3fea2b9",
+  "suite": "rg-mechanisms",
+  "temporary": "/tmp/jeeves-system-WoVKZv",
+  "stacks": [
+    {
+      "project": "gs-89503b21-7f8b-466f-8ff3-fa23b3fea2b9-1",
+      "fixture": "rg-link-flow",
+      "application": "/tmp/jeeves-system-WoVKZv/1-rg-link-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow",
+      "ports": [46489, 45895, 42819]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "positiveNative7": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 1,
+    "accepted": true
+  },
+  "noMatch": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 2,
+    "outcome": "failed",
+    "error": "Selected test filter ran no executed tests (skipped tests are not a pass)",
+    "noStacksCreated": true,
+    "temporaryRemoved": true
+  }
+}

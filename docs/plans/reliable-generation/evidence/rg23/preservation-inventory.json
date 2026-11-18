@@ -1,0 +1,17 @@
+{
+  "allOriginalContainerIdNameStatesPreserved": true,
+  "inventoriesEqualByStableIdentity": {
+    "containers": 42,
+    "networks": 9,
+    "volumes": 23,
+    "images": 43
+  },
+  "e2eOldProjectsPreserved": 2,
+  "unitCreatedE2eProjectsRemaining": 0,
+  "ownTaskResourcesAfterAllCleanups": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "images": 0
+  }
+}

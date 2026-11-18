@@ -1,0 +1,39 @@
+[
+  {
+    "name": "receipt commit precedes ACK and survives redelivery",
+    "expected": "withheld real AMQP Basic.Ack, committed receipt/effect, kill that consumer, another copy redelivers once; dates cannot bypass ID",
+    "outcome": "passed",
+    "actual": {
+      "killed": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+      "unacknowledgedBeforeKill": 1,
+      "committedReceipt": true,
+      "effectsAfterRedeliveryAndDateChange": 1
+    }
+  },
+  {
+    "name": "retention, idle maintenance and stopped heartbeat",
+    "expected": "receipt remains before immutable DB deadline then idle indexed cleanup deletes after it; stopped/crashed heartbeat becomes stale while live idle heartbeat advances",
+    "outcome": "passed",
+    "actual": {
+      "deadlineAtLeast60Seconds": true,
+      "stoppedOrCrashedStale": 2,
+      "staleThresholdSeconds": 45,
+      "idleLive": 1,
+      "idleCleanup": true,
+      "retainedProduct": 1
+    }
+  },
+  {
+    "name": "native broker stall/drop and recovery",
+    "expected": "required broker loss removes worker readiness, liveness survives, same copy recovers without restart and processes a fresh receipt",
+    "outcome": "passed",
+    "actual": {
+      "worker": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+      "broker": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5",
+      "stallUnready": true,
+      "dropUnready": true,
+      "recovered": true,
+      "effect": 1
+    }
+  }
+]

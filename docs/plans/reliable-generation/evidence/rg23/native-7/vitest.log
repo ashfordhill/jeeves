@@ -1,0 +1,13 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts (2 tests | 1 skipped) 179868ms
+   ✓ RG23: catalog events, remote recovery and queue receipts compose across native copies 179867ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 1 skipped (2)
+   Start at  23:37:09
+   Duration  180.05s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-7/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-7/junit.xml

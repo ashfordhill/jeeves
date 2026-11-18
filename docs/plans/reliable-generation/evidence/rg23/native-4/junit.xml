@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="2" failures="2" errors="0" time="288.573272047">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" timestamp="2026-11-18T05:15:57.973Z" hostname="BASEMENT-PC" tests="2" failures="2" errors="0" skipped="0" time="288.573272047">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" name="RG23: link/account sessions compose with foundation mechanisms in independent processes" time="140.269322309">
+            <failure message="expected { status: 503, body: { …(2) }, …(2) } to match object { status: 200, body: { …(3) } }
+(5 matching properties omitted from actual)" type="AssertionError">
+AssertionError: expected { status: 503, body: { …(2) }, …(2) } to match object { status: 200, body: { …(3) } }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    &quot;body&quot;: {
+-     &quot;record&quot;: {
+-       &quot;destination&quot;: &quot;new&quot;,
+-     },
+-     &quot;source&quot;: &quot;cache&quot;,
+-     &quot;version&quot;: &quot;2&quot;,
++     &quot;error&quot;: &quot;UNAVAILABLE&quot;,
++     &quot;message&quot;: &quot;Service unavailable.&quot;,
+    },
+-   &quot;status&quot;: 200,
++   &quot;status&quot;: 503,
+  }
+
+ ❯ jeeves-generator/integration/harness/foundation-scenario.ts:416:25
+ ❯ check jeeves-generator/integration/harness/foundation-scenario.ts:50:24
+ ❯ beforeStart jeeves-generator/integration/harness/foundation-scenario.ts:368:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ foundationScenario jeeves-generator/integration/harness/foundation-scenario.ts:32:3
+ ❯ jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:16:3
+            </failure>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" name="RG23: catalog events, remote recovery and queue receipts compose across native copies" time="148.303113145">
+            <failure message="Timed out waiting for completed; last observation: &quot;running&quot;" type="Error">
+Error: Timed out waiting for completed; last observation: &quot;running&quot;
+ ❯ poll jeeves-generator/integration/harness/process.ts:165:9
+ ❯ jeeves-generator/integration/harness/rg-catalog.ts:239:13
+ ❯ check jeeves-generator/integration/harness/rg-catalog.ts:156:24
+ ❯ beforeStart jeeves-generator/integration/harness/rg-catalog.ts:182:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ catalogScenario jeeves-generator/integration/harness/rg-catalog.ts:146:3
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

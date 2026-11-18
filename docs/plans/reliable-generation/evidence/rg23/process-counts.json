@@ -1,0 +1,13 @@
+{
+  "link": {
+    "itemsApi": 2,
+    "gateway": 2,
+    "browser": 2,
+    "itemsOwnershipWorker": 2
+  },
+  "catalog": {
+    "callerApi": 2,
+    "projectorWorker": 2,
+    "callee": 1
+  }
+}

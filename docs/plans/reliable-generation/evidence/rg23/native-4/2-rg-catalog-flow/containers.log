@@ -1,0 +1,325 @@
+app-caller-1  | 2026-11-18T05:14:33.562119826Z {"event":"probe","tile":"caller","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-caller-1  | 2026-11-18T05:14:33.563157844Z {"event":"probe","tile":"caller","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-caller-1  | 2026-11-18T05:14:33.599940004Z Application ready
+app-caller-1  | 2026-11-18T05:14:56.171172918Z {"service":"caller","level":"info","event":"request-completed","requestId":"aaa11a71-d3ab-40fb-b6ee-afbd416e53ff","correlationId":"aaa11a71-d3ab-40fb-b6ee-afbd416e53ff","method":"POST","route":"/modules/catalog-events","status":202,"durationMs":574}
+app-edge-1    | 2026-11-18T05:14:39.279937974Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+app-edge-1    | 2026-11-18T05:14:39.279974646Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+app-edge-1    | 2026-11-18T05:14:39.280563427Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+app-edge-1    | 2026-11-18T05:14:39.314071372Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+app-edge-1    | 2026-11-18T05:14:39.320926697Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+app-edge-1    | 2026-11-18T05:14:39.321063007Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+app-edge-1    | 2026-11-18T05:14:39.321161946Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+app-edge-1    | 2026-11-18T05:14:39.322848469Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+app-edge-1       | 2026-11-18T05:14:39.323830262Z /docker-entrypoint.sh: Configuration complete; ready for start up
+app-projector-1  | 2026-11-18T05:14:33.864734877Z {"event":"probe","tile":"projector","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-caller-2     | 2026-11-18T05:14:49.345249765Z {"event":"probe","tile":"caller","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-projector-1  | 2026-11-18T05:14:33.939809100Z {"level":"info","event":"broker","tile":"projector","what":"broker consume events","state":"available"}
+app-projector-2  | 2026-11-18T05:14:48.959102881Z {"event":"probe","tile":"projector","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-projector-2  | 2026-11-18T05:14:49.034517936Z {"level":"info","event":"broker","tile":"projector","what":"broker consume events","state":"available"}
+app-projector-2  | 2026-11-18T05:14:49.036398930Z Application ready
+app-projector-1  | 2026-11-18T05:14:33.941171278Z Application ready
+app-caller-2     | 2026-11-18T05:14:49.346283807Z {"event":"probe","tile":"caller","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-caller-2     | 2026-11-18T05:14:49.382283201Z Application ready
+app-caller-2     | 2026-11-18T05:14:54.710083870Z {"level":"info","event":"drain-started"}
+app-caller-2     | 2026-11-18T05:14:54.710318146Z {"service":"caller","level":"info","event":"http-draining"}
+identity-issuer-1  | 2026-11-18T05:13:51.811157848Z Updating the configuration and installing your custom providers, if any. Please wait.
+local-broker-1     | 2026-11-18T05:13:44.545588818Z   ##  ##
+local-broker-1     | 2026-11-18T05:13:44.545591197Z   ##########  Copyright (c) 2007-2026 Broadcom Inc and/or its subsidiaries
+local-broker-1     | 2026-11-18T05:13:44.545593070Z   ######  ##
+local-broker-1     | 2026-11-18T05:13:44.545595045Z   ##########  Licensed under the MPL 2.0. Website: https://rabbitmq.com
+identity-issuer-1  | 2026-11-18T05:13:54.126221188Z 2026-11-18 05:13:54,123 WARN  [org.keycloak.common.Profile] (build-7) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-issuer-1  | 2026-11-18T05:14:05.913440335Z 2026-11-18 05:14:05,913 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 13418ms
+identity-issuer-1  | 2026-11-18T05:14:06.489244104Z Running the server in development mode. DO NOT use this configuration in production.
+identity-issuer-1  | 2026-11-18T05:14:08.157336752Z 2026-11-18 05:14:06,978 INFO  [org.keycloak.url.HostnameV2ProviderFactory] (main) If hostname is specified, hostname-strict is effectively ignored
+identity-issuer-1  | 2026-11-18T05:14:08.157366582Z 2026-11-18 05:14:06,983 WARN  [org.keycloak.models.sessions.infinispan.InfinispanStickySessionEncoderProviderFactory] (main) The option `shouldAttachRoute` is deprecated and will be removed in a future release. Disable it by setting `spi-sticky-session-encoder--infinispan--should-attach-route` to `false`
+identity-issuer-1  | 2026-11-18T05:14:08.163154278Z 2026-11-18 05:14:08,152 INFO  [org.infinispan.CONTAINER] (main) ISPN000974: Virtual threads support: enabled
+identity-issuer-1  | 2026-11-18T05:14:08.854665139Z 2026-11-18 05:14:08,854 INFO  [org.hibernate.orm.jdbc.batch] (JPA Startup Thread) HHH100501: Automatic JDBC statement batching enabled (maximum batch size 32)
+identity-issuer-1  | 2026-11-18T05:14:08.886648247Z 2026-11-18 05:14:08,886 WARN  [org.keycloak.common.Profile] (main) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+local-broker-1     | 2026-11-18T05:13:44.545597249Z
+local-broker-1     | 2026-11-18T05:13:44.545599325Z   Erlang:      29.1.2 [jit]
+local-broker-1     | 2026-11-18T05:13:44.545601823Z   TLS Library: OpenSSL - OpenSSL 3.5.9 29 Sep 2026
+local-broker-1     | 2026-11-18T05:13:44.545603862Z   Release series support status: see https://www.rabbitmq.com/release-information
+app-caller-2       | 2026-11-18T05:14:54.710340160Z {"level":"info","event":"admission-stopped"}
+app-caller-2       | 2026-11-18T05:14:54.710486720Z {"level":"info","event":"operations-cancelled"}
+local-broker-1     | 2026-11-18T05:13:44.545605910Z
+identity-issuer-1  | 2026-11-18T05:14:12.505974108Z 2026-11-18 05:14:12,505 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
+identity-issuer-1  | 2026-11-18T05:14:22.049123047Z 2026-11-18 05:14:22,048 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+identity-issuer-1  | 2026-11-18T05:14:22.272072337Z 2026-11-18 05:14:22,271 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_993985, Site name: null, Cluster name: ISPN
+identity-issuer-1  | 2026-11-18T05:14:22.461831750Z 2026-11-18 05:14:22,461 INFO  [org.keycloak.models.workflow.WorkflowsEventListenerFactory] (main) Workflow runner task scheduled: next execution at 17:14:22, then every PT12H
+identity-issuer-1  | 2026-11-18T05:14:22.492357395Z 2026-11-18 05:14:22,492 INFO  [org.keycloak.exportimport.dir.DirImportProvider] (main) Importing from directory /opt/keycloak/bin/../data/import
+identity-issuer-1  | 2026-11-18T05:14:22.666917922Z 2026-11-18 05:14:22,666 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
+identity-issuer-1  | 2026-11-18T05:14:23.732699249Z 2026-11-18 05:14:23,732 INFO  [org.keycloak.exportimport.singlefile.SingleFileImportProvider] (main) Full importing from file /opt/keycloak/bin/../data/import/realm.json
+identity-issuer-1  | 2026-11-18T05:14:24.506601789Z 2026-11-18 05:14:24,506 INFO  [org.keycloak.exportimport.util.ImportUtils] (main) Realm 'issuer' imported
+identity-issuer-1  | 2026-11-18T05:14:24.506635889Z 2026-11-18 05:14:24,506 INFO  [org.keycloak.services] (main) KC-SERVICES0030: Full model import requested. Strategy: IGNORE_EXISTING
+identity-issuer-1  | 2026-11-18T05:14:24.506700398Z 2026-11-18 05:14:24,506 INFO  [org.keycloak.services] (main) KC-SERVICES0032: Import finished successfully
+app-callee-1       | 2026-11-18T05:14:33.083647885Z {"event":"probe","tile":"callee","level":"info","client":"callee-db","kind":"database","check":"SELECT 1","result":"ok"}
+identity-issuer-1  | 2026-11-18T05:14:24.576504117Z 2026-11-18 05:14:24,576 INFO  [org.keycloak.services] (main) KC-SERVICES0077: Created temporary admin user with username admin
+app-caller-2       | 2026-11-18T05:14:54.710874158Z {"service":"caller","level":"info","event":"http-drained"}
+app-caller-2       | 2026-11-18T05:14:54.711213720Z {"level":"info","event":"drain-completed"}
+app-caller-2       | 2026-11-18T05:14:57.732917337Z {"event":"probe","tile":"caller","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-caller-2       | 2026-11-18T05:14:57.733830196Z {"event":"probe","tile":"caller","level":"info","client":"caller-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-caller-2       | 2026-11-18T05:14:57.775164421Z Application ready
+app-caller-2       | 2026-11-18T05:14:57.801297719Z {"level":"error","event":"failure","tile":"caller","what":"work outcome unknown","error":"Error: work outcome unknown","operation":"catalog-inbox","correlationId":"b373d343-31fc-444a-bcb3-0959ac5b3a8d","work":"56b9e4d09c1955e6799fa1ac8c499e6315413c2eec775d198242d7467709ae1c"}
+app-caller-2       | 2026-11-18T05:15:27.807804784Z {"level":"error","event":"failure","tile":"caller","what":"work outcome unknown","error":"Error: work outcome unknown","operation":"catalog-inbox","correlationId":"9fe9b7b8-4540-4df4-9507-610d731c46e6","work":"56b9e4d09c1955e6799fa1ac8c499e6315413c2eec775d198242d7467709ae1c"}
+local-postgres-1   | 2026-11-18T05:13:42.114742932Z The files belonging to this database system will be owned by user "postgres".
+app-callee-1       | 2026-11-18T05:14:33.117423820Z Application ready
+local-postgres-1   | 2026-11-18T05:13:42.114881905Z This user must also own the server process.
+local-broker-1     | 2026-11-18T05:13:44.545607811Z   Doc guides:  https://www.rabbitmq.com/docs
+local-broker-1     | 2026-11-18T05:13:44.545609795Z   Support:     https://www.rabbitmq.com/docs/contact
+local-broker-1     | 2026-11-18T05:13:44.545611980Z   Tutorials:   https://www.rabbitmq.com/tutorials
+local-broker-1     | 2026-11-18T05:13:44.545613918Z   Monitoring:  https://www.rabbitmq.com/docs/monitoring
+local-broker-1     | 2026-11-18T05:13:44.545615939Z   Upgrading:   https://www.rabbitmq.com/docs/upgrade
+local-broker-1     | 2026-11-18T05:13:44.545617831Z
+local-broker-1     | 2026-11-18T05:13:44.545619934Z   Logs: <stdout>
+local-broker-1     | 2026-11-18T05:13:44.545622487Z
+local-broker-1     | 2026-11-18T05:13:44.545624480Z   Config file(s): /etc/rabbitmq/conf.d/10-defaults.conf
+local-postgres-1   | 2026-11-18T05:13:42.114885533Z
+local-postgres-1   | 2026-11-18T05:13:42.114889023Z The database cluster will be initialized with locale "en_US.utf8".
+local-postgres-1   | 2026-11-18T05:13:42.114891006Z The default database encoding has accordingly been set to "UTF8".
+local-broker-1     | 2026-11-18T05:13:44.545626574Z
+local-broker-1     | 2026-11-18T05:13:44.545907918Z   Starting broker...2026-11-18 05:13:44.545757+00:00 [info] <0.209.0> [0m
+local-broker-1     | 2026-11-18T05:13:44.545919518Z 2026-11-18 05:13:44.545757+00:00 [info] <0.209.0>  node           : rabbit@86299a714a1d[0m
+local-postgres-1   | 2026-11-18T05:13:42.114892825Z The default text search configuration will be set to "english".
+local-postgres-1   | 2026-11-18T05:13:42.114894597Z
+local-postgres-1   | 2026-11-18T05:13:42.114896306Z Data page checksums are disabled.
+local-postgres-1   | 2026-11-18T05:13:42.114897968Z
+local-postgres-1   | 2026-11-18T05:13:42.114899575Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+local-postgres-1   | 2026-11-18T05:13:42.122195550Z creating subdirectories ... ok
+local-postgres-1   | 2026-11-18T05:13:42.122303518Z selecting dynamic shared memory implementation ... posix
+local-postgres-1   | 2026-11-18T05:13:42.137744975Z selecting default "max_connections" ... 100
+local-postgres-1   | 2026-11-18T05:13:42.159601528Z selecting default "shared_buffers" ... 128MB
+local-postgres-1   | 2026-11-18T05:13:42.193429630Z selecting default time zone ... UTC
+local-postgres-1   | 2026-11-18T05:13:42.194043280Z creating configuration files ... ok
+local-postgres-1   | 2026-11-18T05:13:42.321663876Z running bootstrap script ... ok
+local-postgres-1   | 2026-11-18T05:13:42.510626215Z sh: locale: not found
+local-postgres-1   | 2026-11-18T05:13:42.510686141Z 2026-11-18 05:13:42.510 UTC [35] WARNING:  no usable system locales were found
+local-postgres-1   | 2026-11-18T05:13:42.925299837Z performing post-bootstrap initialization ... ok
+local-postgres-1   | 2026-11-18T05:13:43.227574487Z initdb: warning: enabling "trust" authentication for local connections
+identity-issuer-1  | 2026-11-18T05:14:24.703096780Z 2026-11-18 05:14:24,702 INFO  [org.keycloak.services.resources.KeycloakApplication] (main) Bootstrap completed in 12.884000 seconds
+identity-issuer-1  | 2026-11-18T05:14:24.769492727Z 2026-11-18 05:14:24,769 INFO  [io.quarkus] (main) Keycloak 26.8.1 on JVM (powered by Quarkus 3.40.1) started in 15.779s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+identity-issuer-1  | 2026-11-18T05:14:24.769594395Z 2026-11-18 05:14:24,769 INFO  [io.quarkus] (main) Profile dev activated.
+identity-issuer-1  | 2026-11-18T05:14:24.769603744Z 2026-11-18 05:14:24,769 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, narayana-jta, opentelemetry, rest, rest-jackson, smallrye-context-propagation, smallrye-health, vertx]
+local-broker-1     | 2026-11-18T05:13:44.545921345Z 2026-11-18 05:13:44.545757+00:00 [info] <0.209.0>  home dir       : /var/lib/rabbitmq[0m
+local-broker-1     | 2026-11-18T05:13:44.545922787Z 2026-11-18 05:13:44.545757+00:00 [info] <0.209.0>  config file(s) : /etc/rabbitmq/conf.d/10-defaults.conf[0m
+local-postgres-1   | 2026-11-18T05:13:43.227605235Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+local-postgres-1   | 2026-11-18T05:13:43.227580964Z syncing data to disk ... ok
+local-postgres-1   | 2026-11-18T05:13:43.227612408Z
+local-postgres-1   | 2026-11-18T05:13:43.227614438Z
+local-postgres-1   | 2026-11-18T05:13:43.227616266Z Success. You can now start the database server using:
+local-postgres-1   | 2026-11-18T05:13:43.227618213Z
+local-postgres-1   | 2026-11-18T05:13:43.227620077Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+local-postgres-1   | 2026-11-18T05:13:43.227621987Z
+local-postgres-1   | 2026-11-18T05:13:43.300659752Z waiting for server to start....2026-11-18 05:13:43.300 UTC [41] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1   | 2026-11-18T05:13:43.318282870Z 2026-11-18 05:13:43.318 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1   | 2026-11-18T05:13:43.372175679Z 2026-11-18 05:13:43.372 UTC [44] LOG:  database system was shut down at 2026-11-18 05:13:42 UTC
+local-postgres-1   | 2026-11-18T05:13:43.393594191Z 2026-11-18 05:13:43.393 UTC [41] LOG:  database system is ready to accept connections
+local-postgres-1   | 2026-11-18T05:13:43.448901252Z  done
+local-postgres-1   | 2026-11-18T05:13:43.448922559Z server started
+local-postgres-1   | 2026-11-18T05:13:43.464462827Z
+local-postgres-1   | 2026-11-18T05:13:43.464478008Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+local-postgres-1   | 2026-11-18T05:13:43.464480222Z
+local-postgres-1   | 2026-11-18T05:13:43.465044526Z waiting for server to shut down...2026-11-18 05:13:43.464 UTC [41] LOG:  received fast shutdown request
+local-postgres-1   | 2026-11-18T05:13:43.485290812Z .2026-11-18 05:13:43.485 UTC [41] LOG:  aborting any active transactions
+local-postgres-1   | 2026-11-18T05:13:43.487661709Z 2026-11-18 05:13:43.487 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+local-postgres-1   | 2026-11-18T05:13:43.487670857Z 2026-11-18 05:13:43.487 UTC [42] LOG:  shutting down
+local-postgres-1   | 2026-11-18T05:13:43.505367689Z 2026-11-18 05:13:43.505 UTC [42] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1   | 2026-11-18T05:13:43.647520886Z 2026-11-18 05:13:43.647 UTC [42] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.029 s, sync=0.021 s, total=0.160 s; sync files=2, longest=0.011 s, average=0.011 s; distance=0 kB, estimate=0 kB; lsn=0/14EF2C8, redo lsn=0/14EF2C8
+local-postgres-1   | 2026-11-18T05:13:43.654592357Z 2026-11-18 05:13:43.654 UTC [41] LOG:  database system is shut down
+local-broker-1     | 2026-11-18T05:13:44.545924220Z 2026-11-18 05:13:44.545757+00:00 [info] <0.209.0>  log(s)         : <stdout>[0m
+local-broker-1     | 2026-11-18T05:13:44.545925698Z 2026-11-18 05:13:44.545757+00:00 [info] <0.209.0>  data dir       : /var/lib/rabbitmq/mnesia/rabbit@86299a714a1d[0m
+local-broker-1     | 2026-11-18T05:13:44.670768935Z [38;5;87m2026-11-18 05:13:44.670536+00:00 [notice] <0.544.0> Feature flags: attempt to enable `detailed_queues_endpoint`...[0m
+local-broker-1     | 2026-11-18T05:13:44.675189458Z [38;5;87m2026-11-18 05:13:44.674978+00:00 [notice] <0.544.0> Feature flags: `detailed_queues_endpoint` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.675216597Z [38;5;87m2026-11-18 05:13:44.675010+00:00 [notice] <0.544.0> Feature flags: attempt to enable `khepri_db`...[0m
+local-broker-1     | 2026-11-18T05:13:44.703931798Z [38;5;87m2026-11-18 05:13:44.703713+00:00 [notice] <0.544.0> Feature flags: `khepri_db` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.705225259Z [38;5;87m2026-11-18 05:13:44.703755+00:00 [notice] <0.544.0> Feature flags: attempt to enable `message_containers_deaths_v2`...[0m
+local-broker-1     | 2026-11-18T05:13:44.708837513Z [38;5;87m2026-11-18 05:13:44.708646+00:00 [notice] <0.544.0> Feature flags: `message_containers_deaths_v2` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.708897042Z [38;5;87m2026-11-18 05:13:44.708675+00:00 [notice] <0.544.0> Feature flags: attempt to enable `quorum_queue_non_voters`...[0m
+local-broker-1     | 2026-11-18T05:13:44.713364727Z [38;5;87m2026-11-18 05:13:44.713186+00:00 [notice] <0.544.0> Feature flags: `quorum_queue_non_voters` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.713374637Z [38;5;87m2026-11-18 05:13:44.713220+00:00 [notice] <0.544.0> Feature flags: attempt to enable `rabbit_exchange_type_local_random`...[0m
+local-broker-1     | 2026-11-18T05:13:44.717993737Z [38;5;87m2026-11-18 05:13:44.717811+00:00 [notice] <0.544.0> Feature flags: `rabbit_exchange_type_local_random` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.718036911Z [38;5;87m2026-11-18 05:13:44.717849+00:00 [notice] <0.544.0> Feature flags: attempt to enable `rabbitmq_4.0.0`...[0m
+local-broker-1     | 2026-11-18T05:13:44.722149501Z [38;5;87m2026-11-18 05:13:44.721976+00:00 [notice] <0.544.0> Feature flags: `rabbitmq_4.0.0` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.722215792Z [38;5;87m2026-11-18 05:13:44.722001+00:00 [notice] <0.544.0> Feature flags: attempt to enable `rabbitmq_4.1.0`...[0m
+local-broker-1     | 2026-11-18T05:13:44.726553924Z [38;5;87m2026-11-18 05:13:44.726344+00:00 [notice] <0.544.0> Feature flags: `rabbitmq_4.1.0` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.726568646Z [38;5;87m2026-11-18 05:13:44.726390+00:00 [notice] <0.544.0> Feature flags: attempt to enable `rabbitmq_4.2.0`...[0m
+local-broker-1     | 2026-11-18T05:13:44.749624214Z [38;5;87m2026-11-18 05:13:44.749372+00:00 [notice] <0.544.0> Feature flags: `rabbitmq_4.2.0` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.752466283Z 2026-11-18 05:13:44.752234+00:00 [info] <0.209.0> Running boot step pre_boot defined by app rabbit[0m
+local-postgres-1   | 2026-11-18T05:13:43.665284989Z  done
+local-postgres-1   | 2026-11-18T05:13:43.665296111Z server stopped
+local-postgres-1   | 2026-11-18T05:13:43.666029163Z
+local-postgres-1   | 2026-11-18T05:13:43.666034426Z PostgreSQL init process complete; ready for start up.
+local-postgres-1   | 2026-11-18T05:13:43.666036777Z
+local-postgres-1   | 2026-11-18T05:13:43.726200245Z 2026-11-18 05:13:43.726 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1   | 2026-11-18T05:13:43.726256690Z 2026-11-18 05:13:43.726 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1   | 2026-11-18T05:13:43.726306725Z 2026-11-18 05:13:43.726 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1   | 2026-11-18T05:13:43.761164588Z 2026-11-18 05:13:43.761 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1   | 2026-11-18T05:13:43.797300871Z 2026-11-18 05:13:43.797 UTC [55] LOG:  database system was shut down at 2026-11-18 05:13:43 UTC
+local-postgres-1   | 2026-11-18T05:13:43.817407881Z 2026-11-18 05:13:43.817 UTC [1] LOG:  database system is ready to accept connections
+local-postgres-1   | 2026-11-18T05:14:08.895093855Z 2026-11-18 05:14:08.894 UTC [105] ERROR:  relation "migration_model" does not exist at character 25
+local-postgres-1   | 2026-11-18T05:14:08.895127523Z 2026-11-18 05:14:08.894 UTC [105] STATEMENT:  SELECT ID, VERSION FROM MIGRATION_MODEL ORDER BY UPDATE_TIME DESC
+local-postgres-1   | 2026-11-18T05:14:12.453624779Z 2026-11-18 05:14:12.453 UTC [106] ERROR:  relation "public.databasechangeloglock" does not exist at character 22
+local-postgres-1   | 2026-11-18T05:14:12.453656501Z 2026-11-18 05:14:12.453 UTC [106] STATEMENT:  SELECT COUNT(*) FROM public.databasechangeloglock
+local-postgres-1   | 2026-11-18T05:14:57.800531301Z 2026-11-18 05:14:57.800 UTC [230] ERROR:  permission denied for table inbox
+local-postgres-1   | 2026-11-18T05:14:57.800555758Z 2026-11-18 05:14:57.800 UTC [230] STATEMENT:  INSERT INTO p_caller_owner.inbox(id,item_id,title) VALUES($1,$2,$3) ON CONFLICT(id) DO UPDATE SET effects=p_caller_owner.inbox.effects+1;
+local-postgres-1   | 2026-11-18T05:14:57.800568864Z
+local-postgres-1   | 2026-11-18T05:15:27.807268766Z 2026-11-18 05:15:27.807 UTC [588] ERROR:  permission denied for table inbox
+local-postgres-1   | 2026-11-18T05:15:27.807298696Z 2026-11-18 05:15:27.807 UTC [588] STATEMENT:  INSERT INTO p_caller_owner.inbox(id,item_id,title) VALUES($1,$2,$3) ON CONFLICT(id) DO UPDATE SET effects=p_caller_owner.inbox.effects+1;
+local-postgres-1   | 2026-11-18T05:15:27.807302866Z
+local-broker-1     | 2026-11-18T05:13:44.752477552Z 2026-11-18 05:13:44.752302+00:00 [info] <0.209.0> Running boot step rabbit_global_counters defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:44.752737516Z 2026-11-18 05:13:44.752581+00:00 [info] <0.209.0> Running boot step rabbit_osiris_metrics defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:44.752743549Z 2026-11-18 05:13:44.752637+00:00 [info] <0.209.0> Running boot step rabbit_core_metrics defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:44.753554877Z 2026-11-18 05:13:44.753385+00:00 [info] <0.209.0> Running boot step worker_pool defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:44.753615969Z 2026-11-18 05:13:44.753478+00:00 [info] <0.543.0> Will use 12 processes for default worker pool[0m
+local-broker-1     | 2026-11-18T05:13:44.753619671Z 2026-11-18 05:13:44.753531+00:00 [info] <0.543.0> Starting worker pool 'worker_pool' with 12 processes in it[0m
+local-broker-1     | 2026-11-18T05:13:44.757950980Z 2026-11-18 05:13:44.757801+00:00 [info] <0.209.0> Running boot step rabbit_registry defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:44.757959585Z 2026-11-18 05:13:44.757860+00:00 [info] <0.209.0> Running boot step database defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:44.758666132Z 2026-11-18 05:13:44.758529+00:00 [info] <0.209.0> Peer discovery: configured backend: rabbit_peer_discovery_classic_config[0m
+local-broker-1     | 2026-11-18T05:13:44.758890545Z 2026-11-18 05:13:44.758688+00:00 [info] <0.544.0> Feature flags: starting an unclustered node for the first time: all stable feature flags will be enabled by default[0m
+local-broker-1     | 2026-11-18T05:13:44.759123497Z [38;5;87m2026-11-18 05:13:44.758963+00:00 [notice] <0.544.0> Feature flags: attempt to enable `topic_binding_projection_v4`...[0m
+local-broker-1     | 2026-11-18T05:13:44.761011032Z [38;5;87m2026-11-18 05:13:44.760828+00:00 [notice] <0.544.0> Feature flags: attempt to enable `rabbitmq_4.3.0`...[0m
+local-broker-1     | 2026-11-18T05:13:44.765088071Z [38;5;87m2026-11-18 05:13:44.764905+00:00 [notice] <0.544.0> Feature flags: `rabbitmq_4.3.0` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.991921231Z [38;5;87m2026-11-18 05:13:44.991595+00:00 [notice] <0.544.0> Feature flags: `topic_binding_projection_v4` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.991940059Z [38;5;87m2026-11-18 05:13:44.991710+00:00 [notice] <0.544.0> Feature flags: attempt to enable `rabbitmq_4.4.0`...[0m
+local-broker-1     | 2026-11-18T05:13:44.998175011Z [38;5;87m2026-11-18 05:13:44.997985+00:00 [notice] <0.544.0> Feature flags: `rabbitmq_4.4.0` enabled[0m
+local-broker-1     | 2026-11-18T05:13:44.998191836Z [38;5;87m2026-11-18 05:13:44.998019+00:00 [notice] <0.544.0> Feature flags: attempt to enable `tie_binding_to_dest_with_keep_while_cond`...[0m
+local-broker-1     | 2026-11-18T05:13:45.037719730Z [38;5;87m2026-11-18 05:13:45.037436+00:00 [notice] <0.544.0> Feature flags: `tie_binding_to_dest_with_keep_while_cond` enabled[0m
+local-broker-1     | 2026-11-18T05:13:45.037748154Z [38;5;87m2026-11-18 05:13:45.037501+00:00 [notice] <0.544.0> Feature flags: attempt to enable `topic_binding_projection_v5`...[0m
+local-broker-1     | 2026-11-18T05:13:45.209154071Z [38;5;87m2026-11-18 05:13:45.208890+00:00 [notice] <0.544.0> Feature flags: `topic_binding_projection_v5` enabled[0m
+local-broker-1     | 2026-11-18T05:13:45.209176976Z [38;5;87m2026-11-18 05:13:45.208970+00:00 [notice] <0.544.0> Feature flags: attempt to enable `track_qq_members_uids`...[0m
+local-broker-1     | 2026-11-18T05:13:45.215476647Z [38;5;87m2026-11-18 05:13:45.215244+00:00 [notice] <0.544.0> Feature flags: `track_qq_members_uids` enabled[0m
+local-broker-1     | 2026-11-18T05:13:45.215623574Z 2026-11-18 05:13:45.215398+00:00 [info] <0.209.0> DB: virgin node -> run peer discovery[0m
+local-broker-1     | 2026-11-18T05:13:45.215751471Z [38;5;214m2026-11-18 05:13:45.215580+00:00 [warning] <0.209.0> Classic peer discovery backend: list of nodes does not contain the local node [][0m
+local-broker-1     | 2026-11-18T05:13:45.215809357Z [38;5;87m2026-11-18 05:13:45.215654+00:00 [notice] <0.209.0> Found the following metadata store members: [{rabbitmq_metadata,[0m
+local-broker-1     | 2026-11-18T05:13:45.215816007Z [38;5;87m2026-11-18 05:13:45.215654+00:00 [notice] <0.209.0>                                               rabbit@86299a714a1d}][0m
+local-broker-1     | 2026-11-18T05:13:45.559168787Z 2026-11-18 05:13:45.558930+00:00 [info] <0.209.0> Running boot step tracking_metadata_store defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.559259608Z 2026-11-18 05:13:45.559098+00:00 [info] <0.810.0> Setting up a table for connection tracking on this node: tracked_connection[0m
+local-broker-1     | 2026-11-18T05:13:45.559312131Z 2026-11-18 05:13:45.559163+00:00 [info] <0.810.0> Setting up a table for per-vhost connection counting on this node: tracked_connection_per_vhost[0m
+local-broker-1     | 2026-11-18T05:13:45.559377596Z 2026-11-18 05:13:45.559201+00:00 [info] <0.810.0> Setting up a table for per-user connection counting on this node: tracked_connection_per_user[0m
+local-broker-1     | 2026-11-18T05:13:45.559420237Z 2026-11-18 05:13:45.559268+00:00 [info] <0.810.0> Setting up a table for channel tracking on this node: tracked_channel[0m
+local-broker-1     | 2026-11-18T05:13:45.559504189Z 2026-11-18 05:13:45.559304+00:00 [info] <0.810.0> Setting up a table for channel tracking on this node: tracked_channel_per_user[0m
+local-broker-1     | 2026-11-18T05:13:45.559604559Z 2026-11-18 05:13:45.559368+00:00 [info] <0.209.0> Running boot step networking_metadata_store defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.559658974Z 2026-11-18 05:13:45.559433+00:00 [info] <0.209.0> Running boot step feature_flags defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.559713327Z 2026-11-18 05:13:45.559591+00:00 [info] <0.209.0> Running boot step rabbit_alarm defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.570183247Z 2026-11-18 05:13:45.570035+00:00 [info] <0.815.0> Memory high watermark set to 18990 MiB (19913210265 bytes) of 31651 MiB (33188683776 bytes) total[0m
+local-broker-1     | 2026-11-18T05:13:45.572033879Z 2026-11-18 05:13:45.571891+00:00 [info] <0.817.0> Enabling free disk space monitoring (disk free space: 875521708032, total memory: 33188683776)[0m
+local-broker-1     | 2026-11-18T05:13:45.572136252Z 2026-11-18 05:13:45.571924+00:00 [info] <0.817.0> Disk free limit set to 50MB[0m
+local-broker-1     | 2026-11-18T05:13:45.573285757Z 2026-11-18 05:13:45.573128+00:00 [info] <0.209.0> Running boot step auth_backend_plugins_check defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573355895Z 2026-11-18 05:13:45.573183+00:00 [info] <0.209.0> Running boot step codec_correctness_check defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573403193Z 2026-11-18 05:13:45.573202+00:00 [info] <0.209.0> Running boot step external_infrastructure defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573464497Z 2026-11-18 05:13:45.573229+00:00 [info] <0.209.0> Running boot step rabbit_event defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573528225Z 2026-11-18 05:13:45.573318+00:00 [info] <0.209.0> Running boot step rabbit_auth_mechanism_amqplain defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573622508Z 2026-11-18 05:13:45.573412+00:00 [info] <0.209.0> Running boot step rabbit_auth_mechanism_anonymous defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573723928Z 2026-11-18 05:13:45.573516+00:00 [info] <0.209.0> Running boot step rabbit_auth_mechanism_cr_demo defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573778765Z 2026-11-18 05:13:45.573584+00:00 [info] <0.209.0> Running boot step rabbit_auth_mechanism_plain defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573899121Z 2026-11-18 05:13:45.573634+00:00 [info] <0.209.0> Running boot step rabbit_exchange_type_direct defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.573908204Z 2026-11-18 05:13:45.573719+00:00 [info] <0.209.0> Running boot step rabbit_exchange_type_fanout defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.574026900Z 2026-11-18 05:13:45.573784+00:00 [info] <0.209.0> Running boot step rabbit_exchange_type_headers defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.574108840Z 2026-11-18 05:13:45.573854+00:00 [info] <0.209.0> Running boot step rabbit_exchange_type_local_random defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.574163493Z 2026-11-18 05:13:45.573970+00:00 [info] <0.209.0> Running boot step rabbit_exchange_type_modulus_hash defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.574285790Z 2026-11-18 05:13:45.574091+00:00 [info] <0.209.0> Running boot step rabbit_exchange_type_topic defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.574421852Z 2026-11-18 05:13:45.574145+00:00 [info] <0.209.0> Running boot step rabbit_priority_queue defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.574521682Z 2026-11-18 05:13:45.574186+00:00 [info] <0.209.0> Priority queues enabled, real BQ is rabbit_variable_queue[0m
+local-broker-1     | 2026-11-18T05:13:45.574525778Z 2026-11-18 05:13:45.574226+00:00 [info] <0.209.0> Running boot step kernel_ready defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.574623028Z 2026-11-18 05:13:45.574251+00:00 [info] <0.209.0> Running boot step pg_local_amqp091_connection defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.586164340Z 2026-11-18 05:13:45.585942+00:00 [info] <0.209.0> Running boot step pg_local_non_amqp_connection defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.586253683Z 2026-11-18 05:13:45.586083+00:00 [info] <0.209.0> Running boot step pg_local_amqp091_channel defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.586402409Z 2026-11-18 05:13:45.586151+00:00 [info] <0.209.0> Running boot step pg_local_amqp_connection defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.586444132Z 2026-11-18 05:13:45.586258+00:00 [info] <0.209.0> Running boot step pg_local_amqp_session defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.586635546Z 2026-11-18 05:13:45.586299+00:00 [info] <0.209.0> Running boot step rabbit_sysmon_minder defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.586660839Z 2026-11-18 05:13:45.586406+00:00 [info] <0.209.0> Running boot step rabbit_epmd_monitor defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.587182861Z 2026-11-18 05:13:45.587004+00:00 [info] <0.828.0> epmd monitor knows us, inter-node communication (distribution) port: 25672[0m
+local-broker-1     | 2026-11-18T05:13:45.587212434Z 2026-11-18 05:13:45.587067+00:00 [info] <0.209.0> Running boot step guid_generator defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605064143Z 2026-11-18 05:13:45.604907+00:00 [info] <0.209.0> Running boot step rabbit_node_monitor defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605209031Z 2026-11-18 05:13:45.604986+00:00 [info] <0.832.0> Starting rabbit_node_monitor[0m
+local-broker-1     | 2026-11-18T05:13:45.605245629Z 2026-11-18 05:13:45.605061+00:00 [info] <0.209.0> Running boot step delegate_sup defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605409757Z 2026-11-18 05:13:45.605292+00:00 [info] <0.209.0> Running boot step rabbit_chaos defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605453299Z 2026-11-18 05:13:45.605367+00:00 [info] <0.209.0> Running boot step rabbit_fifo_dlx_sup defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605572370Z 2026-11-18 05:13:45.605434+00:00 [info] <0.209.0> Running boot step core_initialized defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605576466Z 2026-11-18 05:13:45.605462+00:00 [info] <0.209.0> Running boot step rabbit_channel_tracking_handler defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605654998Z 2026-11-18 05:13:45.605526+00:00 [info] <0.209.0> Running boot step rabbit_classic_queue_type defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605692415Z 2026-11-18 05:13:45.605597+00:00 [info] <0.209.0> Running boot step rabbit_classic_queue defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605776136Z 2026-11-18 05:13:45.605660+00:00 [info] <0.209.0> Running boot step rabbit_connection_tracking_handler defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605812385Z 2026-11-18 05:13:45.605705+00:00 [info] <0.209.0> Running boot step rabbit_definitions_hashing defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.605883571Z 2026-11-18 05:13:45.605754+00:00 [info] <0.209.0> Running boot step rabbit_exchange_parameters defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.623200880Z 2026-11-18 05:13:45.623073+00:00 [info] <0.209.0> Running boot step rabbit_policies defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.623525408Z 2026-11-18 05:13:45.623294+00:00 [info] <0.209.0> Running boot step rabbit_quorum_queue_type defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.623578364Z 2026-11-18 05:13:45.623358+00:00 [info] <0.209.0> Running boot step rabbit_stream_queue defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.623656170Z 2026-11-18 05:13:45.623400+00:00 [info] <0.209.0> Running boot step rabbit_policy defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.623698077Z 2026-11-18 05:13:45.623474+00:00 [info] <0.209.0> Running boot step rabbit_quorum_event_subscriber defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.623764625Z 2026-11-18 05:13:45.623524+00:00 [info] <0.209.0> Running boot step rabbit_quorum_queue defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.623995944Z 2026-11-18 05:13:45.623840+00:00 [info] <0.209.0> Running boot step quorum_memory_alarm_handler defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624019354Z 2026-11-18 05:13:45.623884+00:00 [info] <0.209.0> Running boot step rabbit_stream_coordinator defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624092291Z 2026-11-18 05:13:45.623970+00:00 [info] <0.209.0> Running boot step rabbit_vhost_limit defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624144505Z 2026-11-18 05:13:45.624017+00:00 [info] <0.209.0> Running boot step rabbit_mgmt_reset_handler defined by app rabbitmq_management[0m
+local-broker-1     | 2026-11-18T05:13:45.624213356Z 2026-11-18 05:13:45.624049+00:00 [info] <0.209.0> Running boot step rabbit_mgmt_db_handler defined by app rabbitmq_management_agent[0m
+local-broker-1     | 2026-11-18T05:13:45.624234196Z 2026-11-18 05:13:45.624072+00:00 [info] <0.209.0> Management plugin: using rates mode 'basic'[0m
+local-broker-1     | 2026-11-18T05:13:45.624321537Z 2026-11-18 05:13:45.624168+00:00 [info] <0.209.0> Running boot step recovery defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624326496Z 2026-11-18 05:13:45.624223+00:00 [info] <0.209.0> Running boot step channel_interceptor_priorities_check defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624381141Z 2026-11-18 05:13:45.624241+00:00 [info] <0.209.0> Running boot step rabbit_sole_conn defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624422267Z 2026-11-18 05:13:45.624310+00:00 [info] <0.209.0> Running boot step rabbit_observer_cli defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624455513Z 2026-11-18 05:13:45.624363+00:00 [info] <0.209.0> Running boot step rabbit_core_metrics_gc defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624560579Z 2026-11-18 05:13:45.624430+00:00 [info] <0.209.0> Running boot step background_gc defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624597847Z 2026-11-18 05:13:45.624510+00:00 [info] <0.209.0> Running boot step prevent_startup_if_node_was_reset defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624671182Z 2026-11-18 05:13:45.624530+00:00 [info] <0.209.0> Running boot step empty_db_check defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.624724377Z 2026-11-18 05:13:45.624571+00:00 [info] <0.209.0> Will seed default virtual host and user...[0m
+local-broker-1     | 2026-11-18T05:13:45.624796673Z 2026-11-18 05:13:45.624658+00:00 [info] <0.209.0> Adding vhost '/' (description: 'Default virtual host', tags: [])[0m
+local-broker-1     | 2026-11-18T05:13:45.770024335Z 2026-11-18 05:13:45.769750+00:00 [info] <0.865.0> Making sure data directory '/var/lib/rabbitmq/mnesia/rabbit@86299a714a1d/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L' for vhost '/' exists[0m
+local-broker-1     | 2026-11-18T05:13:45.771701334Z 2026-11-18 05:13:45.771561+00:00 [info] <0.865.0> Setting segment_entry_count for vhost '/' with 0 queues to '2048'[0m
+local-broker-1     | 2026-11-18T05:13:45.822468112Z 2026-11-18 05:13:45.822236+00:00 [info] <0.865.0> Starting message stores for vhost '/'[0m
+local-broker-1     | 2026-11-18T05:13:45.823672206Z 2026-11-18 05:13:45.823538+00:00 [info] <0.865.0> Started message store of type transient for vhost '/'[0m
+local-broker-1     | 2026-11-18T05:13:45.841183674Z [38;5;214m2026-11-18 05:13:45.840947+00:00 [warning] <0.877.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": rebuilding indices from scratch[0m
+local-broker-1     | 2026-11-18T05:13:45.841928940Z 2026-11-18 05:13:45.841752+00:00 [info] <0.865.0> Started message store of type persistent for vhost '/'[0m
+local-broker-1     | 2026-11-18T05:13:45.841997620Z 2026-11-18 05:13:45.841858+00:00 [info] <0.865.0> Recovering 0 queues of type rabbit_classic_queue took 51ms[0m
+local-broker-1     | 2026-11-18T05:13:45.842057812Z 2026-11-18 05:13:45.841889+00:00 [info] <0.865.0> Recovering 0 queues of type rabbit_quorum_queue took 0ms[0m
+local-broker-1     | 2026-11-18T05:13:45.842128355Z 2026-11-18 05:13:45.841953+00:00 [info] <0.865.0> Recovering 0 queues of type rabbit_stream_queue took 0ms[0m
+local-broker-1     | 2026-11-18T05:13:45.859996449Z 2026-11-18 05:13:45.859834+00:00 [info] <0.209.0> Created user 'runtime'[0m
+local-broker-1     | 2026-11-18T05:13:45.890330165Z 2026-11-18 05:13:45.890131+00:00 [info] <0.209.0> Successfully set user tags for user 'runtime' to [<<"administrator">>][0m
+local-broker-1     | 2026-11-18T05:13:45.927477234Z 2026-11-18 05:13:45.927229+00:00 [info] <0.209.0> Successfully set permissions for user 'runtime' in virtual host '/' to '.*', '.*', '.*'[0m
+local-broker-1     | 2026-11-18T05:13:45.927496373Z 2026-11-18 05:13:45.927292+00:00 [info] <0.209.0> Running boot step rabbit_observer_cli_classic_queues defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.927560953Z 2026-11-18 05:13:45.927340+00:00 [info] <0.209.0> Running boot step rabbit_observer_cli_quorum_queues defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.927586331Z 2026-11-18 05:13:45.927379+00:00 [info] <0.209.0> Running boot step routing_ready defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.927650317Z 2026-11-18 05:13:45.927390+00:00 [info] <0.209.0> Running boot step pre_flight defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.927704098Z 2026-11-18 05:13:45.927422+00:00 [info] <0.209.0> Running boot step direct_client defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.927782209Z 2026-11-18 05:13:45.927532+00:00 [info] <0.209.0> Running boot step cluster_tags defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.962414520Z 2026-11-18 05:13:45.962200+00:00 [info] <0.209.0> Running boot step rabbit_management_load_definitions defined by app rabbitmq_management[0m
+local-broker-1     | 2026-11-18T05:13:45.962469643Z 2026-11-18 05:13:45.962238+00:00 [info] <0.209.0> Running boot step notify_cluster defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.962564872Z 2026-11-18 05:13:45.962285+00:00 [info] <0.209.0> Running boot step networking defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.962573000Z 2026-11-18 05:13:45.962330+00:00 [info] <0.209.0> Running boot step rabbit_quorum_queue_periodic_membership_reconciliation defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.962700786Z 2026-11-18 05:13:45.962462+00:00 [info] <0.209.0> Running boot step definition_import_worker_pool defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.962706407Z 2026-11-18 05:13:45.962517+00:00 [info] <0.543.0> Starting worker pool 'definition_import_pool' with 12 processes in it[0m
+local-broker-1     | 2026-11-18T05:13:45.963121637Z 2026-11-18 05:13:45.962960+00:00 [info] <0.209.0> Running boot step cluster_name defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.963128617Z 2026-11-18 05:13:45.963015+00:00 [info] <0.209.0> Initialising internal cluster ID to 'rabbitmq-cluster-id-YM9fzJoK7nc0SZ2AMQWHTQ'[0m
+local-broker-1     | 2026-11-18T05:13:45.980432332Z 2026-11-18 05:13:45.980281+00:00 [info] <0.209.0> Running boot step virtual_host_reconciliation defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.980505860Z 2026-11-18 05:13:45.980382+00:00 [info] <0.209.0> Running boot step logger_exchange defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.998378666Z 2026-11-18 05:13:45.998189+00:00 [info] <0.209.0> Running boot step queue_type_registrations defined by app rabbit[0m
+local-broker-1     | 2026-11-18T05:13:45.998421372Z 2026-11-18 05:13:45.998270+00:00 [info] <0.912.0> Resetting node maintenance status[0m
+local-broker-1     | 2026-11-18T05:13:46.025025610Z [38;5;214m2026-11-18 05:13:46.024713+00:00 [warning] <0.932.0> Deprecated features: `management_metrics_collection`: Feature `management_metrics_collection` is deprecated.[0m
+local-broker-1     | 2026-11-18T05:13:46.025044520Z [38;5;214m2026-11-18 05:13:46.024713+00:00 [warning] <0.932.0> By default, this feature can still be used for now.[0m
+local-broker-1     | 2026-11-18T05:13:46.025047165Z [38;5;214m2026-11-18 05:13:46.024713+00:00 [warning] <0.932.0> Its use will not be permitted by default in a future minor RabbitMQ version and the feature will be removed from a future major RabbitMQ version; actual versions to be determined.[0m
+local-broker-1     | 2026-11-18T05:13:46.025049608Z [38;5;214m2026-11-18 05:13:46.024713+00:00 [warning] <0.932.0> To continue using this feature when it is not permitted by default, set the following parameter in your configuration:[0m
+local-broker-1     | 2026-11-18T05:13:46.025051730Z [38;5;214m2026-11-18 05:13:46.024713+00:00 [warning] <0.932.0>     "deprecated_features.permit.management_metrics_collection = true"[0m
+local-broker-1     | 2026-11-18T05:13:46.025053778Z [38;5;214m2026-11-18 05:13:46.024713+00:00 [warning] <0.932.0> To test RabbitMQ as if the feature was removed, set this in your configuration:[0m
+local-broker-1     | 2026-11-18T05:13:46.025055927Z [38;5;214m2026-11-18 05:13:46.024713+00:00 [warning] <0.932.0>     "deprecated_features.permit.management_metrics_collection = false"[0m
+local-broker-1     | 2026-11-18T05:13:46.051489305Z 2026-11-18 05:13:46.051213+00:00 [info] <0.968.0> Prometheus metrics: HTTP (non-TLS) listener started on port 15692[0m
+local-broker-1     | 2026-11-18T05:13:46.054134413Z 2026-11-18 05:13:46.053980+00:00 [info] <0.996.0> Management plugin: HTTP (non-TLS) listener started on port 15672[0m
+local-broker-1     | 2026-11-18T05:13:46.054236136Z 2026-11-18 05:13:46.054086+00:00 [info] <0.1024.0> Statistics database started.[0m
+local-broker-1     | 2026-11-18T05:13:46.054285500Z 2026-11-18 05:13:46.054151+00:00 [info] <0.1023.0> Starting worker pool 'management_worker_pool' with 3 processes in it[0m
+local-broker-1     | 2026-11-18T05:13:46.054595976Z 2026-11-18 05:13:46.054447+00:00 [info] <0.912.0> Ready to start client connection listeners[0m
+local-broker-1     | 2026-11-18T05:13:46.055683220Z 2026-11-18 05:13:46.055547+00:00 [info] <0.1048.0> started TCP listener on [::]:5672[0m
+local-broker-1     | 2026-11-18T05:13:46.112967480Z  completed with 4 plugins.
+local-broker-1     | 2026-11-18T05:13:46.112988025Z 2026-11-18 05:13:46.112737+00:00 [info] <0.912.0> Server startup complete; 4 plugins started.[0m
+local-broker-1     | 2026-11-18T05:13:46.112990605Z 2026-11-18 05:13:46.112737+00:00 [info] <0.912.0>  * rabbitmq_management[0m
+local-broker-1     | 2026-11-18T05:13:46.112992488Z 2026-11-18 05:13:46.112737+00:00 [info] <0.912.0>  * rabbitmq_prometheus[0m
+local-broker-1     | 2026-11-18T05:13:46.112994270Z 2026-11-18 05:13:46.112737+00:00 [info] <0.912.0>  * rabbitmq_management_agent[0m
+local-broker-1     | 2026-11-18T05:13:46.112995702Z 2026-11-18 05:13:46.112737+00:00 [info] <0.912.0>  * rabbitmq_web_dispatch[0m
+local-broker-1     | 2026-11-18T05:13:46.198856778Z 2026-11-18 05:13:46.198516+00:00 [info] <0.10.0> Time to start RabbitMQ: 4243 ms[0m
+local-broker-1     | 2026-11-18T05:14:29.943489754Z 2026-11-18 05:14:29.943152+00:00 [info] <0.1072.0> accepting AMQP connection 172.24.0.5:41154 -> 172.24.0.2:5672[0m
+local-broker-1     | 2026-11-18T05:14:29.945285502Z 2026-11-18 05:14:29.945117+00:00 [info] <0.1072.0> User 'runtime' authenticated successfully[0m
+local-broker-1     | 2026-11-18T05:14:29.987785945Z 2026-11-18 05:14:29.987560+00:00 [info] <0.1072.0> connection 172.24.0.5:41154 -> 172.24.0.2:5672: user 'runtime' authenticated and granted access to vhost '/'[0m
+local-broker-1     | 2026-11-18T05:14:30.034220183Z 2026-11-18 05:14:30.033897+00:00 [info] <0.1072.0> closing AMQP connection (172.24.0.5:41154 -> 172.24.0.2:5672, vhost: '/', user: 'runtime', duration: '91ms')[0m
+local-broker-1     | 2026-11-18T05:14:33.888349294Z 2026-11-18 05:14:33.888127+00:00 [info] <0.1096.0> accepting AMQP connection 172.24.0.5:34514 -> 172.24.0.2:5672[0m
+local-broker-1     | 2026-11-18T05:14:33.890387529Z 2026-11-18 05:14:33.890233+00:00 [info] <0.1096.0> User 'runtime' authenticated successfully[0m
+local-broker-1     | 2026-11-18T05:14:33.936126103Z 2026-11-18 05:14:33.935879+00:00 [info] <0.1096.0> connection 172.24.0.5:34514 -> 172.24.0.2:5672: user 'runtime' authenticated and granted access to vhost '/'[0m
+local-broker-1     | 2026-11-18T05:14:48.980412965Z 2026-11-18 05:14:48.980185+00:00 [info] <0.1116.0> accepting AMQP connection 172.24.0.5:59226 -> 172.24.0.2:5672[0m
+local-broker-1     | 2026-11-18T05:14:48.982537254Z 2026-11-18 05:14:48.982351+00:00 [info] <0.1116.0> User 'runtime' authenticated successfully[0m
+local-broker-1     | 2026-11-18T05:14:49.031040835Z 2026-11-18 05:14:49.030774+00:00 [info] <0.1116.0> connection 172.24.0.5:59226 -> 172.24.0.2:5672: user 'runtime' authenticated and granted access to vhost '/'[0m

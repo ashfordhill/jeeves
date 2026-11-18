@@ -1,0 +1,102 @@
+[
+  {
+    "source": "owned/forward.ts",
+    "destination": "src/modules/gateway/forward.ts",
+    "role": "stub",
+    "module": "forward"
+  },
+  {
+    "source": "owned/published.ts",
+    "destination": "src/modules/gateway/published.ts",
+    "role": "stub",
+    "module": "published"
+  },
+  {
+    "source": "owned/create.ts",
+    "destination": "src/modules/items-api/create.ts",
+    "role": "stub",
+    "module": "create"
+  },
+  {
+    "source": "owned/slow.ts",
+    "destination": "src/modules/items-api/slow.ts",
+    "role": "stub",
+    "module": "slow"
+  },
+  {
+    "source": "owned/forbidden.ts",
+    "destination": "src/modules/items-api/forbidden.ts",
+    "role": "stub",
+    "module": "forbidden"
+  },
+  {
+    "source": "owned/read-record.ts",
+    "destination": "src/modules/items-api/read-record.ts",
+    "role": "stub",
+    "module": "read-record"
+  },
+  {
+    "source": "owned/worker-access.ts",
+    "destination": "src/modules/items-worker/worker-access.ts",
+    "role": "stub",
+    "module": "worker-access"
+  },
+  {
+    "source": "owned/record-reader.hooks.ts",
+    "destination": "src/modules/items-api/record-reader.hooks.ts",
+    "role": "hooks",
+    "module": "record-reader"
+  },
+  {
+    "source": "owned/create-limit.hooks.ts",
+    "destination": "src/modules/items-api/create-limit.hooks.ts",
+    "role": "hooks",
+    "module": "create-limit"
+  },
+  {
+    "source": "owned/record.ts",
+    "destination": "src/contracts/record.ts",
+    "role": "contract"
+  },
+  {
+    "source": "owned/products.json",
+    "destination": "infra/postgres/items-db/products.json",
+    "role": "product"
+  },
+  {
+    "source": "owned/0001-initial.sql",
+    "destination": "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/create.sql",
+    "destination": "infra/postgres/items-db/products/commands/create.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/worker.sql",
+    "destination": "infra/postgres/items-db/products/commands/worker.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/read.sql",
+    "destination": "infra/postgres/items-db/products/queries/read.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/published.sql",
+    "destination": "infra/postgres/items-db/products/queries/published.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/slow.sql",
+    "destination": "infra/postgres/items-db/products/queries/slow.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/navigate.ts",
+    "destination": "src/modules/browser/navigate.ts",
+    "role": "stub",
+    "module": "navigate"
+  }
+]

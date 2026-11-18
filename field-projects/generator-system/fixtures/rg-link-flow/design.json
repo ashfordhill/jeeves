@@ -1,0 +1,1291 @@
+{
+  "schemaVersion": 3,
+  "revision": 59,
+  "elements": [
+    {
+      "id": "gateway",
+      "name": "Gateway",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "items-api",
+      "name": "Items API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "items-db",
+      "name": "Items database",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "admission",
+      "name": "Admission",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "records",
+      "name": "Records",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "sign-in",
+      "name": "Sign in",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "jobs",
+      "name": "Jobs",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "items-worker",
+      "name": "Items worker",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "browser",
+      "name": "Link account",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "sessions",
+      "name": "Account sessions",
+      "classification": {
+        "kind": "Data store"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "gateway-items",
+      "kind": "calls",
+      "from": {
+        "element": "gateway"
+      },
+      "to": {
+        "element": "items-api"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "api-database",
+      "kind": "uses-database",
+      "from": {
+        "element": "items-api"
+      },
+      "to": {
+        "element": "items-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "items-admission",
+      "kind": "uses-database",
+      "from": {
+        "element": "items-api"
+      },
+      "to": {
+        "element": "admission"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "Redis",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "items-records",
+      "kind": "uses-database",
+      "from": {
+        "element": "items-api"
+      },
+      "to": {
+        "element": "records"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "Redis",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "items-identity",
+      "kind": "calls",
+      "from": {
+        "element": "items-api"
+      },
+      "to": {
+        "element": "sign-in"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "gateway-jobs",
+      "kind": "depends-on",
+      "from": {
+        "element": "gateway"
+      },
+      "to": {
+        "element": "jobs"
+      },
+      "planned": {
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "jobs-worker",
+      "kind": "depends-on",
+      "from": {
+        "element": "jobs"
+      },
+      "to": {
+        "element": "items-worker"
+      },
+      "planned": {
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "gateway-sign-in",
+      "kind": "calls",
+      "from": {
+        "element": "gateway"
+      },
+      "to": {
+        "element": "sign-in"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "gateway-items-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "gateway"
+      },
+      "to": {
+        "element": "items-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "items-worker-items-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "items-worker"
+      },
+      "to": {
+        "element": "items-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "browser-identity",
+      "kind": "calls",
+      "from": {
+        "element": "browser"
+      },
+      "to": {
+        "element": "sign-in"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "browser-state",
+      "kind": "uses-database",
+      "from": {
+        "element": "browser"
+      },
+      "to": {
+        "element": "sessions"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "browser-links",
+      "kind": "calls",
+      "from": {
+        "element": "browser"
+      },
+      "to": {
+        "element": "items-api"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "RG foundations",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "gateway",
+          "definition": {
+            "id": "studio-uploads",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "uploads",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 5000,
+            "transfer": "signed-url",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "items-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "requestTimeoutMs": 5000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "items-db",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "items-api"
+          }
+        },
+        {
+          "element": "admission",
+          "definition": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "redis-compatible",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "items-api"
+          }
+        },
+        {
+          "element": "records",
+          "definition": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "redis-compatible",
+            "provider": "self-hosted",
+            "ttlSeconds": 10
+          },
+          "owner": {
+            "kind": "element",
+            "id": "items-api"
+          }
+        },
+        {
+          "element": "sign-in",
+          "definition": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "language": "typescript",
+            "exposure": "public",
+            "provider": "oidc",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "jobs",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "gateway"
+          }
+        },
+        {
+          "element": "items-worker",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "browser",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 1000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "sessions",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "browser"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "gateway-items",
+          "settings": {}
+        },
+        {
+          "connection": "api-database",
+          "settings": {}
+        },
+        {
+          "connection": "items-admission",
+          "settings": {}
+        },
+        {
+          "connection": "items-records",
+          "settings": {}
+        },
+        {
+          "connection": "items-identity",
+          "settings": {}
+        },
+        {
+          "connection": "gateway-jobs",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "jobs-worker",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "gateway-sign-in",
+          "settings": {}
+        },
+        {
+          "connection": "gateway-items-db",
+          "settings": {}
+        },
+        {
+          "connection": "items-worker-items-db",
+          "settings": {}
+        },
+        {
+          "connection": "browser-identity",
+          "settings": {}
+        },
+        {
+          "connection": "browser-state",
+          "settings": {}
+        },
+        {
+          "connection": "browser-links",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "gateway-guard",
+          "host": "gateway",
+          "name": "gateway guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          }
+        },
+        {
+          "id": "items-api-guard",
+          "host": "items-api",
+          "name": "items-api guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          }
+        },
+        {
+          "id": "forward",
+          "host": "gateway",
+          "name": "forward",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "published",
+          "host": "gateway",
+          "name": "published",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        },
+        {
+          "id": "create",
+          "host": "items-api",
+          "name": "create",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        },
+        {
+          "id": "slow",
+          "host": "items-api",
+          "name": "slow",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "forbidden",
+          "host": "items-api",
+          "name": "forbidden",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "read-record",
+          "host": "items-api",
+          "name": "read-record",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "record-reader",
+          "host": "items-api",
+          "name": "record-reader",
+          "settings": {
+            "kind": "cache-reader",
+            "pattern": "cache-aside",
+            "freshness": "versioned",
+            "transport": "in-process",
+            "stampede": "single-flight"
+          }
+        },
+        {
+          "id": "record-source",
+          "host": "items-api",
+          "name": "record-source",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "id": "create-limit",
+          "host": "items-api",
+          "name": "create-limit",
+          "settings": {
+            "kind": "rate-limiter",
+            "algorithm": "sliding-window",
+            "limit": 2,
+            "windowSeconds": 60,
+            "key": "policy",
+            "store": "redis"
+          }
+        },
+        {
+          "id": "worker-access",
+          "host": "items-worker",
+          "name": "worker-access",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "navigate",
+          "host": "browser",
+          "name": "Custom",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "session",
+          "host": "browser",
+          "name": "Browser session",
+          "settings": {
+            "kind": "browser-session",
+            "signIn": "optional",
+            "idleSeconds": 86400,
+            "absoluteSeconds": 604800,
+            "guestContext": "disabled",
+            "offlineAccess": "disabled"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "gateway-guard-sign-in",
+          "from": "gateway-guard",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "gateway-sign-in"
+          }
+        },
+        {
+          "id": "items-api-guard-sign-in",
+          "from": "items-api-guard",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "items-identity"
+          }
+        },
+        {
+          "id": "forward-items-api",
+          "from": "forward",
+          "to": {
+            "kind": "element",
+            "id": "items-api",
+            "via": "gateway-items"
+          }
+        },
+        {
+          "id": "forward-sign-in",
+          "from": "forward",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "gateway-sign-in"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "create-sign-in",
+          "from": "create",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "items-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "slow-sign-in",
+          "from": "slow",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "items-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "forbidden-sign-in",
+          "from": "forbidden",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "items-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "read-record-sign-in",
+          "from": "read-record",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "items-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "create-items-db",
+          "from": "create",
+          "to": {
+            "kind": "element",
+            "id": "items-db",
+            "via": "api-database"
+          }
+        },
+        {
+          "id": "record-source-items-db",
+          "from": "record-source",
+          "to": {
+            "kind": "element",
+            "id": "items-db",
+            "via": "api-database"
+          }
+        },
+        {
+          "id": "published-items-db",
+          "from": "published",
+          "to": {
+            "kind": "element",
+            "id": "items-db",
+            "via": "gateway-items-db"
+          }
+        },
+        {
+          "id": "slow-items-db",
+          "from": "slow",
+          "to": {
+            "kind": "element",
+            "id": "items-db",
+            "via": "api-database"
+          }
+        },
+        {
+          "id": "worker-access-items-db",
+          "from": "worker-access",
+          "to": {
+            "kind": "element",
+            "id": "items-db",
+            "via": "items-worker-items-db"
+          }
+        },
+        {
+          "id": "record-reader-record-source",
+          "from": "record-reader",
+          "to": {
+            "kind": "component",
+            "id": "record-source"
+          }
+        },
+        {
+          "id": "record-reader-records",
+          "from": "record-reader",
+          "to": {
+            "kind": "element",
+            "id": "records",
+            "via": "items-records"
+          }
+        },
+        {
+          "id": "read-record-record-reader",
+          "from": "read-record",
+          "to": {
+            "kind": "component",
+            "id": "record-reader"
+          }
+        },
+        {
+          "id": "create-limit-admission",
+          "from": "create-limit",
+          "to": {
+            "kind": "element",
+            "id": "admission",
+            "via": "items-admission"
+          }
+        },
+        {
+          "id": "create-create-limit",
+          "from": "create",
+          "to": {
+            "kind": "component",
+            "id": "create-limit"
+          }
+        },
+        {
+          "id": "session-sign-in",
+          "from": "session",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "browser-identity"
+          }
+        },
+        {
+          "id": "session-sessions",
+          "from": "session",
+          "to": {
+            "kind": "element",
+            "id": "sessions",
+            "via": "browser-state"
+          }
+        },
+        {
+          "id": "navigate-sign-in",
+          "from": "navigate",
+          "to": {
+            "kind": "element",
+            "id": "sign-in",
+            "via": "browser-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "navigate-items-api",
+          "from": "navigate",
+          "to": {
+            "kind": "element",
+            "id": "items-api",
+            "via": "browser-links"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "entry-gateway",
+          "lane": "upload",
+          "element": "gateway"
+        },
+        {
+          "id": "browser-entry",
+          "lane": "download",
+          "element": "browser"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Consume"
+        },
+        {
+          "lane": "upload",
+          "name": "Exercise foundations"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "gateway-guard",
+        "target": {
+          "kind": "component",
+          "component": "gateway-guard",
+          "host": "gateway"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "sign-in",
+            "guard": "gateway-guard"
+          }
+        }
+      },
+      {
+        "id": "items-api-guard",
+        "target": {
+          "kind": "component",
+          "component": "items-api-guard",
+          "host": "items-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "sign-in",
+            "guard": "items-api-guard"
+          }
+        }
+      },
+      {
+        "id": "forward",
+        "target": {
+          "kind": "component",
+          "component": "forward",
+          "host": "gateway"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "published",
+        "target": {
+          "kind": "component",
+          "component": "published",
+          "host": "gateway"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "create",
+        "target": {
+          "kind": "component",
+          "component": "create",
+          "host": "items-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "slow",
+        "target": {
+          "kind": "component",
+          "component": "slow",
+          "host": "items-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "forbidden",
+        "target": {
+          "kind": "component",
+          "component": "forbidden",
+          "host": "items-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "read-record",
+        "target": {
+          "kind": "component",
+          "component": "read-record",
+          "host": "items-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "record-reader",
+        "target": {
+          "kind": "component",
+          "component": "record-reader",
+          "host": "items-api"
+        },
+        "template": {
+          "id": "positive-cache-read",
+          "version": "0.1.0",
+          "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c"
+        },
+        "binding": {
+          "kind": "positive-cache-read",
+          "source": {
+            "resource": "items-db",
+            "connection": "api-database"
+          },
+          "cache": {
+            "resource": "records",
+            "connection": "items-records"
+          }
+        }
+      },
+      {
+        "id": "create-limit",
+        "target": {
+          "kind": "component",
+          "component": "create-limit",
+          "host": "items-api"
+        },
+        "template": {
+          "id": "rate-limiter",
+          "version": "0.1.0",
+          "sha256": "a298d796f54a33cbecba02b8b3ac72c2af7a2c88fc0618d8ca00f2cc1ee5037f"
+        },
+        "binding": {
+          "kind": "rate-limiter",
+          "cache": {
+            "resource": "admission",
+            "connection": "items-admission"
+          },
+          "identity": {
+            "element": "sign-in",
+            "guard": "items-api-guard"
+          }
+        }
+      },
+      {
+        "id": "worker-access",
+        "target": {
+          "kind": "component",
+          "component": "worker-access",
+          "host": "items-worker"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "navigate",
+        "target": {
+          "kind": "component",
+          "component": "navigate",
+          "host": "browser"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "session",
+        "target": {
+          "kind": "component",
+          "component": "session",
+          "host": "browser"
+        },
+        "template": {
+          "id": "browser-session",
+          "version": "0.1.0",
+          "sha256": "cd11b60199954c6e50b4da901782750e754857bc8d5e8257580e73f58a81feaa"
+        },
+        "binding": {
+          "kind": "browser-session",
+          "state": {
+            "resource": "sessions",
+            "connection": "browser-state"
+          },
+          "identity": {
+            "element": "sign-in",
+            "guard": "session"
+          }
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "items-api-owner",
+        "name": "Items API"
+      },
+      {
+        "id": "gateway-owner",
+        "name": "Gateway"
+      },
+      {
+        "id": "browser-owner",
+        "name": "Link account"
+      },
+      {
+        "id": "sign-in-owner",
+        "name": "Sign in"
+      }
+    ],
+    "roles": [
+      {
+        "element": "items-api",
+        "owner": "items-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "items-worker",
+        "owner": "items-api-owner",
+        "kind": "worker",
+        "sharedWith": "items-api"
+      },
+      {
+        "element": "gateway",
+        "owner": "gateway-owner",
+        "kind": "api"
+      },
+      {
+        "element": "browser",
+        "owner": "browser-owner",
+        "kind": "api"
+      },
+      {
+        "element": "sign-in",
+        "owner": "sign-in-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "items-db",
+        "authority": "items-api-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      },
+      {
+        "element": "sessions",
+        "authority": "browser-owner",
+        "kind": "source"
+      },
+      {
+        "element": "admission",
+        "authority": "items-api-owner",
+        "kind": "source"
+      },
+      {
+        "element": "records",
+        "authority": "items-api-owner",
+        "kind": "projection",
+        "source": "items-db"
+      }
+    ],
+    "grants": [
+      {
+        "role": "items-api",
+        "resource": "items-db",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "items",
+              "operations": ["SELECT", "INSERT"]
+            },
+            {
+              "name": "records",
+              "operations": ["SELECT"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "items-worker",
+        "resource": "items-db",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "items",
+              "operations": ["SELECT", "UPDATE"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "gateway",
+        "resource": "items-db",
+        "access": "read",
+        "boundary": "published-read",
+        "product": {
+          "tables": [],
+          "views": ["visible_items"]
+        }
+      },
+      {
+        "role": "items-api",
+        "resource": "records",
+        "access": "read-write"
+      },
+      {
+        "role": "items-api",
+        "resource": "admission",
+        "access": "read-write"
+      },
+      {
+        "role": "browser",
+        "resource": "sessions",
+        "access": "read-write"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "items-worker-items-db",
+        "access": "read-write"
+      },
+      {
+        "connection": "gateway-items-db",
+        "access": "read"
+      },
+      {
+        "connection": "api-database",
+        "access": "read"
+      },
+      {
+        "connection": "items-records",
+        "access": "read-write"
+      },
+      {
+        "connection": "items-admission",
+        "access": "read-write"
+      },
+      {
+        "connection": "browser-state",
+        "access": "read-write"
+      }
+    ]
+  }
+}

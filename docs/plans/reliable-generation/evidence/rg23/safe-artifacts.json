@@ -1,0 +1,18 @@
+{
+  "filesScanned": 351,
+  "fixtureSourcesIncluded": true,
+  "privateRuntimePaths": 0,
+  "privateKeys": 0,
+  "unredactedJWTs": 0,
+  "secretMaterialFiles": 0,
+  "nativeSanitizationComplete": {
+    "native-1": true,
+    "native-2": true,
+    "native-7": true,
+    "native-4": true,
+    "native-5": true,
+    "native-6": true,
+    "native-3": true
+  },
+  "noMatchSanitizationComplete": true
+}

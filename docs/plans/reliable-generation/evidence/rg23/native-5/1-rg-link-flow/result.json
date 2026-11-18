@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-link-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected { unexpectedSuccess: true, dropped: 1 } to match object { outcome: 'unknown', …(2) }\n(1 matching property omitted from actual)"
+}

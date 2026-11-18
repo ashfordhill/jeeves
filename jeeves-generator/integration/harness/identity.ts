@@ -12,7 +12,11 @@ export const identityTemplates = [
   "module-stub",
   "verified-identity",
 ];
-export type TestAccount = { username: string; password: string; subject: string };
+export type TestAccount = {
+  username: string;
+  password: string;
+  subject: string;
+};
 export class IdentityClient {
   readonly origin: string;
   constructor(readonly app: Application) {
@@ -24,15 +28,21 @@ export class IdentityClient {
   async request(path: string, init: RequestInit = {}) {
     // Never retain OAuth URLs, headers, forms or response bodies in observations/errors.
     await this.protect(path);
-    const response = await fetch(new URL(path, this.origin), {
-      ...init,
-      redirect: "manual",
-      signal: AbortSignal.timeout(5000),
-    });
+    const response = await fetch(
+      new URL(new URL(path, this.origin).pathname + new URL(path, this.origin).search, this.origin),
+      {
+        ...init,
+        redirect: "manual",
+        signal: AbortSignal.timeout(5000),
+      },
+    );
     return response;
   }
   async tokens(path: string, form: Record<string, string>) {
-    const response = await this.request(path, { method: "POST", body: new URLSearchParams(form) });
+    const response = await this.request(path, {
+      method: "POST",
+      body: new URLSearchParams(form),
+    });
     const body = (await response.json()) as Record<string, unknown>;
     for (const key of ["access_token", "refresh_token", "id_token", "session_state"])
       if (typeof body[key] === "string") await this.protect(body[key]);
@@ -40,7 +50,7 @@ export class IdentityClient {
     assert.equal(typeof body.access_token, "string", "Keycloak access token is present");
     return body.access_token as string;
   }
-  async provision(): Promise<TestAccount[]> {
+  async provision(prefix = "account"): Promise<TestAccount[]> {
     const password = (
       await readFile(join(this.app.directory, ".runtime/secrets/identity-admin-sign-in"), "utf8")
     ).trim();
@@ -51,12 +61,15 @@ export class IdentityClient {
       password,
     });
     const accounts: TestAccount[] = [];
-    for (const username of ["account-a", "account-b"]) {
+    for (const username of [`${prefix}-a`, `${prefix}-b`]) {
       const userPassword = randomBytes(32).toString("base64url");
       await this.protect(userPassword);
       const response = await this.request("/admin/realms/sign-in/users", {
         method: "POST",
-        headers: { authorization: `Bearer ${admin}`, "content-type": "application/json" },
+        headers: {
+          authorization: `Bearer ${admin}`,
+          "content-type": "application/json",
+        },
         body: JSON.stringify({
           username,
           enabled: true,
@@ -113,7 +126,10 @@ export class IdentityClient {
     await this.protect(action, ...new URL(action).searchParams.values());
     const login = await this.request(action, {
       method: "POST",
-      headers: { cookie: cookies.join("; "), "content-type": "application/x-www-form-urlencoded" },
+      headers: {
+        cookie: cookies.join("; "),
+        "content-type": "application/x-www-form-urlencoded",
+      },
       body: new URLSearchParams({
         username: account.username,
         password: account.password,

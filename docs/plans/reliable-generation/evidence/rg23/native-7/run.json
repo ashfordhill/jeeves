@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-23670c26-3412-4b71-8004-766cef9f3277",
+  "suite": "rg-mechanisms",
+  "temporary": "/tmp/jeeves-system-gYRtgx",
+  "stacks": [
+    {
+      "project": "gs-23670c26-3412-4b71-8004-766cef9f3277-1",
+      "fixture": "rg-catalog-flow",
+      "application": "/tmp/jeeves-system-gYRtgx/1-rg-catalog-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow",
+      "ports": [46091, 43285, 44221]
+    }
+  ]
+}

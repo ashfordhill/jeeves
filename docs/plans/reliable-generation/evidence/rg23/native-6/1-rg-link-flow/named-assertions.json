@@ -1,0 +1,546 @@
+[
+  {
+    "name": "authenticated generated calls and independent user identity",
+    "expected": "Each gateway copy forwards a verified user over its own generated audience-bound workload client; missing either identity refuses",
+    "outcome": "passed",
+    "actual": {
+      "gatewayCopies": 2,
+      "noWorkload": 401,
+      "noUser": 401,
+      "wrongCaller": 403,
+      "userAsWorkload": 401,
+      "anonymousAliases": 0
+    }
+  },
+  {
+    "name": "precise native product and framework credentials",
+    "expected": "API SELECT/INSERT; same-owner worker SELECT/UPDATE; gateway only named published SELECT; product logins cannot read protected state or assume setup/DDL roles",
+    "outcome": "passed",
+    "actual": {
+      "products": [
+        {
+          "host": "items-api",
+          "user": "pr_items_db__items_api",
+          "outcomes": [
+            {
+              "name": "select-items",
+              "code": "OK"
+            },
+            {
+              "name": "insert-items",
+              "code": "OK"
+            },
+            {
+              "name": "update-items",
+              "code": "42501"
+            },
+            {
+              "name": "delete-items",
+              "code": "42501"
+            },
+            {
+              "name": "select-records",
+              "code": "OK"
+            },
+            {
+              "name": "published-view",
+              "code": "42501"
+            },
+            {
+              "name": "protected-replay",
+              "code": "42501"
+            },
+            {
+              "name": "protected-ledger",
+              "code": "42501"
+            },
+            {
+              "name": "product-ddl",
+              "code": "42501"
+            },
+            {
+              "name": "owner-role",
+              "code": "42501"
+            },
+            {
+              "name": "migration-role",
+              "code": "42501"
+            }
+          ]
+        },
+        {
+          "host": "items-worker",
+          "user": "pr_items_db__items_worker",
+          "outcomes": [
+            {
+              "name": "select-items",
+              "code": "OK"
+            },
+            {
+              "name": "insert-items",
+              "code": "42501"
+            },
+            {
+              "name": "update-items",
+              "code": "OK"
+            },
+            {
+              "name": "delete-items",
+              "code": "42501"
+            },
+            {
+              "name": "select-records",
+              "code": "42501"
+            },
+            {
+              "name": "published-view",
+              "code": "42501"
+            },
+            {
+              "name": "protected-replay",
+              "code": "42501"
+            },
+            {
+              "name": "protected-ledger",
+              "code": "42501"
+            },
+            {
+              "name": "product-ddl",
+              "code": "42501"
+            },
+            {
+              "name": "owner-role",
+              "code": "42501"
+            },
+            {
+              "name": "migration-role",
+              "code": "42501"
+            }
+          ]
+        },
+        {
+          "host": "gateway",
+          "user": "pr_items_db__gateway",
+          "outcomes": [
+            {
+              "name": "select-items",
+              "code": "42501"
+            },
+            {
+              "name": "insert-items",
+              "code": "42501"
+            },
+            {
+              "name": "update-items",
+              "code": "42501"
+            },
+            {
+              "name": "delete-items",
+              "code": "42501"
+            },
+            {
+              "name": "select-records",
+              "code": "42501"
+            },
+            {
+              "name": "published-view",
+              "code": "OK"
+            },
+            {
+              "name": "protected-replay",
+              "code": "42501"
+            },
+            {
+              "name": "protected-ledger",
+              "code": "42501"
+            },
+            {
+              "name": "product-ddl",
+              "code": "42501"
+            },
+            {
+              "name": "owner-role",
+              "code": "42501"
+            },
+            {
+              "name": "migration-role",
+              "code": "42501"
+            }
+          ]
+        }
+      ],
+      "runtime": {
+        "productCode": "OK",
+        "denied": ["42501", "42501", "42501"],
+        "protectedRows": "0",
+        "readOnly": "25006",
+        "setupMounted": false
+      },
+      "workerResult": {
+        "rows": [
+          {
+            "id": "seed",
+            "marked": true
+          }
+        ],
+        "rowCount": 1
+      },
+      "ddl": [
+        {
+          "name": "own-namespace-ddl",
+          "code": "OK"
+        },
+        {
+          "name": "template-table",
+          "code": "42501"
+        },
+        {
+          "name": "protected-ledger",
+          "code": "42501"
+        },
+        {
+          "name": "foreign-ddl",
+          "code": "42501"
+        }
+      ]
+    }
+  },
+  {
+    "name": "concurrent native migration serialization",
+    "expected": "Two native setup processes compete on unapplied 0002: both succeed, one marker and one exact checksummed ledger entry; rerun skips it and altered history refuses",
+    "outcome": "passed",
+    "actual": {
+      "processes": 2,
+      "marker": "applied-once",
+      "history": "0002|8bd93054344b62e53ea6fa65e3e23e707f3feeabb77a07fccf52268efb1b6697",
+      "checksumRefused": true,
+      "rerunSkipped": true
+    }
+  },
+  {
+    "name": "competing replay and atomic admission",
+    "expected": "One mutation for a shared key; at most two new admissions total across both copies; replay does not spend another slot",
+    "outcome": "passed",
+    "actual": {
+      "same": [201, 409, 409, 201, 201, 201, 201, 409, 201, 201, 201, 201],
+      "burst": [201, 429, 429, 429, 429, 429],
+      "replay": [201, 201],
+      "cache": [
+        {
+          "count": 2,
+          "ttl": 59339
+        }
+      ],
+      "productMutations": 2
+    }
+  },
+  {
+    "name": "old version fill fencing and absolute validity",
+    "expected": "The old native SELECT snapshot finishes after v2 but cannot replace or deliver v1; hits do not renew source validity",
+    "outcome": "passed",
+    "actual": {
+      "older": {
+        "status": 200,
+        "body": {
+          "freshness": "versioned",
+          "record": {
+            "destination": "new",
+            "key": "race",
+            "public": true,
+            "validUntil": 1794979921400,
+            "version": "2"
+          },
+          "source": "cache",
+          "validUntil": 1794979902164,
+          "version": "2"
+        },
+        "elapsedMs": 608,
+        "headers": {
+          "x-correlation-id": "00df6150-4ffa-4220-aa1a-5a6d8f06971f"
+        }
+      },
+      "newer": {
+        "status": 200,
+        "body": {
+          "freshness": "versioned",
+          "record": {
+            "destination": "new",
+            "key": "race",
+            "public": true,
+            "validUntil": 1794979921400,
+            "version": "2"
+          },
+          "source": "authoritative",
+          "validUntil": 1794979902164,
+          "version": "2"
+        },
+        "elapsedMs": 15,
+        "headers": {
+          "x-correlation-id": "abeba2d6-488e-4323-9222-f971854f01e5"
+        }
+      },
+      "fill": {
+        "status": 200,
+        "body": {
+          "freshness": "versioned",
+          "record": {
+            "destination": "finite",
+            "key": "expires",
+            "public": true,
+            "validUntil": 1794979895999,
+            "version": "18446744073709551615"
+          },
+          "source": "authoritative",
+          "validUntil": 1794979895999,
+          "version": "18446744073709551615"
+        },
+        "elapsedMs": 13,
+        "headers": {
+          "x-correlation-id": "2d9ab12f-c78e-4147-9c81-712a7aefc198"
+        }
+      },
+      "hit": {
+        "status": 200,
+        "body": {
+          "freshness": "versioned",
+          "record": {
+            "destination": "finite",
+            "key": "expires",
+            "public": true,
+            "validUntil": 1794979895999,
+            "version": "18446744073709551615"
+          },
+          "source": "cache",
+          "validUntil": 1794979895999,
+          "version": "18446744073709551615"
+        },
+        "elapsedMs": 14,
+        "headers": {
+          "x-correlation-id": "ae55a05a-fa22-4984-a2fe-840bdc3d865e"
+        }
+      },
+      "expiredStatus": 404,
+      "stored": [
+        {
+          "v": 1,
+          "version": "2",
+          "value": "{\"destination\":\"new\",\"key\":\"race\",\"public\":true,\"validUntil\":1794979921400,\"version\":\"2\"}",
+          "validUntil": 1794979902164
+        }
+      ]
+    }
+  },
+  {
+    "name": "native pending bound and unknown cache mutation",
+    "expected": "32 actual pending commands fit, the 33rd refuses without reconnect; a lost mutation reply remains unknown and never retries",
+    "outcome": "passed",
+    "actual": {
+      "cache": {
+        "saturation": {
+          "code": "CACHE_SATURATED",
+          "outcome": "refused"
+        },
+        "fulfilled": 32,
+        "survived": "PONG",
+        "statesAfterSaturation": ["available"],
+        "unknown": {
+          "code": "INTERRUPTED",
+          "outcome": "unknown"
+        },
+        "count": 0
+      },
+      "localUnknown": {
+        "code": "RATE_LIMIT_UNKNOWN",
+        "status": 503,
+        "outcome": "unknown"
+      },
+      "localProductEffects": 0
+    }
+  },
+  {
+    "name": "native lost COMMIT response and durable sealed replay",
+    "expected": "A TCP proxy drops the actual PostgreSQL COMMIT reply; the caller reports unknown and the other service copy recovers exactly one sealed mutation",
+    "outcome": "passed",
+    "actual": {
+      "result": {
+        "outcome": "unknown",
+        "code": "COMMIT_RESPONSE_LOST",
+        "dropped": 1
+      },
+      "replay": {
+        "status": 201,
+        "body": {
+          "id": "commit-lost",
+          "receipt": "sealed-foundation-receipt"
+        },
+        "elapsedMs": 13,
+        "headers": {
+          "x-correlation-id": "1f3ed7ae-c869-47bf-939f-76ecddfa59a3"
+        }
+      },
+      "mutations": 1,
+      "sealed": true
+    }
+  },
+  {
+    "name": "forwarded deadline and explicit unknown effects",
+    "expected": "A 100ms remaining budget is clamped and a dispatched POST times out as unknown; no new mutation is retried",
+    "outcome": "passed",
+    "actual": {
+      "receiver": {
+        "status": 503,
+        "body": {
+          "error": "DEADLINE",
+          "message": "Request deadline exceeded; check status before retrying."
+        },
+        "elapsedMs": 110,
+        "headers": {
+          "x-correlation-id": "rg14-deadline"
+        }
+      },
+      "generatedTransport": {
+        "outcome": "unknown",
+        "code": "INTERRUPTED",
+        "headers": {
+          "Cache-Control": "no-store",
+          "X-Jeeves-Outcome": "unknown"
+        },
+        "elapsedMs": 102
+      }
+    }
+  },
+  {
+    "name": "store loss, retained admission state and recovery",
+    "expected": "Admission fails closed, committed replay still returns while its cache is down, optional reader falls back; both caches and PostgreSQL recover without restarting service copies",
+    "outcome": "passed",
+    "actual": {
+      "config": {
+        "maxmemory-policy": "noeviction",
+        "appendfsync": "always",
+        "appendonly": "yes"
+      },
+      "denied": {
+        "status": 503,
+        "body": {
+          "error": "RATE_LIMIT_UNAVAILABLE",
+          "message": "Admission unavailable; no new work accepted."
+        },
+        "elapsedMs": 12,
+        "headers": {
+          "x-correlation-id": "c7a3629d-7e09-4c88-9c65-5ea233fb9dc5"
+        }
+      },
+      "replay": {
+        "status": 201,
+        "body": {
+          "id": "commit-lost",
+          "receipt": "sealed-foundation-receipt"
+        },
+        "elapsedMs": 12,
+        "headers": {
+          "x-correlation-id": "e2ff6705-8e7a-4422-bd30-df1d8c7a4f38"
+        }
+      },
+      "fallback": {
+        "status": 200,
+        "body": {
+          "freshness": "versioned",
+          "record": {
+            "destination": "recovery",
+            "key": "recovery",
+            "public": true,
+            "validUntil": 1794980029832,
+            "version": "2"
+          },
+          "source": "authoritative",
+          "validUntil": 1794979924492,
+          "version": "2"
+        },
+        "elapsedMs": 12,
+        "headers": {
+          "x-correlation-id": "ffc7fdf5-d22c-4d34-9756-68e5740933cc"
+        }
+      },
+      "databaseDown": {
+        "status": 503,
+        "body": {
+          "error": "OUTCOME_UNKNOWN",
+          "message": "Outcome unknown; check status before retrying."
+        }
+      },
+      "gatewayUnknown": {
+        "status": 503,
+        "outcome": "unknown",
+        "retryAfter": null
+      },
+      "admissionDownHealth": [
+        {
+          "path": "/livez",
+          "status": 200
+        },
+        {
+          "path": "/readyz",
+          "status": 503
+        }
+      ],
+      "databaseDownHealth": [
+        {
+          "path": "/livez",
+          "status": 200
+        },
+        {
+          "path": "/readyz",
+          "status": 503
+        }
+      ],
+      "recoveredHealth": [
+        {
+          "path": "/livez",
+          "status": 200
+        },
+        {
+          "path": "/readyz",
+          "status": 200
+        }
+      ],
+      "optionalDownHealth": [
+        {
+          "path": "/livez",
+          "status": 200
+        },
+        {
+          "path": "/readyz",
+          "status": 200
+        }
+      ],
+      "workerMarkerRecovered": true,
+      "processesUnchanged": true,
+      "retainedAdmissionDenial": 429,
+      "beforeWindowMs": 48382,
+      "retained": {
+        "count": 2,
+        "ttl": 40906
+      }
+    }
+  },
+  {
+    "name": "bounded shutdown of a hung operation",
+    "expected": "SIGTERM stops admission and terminates the actual hung service copy within its 10-second shutdown budget, with an explicit deadline log and exit 1",
+    "outcome": "passed",
+    "actual": {
+      "elapsedMs": 10424,
+      "exitCode": 1,
+      "deadlineLogged": true,
+      "drainingHealth": [
+        {
+          "path": "/livez",
+          "status": null
+        },
+        {
+          "path": "/readyz",
+          "status": null
+        }
+      ]
+    }
+  }
+]

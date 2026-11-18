@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="1" failures="1" errors="0" time="114.539361212">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" timestamp="2026-11-18T05:00:18.768Z" hostname="BASEMENT-PC" tests="1" failures="1" errors="0" skipped="0" time="114.539361212">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" name="RG23: link/account sessions compose with foundation mechanisms in independent processes" time="114.538751629">
+            <failure message="Expected values to be strictly equal:
+
+401 !== 200
+" type="AssertionError">
+AssertionError: Expected values to be strictly equal:
+
+401 !== 200
+
+
+- Expected
++ Received
+
+- 200
++ 401
+
+ ❯ browserLogin jeeves-generator/integration/harness/rg-mechanisms.ts:188:10
+ ❯ Object.extra jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:26:23
+ ❯ beforeStart jeeves-generator/integration/harness/foundation-scenario.ts:89:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:363:5
+ ❯ foundationScenario jeeves-generator/integration/harness/foundation-scenario.ts:32:3
+ ❯ jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:15:3
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

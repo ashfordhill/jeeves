@@ -289,7 +289,10 @@ export async function setupApplication(
                     (hook) =>
                       hook.selection === module?.selection && hook.file === attachment.destination,
                   ),
-                )
+                ) ||
+                (module?.kind === "webhook-receiver" &&
+                  module.files.includes(attachment.destination) &&
+                  !attachment.destination.endsWith(".slots.ts"))
               : attachment.role === "sql"
                 ? module?.sql?.some((row) => row.file === attachment.destination)
                 : module?.status === "stub" &&

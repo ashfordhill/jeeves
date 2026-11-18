@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "namespaces": [
+    {
+      "schema": "p_callee_owner",
+      "migrations": [
+        {
+          "version": "0001",
+          "file": "infra/postgres/callee-db/products/migrations/p_callee_owner/0001-initial.sql"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "schema": "p_callee_owner",
+      "name": "items"
+    }
+  ],
+  "views": [],
+  "operations": [
+    {
+      "name": "provider_apply",
+      "module": "receive",
+      "host": "callee",
+      "kind": "command",
+      "file": "infra/postgres/callee-db/products/commands/provider_apply.sql",
+      "parameters": 2,
+      "relations": [
+        {
+          "schema": "p_callee_owner",
+          "name": "items",
+          "operations": ["insert", "update"]
+        }
+      ]
+    }
+  ]
+}

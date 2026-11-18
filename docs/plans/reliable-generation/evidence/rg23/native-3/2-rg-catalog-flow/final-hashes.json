@@ -1,0 +1,15 @@
+{
+  "changedOwned": [
+    {
+      "path": "src/modules/callee/receive.ts",
+      "ownership": "generated-extension",
+      "sha256": "50c0df390dda84107b20002a98fe353624bca93a0a600c1c19a8ef37342dd73f"
+    },
+    {
+      "path": "src/modules/caller/send.ts",
+      "ownership": "generated-extension",
+      "sha256": "1947b4f6695fa23590ff819b5e9a315c71e8c78767abde1ef1b2bf589b2a34d0"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

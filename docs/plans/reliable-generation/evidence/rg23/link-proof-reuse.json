@@ -1,0 +1,5 @@
+{
+  "native6ToFinalSourceUnchanged": true,
+  "linkSourceAndHarnessFilesCompared": 30,
+  "retainedProof": "native-6/1-rg-link-flow/named-assertions.json"
+}

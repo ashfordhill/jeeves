@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "gs-922359d8-cd5a-4849-a27a-52179f52baca",
+  "suite": "rg-mechanisms",
+  "temporary": "/tmp/jeeves-system-UPR5Js",
+  "stacks": [
+    {
+      "project": "gs-922359d8-cd5a-4849-a27a-52179f52baca-1",
+      "fixture": "rg-link-flow",
+      "application": "/tmp/jeeves-system-UPR5Js/1-rg-link-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow",
+      "ports": [38667, 43707, 34221]
+    },
+    {
+      "project": "gs-922359d8-cd5a-4849-a27a-52179f52baca-2",
+      "fixture": "rg-catalog-flow",
+      "application": "/tmp/jeeves-system-UPR5Js/2-rg-catalog-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow",
+      "ports": [35533, 45795, 35949]
+    }
+  ]
+}

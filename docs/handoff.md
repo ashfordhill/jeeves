@@ -19217,3 +19217,75 @@ workload settings the same way.
   inventory exactly matches both old projects; unit-created projects remaining0. No later-unit,
   native matrix, owner studio/database, root edit, paid/live call, push or deployment.
 - One explicit-path local commit follows: `RG22: enforce capability composition consistently across authoring and export`.
+
+## 2026-11-17 — RG23 finite native checkpoint active, unaccepted/uncommitted
+
+- Sole assigned RG23 starts from accepted RG22 `c3192e0`; reviewed contract, accepted RG14 native8 and existing E10 export/scaling/cleanup harness. No later-unit work or delegation.
+- Adding two small ordinary API8 source/hook fixtures and a sequential `rg-mechanisms` suite for session/replay/cache, durable work/webhook and queue receipt failures. Task-owned trusted HTTPS issuer/client setup and OS/network faults stay in harness infrastructure.
+- Finite native observations, actual export checker/TypeScript, D11, preservation/final cleanup receipts and one explicit-path local commit remain. Root/owner files, historical evidence,42 original containers and owner studio are preserved.
+
+## 2026-11-17 — RG23 resumed after daemon restart, unaccepted/uncommitted
+
+- Preserved existing RG23 link fixture/oracle extraction/issuer diff; original root/owner patch,
+  all42 original container ID/name/states and accepted migrations/dependency/v1 preservation pass.
+- Native1 setup refused the partial harness's wrong browser secret variable prefix. Native2
+  completed real trusted-HTTPS PKCE callback, then its handwritten cookie jar incorrectly resent
+  a cleared guest cookie; the unchanged strict guard correctly refused401. Fixed test jar deletion
+  semantics only. Both attempts and exact empty teardown receipts remain under evidence/rg23.
+- Private cookie/CSRF handoff now uses task filesystem/status-only stdout. Adding the separate
+  API8 catalog DTO/registered-SQL/webhook/receipt fixture and finite native protocol/broker proxies.
+  No production runtime/provider/guarantee expansion. No native completion or D11 pass claimed;
+  final matrix, native rerun, regression checks, preservation and one unit commit remain.
+
+## 2026-11-17 — RG23 native milestones and remaining harness corrections
+
+- Native5 proves all browser refresh/failure branches and unchanged foundation auth/roles,
+  migrations, admission, cache fencing/expiry and pending/unknown cases. Its inherited COMMIT
+  fault can hit the newer background ticket-cleanup transaction; target the actual idempotency
+  INSERT connection before dropping COMMIT. Keep original75 expectations and time bounds.
+- Catalog native5 proves real HMAC INSERT/COMMIT-before-ACK gates, durable Service death/replacement,
+  duplicate/content-conflict/terminal behavior, paused remote holder with stable ticket/identity and
+  non-idempotent local/remote effects1, plus fresh-context emitted-store WORK_LEASE_LOST/effect1.
+- Receipt case reached committed effect/receipt before actual withheld AMQP ACK; kill-before-release
+  let the replacement ACK race the hold. Release the already-discarded ACK gate before kill, then
+  prove redelivery/retention/heartbeat/broker groups. No missing case or full D11 pass is claimed.
+- Native1–5 preserve failures and exact own teardown; original42 containers/root/owner evidence is
+  rechecked between runs. Source/template/dependency/framework SQL unchanged; no production control,
+  owner studio, other unit, push or deployment. Final checks/matrix/one local commit remain.
+
+## 2026-11-17 — RG23 final native subset active
+
+- Native6 passes all10 foundation groups plus session branches and real queue commit-before-ACK,
+  redelivery and date-independent identity/effect1. Retention's extra persisted stopped-enum
+  expectation was incorrect: accepted RG18 exposes stopped generic consumers as stale heartbeat
+  after45s (its lifecycle test uses46s), while live idle keeps advancing. Correcting that oracle;
+  no production change. Continuous database-deadline/idle-cleanup and broker proofs remain.
+- Native7 targets catalog receipt setup plus retention/broker; passed link/native5 recovery groups
+  remain separate receipts. Native5/6 catalog source18 files and all94 emitted payload hashes match.
+  Full check/browser/build and final cleanup/commit remain; no completed-unit claim.
+
+## 2026-11-17 — Owner queue preserved during RG23 verification
+
+- Owner docs-only parent95d60ac is preserved above accepted RG22. The owner queued the approved
+  WD plan after RG26 acceptance/commit. It is future work, not abandoned or part of RG23; no WD
+  brief was read/executed and current RG checks remain required. Native7 targeted retention/broker
+  verification and final RG23 regression/evidence/commit continue.
+
+## 2026-11-17 — RG23 complete for coordinator review
+
+- Added ordinary API8 link/account and catalog/event fixtures, handwritten DTO/SQL/policy mappings,
+  and bounded sequential native harness cases. No production emitter/template/API, dependency,
+  framework migration, architecture/provider expansion or UI change.
+- Native6 proves sessions and all10 foundation groups; native5 proves HMAC COMMIT-before-ACK,
+  same-Service restart, stable remote recovery/fencing/effects1; native7 proves receipt commit/ACK,
+  redelivery/date identity, actual retention/idle cleanup/stale-vs-idle heartbeat and broker recovery.
+  Source18 files/emitted94 catalog payload hashes match. Failed/unreached runs remain honest.
+- Preserved original75 foundation expectations/bounds; corrected mutation-COMMIT fault targeting
+  and task-only probe overhead. Strict webhook extension ownership remains. Test-name filtering
+  rejects0 executed tests; actual no-match and positive JSON proof pass. Full final check145/1353,
+  browser87/87 (TinyURL/both mouse rebuilds), web build and focused166/166 pass.
+- [Results](plans/reliable-generation/evidence/rg23/results.md) links mappings/revisions/limits,
+  safe artifacts and exact cleanup. All42 originals/9 networks/23 volumes/43 images, two old e2e
+  projects, root/owner patch, accepted SQL/dependencies/frozenv1 preserved; own projects/resources0.
+- Owner95d60ac/future WD-after-RG26 queue preserved; no later unit/owner studio/root edit/push.
+  One explicit-path local commit follows: `RG23: prove reusable mechanisms under concurrent execution and failures`.

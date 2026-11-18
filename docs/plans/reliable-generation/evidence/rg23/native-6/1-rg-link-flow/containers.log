@@ -1,0 +1,401 @@
+app-items-worker-2  | 2026-11-18T05:31:01.356697059Z {"event":"probe","tile":"items-worker","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-worker-2  | 2026-11-18T05:31:01.357489368Z Application ready
+cache-admission-1   | 2026-11-18T05:29:42.702908907Z 7:M 18 Nov 2026 05:29:42.702 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-admission-1   | 2026-11-18T05:29:42.702945119Z 7:M 18 Nov 2026 05:29:42.702 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-admission-1   | 2026-11-18T05:29:42.702947635Z 7:M 18 Nov 2026 05:29:42.702 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-admission-1   | 2026-11-18T05:29:42.702949619Z 7:M 18 Nov 2026 05:29:42.702 * Configuration loaded
+cache-admission-1   | 2026-11-18T05:29:42.703225270Z 7:M 18 Nov 2026 05:29:42.703 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-admission-1   | 2026-11-18T05:29:42.703230437Z 7:M 18 Nov 2026 05:29:42.703 * monotonic clock: POSIX clock_gettime
+cache-admission-1   | 2026-11-18T05:29:42.703693599Z 7:M 18 Nov 2026 05:29:42.703 * Running mode=standalone, port=6379.
+cache-admission-1   | 2026-11-18T05:29:42.703957591Z 7:M 18 Nov 2026 05:29:42.703 * Server initialized
+cache-admission-1   | 2026-11-18T05:29:42.749102967Z 7:M 18 Nov 2026 05:29:42.748 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+app-edge-1          | 2026-11-18T05:30:38.555490695Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+app-items-worker-1  | 2026-11-18T05:30:32.145049827Z {"event":"probe","tile":"items-worker","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-worker-1  | 2026-11-18T05:30:32.145754890Z Application ready
+app-edge-1          | 2026-11-18T05:30:38.555522003Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+cache-admission-1   | 2026-11-18T05:29:42.808504679Z 7:M 18 Nov 2026 05:29:42.808 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-18T05:29:42.808518574Z 7:M 18 Nov 2026 05:29:42.808 * Ready to accept connections tcp
+cache-admission-1   | 2026-11-18T05:31:44.010781560Z 7:M 18 Nov 2026 05:31:44.010 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-admission-1   | 2026-11-18T05:31:44.010810685Z 7:M 18 Nov 2026 05:31:44.010 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-admission-1   | 2026-11-18T05:31:44.010814553Z 7:M 18 Nov 2026 05:31:44.010 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-admission-1   | 2026-11-18T05:31:44.010817754Z 7:M 18 Nov 2026 05:31:44.010 * Configuration loaded
+cache-admission-1   | 2026-11-18T05:31:44.011037780Z 7:M 18 Nov 2026 05:31:44.010 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-admission-1   | 2026-11-18T05:31:44.011043443Z 7:M 18 Nov 2026 05:31:44.010 * monotonic clock: POSIX clock_gettime
+cache-admission-1   | 2026-11-18T05:31:44.011444080Z 7:M 18 Nov 2026 05:31:44.011 * Running mode=standalone, port=6379.
+cache-admission-1   | 2026-11-18T05:31:44.011663898Z 7:M 18 Nov 2026 05:31:44.011 * Server initialized
+cache-admission-1   | 2026-11-18T05:31:44.011859596Z 7:M 18 Nov 2026 05:31:44.011 * Reading RDB base file on AOF loading...
+cache-admission-1   | 2026-11-18T05:31:44.011867315Z 7:M 18 Nov 2026 05:31:44.011 * Loading RDB produced by Valkey version 8.1.10
+cache-admission-1   | 2026-11-18T05:31:44.011870606Z 7:M 18 Nov 2026 05:31:44.011 * RDB age 122 seconds
+cache-admission-1   | 2026-11-18T05:31:44.011874104Z 7:M 18 Nov 2026 05:31:44.011 * RDB memory usage when created 0.84 Mb
+cache-admission-1   | 2026-11-18T05:31:44.011877828Z 7:M 18 Nov 2026 05:31:44.011 * RDB is base AOF
+cache-admission-1   | 2026-11-18T05:31:44.011888775Z 7:M 18 Nov 2026 05:31:44.011 * Done loading RDB, keys loaded: 0, keys expired: 0.
+identity-sign-in-1  | 2026-11-18T05:29:52.799489184Z Updating the configuration and installing your custom providers, if any. Please wait.
+identity-sign-in-1  | 2026-11-18T05:29:55.019844970Z 2026-11-18 05:29:55,018 WARN  [org.keycloak.common.Profile] (build-11) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-sign-in-1  | 2026-11-18T05:30:10.330129901Z 2026-11-18 05:30:10,329 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 13283ms
+identity-sign-in-1  | 2026-11-18T05:30:10.899074140Z Running the server in development mode. DO NOT use this configuration in production.
+identity-sign-in-1  | 2026-11-18T05:30:12.471375481Z 2026-11-18 05:30:11,347 WARN  [org.keycloak.models.sessions.infinispan.InfinispanStickySessionEncoderProviderFactory] (main) The option `shouldAttachRoute` is deprecated and will be removed in a future release. Disable it by setting `spi-sticky-session-encoder--infinispan--should-attach-route` to `false`
+identity-sign-in-1  | 2026-11-18T05:30:12.472435636Z 2026-11-18 05:30:11,593 INFO  [org.keycloak.url.HostnameV2ProviderFactory] (main) If hostname is specified, hostname-strict is effectively ignored
+identity-sign-in-1  | 2026-11-18T05:30:12.478242672Z 2026-11-18 05:30:12,465 INFO  [org.infinispan.CONTAINER] (main) ISPN000974: Virtual threads support: enabled
+identity-sign-in-1  | 2026-11-18T05:30:13.137976530Z 2026-11-18 05:30:13,137 INFO  [org.hibernate.orm.jdbc.batch] (JPA Startup Thread) HHH100501: Automatic JDBC statement batching enabled (maximum batch size 32)
+identity-sign-in-1  | 2026-11-18T05:30:13.167979904Z 2026-11-18 05:30:13,167 WARN  [org.keycloak.common.Profile] (main) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-sign-in-1  | 2026-11-18T05:30:13.831348740Z 2026-11-18 05:30:13,831 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
+identity-sign-in-1  | 2026-11-18T05:30:23.380938662Z 2026-11-18 05:30:23,380 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+identity-sign-in-1  | 2026-11-18T05:30:23.600866786Z 2026-11-18 05:30:23,600 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_831929, Site name: null, Cluster name: ISPN
+identity-sign-in-1  | 2026-11-18T05:30:23.732737971Z 2026-11-18 05:30:23,732 INFO  [org.keycloak.models.workflow.WorkflowsEventListenerFactory] (main) Workflow runner task scheduled: next execution at 17:30:23, then every PT12H
+identity-sign-in-1  | 2026-11-18T05:30:23.793181064Z 2026-11-18 05:30:23,792 INFO  [org.keycloak.exportimport.dir.DirImportProvider] (main) Importing from directory /opt/keycloak/bin/../data/import
+identity-sign-in-1  | 2026-11-18T05:30:23.911177415Z 2026-11-18 05:30:23,910 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
+identity-sign-in-1  | 2026-11-18T05:30:24.760089853Z 2026-11-18 05:30:24,759 INFO  [org.keycloak.exportimport.singlefile.SingleFileImportProvider] (main) Full importing from file /opt/keycloak/bin/../data/import/realm.json
+identity-sign-in-1  | 2026-11-18T05:30:25.614081082Z 2026-11-18 05:30:25,613 INFO  [org.keycloak.exportimport.util.ImportUtils] (main) Realm 'sign-in' imported
+identity-sign-in-1  | 2026-11-18T05:30:25.614112291Z 2026-11-18 05:30:25,613 INFO  [org.keycloak.services] (main) KC-SERVICES0030: Full model import requested. Strategy: IGNORE_EXISTING
+identity-sign-in-1  | 2026-11-18T05:30:25.614181669Z 2026-11-18 05:30:25,614 INFO  [org.keycloak.services] (main) KC-SERVICES0032: Import finished successfully
+identity-sign-in-1  | 2026-11-18T05:30:25.691549230Z 2026-11-18 05:30:25,691 INFO  [org.keycloak.services] (main) KC-SERVICES0077: Created temporary admin user with username admin
+identity-sign-in-1  | 2026-11-18T05:30:25.808741366Z 2026-11-18 05:30:25,808 INFO  [org.keycloak.services.resources.KeycloakApplication] (main) Bootstrap completed in 12.640000 seconds
+identity-sign-in-1  | 2026-11-18T05:30:25.871734152Z 2026-11-18 05:30:25,871 INFO  [io.quarkus] (main) Keycloak 26.8.1 on JVM (powered by Quarkus 3.40.1) started in 15.396s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+identity-sign-in-1  | 2026-11-18T05:30:25.871766424Z 2026-11-18 05:30:25,871 INFO  [io.quarkus] (main) Profile dev activated.
+identity-sign-in-1  | 2026-11-18T05:30:25.871777371Z 2026-11-18 05:30:25,871 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, narayana-jta, opentelemetry, rest, rest-jackson, smallrye-context-propagation, smallrye-health, vertx]
+identity-sign-in-1  | 2026-11-18T05:31:07.275270616Z 2026-11-18 05:31:07,275 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:31:08.087271370Z 2026-11-18 05:31:08,086 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:31:09.555175551Z 2026-11-18 05:31:09,554 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:31:10.646342729Z 2026-11-18 05:31:10,646 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:31:11.898921924Z 2026-11-18 05:31:11,898 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:31:12.472111396Z 2026-11-18 05:31:12,471 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+app-gateway-1       | 2026-11-18T05:30:32.615113790Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-browser-2       | 2026-11-18T05:30:55.626477537Z {"level":"info","event":"started","tile":"browser","module":"session","template":"browser-session","wiring":"mounted","checks":["protected schema/grants","HTTPS OIDC discovery; issuer outage refuses startup readiness/login"]}
+app-gateway-1       | 2026-11-18T05:30:32.650898627Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-browser-2       | 2026-11-18T05:30:55.627162852Z Application ready
+cache-admission-1   | 2026-11-18T05:31:44.011892310Z 7:M 18 Nov 2026 05:31:44.011 * DB loaded from base file appendonly.aof.1.base.rdb: 0.000 seconds
+app-browser-2       | 2026-11-18T05:31:08.964046479Z {"service":"browser","level":"info","event":"request-failed","requestId":"a0fa198c-aaf3-4408-922d-968b6774453e","correlationId":"a0fa198c-aaf3-4408-922d-968b6774453e","method":"GET","route":"/modules/navigate","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":916}
+app-browser-1       | 2026-11-18T05:30:33.008376480Z {"level":"info","event":"started","tile":"browser","module":"session","template":"browser-session","wiring":"mounted","checks":["protected schema/grants","HTTPS OIDC discovery; issuer outage refuses startup readiness/login"]}
+cache-records-1     | 2026-11-18T05:29:42.233919084Z 7:M 18 Nov 2026 05:29:42.233 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-records-1     | 2026-11-18T05:29:42.233949065Z 7:M 18 Nov 2026 05:29:42.233 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+identity-sign-in-1  | 2026-11-18T05:31:14.443341648Z 2026-11-18 05:31:14,443 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:31:19.468974336Z 2026-11-18 05:31:19,468 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client '[REDACTED]' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:31:19.557905447Z 2026-11-18 05:31:19,557 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client '[REDACTED]' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+cache-admission-1   | 2026-11-18T05:31:44.011972030Z 7:M 18 Nov 2026 05:31:44.011 * DB loaded from incr file appendonly.aof.1.incr.aof: 0.000 seconds
+cache-admission-1   | 2026-11-18T05:31:44.011974789Z 7:M 18 Nov 2026 05:31:44.011 * DB loaded from append only file: 0.000 seconds
+cache-admission-1   | 2026-11-18T05:31:44.011976169Z 7:M 18 Nov 2026 05:31:44.011 * Opening AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-18T05:31:44.011977503Z 7:M 18 Nov 2026 05:31:44.011 * Ready to accept connections tcp
+app-edge-1          | 2026-11-18T05:30:38.556122720Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+app-edge-1          | 2026-11-18T05:30:38.588730574Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+app-edge-1          | 2026-11-18T05:30:38.595408707Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+app-edge-1          | 2026-11-18T05:30:38.595541599Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+app-edge-1          | 2026-11-18T05:30:38.595625252Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+app-edge-1          | 2026-11-18T05:30:38.597350389Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+app-items-api-2     | 2026-11-18T05:30:48.976948794Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-edge-1          | 2026-11-18T05:30:38.598246531Z /docker-entrypoint.sh: Configuration complete; ready for start up
+app-gateway-1       | 2026-11-18T05:30:32.651440021Z Application ready
+app-gateway-1       | 2026-11-18T05:31:19.811576967Z {"service":"gateway","level":"info","event":"request-failed","requestId":"0ba22763-3878-470e-8d66-ca24782e419f","correlationId":"0ba22763-3878-470e-8d66-ca24782e419f","method":"POST","route":"/modules/forward","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":51}
+app-gateway-1       | 2026-11-18T05:31:43.366356763Z {"service":"gateway","level":"error","event":"request-failed","requestId":"bca6553d-b88e-43eb-9d6a-faeb5c0711a5","correlationId":"bca6553d-b88e-43eb-9d6a-faeb5c0711a5","method":"POST","route":"/modules/forward","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":5}
+app-gateway-1       | 2026-11-18T05:32:02.143158270Z {"service":"gateway","level":"error","event":"request-failed","requestId":"4866ceca-a92a-4c8e-a835-005aae9eb98d","correlationId":"4866ceca-a92a-4c8e-a835-005aae9eb98d","method":"POST","route":"/modules/forward","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":16}
+local-postgres-1    | 2026-11-18T05:29:43.154673605Z The files belonging to this database system will be owned by user "postgres".
+app-browser-2       | 2026-11-18T05:31:11.427463824Z {"service":"browser","level":"info","event":"request-failed","requestId":"2a8b92b1-4595-4295-b592-74a181fa76de","correlationId":"2a8b92b1-4595-4295-b592-74a181fa76de","method":"GET","route":"/modules/navigate","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":804}
+app-browser-2       | 2026-11-18T05:31:11.619505938Z {"service":"browser","level":"info","event":"request-completed","requestId":"625df6dc-da31-4e48-b846-05f21efc4ecf","correlationId":"625df6dc-da31-4e48-b846-05f21efc4ecf","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+cache-records-1     | 2026-11-18T05:29:42.233951689Z 7:M 18 Nov 2026 05:29:42.233 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+local-postgres-1    | 2026-11-18T05:29:43.154728510Z This user must also own the server process.
+app-browser-2       | 2026-11-18T05:31:13.770976438Z {"service":"browser","level":"error","event":"request-failed","requestId":"060b0134-08ff-4175-b3df-edbb9cefd4e4","correlationId":"060b0134-08ff-4175-b3df-edbb9cefd4e4","method":"GET","route":"/modules/navigate","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":18}
+app-browser-2       | 2026-11-18T05:31:14.162662614Z {"service":"browser","level":"info","event":"request-completed","requestId":"e622d3f3-b96a-4da6-9231-44426cbe01ec","correlationId":"e622d3f3-b96a-4da6-9231-44426cbe01ec","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+app-browser-2       | 2026-11-18T05:31:19.231267824Z {"service":"browser","level":"info","event":"request-failed","requestId":"50dd9243-be5d-4a82-b0bb-85b099f14085","correlationId":"50dd9243-be5d-4a82-b0bb-85b099f14085","method":"GET","route":"/modules/session/session","status":401,"code":"SIGN_IN_REQUIRED","retryable":false,"durationMs":1}
+app-browser-2       | 2026-11-18T05:32:02.816563167Z {"event":"browser-maintenance-failed","module":"session","operation":"session-maintenance","requestId":"09575386-7882-4134-803f-9e462cab1ca2","correlationId":"09575386-7882-4134-803f-9e462cab1ca2"}
+app-browser-1       | 2026-11-18T05:30:33.009212578Z Application ready
+app-browser-1       | 2026-11-18T05:31:06.908444182Z {"service":"browser","level":"info","event":"request-completed","requestId":"23057174-d657-449b-90fd-ce5d150992ae","correlationId":"23057174-d657-449b-90fd-ce5d150992ae","method":"GET","route":"/modules/session/login","status":302,"durationMs":11}
+local-postgres-1    | 2026-11-18T05:29:43.154731170Z
+local-postgres-1    | 2026-11-18T05:29:43.154734596Z The database cluster will be initialized with locale "en_US.utf8".
+local-postgres-1    | 2026-11-18T05:29:43.154736688Z The default database encoding has accordingly been set to "UTF8".
+local-postgres-1    | 2026-11-18T05:29:43.154741638Z The default text search configuration will be set to "english".
+local-postgres-1    | 2026-11-18T05:29:43.154743658Z
+local-postgres-1    | 2026-11-18T05:29:43.154745426Z Data page checksums are disabled.
+local-postgres-1    | 2026-11-18T05:29:43.154747617Z
+local-postgres-1    | 2026-11-18T05:29:43.154794334Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+cache-records-1     | 2026-11-18T05:29:42.233953646Z 7:M 18 Nov 2026 05:29:42.233 * Configuration loaded
+cache-records-1     | 2026-11-18T05:29:42.234213446Z 7:M 18 Nov 2026 05:29:42.234 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-records-1     | 2026-11-18T05:29:42.234219343Z 7:M 18 Nov 2026 05:29:42.234 * monotonic clock: POSIX clock_gettime
+cache-records-1     | 2026-11-18T05:29:42.234679538Z 7:M 18 Nov 2026 05:29:42.234 * Running mode=standalone, port=6379.
+cache-records-1     | 2026-11-18T05:29:42.234945109Z 7:M 18 Nov 2026 05:29:42.234 * Server initialized
+cache-records-1     | 2026-11-18T05:29:42.268549061Z 7:M 18 Nov 2026 05:29:42.268 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-records-1     | 2026-11-18T05:29:42.367631255Z 7:M 18 Nov 2026 05:29:42.367 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-records-1     | 2026-11-18T05:29:42.367646440Z 7:M 18 Nov 2026 05:29:42.367 * Ready to accept connections tcp
+cache-records-1     | 2026-11-18T05:31:53.920804646Z 7:signal-handler (1794979913) Received SIGTERM scheduling shutdown...
+cache-records-1     | 2026-11-18T05:31:53.926984719Z 7:M 18 Nov 2026 05:31:53.926 * User requested shutdown...
+cache-records-1     | 2026-11-18T05:31:53.926996179Z 7:M 18 Nov 2026 05:31:53.926 * Calling fsync() on the AOF file.
+cache-records-1     | 2026-11-18T05:31:53.927049101Z 7:M 18 Nov 2026 05:31:53.927 * Saving the final RDB snapshot before exiting.
+cache-records-1     | 2026-11-18T05:31:53.957948303Z 7:M 18 Nov 2026 05:31:53.957 * DB saved on disk
+cache-records-1     | 2026-11-18T05:31:53.957968726Z 7:M 18 Nov 2026 05:31:53.957 # Valkey is now ready to exit, bye bye...
+cache-records-1     | 2026-11-18T05:31:55.120505115Z 7:M 18 Nov 2026 05:31:55.120 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-records-1     | 2026-11-18T05:31:55.122473613Z 7:M 18 Nov 2026 05:31:55.120 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+local-postgres-1    | 2026-11-18T05:29:43.168185257Z creating subdirectories ... ok
+app-items-api-2     | 2026-11-18T05:30:48.978006451Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-2     | 2026-11-18T05:30:49.023974120Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+local-postgres-1    | 2026-11-18T05:29:43.168257132Z selecting dynamic shared memory implementation ... posix
+cache-records-1     | 2026-11-18T05:31:55.122480925Z 7:M 18 Nov 2026 05:31:55.120 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-records-1     | 2026-11-18T05:31:55.122484433Z 7:M 18 Nov 2026 05:31:55.120 * Configuration loaded
+cache-records-1     | 2026-11-18T05:31:55.122492025Z 7:M 18 Nov 2026 05:31:55.120 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-records-1     | 2026-11-18T05:31:55.122495407Z 7:M 18 Nov 2026 05:31:55.120 * monotonic clock: POSIX clock_gettime
+cache-records-1     | 2026-11-18T05:31:55.122506552Z 7:M 18 Nov 2026 05:31:55.121 * Running mode=standalone, port=6379.
+cache-records-1     | 2026-11-18T05:31:55.122508464Z 7:M 18 Nov 2026 05:31:55.121 * Server initialized
+cache-records-1     | 2026-11-18T05:31:55.122510150Z 7:M 18 Nov 2026 05:31:55.121 * Reading RDB base file on AOF loading...
+cache-records-1     | 2026-11-18T05:31:55.122511845Z 7:M 18 Nov 2026 05:31:55.121 * Loading RDB produced by Valkey version 8.1.10
+cache-records-1     | 2026-11-18T05:31:55.122513522Z 7:M 18 Nov 2026 05:31:55.121 * RDB age 133 seconds
+cache-records-1     | 2026-11-18T05:31:55.122515181Z 7:M 18 Nov 2026 05:31:55.121 * RDB memory usage when created 0.84 Mb
+cache-records-1     | 2026-11-18T05:31:55.122516822Z 7:M 18 Nov 2026 05:31:55.121 * RDB is base AOF
+app-gateway-2       | 2026-11-18T05:30:49.320063099Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-browser-1       | 2026-11-18T05:31:07.340136851Z {"service":"browser","level":"info","event":"request-completed","requestId":"01377c40-3fca-435b-89d6-9f87c0f24933","correlationId":"01377c40-3fca-435b-89d6-9f87c0f24933","method":"GET","route":"/modules/session/callback","status":302,"durationMs":81}
+app-browser-1       | 2026-11-18T05:31:07.350085914Z {"service":"browser","level":"info","event":"request-completed","requestId":"e5fbdce7-ec0f-475a-aaf5-5a159be88fe2","correlationId":"e5fbdce7-ec0f-475a-aaf5-5a159be88fe2","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+app-items-api-1     | 2026-11-18T05:30:31.999016849Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-gateway-2       | 2026-11-18T05:30:49.349981920Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-gateway-2       | 2026-11-18T05:30:49.350506966Z Application ready
+app-gateway-2       | 2026-11-18T05:31:20.066350308Z {"service":"gateway","level":"info","event":"request-failed","requestId":"d8eb8ceb-18f0-42cc-bea1-b2f0f77791c8","correlationId":"d8eb8ceb-18f0-42cc-bea1-b2f0f77791c8","method":"POST","route":"/modules/forward","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":54}
+app-items-api-2     | 2026-11-18T05:30:49.044578391Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-2     | 2026-11-18T05:30:49.080756915Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-items-api-2     | 2026-11-18T05:30:49.080771603Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+app-items-api-2     | 2026-11-18T05:30:49.080774146Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-items-api-2     | 2026-11-18T05:30:49.081306604Z Application ready
+app-items-api-2     | 2026-11-18T05:31:08.960941695Z {"service":"items-api","level":"info","event":"request-failed","requestId":"0cb8a4ff-75d1-486f-a31f-c9c96172f6ac","correlationId":"98c05b59-0b98-4f83-9886-f6ee8b475e0f","method":"GET","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":35}
+app-gateway-1       | 2026-11-18T05:32:08.476579665Z {"service":"gateway","level":"info","event":"request-completed","requestId":"33de9239-3b22-4f33-abf5-22ae45eeec1f","correlationId":"33de9239-3b22-4f33-abf5-22ae45eeec1f","method":"POST","route":"/modules/forward","status":201,"durationMs":6}
+app-gateway-1       | 2026-11-18T05:32:11.161069837Z {"service":"gateway","level":"error","event":"request-failed","requestId":"1e1b3b19-f1ad-4f46-a849-9271614934bc","correlationId":"1e1b3b19-f1ad-4f46-a849-9271614934bc","method":"POST","route":"/modules/forward","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":2002}
+app-browser-1       | 2026-11-18T05:31:07.542252363Z {"service":"browser","level":"info","event":"request-failed","requestId":"4d4ace2c-2120-4dee-bc54-2c5b4ca4ac11","correlationId":"4d4ace2c-2120-4dee-bc54-2c5b4ca4ac11","method":"POST","route":"/modules/navigate","status":403,"code":"CSRF_REQUIRED","retryable":false,"durationMs":10}
+app-browser-1       | 2026-11-18T05:31:08.962941563Z {"service":"browser","level":"info","event":"request-failed","requestId":"98c05b59-0b98-4f83-9886-f6ee8b475e0f","correlationId":"98c05b59-0b98-4f83-9886-f6ee8b475e0f","method":"GET","route":"/modules/navigate","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":911}
+app-browser-1       | 2026-11-18T05:31:09.467749469Z {"service":"browser","level":"info","event":"request-completed","requestId":"7d55f869-431f-4596-a6b2-d4501c7b19e9","correlationId":"7d55f869-431f-4596-a6b2-d4501c7b19e9","method":"GET","route":"/modules/session/login","status":302,"durationMs":9}
+app-browser-1       | 2026-11-18T05:31:09.569536711Z {"service":"browser","level":"info","event":"request-completed","requestId":"8e1ba80b-8a57-46de-9707-e4510ad17db7","correlationId":"8e1ba80b-8a57-46de-9707-e4510ad17db7","method":"GET","route":"/modules/session/callback","status":302,"durationMs":26}
+app-browser-1       | 2026-11-18T05:31:09.578975759Z {"service":"browser","level":"info","event":"request-completed","requestId":"0afb16ed-76f1-4493-98f2-4b5245a921f6","correlationId":"0afb16ed-76f1-4493-98f2-4b5245a921f6","method":"GET","route":"/modules/session/session","status":200,"durationMs":8}
+app-browser-1       | 2026-11-18T05:31:10.113058101Z {"service":"browser","level":"error","event":"request-failed","requestId":"a7c83032-3d86-4fe3-a6fb-1c3b861d8210","correlationId":"a7c83032-3d86-4fe3-a6fb-1c3b861d8210","method":"GET","route":"/modules/navigate","status":503,"code":"UNAVAILABLE","retryable":false,"durationMs":28}
+app-browser-1       | 2026-11-18T05:31:11.819122128Z {"service":"browser","level":"info","event":"request-completed","requestId":"ed2714a0-3313-4093-882e-8c89605ded1d","correlationId":"ed2714a0-3313-4093-882e-8c89605ded1d","method":"GET","route":"/modules/session/login","status":302,"durationMs":8}
+app-browser-1       | 2026-11-18T05:31:11.917261433Z {"service":"browser","level":"info","event":"request-completed","requestId":"8e3f9698-9e6b-4e74-9627-ff7a8a16e87f","correlationId":"8e3f9698-9e6b-4e74-9627-ff7a8a16e87f","method":"GET","route":"/modules/session/callback","status":302,"durationMs":30}
+app-browser-1       | 2026-11-18T05:31:11.926409645Z {"service":"browser","level":"info","event":"request-completed","requestId":"17d3ba98-439b-4eb7-9d71-e3988fbb2fc6","correlationId":"17d3ba98-439b-4eb7-9d71-e3988fbb2fc6","method":"GET","route":"/modules/session/session","status":200,"durationMs":8}
+app-browser-1       | 2026-11-18T05:31:13.242472209Z {"service":"browser","level":"error","event":"request-failed","requestId":"5e6ac06e-afff-46be-9b18-a6c307e9bb98","correlationId":"5e6ac06e-afff-46be-9b18-a6c307e9bb98","method":"GET","route":"/modules/navigate","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":792}
+app-browser-1       | 2026-11-18T05:31:14.360416687Z {"service":"browser","level":"info","event":"request-completed","requestId":"67113932-2eda-402c-b188-9bd7ed487892","correlationId":"67113932-2eda-402c-b188-9bd7ed487892","method":"GET","route":"/modules/session/login","status":302,"durationMs":9}
+app-browser-1       | 2026-11-18T05:31:18.040508178Z {"service":"browser","level":"info","event":"request-completed","requestId":"451ddbed-0a20-4f2b-aa59-88875aef9bb8","correlationId":"451ddbed-0a20-4f2b-aa59-88875aef9bb8","method":"GET","route":"/modules/session/callback","status":302,"durationMs":27}
+app-browser-1       | 2026-11-18T05:31:18.049558283Z {"service":"browser","level":"info","event":"request-completed","requestId":"7be63698-897b-4350-91a7-8aaf2d15f5ad","correlationId":"7be63698-897b-4350-91a7-8aaf2d15f5ad","method":"GET","route":"/modules/session/session","status":200,"durationMs":8}
+app-items-api-2     | 2026-11-18T05:31:19.809160131Z {"service":"items-api","level":"info","event":"request-failed","requestId":"16245bc2-1408-4dd1-80a6-78efc8f02fc4","correlationId":"0ba22763-3878-470e-8d66-ca24782e419f","method":"POST","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":3}
+app-items-api-2     | 2026-11-18T05:31:30.677616915Z {"service":"items-api","level":"info","event":"request-failed","requestId":"3914ba49-b7e5-4adc-83a7-4b8c1f56cafb","correlationId":"3914ba49-b7e5-4adc-83a7-4b8c1f56cafb","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":12}
+app-items-api-2     | 2026-11-18T05:31:30.698389976Z {"service":"items-api","level":"info","event":"request-failed","requestId":"96056242-7350-419b-b731-64152ed0b2b2","correlationId":"96056242-7350-419b-b731-64152ed0b2b2","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":30}
+app-items-api-2     | 2026-11-18T05:31:30.707192895Z {"service":"items-api","level":"info","event":"request-completed","requestId":"731e9034-11a7-40e3-889c-7d74716cd73d","correlationId":"731e9034-11a7-40e3-889c-7d74716cd73d","method":"POST","route":"/internal/modules/create","status":201,"durationMs":37}
+app-items-api-2     | 2026-11-18T05:31:30.709662213Z {"service":"items-api","level":"info","event":"request-completed","requestId":"c9c30081-fe48-457d-bf56-918d6c9fd66f","correlationId":"c9c30081-fe48-457d-bf56-918d6c9fd66f","method":"POST","route":"/internal/modules/create","status":201,"durationMs":43}
+app-items-api-2     | 2026-11-18T05:31:30.712868880Z {"service":"items-api","level":"info","event":"request-completed","requestId":"41727654-4ad2-4c8c-86ba-ec9c796985cd","correlationId":"41727654-4ad2-4c8c-86ba-ec9c796985cd","method":"POST","route":"/internal/modules/create","status":201,"durationMs":46}
+app-items-api-2     | 2026-11-18T05:31:30.719264299Z {"service":"items-api","level":"info","event":"request-completed","requestId":"2934ca4e-0a44-4f69-8b5e-d73399e1bfe3","correlationId":"2934ca4e-0a44-4f69-8b5e-d73399e1bfe3","method":"POST","route":"/internal/modules/create","status":201,"durationMs":48}
+cache-records-1     | 2026-11-18T05:31:55.122518418Z 7:M 18 Nov 2026 05:31:55.121 * Done loading RDB, keys loaded: 0, keys expired: 0.
+cache-records-1     | 2026-11-18T05:31:55.122520096Z 7:M 18 Nov 2026 05:31:55.121 * DB loaded from base file appendonly.aof.1.base.rdb: 0.000 seconds
+cache-records-1     | 2026-11-18T05:31:55.122521818Z 7:M 18 Nov 2026 05:31:55.121 * DB loaded from incr file appendonly.aof.1.incr.aof: 0.000 seconds
+cache-records-1     | 2026-11-18T05:31:55.122523495Z 7:M 18 Nov 2026 05:31:55.121 * DB loaded from append only file: 0.000 seconds
+app-items-api-2     | 2026-11-18T05:31:30.743147887Z {"service":"items-api","level":"info","event":"request-failed","requestId":"12da4f0f-6a45-4f22-a961-008e1c516146","correlationId":"12da4f0f-6a45-4f22-a961-008e1c516146","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":22}
+app-items-api-2     | 2026-11-18T05:31:30.743611194Z {"service":"items-api","level":"info","event":"request-failed","requestId":"34c2e849-b283-47c4-8eaf-3a6bd9ce74ed","correlationId":"34c2e849-b283-47c4-8eaf-3a6bd9ce74ed","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":22}
+app-items-api-2     | 2026-11-18T05:31:30.744062534Z {"service":"items-api","level":"info","event":"request-failed","requestId":"32f138d1-6067-4db8-955e-ac9153dd291f","correlationId":"32f138d1-6067-4db8-955e-ac9153dd291f","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":22}
+app-items-api-2     | 2026-11-18T05:31:30.756196244Z {"service":"items-api","level":"info","event":"request-completed","requestId":"a820f238-23b6-484e-b028-dd8827c706e8","correlationId":"a820f238-23b6-484e-b028-dd8827c706e8","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+app-items-api-2     | 2026-11-18T05:31:32.167566078Z {"service":"items-api","level":"info","event":"request-completed","requestId":"abeba2d6-488e-4323-9222-f971854f01e5","correlationId":"abeba2d6-488e-4323-9222-f971854f01e5","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":4}
+app-items-api-2     | 2026-11-18T05:31:33.065840019Z {"service":"items-api","level":"info","event":"request-completed","requestId":"ae55a05a-fa22-4984-a2fe-840bdc3d865e","correlationId":"ae55a05a-fa22-4984-a2fe-840bdc3d865e","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":2}
+app-items-api-2     | 2026-11-18T05:31:36.284656680Z {"service":"items-api","level":"info","event":"request-failed","requestId":"404db0ba-c647-4b16-9ded-7a99932cf215","correlationId":"404db0ba-c647-4b16-9ded-7a99932cf215","method":"POST","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":2}
+app-items-api-2     | 2026-11-18T05:31:38.928668259Z {"service":"items-api","level":"info","event":"request-completed","requestId":"1f3ed7ae-c869-47bf-939f-76ecddfa59a3","correlationId":"1f3ed7ae-c869-47bf-939f-76ecddfa59a3","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+app-items-api-2     | 2026-11-18T05:31:42.415655649Z {"level":"error","event":"failure","tile":"items-api","what":"admission create-limit","error":"Error: Socket closed unexpectedly"}
+app-items-api-2     | 2026-11-18T05:31:43.365533135Z {"service":"items-api","level":"error","event":"request-failed","requestId":"622f3d32-47fe-4096-ba33-b456baee453f","correlationId":"bca6553d-b88e-43eb-9d6a-faeb5c0711a5","method":"POST","route":"/internal/modules/create","status":503,"code":"RATE_LIMIT_UNAVAILABLE","retryable":false,"durationMs":2}
+app-items-api-2     | 2026-11-18T05:31:43.582021267Z {"service":"items-api","level":"info","event":"request-completed","requestId":"e2ff6705-8e7a-4422-bd30-df1d8c7a4f38","correlationId":"e2ff6705-8e7a-4422-bd30-df1d8c7a4f38","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+app-items-api-2     | 2026-11-18T05:31:47.419416930Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-2     | 2026-11-18T05:31:50.172485788Z {"service":"items-api","level":"info","event":"request-completed","requestId":"88704927-302c-41e8-bf4b-628ab0e0b66c","correlationId":"88704927-302c-41e8-bf4b-628ab0e0b66c","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":3}
+app-items-api-2     | 2026-11-18T05:31:53.959994121Z {"level":"error","event":"failure","tile":"items-api","what":"cache record-reader","error":"Error: Socket closed unexpectedly"}
+app-items-api-2     | 2026-11-18T05:31:54.492655528Z {"level":"error","event":"failure","tile":"items-api","what":"cache read record-reader","error":"OperationError: Operation refused: CACHE_READ_FAILED"}
+app-items-api-2     | 2026-11-18T05:31:54.493819848Z {"service":"items-api","level":"info","event":"request-completed","requestId":"ffc7fdf5-d22c-4d34-9756-68e5740933cc","correlationId":"ffc7fdf5-d22c-4d34-9756-68e5740933cc","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":2}
+app-items-api-2     | 2026-11-18T05:31:54.678478174Z {"service":"items-api","level":"info","event":"request-completed","requestId":"477653b3-ac16-4c55-abcf-c89ff0d31d83","correlationId":"477653b3-ac16-4c55-abcf-c89ff0d31d83","method":"GET","route":"/livez","status":200,"durationMs":0}
+app-items-api-2     | 2026-11-18T05:31:54.678697054Z {"service":"items-api","level":"info","event":"request-completed","requestId":"5e5d8541-24d1-4ca0-bf9f-06dae0136619","correlationId":"5e5d8541-24d1-4ca0-bf9f-06dae0136619","method":"GET","route":"/readyz","status":200,"durationMs":0}
+app-items-api-2     | 2026-11-18T05:31:58.998066693Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-2     | 2026-11-18T05:32:00.585937768Z {"service":"items-api","level":"info","event":"request-completed","requestId":"e20bd950-8c5c-4bbb-9da7-7d5f51e3009f","correlationId":"e20bd950-8c5c-4bbb-9da7-7d5f51e3009f","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":3}
+app-items-api-2     | 2026-11-18T05:32:01.045762183Z {"service":"items-api","level":"info","event":"request-completed","requestId":"7fafd552-72f8-4fd7-abe6-3efb82a16648","correlationId":"7fafd552-72f8-4fd7-abe6-3efb82a16648","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":1}
+app-items-api-2     | 2026-11-18T05:32:02.142350954Z {"service":"items-api","level":"error","event":"request-failed","requestId":"6608db43-668f-4a79-b93d-655a05340d3e","correlationId":"4866ceca-a92a-4c8e-a835-005aae9eb98d","method":"POST","route":"/internal/modules/create","status":503,"code":"UNAVAILABLE","retryable":false,"durationMs":14}
+app-items-api-2     | 2026-11-18T05:32:08.475976685Z {"service":"items-api","level":"info","event":"request-completed","requestId":"ea663831-478b-43f5-bb1e-90733a2c35fa","correlationId":"33de9239-3b22-4f33-abf5-22ae45eeec1f","method":"POST","route":"/internal/modules/create","status":201,"durationMs":4}
+cache-records-1     | 2026-11-18T05:31:55.122526182Z 7:M 18 Nov 2026 05:31:55.121 * Opening AOF incr file appendonly.aof.1.incr.aof on server start
+cache-records-1     | 2026-11-18T05:31:55.122527949Z 7:M 18 Nov 2026 05:31:55.121 * Ready to accept connections tcp
+local-postgres-1    | 2026-11-18T05:29:43.182848966Z selecting default "max_connections" ... 100
+local-postgres-1    | 2026-11-18T05:29:43.203355456Z selecting default "shared_buffers" ... 128MB
+app-items-api-2     | 2026-11-18T05:32:09.167372227Z {"event":"rg14-hung-entered"}
+app-items-api-2     | 2026-11-18T05:32:09.331650804Z {"level":"info","event":"drain-started"}
+app-items-api-2     | 2026-11-18T05:32:09.331867459Z {"service":"items-api","level":"info","event":"http-draining"}
+app-items-api-2     | 2026-11-18T05:32:09.331873185Z {"level":"info","event":"admission-stopped"}
+app-items-api-2     | 2026-11-18T05:32:09.332410837Z {"level":"info","event":"operations-cancelled"}
+app-items-api-2     | 2026-11-18T05:32:11.160654590Z {"service":"items-api","level":"error","event":"request-failed","requestId":"be3e0ced-4d6b-4784-9f72-cfbe2ce32068","correlationId":"1e1b3b19-f1ad-4f46-a849-9271614934bc","method":"POST","route":"/internal/modules/slow","status":503,"code":"DEADLINE","retryable":false,"durationMs":2001}
+app-items-api-2     | 2026-11-18T05:32:19.332408831Z {"level":"error","event":"shutdown-deadline","error":"Runtime operation failed"}
+app-items-api-1     | 2026-11-18T05:30:32.000177267Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-1     | 2026-11-18T05:30:32.034261640Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-1     | 2026-11-18T05:30:32.057628595Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-1     | 2026-11-18T05:30:32.110176741Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+local-postgres-1    | 2026-11-18T05:29:43.238409065Z selecting default time zone ... UTC
+local-postgres-1    | 2026-11-18T05:29:43.238989006Z creating configuration files ... ok
+local-postgres-1    | 2026-11-18T05:29:43.362764684Z running bootstrap script ... ok
+local-postgres-1    | 2026-11-18T05:29:43.525765112Z sh: locale: not found
+local-postgres-1    | 2026-11-18T05:29:43.525858411Z 2026-11-18 05:29:43.525 UTC [35] WARNING:  no usable system locales were found
+local-postgres-1    | 2026-11-18T05:29:43.896963445Z performing post-bootstrap initialization ... ok
+app-items-api-1     | 2026-11-18T05:30:32.110200032Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+app-items-api-1     | 2026-11-18T05:30:32.110203143Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-items-api-1     | 2026-11-18T05:30:32.111424685Z Application ready
+app-items-api-1     | 2026-11-18T05:30:54.627750391Z {"service":"items-api","level":"info","event":"request-completed","requestId":"3aea256a-f499-4cb9-8202-5aef246de458","correlationId":"3aea256a-f499-4cb9-8202-5aef246de458","method":"GET","route":"/livez","status":200,"durationMs":2}
+app-items-api-1     | 2026-11-18T05:30:54.628330828Z {"service":"items-api","level":"info","event":"request-completed","requestId":"f2e1efa3-f852-4ee8-bc04-28c2d47117b1","correlationId":"f2e1efa3-f852-4ee8-bc04-28c2d47117b1","method":"GET","route":"/readyz","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:31:08.959768249Z {"service":"items-api","level":"info","event":"request-failed","requestId":"754f7eca-4f3f-4977-a72c-88903f2add4f","correlationId":"a0fa198c-aaf3-4408-922d-968b6774453e","method":"GET","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":36}
+app-items-api-1     | 2026-11-18T05:31:11.426846904Z {"service":"items-api","level":"info","event":"request-failed","requestId":"a7a1f8fa-5d9c-44c8-bcd7-a2f556e165ee","correlationId":"2a8b92b1-4595-4295-b592-74a181fa76de","method":"GET","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":2}
+app-items-api-1     | 2026-11-18T05:31:20.062919016Z {"service":"items-api","level":"info","event":"request-failed","requestId":"61141f1f-afb1-4b3f-9bc6-dad0d2882636","correlationId":"d8eb8ceb-18f0-42cc-bea1-b2f0f77791c8","method":"POST","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":4}
+app-items-api-1     | 2026-11-18T05:31:20.284410935Z {"service":"items-api","level":"info","event":"request-failed","requestId":"5b76781a-8b17-4b24-8beb-b6b03c831ec3","correlationId":"5b76781a-8b17-4b24-8beb-b6b03c831ec3","method":"POST","route":"/internal/modules/create","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":1}
+app-items-api-1     | 2026-11-18T05:31:20.525395711Z {"service":"items-api","level":"info","event":"request-failed","requestId":"00aa940e-fbe9-485e-b570-21cd410e4b1e","correlationId":"00aa940e-fbe9-485e-b570-21cd410e4b1e","method":"POST","route":"/internal/modules/create","status":401,"code":"SIGN_IN_REQUIRED","retryable":false,"durationMs":1}
+app-items-api-1     | 2026-11-18T05:31:20.749982597Z {"service":"items-api","level":"info","event":"request-failed","requestId":"aaf10f50-18e7-44d3-b7c0-5e2127948aa0","correlationId":"aaf10f50-18e7-44d3-b7c0-5e2127948aa0","method":"POST","route":"/internal/modules/forbidden","status":403,"code":"WORKLOAD_FORBIDDEN","retryable":false,"durationMs":1}
+app-items-api-1     | 2026-11-18T05:31:20.942588980Z {"service":"items-api","level":"info","event":"request-failed","requestId":"aa12a0c1-470b-4999-b3d7-caa78620c4c5","correlationId":"aa12a0c1-470b-4999-b3d7-caa78620c4c5","method":"POST","route":"/internal/modules/create","status":401,"code":"WORKLOAD_REQUIRED","retryable":false,"durationMs":1}
+app-items-api-1     | 2026-11-18T05:31:21.153990721Z {"service":"items-api","level":"info","event":"request-failed","requestId":"05d04af7-cc44-4f08-9d42-866bc291b3b1","correlationId":"05d04af7-cc44-4f08-9d42-866bc291b3b1","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+local-postgres-1    | 2026-11-18T05:29:44.141342261Z initdb: warning: enabling "trust" authentication for local connections
+local-postgres-1    | 2026-11-18T05:29:44.141376210Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+local-postgres-1    | 2026-11-18T05:29:44.141342421Z syncing data to disk ... ok
+local-postgres-1    | 2026-11-18T05:29:44.141382468Z
+local-postgres-1    | 2026-11-18T05:29:44.141384001Z
+local-postgres-1    | 2026-11-18T05:29:44.141385327Z Success. You can now start the database server using:
+local-postgres-1    | 2026-11-18T05:29:44.141386733Z
+local-postgres-1    | 2026-11-18T05:29:44.141388005Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+local-postgres-1    | 2026-11-18T05:29:44.141389475Z
+local-postgres-1    | 2026-11-18T05:29:44.214574667Z waiting for server to start....2026-11-18 05:29:44.214 UTC [41] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T05:29:44.238962076Z 2026-11-18 05:29:44.238 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+app-items-api-1     | 2026-11-18T05:31:21.358205345Z {"service":"items-api","level":"info","event":"request-failed","requestId":"0db4b16b-f5e6-4a65-a197-593e0f110403","correlationId":"0db4b16b-f5e6-4a65-a197-593e0f110403","method":"GET","route":"unmatched","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:31:30.689751165Z {"service":"items-api","level":"info","event":"request-failed","requestId":"35d36079-01fd-440e-bbe3-8b362d01da67","correlationId":"35d36079-01fd-440e-bbe3-8b362d01da67","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_IN_PROGRESS","retryable":false,"durationMs":24}
+app-items-api-1     | 2026-11-18T05:31:30.703437956Z {"service":"items-api","level":"info","event":"request-completed","requestId":"a69052b8-ab5d-454c-8ffa-7f06930df0f2","correlationId":"a69052b8-ab5d-454c-8ffa-7f06930df0f2","method":"POST","route":"/internal/modules/create","status":201,"durationMs":38}
+app-items-api-1     | 2026-11-18T05:31:30.709959433Z {"service":"items-api","level":"info","event":"request-completed","requestId":"3d10558e-3bf8-4a1b-8aa5-e89c2328f54e","correlationId":"3d10558e-3bf8-4a1b-8aa5-e89c2328f54e","method":"POST","route":"/internal/modules/create","status":201,"durationMs":43}
+app-items-api-1     | 2026-11-18T05:31:30.712550858Z {"service":"items-api","level":"info","event":"request-completed","requestId":"1fed0f0d-2a75-4f35-b83f-00ae82998acb","correlationId":"1fed0f0d-2a75-4f35-b83f-00ae82998acb","method":"POST","route":"/internal/modules/create","status":201,"durationMs":43}
+app-items-api-1     | 2026-11-18T05:31:30.716673858Z {"service":"items-api","level":"info","event":"request-completed","requestId":"6db35afb-ac29-4a22-801b-df9fc82a220f","correlationId":"6db35afb-ac29-4a22-801b-df9fc82a220f","method":"POST","route":"/internal/modules/create","status":201,"durationMs":47}
+app-items-api-1     | 2026-11-18T05:31:30.718952435Z {"service":"items-api","level":"info","event":"request-completed","requestId":"7d4f3872-a232-4845-aaa7-31672f4a00a4","correlationId":"7d4f3872-a232-4845-aaa7-31672f4a00a4","method":"POST","route":"/internal/modules/create","status":201,"durationMs":51}
+app-items-api-1     | 2026-11-18T05:31:30.742446964Z {"service":"items-api","level":"info","event":"request-failed","requestId":"0054669b-94f9-4203-b785-96fd5bb42698","correlationId":"0054669b-94f9-4203-b785-96fd5bb42698","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":21}
+app-items-api-1     | 2026-11-18T05:31:30.742722884Z {"service":"items-api","level":"info","event":"request-failed","requestId":"c4ec9f69-9ca8-4544-a709-ae99edb36fe6","correlationId":"c4ec9f69-9ca8-4544-a709-ae99edb36fe6","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":22}
+app-items-api-1     | 2026-11-18T05:31:30.752618028Z {"service":"items-api","level":"info","event":"request-completed","requestId":"2e8515aa-ed72-4d4d-b946-ebf803af8cef","correlationId":"2e8515aa-ed72-4d4d-b946-ebf803af8cef","method":"POST","route":"/internal/modules/create","status":201,"durationMs":32}
+app-items-api-1     | 2026-11-18T05:31:30.755747681Z {"service":"items-api","level":"info","event":"request-completed","requestId":"3c1a124d-2587-4a18-8976-640e2dbecafe","correlationId":"3c1a124d-2587-4a18-8976-640e2dbecafe","method":"POST","route":"/internal/modules/create","status":201,"durationMs":2}
+app-items-api-1     | 2026-11-18T05:31:31.094304236Z {"service":"items-api","level":"info","event":"request-failed","requestId":"edaf1e67-d535-4698-b0a8-0e5067a70ec1","correlationId":"edaf1e67-d535-4698-b0a8-0e5067a70ec1","method":"POST","route":"/internal/modules/create","status":409,"code":"IDEMPOTENCY_CONFLICT","retryable":false,"durationMs":2}
+app-browser-1       | 2026-11-18T05:31:18.586094205Z {"service":"browser","level":"info","event":"request-failed","requestId":"a738d7a2-3d30-4a2f-b4df-7a807a74ca09","correlationId":"a738d7a2-3d30-4a2f-b4df-7a807a74ca09","method":"GET","route":"/modules/navigate","status":401,"code":"SIGN_IN_REQUIRED","retryable":false,"durationMs":28}
+local-postgres-1    | 2026-11-18T05:29:44.291596271Z 2026-11-18 05:29:44.291 UTC [44] LOG:  database system was shut down at 2026-11-18 05:29:43 UTC
+app-items-api-1     | 2026-11-18T05:31:32.481772365Z {"service":"items-api","level":"info","event":"request-completed","requestId":"00df6150-4ffa-4220-aa1a-5a6d8f06971f","correlationId":"00df6150-4ffa-4220-aa1a-5a6d8f06971f","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":597}
+local-postgres-1    | 2026-11-18T05:29:44.312758103Z 2026-11-18 05:29:44.312 UTC [41] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-18T05:29:44.358641102Z  done
+local-postgres-1    | 2026-11-18T05:29:44.358658387Z server started
+local-postgres-1    | 2026-11-18T05:29:44.373839388Z
+local-postgres-1    | 2026-11-18T05:29:44.373855546Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+local-postgres-1    | 2026-11-18T05:29:44.373858017Z
+local-postgres-1    | 2026-11-18T05:29:44.374386399Z waiting for server to shut down....2026-11-18 05:29:44.374 UTC [41] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-18T05:29:44.390770275Z 2026-11-18 05:29:44.390 UTC [41] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-18T05:29:44.392782280Z 2026-11-18 05:29:44.392 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+local-postgres-1    | 2026-11-18T05:29:44.392809702Z 2026-11-18 05:29:44.392 UTC [42] LOG:  shutting down
+local-postgres-1    | 2026-11-18T05:29:44.409717515Z 2026-11-18 05:29:44.409 UTC [42] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-18T05:29:44.532812150Z 2026-11-18 05:29:44.532 UTC [42] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.042 s, sync=0.014 s, total=0.140 s; sync files=2, longest=0.007 s, average=0.007 s; distance=0 kB, estimate=0 kB; lsn=0/14EF2C8, redo lsn=0/14EF2C8
+local-postgres-1    | 2026-11-18T05:29:44.539609416Z 2026-11-18 05:29:44.539 UTC [41] LOG:  database system is shut down
+local-postgres-1    | 2026-11-18T05:29:44.574604820Z  done
+local-postgres-1    | 2026-11-18T05:29:44.574622277Z server stopped
+local-postgres-1    | 2026-11-18T05:29:44.575572333Z
+local-postgres-1    | 2026-11-18T05:29:44.575577581Z PostgreSQL init process complete; ready for start up.
+local-postgres-1    | 2026-11-18T05:29:44.575579898Z
+local-postgres-1    | 2026-11-18T05:29:44.631221989Z 2026-11-18 05:29:44.631 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T05:29:44.631242024Z 2026-11-18 05:29:44.631 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1    | 2026-11-18T05:29:44.631244531Z 2026-11-18 05:29:44.631 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1    | 2026-11-18T05:29:44.672492739Z 2026-11-18 05:29:44.672 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T05:29:44.707410162Z 2026-11-18 05:29:44.707 UTC [55] LOG:  database system was shut down at 2026-11-18 05:29:44 UTC
+local-postgres-1    | 2026-11-18T05:29:44.728403944Z 2026-11-18 05:29:44.728 UTC [1] LOG:  database system is ready to accept connections
+app-items-api-1     | 2026-11-18T05:31:32.838602263Z {"service":"items-api","level":"info","event":"request-completed","requestId":"2d9ab12f-c78e-4147-9c81-712a7aefc198","correlationId":"2d9ab12f-c78e-4147-9c81-712a7aefc198","method":"POST","route":"/internal/modules/read-record","status":200,"durationMs":3}
+app-items-api-1     | 2026-11-18T05:31:39.493178644Z {"service":"items-api","level":"error","event":"request-failed","requestId":"8603faa0-b1ac-4c2a-914e-3ec5109a177a","correlationId":"rg14-deadline","method":"POST","route":"/internal/modules/slow","status":503,"code":"DEADLINE","retryable":false,"durationMs":100}
+app-items-api-1     | 2026-11-18T05:31:42.415657885Z {"level":"error","event":"failure","tile":"items-api","what":"admission create-limit","error":"Error: Socket closed unexpectedly"}
+app-items-api-1     | 2026-11-18T05:31:42.954380905Z {"service":"items-api","level":"error","event":"request-failed","requestId":"c7a3629d-7e09-4c88-9c65-5ea233fb9dc5","correlationId":"c7a3629d-7e09-4c88-9c65-5ea233fb9dc5","method":"POST","route":"/internal/modules/create","status":503,"code":"RATE_LIMIT_UNAVAILABLE","retryable":false,"durationMs":2}
+app-items-api-1     | 2026-11-18T05:31:43.138259372Z {"service":"items-api","level":"info","event":"request-completed","requestId":"fb033aba-10fa-42c4-9062-0139a49142ec","correlationId":"fb033aba-10fa-42c4-9062-0139a49142ec","method":"GET","route":"/livez","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:31:43.138400318Z {"service":"items-api","level":"error","event":"request-completed","requestId":"9ab04de3-e075-455b-a51d-0fa671a86bd3","correlationId":"9ab04de3-e075-455b-a51d-0fa671a86bd3","method":"GET","route":"/readyz","status":503,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:31:47.419416516Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-1     | 2026-11-18T05:31:49.508171632Z {"service":"items-api","level":"info","event":"request-failed","requestId":"0dca88c8-c51f-4ae8-99ee-eff550f3997c","correlationId":"0dca88c8-c51f-4ae8-99ee-eff550f3997c","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":3}
+app-items-api-1     | 2026-11-18T05:31:53.960035997Z {"level":"error","event":"failure","tile":"items-api","what":"cache record-reader","error":"Error: Socket closed unexpectedly"}
+app-items-api-1     | 2026-11-18T05:31:58.998437682Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-1     | 2026-11-18T05:32:02.335360428Z {"service":"items-api","level":"info","event":"request-completed","requestId":"55df1249-9943-4082-96ba-cd629a142365","correlationId":"55df1249-9943-4082-96ba-cd629a142365","method":"GET","route":"/livez","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:32:02.335551274Z {"service":"items-api","level":"error","event":"request-completed","requestId":"aa9d8950-9906-4ef4-af1d-cac3bcdffc43","correlationId":"aa9d8950-9906-4ef4-af1d-cac3bcdffc43","method":"GET","route":"/readyz","status":503,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:32:08.767789733Z {"service":"items-api","level":"info","event":"request-completed","requestId":"c740a5ba-6c20-4afd-8886-5b23a519f4b2","correlationId":"c740a5ba-6c20-4afd-8886-5b23a519f4b2","method":"GET","route":"/livez","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:32:08.767994646Z {"service":"items-api","level":"info","event":"request-completed","requestId":"dcc31cdb-3614-4672-8e6b-d5ff949c9e30","correlationId":"dcc31cdb-3614-4672-8e6b-d5ff949c9e30","method":"GET","route":"/readyz","status":200,"durationMs":0}
+local-postgres-1    | 2026-11-18T05:30:13.175432394Z 2026-11-18 05:30:13.175 UTC [107] ERROR:  relation "migration_model" does not exist at character 25
+local-postgres-1    | 2026-11-18T05:30:13.175459995Z 2026-11-18 05:30:13.175 UTC [107] STATEMENT:  SELECT ID, VERSION FROM MIGRATION_MODEL ORDER BY UPDATE_TIME DESC
+local-postgres-1    | 2026-11-18T05:30:13.781242905Z 2026-11-18 05:30:13.781 UTC [108] ERROR:  relation "public.databasechangeloglock" does not exist at character 22
+local-postgres-1    | 2026-11-18T05:30:13.781277079Z 2026-11-18 05:30:13.781 UTC [108] STATEMENT:  SELECT COUNT(*) FROM public.databasechangeloglock
+local-postgres-1    | 2026-11-18T05:31:21.572567433Z 2026-11-18 05:31:21.572 UTC [271] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-18T05:31:21.572593781Z 2026-11-18 05:31:21.572 UTC [271] STATEMENT:  UPDATE p_items_api_owner.items SET marked=true WHERE id='seed'
+local-postgres-1    | 2026-11-18T05:31:21.572966682Z 2026-11-18 05:31:21.572 UTC [271] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-18T05:31:21.572982326Z 2026-11-18 05:31:21.572 UTC [271] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-18T05:31:21.573636379Z 2026-11-18 05:31:21.573 UTC [271] ERROR:  permission denied for schema published at character 15
+local-postgres-1    | 2026-11-18T05:31:21.573641681Z 2026-11-18 05:31:21.573 UTC [271] STATEMENT:  SELECT * FROM published.visible_items
+local-postgres-1    | 2026-11-18T05:31:21.573865016Z 2026-11-18 05:31:21.573 UTC [271] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-18T05:31:21.573867541Z 2026-11-18 05:31:21.573 UTC [271] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-18T05:31:21.574059478Z 2026-11-18 05:31:21.573 UTC [271] ERROR:  permission denied for schema public at character 15
+local-postgres-1    | 2026-11-18T05:31:21.574065078Z 2026-11-18 05:31:21.573 UTC [271] STATEMENT:  SELECT * FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-18T05:31:21.574340630Z 2026-11-18 05:31:21.574 UTC [271] ERROR:  permission denied for schema p_items_api_owner at character 14
+local-postgres-1    | 2026-11-18T05:31:21.574345941Z 2026-11-18 05:31:21.574 UTC [271] STATEMENT:  CREATE TABLE p_items_api_owner.forbidden(id text)
+local-postgres-1    | 2026-11-18T05:31:21.574594641Z 2026-11-18 05:31:21.574 UTC [271] ERROR:  permission denied to set role "o_items_db"
+local-postgres-1    | 2026-11-18T05:31:21.574600015Z 2026-11-18 05:31:21.574 UTC [271] STATEMENT:  SET ROLE o_items_db
+local-postgres-1    | 2026-11-18T05:31:21.574813873Z 2026-11-18 05:31:21.574 UTC [271] ERROR:  permission denied to set role "pm_items_db_p_items_api_owner"
+local-postgres-1    | 2026-11-18T05:31:21.574819040Z 2026-11-18 05:31:21.574 UTC [271] STATEMENT:  SET ROLE pm_items_db_p_items_api_owner
+local-postgres-1    | 2026-11-18T05:31:21.762368301Z 2026-11-18 05:31:21.762 UTC [272] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-18T05:31:21.762387652Z 2026-11-18 05:31:21.762 UTC [272] STATEMENT:  INSERT INTO p_items_api_owner.items(id) VALUES ('privilege-items-worker')
+local-postgres-1    | 2026-11-18T05:31:21.770675293Z 2026-11-18 05:31:21.770 UTC [272] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-18T05:31:21.770690784Z 2026-11-18 05:31:21.770 UTC [272] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-18T05:31:21.771141962Z 2026-11-18 05:31:21.771 UTC [272] ERROR:  permission denied for table records
+local-postgres-1    | 2026-11-18T05:31:21.771146804Z 2026-11-18 05:31:21.771 UTC [272] STATEMENT:  SELECT * FROM p_items_api_owner.records
+local-postgres-1    | 2026-11-18T05:31:21.771419661Z 2026-11-18 05:31:21.771 UTC [272] ERROR:  permission denied for schema published at character 15
+local-postgres-1    | 2026-11-18T05:31:21.771425477Z 2026-11-18 05:31:21.771 UTC [272] STATEMENT:  SELECT * FROM published.visible_items
+local-postgres-1    | 2026-11-18T05:31:21.771652896Z 2026-11-18 05:31:21.771 UTC [272] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-18T05:31:21.771657702Z 2026-11-18 05:31:21.771 UTC [272] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-18T05:31:21.771885699Z 2026-11-18 05:31:21.771 UTC [272] ERROR:  permission denied for schema public at character 15
+local-postgres-1    | 2026-11-18T05:31:21.771892858Z 2026-11-18 05:31:21.771 UTC [272] STATEMENT:  SELECT * FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-18T05:31:21.772180881Z 2026-11-18 05:31:21.772 UTC [272] ERROR:  permission denied for schema p_items_api_owner at character 14
+local-postgres-1    | 2026-11-18T05:31:21.772186156Z 2026-11-18 05:31:21.772 UTC [272] STATEMENT:  CREATE TABLE p_items_api_owner.forbidden(id text)
+local-postgres-1    | 2026-11-18T05:31:21.772414189Z 2026-11-18 05:31:21.772 UTC [272] ERROR:  permission denied to set role "o_items_db"
+local-postgres-1    | 2026-11-18T05:31:21.772417075Z 2026-11-18 05:31:21.772 UTC [272] STATEMENT:  SET ROLE o_items_db
+local-postgres-1    | 2026-11-18T05:31:21.772666216Z 2026-11-18 05:31:21.772 UTC [272] ERROR:  permission denied to set role "pm_items_db_p_items_api_owner"
+local-postgres-1    | 2026-11-18T05:31:21.772669228Z 2026-11-18 05:31:21.772 UTC [272] STATEMENT:  SET ROLE pm_items_db_p_items_api_owner
+local-postgres-1    | 2026-11-18T05:31:21.959940780Z 2026-11-18 05:31:21.959 UTC [273] ERROR:  permission denied for schema p_items_api_owner at character 15
+local-postgres-1    | 2026-11-18T05:31:21.959966614Z 2026-11-18 05:31:21.959 UTC [273] STATEMENT:  SELECT * FROM p_items_api_owner.items
+local-postgres-1    | 2026-11-18T05:31:21.960238226Z 2026-11-18 05:31:21.960 UTC [273] ERROR:  permission denied for schema p_items_api_owner at character 13
+local-postgres-1    | 2026-11-18T05:31:21.960241490Z 2026-11-18 05:31:21.960 UTC [273] STATEMENT:  INSERT INTO p_items_api_owner.items(id) VALUES ('privilege-gateway')
+local-postgres-1    | 2026-11-18T05:31:21.960462913Z 2026-11-18 05:31:21.960 UTC [273] ERROR:  permission denied for schema p_items_api_owner at character 8
+local-postgres-1    | 2026-11-18T05:31:21.960468035Z 2026-11-18 05:31:21.960 UTC [273] STATEMENT:  UPDATE p_items_api_owner.items SET marked=true WHERE id='seed'
+local-postgres-1    | 2026-11-18T05:31:21.960718331Z 2026-11-18 05:31:21.960 UTC [273] ERROR:  permission denied for schema p_items_api_owner at character 13
+local-postgres-1    | 2026-11-18T05:31:21.960722569Z 2026-11-18 05:31:21.960 UTC [273] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-18T05:31:21.960928807Z 2026-11-18 05:31:21.960 UTC [273] ERROR:  permission denied for schema p_items_api_owner at character 15
+local-postgres-1    | 2026-11-18T05:31:21.960934199Z 2026-11-18 05:31:21.960 UTC [273] STATEMENT:  SELECT * FROM p_items_api_owner.records
+local-postgres-1    | 2026-11-18T05:31:21.962428562Z 2026-11-18 05:31:21.962 UTC [273] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-18T05:31:21.962433620Z 2026-11-18 05:31:21.962 UTC [273] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-18T05:31:21.962687334Z 2026-11-18 05:31:21.962 UTC [273] ERROR:  permission denied for schema public at character 15
+local-postgres-1    | 2026-11-18T05:31:21.962691815Z 2026-11-18 05:31:21.962 UTC [273] STATEMENT:  SELECT * FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-18T05:31:21.962974309Z 2026-11-18 05:31:21.962 UTC [273] ERROR:  permission denied for schema p_items_api_owner at character 14
+local-postgres-1    | 2026-11-18T05:31:21.962979647Z 2026-11-18 05:31:21.962 UTC [273] STATEMENT:  CREATE TABLE p_items_api_owner.forbidden(id text)
+local-postgres-1    | 2026-11-18T05:31:21.963207752Z 2026-11-18 05:31:21.963 UTC [273] ERROR:  permission denied to set role "o_items_db"
+local-postgres-1    | 2026-11-18T05:31:21.963211196Z 2026-11-18 05:31:21.963 UTC [273] STATEMENT:  SET ROLE o_items_db
+local-postgres-1    | 2026-11-18T05:31:21.963464379Z 2026-11-18 05:31:21.963 UTC [273] ERROR:  permission denied to set role "pm_items_db_p_items_api_owner"
+local-postgres-1    | 2026-11-18T05:31:21.963480421Z 2026-11-18 05:31:21.963 UTC [273] STATEMENT:  SET ROLE pm_items_db_p_items_api_owner
+local-postgres-1    | 2026-11-18T05:31:22.164226116Z 2026-11-18 05:31:22.164 UTC [274] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-18T05:31:22.164250732Z 2026-11-18 05:31:22.164 UTC [274] STATEMENT:  UPDATE p_items_api_owner.items SET marked=false WHERE id='seed'
+local-postgres-1    | 2026-11-18T05:31:22.164560243Z 2026-11-18 05:31:22.164 UTC [274] ERROR:  permission denied for table items
+local-postgres-1    | 2026-11-18T05:31:22.164564977Z 2026-11-18 05:31:22.164 UTC [274] STATEMENT:  DELETE FROM p_items_api_owner.items WHERE id='absent'
+local-postgres-1    | 2026-11-18T05:31:22.164885759Z 2026-11-18 05:31:22.164 UTC [274] ERROR:  permission denied for schema p_items_api_owner at character 14
+local-postgres-1    | 2026-11-18T05:31:22.164890295Z 2026-11-18 05:31:22.164 UTC [274] STATEMENT:  CREATE TABLE p_items_api_owner.framework_ddl(id text)
+local-postgres-1    | 2026-11-18T05:31:22.166322259Z 2026-11-18 05:31:22.166 UTC [274] ERROR:  cannot execute INSERT in a read-only transaction
+local-postgres-1    | 2026-11-18T05:31:22.166328824Z 2026-11-18 05:31:22.166 UTC [274] STATEMENT:  INSERT INTO p_items_api_owner.items(id) VALUES ('readonly-forbidden')
+local-postgres-1    | 2026-11-18T05:31:23.153071656Z 2026-11-18 05:31:23.152 UTC [276] ERROR:  permission denied for schema jeeves at character 15
+local-postgres-1    | 2026-11-18T05:31:23.153184550Z 2026-11-18 05:31:23.152 UTC [276] STATEMENT:  SELECT * FROM jeeves.idempotency_records
+local-postgres-1    | 2026-11-18T05:31:23.153749450Z 2026-11-18 05:31:23.153 UTC [276] ERROR:  permission denied for schema public at character 13
+local-postgres-1    | 2026-11-18T05:31:23.153759495Z 2026-11-18 05:31:23.153 UTC [276] STATEMENT:  DELETE FROM public.jeeves_product_migrations
+local-postgres-1    | 2026-11-18T05:31:23.154228519Z 2026-11-18 05:31:23.154 UTC [276] ERROR:  permission denied for schema public at character 14
+local-postgres-1    | 2026-11-18T05:31:23.154236481Z 2026-11-18 05:31:23.154 UTC [276] STATEMENT:  CREATE TABLE public.rg14_forbidden(id text)
+local-postgres-1    | 2026-11-18T05:32:01.203409404Z 2026-11-18 05:32:01.203 UTC [1] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-18T05:32:01.220861044Z 2026-11-18 05:32:01.220 UTC [1] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-18T05:32:01.220886932Z 2026-11-18 05:32:01.220 UTC [365] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.220890647Z 2026-11-18 05:32:01.220 UTC [363] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.220894218Z 2026-11-18 05:32:01.220 UTC [184] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223716824Z 2026-11-18 05:32:01.220 UTC [169] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223732865Z 2026-11-18 05:32:01.220 UTC [161] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223736589Z 2026-11-18 05:32:01.220 UTC [159] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223739889Z 2026-11-18 05:32:01.220 UTC [143] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223743415Z 2026-11-18 05:32:01.220 UTC [142] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223756607Z 2026-11-18 05:32:01.220 UTC [108] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223758771Z 2026-11-18 05:32:01.220 UTC [141] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.223760737Z 2026-11-18 05:32:01.222 UTC [132] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.224596736Z 2026-11-18 05:32:01.224 UTC [107] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.224603607Z 2026-11-18 05:32:01.224 UTC [124] FATAL:  terminating connection due to administrator command
+local-postgres-1    | 2026-11-18T05:32:01.225525666Z 2026-11-18 05:32:01.225 UTC [1] LOG:  background worker "logical replication launcher" (PID 58) exited with exit code 1
+local-postgres-1    | 2026-11-18T05:32:01.228441028Z 2026-11-18 05:32:01.228 UTC [53] LOG:  shutting down
+local-postgres-1    | 2026-11-18T05:32:01.245373747Z 2026-11-18 05:32:01.245 UTC [53] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-18T05:32:01.503674981Z 2026-11-18 05:32:01.503 UTC [512] FATAL:  the database system is shutting down
+local-postgres-1    | 2026-11-18T05:32:01.572244191Z 2026-11-18 05:32:01.572 UTC [53] LOG:  checkpoint complete: wrote 3422 buffers (20.9%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.079 s, sync=0.165 s, total=0.344 s; sync files=1619, longest=0.047 s, average=0.001 s; distance=18031 kB, estimate=18031 kB; lsn=0/268B128, redo lsn=0/268B128
+local-postgres-1    | 2026-11-18T05:32:01.586916088Z 2026-11-18 05:32:01.586 UTC [1] LOG:  database system is shut down
+local-postgres-1    | 2026-11-18T05:32:02.981947904Z
+local-postgres-1    | 2026-11-18T05:32:02.981979635Z PostgreSQL Database directory appears to contain a database; Skipping initialization
+local-postgres-1    | 2026-11-18T05:32:02.981983585Z
+local-postgres-1    | 2026-11-18T05:32:03.033396608Z 2026-11-18 05:32:03.033 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T05:32:03.033424867Z 2026-11-18 05:32:03.033 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1    | 2026-11-18T05:32:03.033427960Z 2026-11-18 05:32:03.033 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1    | 2026-11-18T05:32:03.068293860Z 2026-11-18 05:32:03.068 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T05:32:03.104842270Z 2026-11-18 05:32:03.104 UTC [29] LOG:  database system was shut down at 2026-11-18 05:32:01 UTC
+local-postgres-1    | 2026-11-18T05:32:03.125688886Z 2026-11-18 05:32:03.125 UTC [1] LOG:  database system is ready to accept connections

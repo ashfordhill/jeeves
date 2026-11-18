@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-catalog-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: Timed out waiting for redelivery acknowledged; last observation: {\"queue\":\"events\",\"messageCount\":0,\"unacknowledged\":1,\"consumerCount\":1}"
+}

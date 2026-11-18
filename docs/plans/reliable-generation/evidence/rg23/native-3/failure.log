@@ -1,0 +1,59 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts (2 tests | 2 failed) 131958ms
+   × RG23: link/account sessions compose with foundation mechanisms in independent processes 130415ms
+   × RG23: catalog events, remote recovery and queue receipts compose across native copies 1543ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts > RG23: link/account sessions compose with foundation mechanisms in independent processes
+AssertionError: expected 'true|true' to be 'false|true' // Object.is equality
+
+Expected: "false|true"
+Received: "true|true"
+
+ ❯ Object.extra jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:95:23
+     93|           "d_sessions",
+     94|         );
+     95|         expect(state).toBe(
+       |                       ^
+     96|           mode === "unknown" ? "true|false" : mode === "refused" ? "fa…
+     97|         );
+ ❯ beforeStart jeeves-generator/integration/harness/foundation-scenario.ts:89:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:363:5
+ ❯ foundationScenario jeeves-generator/integration/harness/foundation-scenario.ts:32:3
+ ❯ jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:16:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts > RG23: catalog events, remote recovery and queue receipts compose across native copies
+AssertionError: Attachment not reported for catalog-events: src/modules/caller/catalog-events.ts
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ setupApplication jeeves-generator/integration/harness/application.ts:298:5
+    296|                   module.files.includes(attachment.destination) &&
+    297|                   !attachment.destination.endsWith(".slots.ts");
+    298|     assert(valid, `Attachment not reported for ${attachment.module}: $…
+       |     ^
+    299|     assert(!attachment.destination.startsWith(".jeeves/"));
+    300|     await mkdir(dirname(join(app.directory, attachment.destination)), …
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:362:5
+ ❯ catalogScenario jeeves-generator/integration/harness/rg-catalog.ts:139:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  23:05:52
+   Duration  132.14s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-3/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-3/junit.xml

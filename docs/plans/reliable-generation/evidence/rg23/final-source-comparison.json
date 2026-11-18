@@ -1,0 +1,7 @@
+{
+  "finalEffectiveSourceSha256": "9dc4ff3545b14c32e68c599bb87a4e75bf4d08b9559933b6100718b1c66db9bc",
+  "lastNativeEffectiveSourceSha256": "346a5fad046331d124e43cd57a015fe6fd32190f8c74eaea810fae0afffe1439",
+  "changedAfterNative7": ["jeeves-generator/integration/run.ts"],
+  "behavior": "result guard rejects zero executed tests; actual fixture/runtime/hooks/SQL unchanged",
+  "noMatchSourceMatchesFinal": true
+}

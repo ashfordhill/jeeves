@@ -1,0 +1,422 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+docs/plans/reliable-generation/evidence/rg21/pins.ts:44:5 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    42 │   await writeFile(
+    43 │     new URL(`../../../../../${path}`, import.meta.url),
+  > 44 │     JSON.stringify(after, null, 2) + "\n",
+       │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    45 │   );
+    46 │
+
+  i Unsafe fix: Use a template literal.
+
+    42 42 │     await writeFile(
+    43 43 │       new URL(`../../../../../${path}`, import.meta.url),
+    44    │ - ····JSON.stringify(after,·null,·2)·+·"\n",
+       44 │ + ····`${JSON.stringify(after,·null,·2)}\n`,
+    45 45 │     );
+    46 46 │
+
+
+docs/plans/reliable-generation/evidence/rg21/protocol.mjs:111:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    109 │ await writeFile(
+    110 │   extension,
+  > 111 │   original + '\nimport {sessionAccess} from "../../runtime/operation.ts";\nvoid sessionAccess;\n',
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    112 │ );
+    113 │ try {
+
+  i Unsafe fix: Use a template literal.
+
+    109 109 │   await writeFile(
+    110 110 │     extension,
+    111     │ - ··original·+·'\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n',
+        111 │ + ··`${original}\nimport·{sessionAccess}·from·"../../runtime/operation.ts";\nvoid·sessionAccess;\n`,
+    112 112 │   );
+    113 113 │   try {
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:9:33 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+     7 │ const root = "/rg";
+     8 │ const issuer = "https://rg-issuer:8443";
+   > 9 │ const credential = readFileSync(root + "/browser-secret", "utf8").trim();
+       │                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+    10 │ let rotations = 0,
+    11 │   refreshes = 0,
+
+  i Unsafe fix: Use a template literal.
+
+      7   7 │   const root = "/rg";
+      8   8 │   const issuer = "https://rg-issuer:8443";
+      9     │ - const·credential·=·readFileSync(root·+·"/browser-secret",·"utf8").trim();
+          9 │ + const·credential·=·readFileSync(`${root}/browser-secret`,·"utf8").trim();
+     10  10 │   let rotations = 0,
+     11  11 │     refreshes = 0,
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:13:50 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    11 │   refreshes = 0,
+    12 │   healthy = false;
+  > 13 │ const controller = () => JSON.parse(readFileSync(root + "/control.json", "utf8"));
+       │                                                  ^^^^^^^^^^^^^^^^^^^^^^
+    14 │ async function provision() {
+    15 │   const admin = readFileSync("/run/secrets/identity-admin-sign-in", "utf8").trim();
+
+  i Unsafe fix: Use a template literal.
+
+     11  11 │     refreshes = 0,
+     12  12 │     healthy = false;
+     13     │ - const·controller·=·()·=>·JSON.parse(readFileSync(root·+·"/control.json",·"utf8"));
+         13 │ + const·controller·=·()·=>·JSON.parse(readFileSync(`${root}/control.json`,·"utf8"));
+     14  14 │   async function provision() {
+     15  15 │     const admin = readFileSync("/run/secrets/identity-admin-sign-in", "utf8").trim();
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:30:36 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    28 │   if (tokenReply.status !== 200) throw Error("Task admin issuance failed");
+    29 │   const token = (await tokenReply.json()).access_token;
+  > 30 │   const headers = { authorization: "Bearer " + token, "content-type": "application/json" };
+       │                                    ^^^^^^^^^^^^^^^^^
+    31 │   const base = "http://identity-sign-in:8080/admin/realms/sign-in";
+    32 │   const update = await fetch(base, {
+
+  i Unsafe fix: Use a template literal.
+
+     28  28 │     if (tokenReply.status !== 200) throw Error("Task admin issuance failed");
+     29  29 │     const token = (await tokenReply.json()).access_token;
+     30     │ - ··const·headers·=·{·authorization:·"Bearer·"·+·token,·"content-type":·"application/json"·};
+         30 │ + ··const·headers·=·{·authorization:·`Bearer·${token}`,·"content-type":·"application/json"·};
+     31  31 │     const base = "http://identity-sign-in:8080/admin/realms/sign-in";
+     32  32 │     const update = await fetch(base, {
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:42:30 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    40 │   });
+    41 │   if (update.status !== 204) throw Error("Task realm rotation policy failed");
+  > 42 │   const result = await fetch(base + "/clients", {
+       │                              ^^^^^^^^^^^^^^^^^
+    43 │     method: "POST",
+    44 │     headers,
+
+  i Unsafe fix: Use a template literal.
+
+     40  40 │     });
+     41  41 │     if (update.status !== 204) throw Error("Task realm rotation policy failed");
+     42     │ - ··const·result·=·await·fetch(base·+·"/clients",·{
+         42 │ + ··const·result·=·await·fetch(`${base}/clients`,·{
+     43  43 │       method: "POST",
+     44  44 │       headers,
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:72:23 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    70 │ }
+    71 │ const proxy = https.createServer(
+  > 72 │   { key: readFileSync(root + "/server.key"), cert: readFileSync(root + "/server.crt") },
+       │                       ^^^^^^^^^^^^^^^^^^^^
+    73 │   async (req, res) => {
+    74 │     try {
+
+  i Unsafe fix: Use a template literal.
+
+     70  70 │   }
+     71  71 │   const proxy = https.createServer(
+     72     │ - ··{·key:·readFileSync(root·+·"/server.key"),·cert:·readFileSync(root·+·"/server.crt")·},
+         72 │ + ··{·key:·readFileSync(`${root}/server.key`),·cert:·readFileSync(root·+·"/server.crt")·},
+     73  73 │     async (req, res) => {
+     74  74 │       try {
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:72:65 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    70 │ }
+    71 │ const proxy = https.createServer(
+  > 72 │   { key: readFileSync(root + "/server.key"), cert: readFileSync(root + "/server.crt") },
+       │                                                                 ^^^^^^^^^^^^^^^^^^^^
+    73 │   async (req, res) => {
+    74 │     try {
+
+  i Unsafe fix: Use a template literal.
+
+     70  70 │   }
+     71  71 │   const proxy = https.createServer(
+     72     │ - ··{·key:·readFileSync(root·+·"/server.key"),·cert:·readFileSync(root·+·"/server.crt")·},
+         72 │ + ··{·key:·readFileSync(root·+·"/server.key"),·cert:·readFileSync(`${root}/server.crt`)·},
+     73  73 │     async (req, res) => {
+     74  74 │       try {
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:95:22 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    93 │         }
+    94 │       }
+  > 95 │       const target = "http://identity-sign-in:8080" + req.url;
+       │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    96 │       const response = await fetch(target, {
+    97 │         method: req.method,
+
+  i Unsafe fix: Use a template literal.
+
+     93  93 │           }
+     94  94 │         }
+     95     │ - ······const·target·=·"http://identity-sign-in:8080"·+·req.url;
+         95 │ + ······const·target·=·`http://identity-sign-in:8080${req.url}`;
+     96  96 │         const response = await fetch(target, {
+     97  97 │           method: req.method,
+
+
+jeeves-generator/integration/harness/rg-mechanisms.ts:176:164 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    174 │ const login=await fetch(action,{method:'POST',redirect:'manual',headers:{cookie:cookies(),'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:${JSON.stringify(username)},password:${JSON.stringify(password)},credentialId:''})});absorb(login);await login.text();if(login.status!==302)throw Error('Issuer login '+login.status);
+    175 │ const target=new URL(login.headers.get('location'));const callback=await fetch('http://127.0.0.1:3000'+target.pathname+target.search,{headers:{cookie:cookies()},redirect:'manual'});absorb(callback);await callback.text();if(callback.status!==302)throw Error('Callback '+callback.status);
+  > 176 │ const state=await fetch('http://127.0.0.1:3000/modules/session/session',{headers:{cookie:cookies()}});const body=await state.json();writeFileSync(${JSON.stringify("/rg/" + handoff)},JSON.stringify({cookie:cookies(),csrf:body.csrf,status:state.status}),{mode:0o600});${finish("{status:state.status}")}
+        │                                                                                                                                                                    ^^^^^^^^^^^^^^^^
+    177 │ `,
+    178 │   );
+
+  i Unsafe fix: Use a template literal.
+
+    174 174 │   const login=await fetch(action,{method:'POST',redirect:'manual',headers:{cookie:cookies(),'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:${JSON.stringify(username)},password:${JSON.stringify(password)},credentialId:''})});absorb(login);await login.text();if(login.status!==302)throw Error('Issuer login '+login.status);
+    175 175 │   const target=new URL(login.headers.get('location'));const callback=await fetch('http://127.0.0.1:3000'+target.pathname+target.search,{headers:{cookie:cookies()},redirect:'manual'});absorb(callback);await callback.text();if(callback.status!==302)throw Error('Callback '+callback.status);
+    176     │ - const·state=await·fetch('http://127.0.0.1:3000/modules/session/session',{headers:{cookie:cookies()}});const·body=await·state.json();writeFileSync(${JSON.stringify("/rg/"·+·handoff)},JSON.stringify({cookie:cookies(),csrf:body.csrf,status:state.status}),{mode:0o600});${finish("{status:state.status}")}
+        176 │ + const·state=await·fetch('http://127.0.0.1:3000/modules/session/session',{headers:{cookie:cookies()}});const·body=await·state.json();writeFileSync(${JSON.stringify(`/rg/${handoff}`)},JSON.stringify({cookie:cookies(),csrf:body.csrf,status:state.status}),{mode:0o600});${finish("{status:state.status}")}
+    177 177 │   `,
+    178 178 │     );
+
+
+jeeves-generator/integration/harness/rg-provider.mjs:39:11 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    37 │       const target = incoming
+    38 │         ? "http://app-caller:3000/modules/catalog-events"
+  > 39 │         : "http://app-callee:3000" + req.url;
+       │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    40 │       const result = await fetch(target, {
+    41 │         method: req.method,
+
+  i Unsafe fix: Use a template literal.
+
+     37  37 │         const target = incoming
+     38  38 │           ? "http://app-caller:3000/modules/catalog-events"
+     39     │ - ········:·"http://app-callee:3000"·+·req.url;
+         39 │ + ········:·`http://app-callee:3000${req.url}`;
+     40  40 │         const result = await fetch(target, {
+     41  41 │           method: req.method,
+
+
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+jeeves-generator/src/v2/browser-session.test.ts:584:9 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    582 │     await expect(
+    583 │       run(() =>
+  > 584 │         callback!(
+        │         ^^^^^^^^^
+    585 │           {
+    586 │             url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+     582  582 │       await expect(
+     583  583 │         run(() =>
+     584      │ - ········callback!(
+          584 │ + ········callback?.(
+     585  585 │             {
+     586  586 │               url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+
+jeeves-generator/src/v2/browser-session.test.ts:675:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    673 │     expect(calls).toBe(1);
+    674 │     expect(results.every((r) => (r as { signedIn: boolean }).signedIn)).toBe(true);
+  > 675 │     const row = (
+        │                 ^
+  > 676 │       await f.pg.query<{
+         ...
+  > 681 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 682 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    683 │     expect(Number(row.refresh_generation)).toBe(1);
+    684 │     expect(row.revoked_at).toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:721:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    719 │             },
+    720 │       );
+  > 721 │       const row = (
+        │                   ^
+  > 722 │         await f.pg.query<{
+         ...
+  > 726 │         }>("SELECT * FROM jeeves.browser_sessions")
+  > 727 │       ).rows[0]!;
+        │       ^^^^^^^^^^
+    728 │       if (kind === "definitive") {
+    729 │         expect(row.revoked_at).not.toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:782:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    780 │       signedIn: true,
+    781 │     });
+  > 782 │     const row = (
+        │                 ^
+  > 783 │       await f.pg.query<{
+         ...
+  > 787 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 788 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    789 │     expect(row.access_sealed).toMatch(/^jke1.new\./);
+    790 │     expect(row.refresh_sealed).toMatch(/^jke1.new\./);
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1137:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1135 │     ).rejects.toBeDefined();
+    1136 │     f.pool.connect = connect;
+  > 1137 │     const row = (
+         │                 ^
+  > 1138 │       await f.pg.query<{
+          ...
+  > 1142 │       }>("SELECT refresh_uncertain,refresh_attempt,refresh_generation FROM jeeves.browser_sessions")
+  > 1143 │     ).rows[0]!;
+         │     ^^^^^^^^^^
+    1144 │     expect(row.refresh_uncertain).toBe(true);
+    1145 │     expect(row.refresh_attempt).toBeTruthy();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1227:50 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1225 │     .update(JSON.stringify([f.settings.issuer, f.settings.clientId]))
+    1226 │     .digest("hex");
+  > 1227 │   const cookieHash = createHash("sha256").update(a.cookie.split("=")[1]!).digest("hex");
+         │                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+    1228 │   const binding = (field: string) => ({
+    1229 │     scope: createHash("sha256")
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1339:10 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1337 │   expect(expiry).toBeInstanceOf(Date);
+    1338 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1339 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │          ^^^^^^^
+    1340 │ });
+    1341 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1337 1337 │     expect(expiry).toBeInstanceOf(Date);
+    1338 1338 │     expect(providerObserved).toBeInstanceOf(Date);
+    1339      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1339 │ + ··expect(expiry?.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+    1340 1340 │   });
+    1341 1341 │
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1339:49 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1337 │   expect(expiry).toBeInstanceOf(Date);
+    1338 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1339 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │                                                 ^^^^^^^^^^^^^^^^^
+    1340 │ });
+    1341 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1337 1337 │     expect(expiry).toBeInstanceOf(Date);
+    1338 1338 │     expect(providerObserved).toBeInstanceOf(Date);
+    1339      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1339 │ + ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved?.getTime()·+·3600000);
+    1340 1340 │   });
+    1341 1341 │
+
+
+Checked 2370 files in 669ms. No fixes applied.
+Found 8 warnings.
+Found 12 infos.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+
+ Test Files  145 passed (145)
+      Tests  1353 passed (1353)
+   Start at  23:49:13
+   Duration  113.22s (tests 84%, import 12%, environment 2%, transform 2%)

@@ -29,6 +29,12 @@ export async function prepareFoundation(app: Application) {
   await writeFile(join(app.directory, "../rg14-replay-keys.json"), ring, { mode: 0o644 });
 }
 
+/** Task-only probe optimization: issued credentials remain private to owned containers. */
+const warmProbes = new WeakSet<Application>();
+export function warmFoundationProbes(app: Application) {
+  warmProbes.add(app);
+}
+
 /** Only test-owned containers; private imports/drivers are harness observation/fault injection,
  * never application extensions. stdout has one JSON result envelope, never credentials. */
 export async function native<T>(
@@ -121,9 +127,21 @@ export async function direct(
     `
 ${privateScope}
 import {createWorkload,workloadSettings} from './dist/runtime/workload.js';
+import {readFileSync,writeFileSync,lstatSync} from 'node:fs';
 const credentials=createWorkload(workloadSettings({identity:'sign-in',client:'jeeves-workload-gateway',audience:'jeeves-service-gateway'}),['items-api']);
 const answer=await withProcess(scope,async()=>{
- const token=${options.workload === false ? "undefined" : "await credentials.acquire('items-api')"};
+ const token=${
+   options.workload === false
+     ? "undefined"
+     : warmProbes.has(app)
+       ? `await (async()=>{
+const path='/tmp/rg23-items-api-workload.json';
+const valid=token=>{try{const p=JSON.parse(Buffer.from(token.split('.')[1],'base64url'));const now=Date.now()/1000;return p.iss===process.env.JEEVES_WORKLOAD_ISSUER&&p.azp==='jeeves-workload-gateway'&&p.jeeves_workload==='gateway'&&(p.aud==='jeeves-service-items-api'||Array.isArray(p.aud)&&p.aud.includes('jeeves-service-items-api'))&&Number.isFinite(p.exp)&&p.exp>now+10&&Number.isFinite(p.iat)&&p.iat<=now+5&&p.exp-p.iat<=300;}catch{return false;}};
+try{const stat=lstatSync(path);if(stat.isFile()&&!stat.isSymbolicLink()&&(stat.mode&0o077)===0){const cached=JSON.parse(readFileSync(path,'utf8'));if(valid(cached.token))return cached.token;}}catch{}
+const token=await credentials.acquire('items-api');if(!valid(token))throw Error('Task workload probe claims mismatch');writeFileSync(path,JSON.stringify({token}),{mode:0o600});return token;
+})()`
+       : "await credentials.acquire('items-api')"
+ };
  const started=performance.now();
  const response=await fetch(${JSON.stringify(`http://${address}:3000${path}`)},{method:${JSON.stringify(options.method ?? "POST")},
  headers:{'content-type':'application/json',${user ? `authorization:'Bearer '+${JSON.stringify(user)},` : ""}

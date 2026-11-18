@@ -1,0 +1,61 @@
+[
+  {
+    "name": "HMAC durable acceptance survives process death",
+    "expected": "stored work exists while ACK withheld; another same Service processor completes once; changed content409, terminal failure visible",
+    "outcome": "passed",
+    "actual": {
+      "acceptanceInsertBlocked": true,
+      "upstream202BeforeAcceptance": false,
+      "upstream202BeforeCommit": false,
+      "persistedBeforeAck": "accepted",
+      "acknowledgedBeforeCommit": false,
+      "old": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+      "replacement": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+      "effects": 1,
+      "duplicate": 202,
+      "conflict": 409,
+      "terminal": "failed"
+    }
+  },
+  {
+    "name": "paused stale holder and stable remote identity",
+    "expected": "lease expires with first process paused; second executes same selected ticket/identity; old completion/product mutation refused",
+    "outcome": "passed",
+    "actual": {
+      "old": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+      "new": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+      "before": "1|966c100e-f4ac-4f56-8bb9-49de08e33de6",
+      "completed": "2|966c100e-f4ac-4f56-8bb9-49de08e33de6",
+      "remoteDispatches": 2,
+      "stableIdentity": "ff3979db35147cf781ce6379e6bd74d22c026be53f7a5bc8b12f2c153d455931",
+      "preparations": 1,
+      "localEffects": 1,
+      "remoteEffects": 1,
+      "staleRefused": true
+    }
+  },
+  {
+    "name": "fresh-context stale fence rejection",
+    "expected": "emitted store uses actual compiled webhook hook/SQL/roles; stale opaque claim cannot invoke non-idempotent product effect after another copy completes",
+    "outcome": "passed",
+    "actual": {
+      "old": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+      "replacement": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+      "winner": {
+        "code": "COMPLETED",
+        "identity": "2b92e1f8cfbaf68ae72d71e9a511c588c7f88af5e2374fac428c6fc85520b83d"
+      },
+      "loser": {
+        "code": "WORK_LEASE_LOST",
+        "identity": "2b92e1f8cfbaf68ae72d71e9a511c588c7f88af5e2374fac428c6fc85520b83d"
+      },
+      "freshContext": true,
+      "nonIdempotentEffects": 1
+    }
+  },
+  {
+    "name": "receipt commit precedes ACK and survives redelivery",
+    "expected": "withheld real AMQP Basic.Ack, committed receipt/effect, kill that consumer, another copy redelivers once; dates cannot bypass ID",
+    "outcome": "failed"
+  }
+]

@@ -1,0 +1,3167 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-18T05:38:39.241Z",
+    "value": [
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-app-callee-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-app-caller-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-app-projector-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-identity-issuer-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-23670c26-3412-4b71-8004-766cef9f3277-1-rg-provider-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "6912127e582fbf7be10d072a398bbb53855b67088634b3bec8dbd93f79a6bc77",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303702,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:23.888460563Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:32.714895759-06:00",
+                "End": "2026-11-17T23:38:32.756791782-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:37.757334592-06:00",
+                "End": "2026-11-17T23:38:37.801919441-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:42.802617898-06:00",
+                "End": "2026-11-17T23:38:42.858364089-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "75699eb393fe8736fa77ccf9372ff016aa4800b51ea4ba404124021266bee0a6",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 305068,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:40.182028051Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.425650698-06:00",
+                "End": "2026-11-17T23:38:45.47226612-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 303777,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:24.220459276Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "proxy": {
+      "events": [],
+      "acks": [
+        {
+          "from": "172.24.0.8",
+          "held": true
+        }
+      ],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.deliveries WHERE id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one' AND result IS NOT NULL AND retain_until>=completed_at+interval '60 seconds'",
+    "result": "1"
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 2
+    }
+  },
+  {
+    "fault": "app-projector kill",
+    "container": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+    "at": "2026-11-18T05:38:47.080Z",
+    "monotonicAt": 86516.060303,
+    "elapsedMs": 349,
+    "result": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06"
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 0,
+      "consumerCount": 1
+    }
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.deliveries WHERE id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "proxy": {
+      "events": [],
+      "acks": [
+        {
+          "from": "172.24.0.8",
+          "held": true
+        },
+        {
+          "from": "172.24.0.10",
+          "held": false
+        },
+        {
+          "from": "172.24.0.10",
+          "held": false
+        }
+      ],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.deliveries WHERE id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.deliveries WHERE id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "fault": "app-projector start",
+    "container": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+    "at": "2026-11-18T05:38:49.028Z",
+    "monotonicAt": 88463.400663,
+    "elapsedMs": 378,
+    "result": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:54.403684679-06:00",
+                "End": "2026-11-17T23:38:54.446374799-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one' AND retain_until>clock_timestamp()",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT (retain_until>=completed_at+interval '60 seconds')::text FROM jeeves.consumer_receipts WHERE event_id='delivery-one'",
+    "result": "true"
+  },
+  {
+    "sql": "SELECT retain_until::text FROM jeeves.consumer_receipts WHERE event_id='delivery-one'",
+    "result": "2026-11-18 05:39:46.015123+00"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 307860,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:49.118710598Z",
+          "FinishedAt": "2026-11-18T05:38:47.138530935Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:33.039630937-06:00",
+                "End": "2026-11-17T23:38:33.081143516-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:38.081716949-06:00",
+                "End": "2026-11-17T23:38:38.123140052-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:43.124242176-06:00",
+                "End": "2026-11-17T23:38:43.168982432-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:54.403684679-06:00",
+                "End": "2026-11-17T23:38:54.446374799-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d7e3b22dff450a3242bec22c8ee9d5b5a5409b9fc777cf442c13e341266c516",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 304945,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:38:39.83239493Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:38:45.098645783-06:00",
+                "End": "2026-11-17T23:38:45.143539689-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:38:50.14390337-06:00",
+                "End": "2026-11-17T23:38:50.190795515-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "fault": "app-projector stop",
+    "container": "de2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06",
+    "at": "2026-11-18T05:38:55.109Z",
+    "monotonicAt": 94545.195223,
+    "elapsedMs": 449,
+    "result": "Flag --time has been deprecated, use --timeout instead\nde2d75202967f1417d895e010dbbf59fbdd154bdb91e9f8fcc2ea7ba0d60cc06"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE state='running' AND in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "false|1"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>='2026-11-18 05:39:46.015123+00'::timestamptz)::text||'|'||(SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one')",
+    "result": "true|1"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE heartbeat_at<clock_timestamp()-interval '45 seconds'",
+    "result": "2"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts_workers WHERE in_flight=0 AND heartbeat_at>clock_timestamp()-interval '30 seconds'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.deliveries WHERE id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.deliveries WHERE id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT (last_success_at IS NOT NULL)::text FROM jeeves.consumer_receipts_maintenance",
+    "result": "true"
+  },
+  {
+    "fault": "local-broker pause",
+    "container": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5",
+    "at": "2026-11-18T05:39:48.328Z",
+    "monotonicAt": 140597.750554,
+    "elapsedMs": 57,
+    "result": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5"
+  },
+  {
+    "fault": "local-broker unpause",
+    "container": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5",
+    "at": "2026-11-18T05:40:07.649Z",
+    "monotonicAt": 159918.969309,
+    "elapsedMs": 58,
+    "result": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5"
+  },
+  {
+    "fault": "local-broker stop",
+    "container": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5",
+    "at": "2026-11-18T05:40:16.399Z",
+    "monotonicAt": 165084.8612,
+    "elapsedMs": 591,
+    "result": "Flag --time has been deprecated, use --timeout instead\n364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5"
+  },
+  {
+    "fault": "local-broker start",
+    "container": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5",
+    "at": "2026-11-18T05:40:17.235Z",
+    "monotonicAt": 165920.701713,
+    "elapsedMs": 354,
+    "result": "364c424c73e1b233107b23e7863582155e3082343785880aa039f67cd96a17f5"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.deliveries WHERE id='after-broker'",
+    "result": "1"
+  }
+]

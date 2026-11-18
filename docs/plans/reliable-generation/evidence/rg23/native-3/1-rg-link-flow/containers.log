@@ -1,0 +1,179 @@
+local-postgres-1  | 2026-11-18T05:06:19.978659760Z The files belonging to this database system will be owned by user "postgres".
+local-postgres-1  | 2026-11-18T05:06:19.978721550Z This user must also own the server process.
+local-postgres-1  | 2026-11-18T05:06:19.978724554Z
+local-postgres-1  | 2026-11-18T05:06:19.978726556Z The database cluster will be initialized with locale "en_US.utf8".
+local-postgres-1  | 2026-11-18T05:06:19.978728539Z The default database encoding has accordingly been set to "UTF8".
+local-postgres-1  | 2026-11-18T05:06:19.978730450Z The default text search configuration will be set to "english".
+local-postgres-1  | 2026-11-18T05:06:19.978732323Z
+local-postgres-1  | 2026-11-18T05:06:19.978734077Z Data page checksums are disabled.
+local-postgres-1  | 2026-11-18T05:06:19.978735813Z
+local-postgres-1  | 2026-11-18T05:06:19.978737512Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+local-postgres-1  | 2026-11-18T05:06:19.990193569Z creating subdirectories ... ok
+local-postgres-1  | 2026-11-18T05:06:19.990274140Z selecting dynamic shared memory implementation ... posix
+local-postgres-1  | 2026-11-18T05:06:20.008982824Z selecting default "max_connections" ... 100
+local-postgres-1  | 2026-11-18T05:06:20.040795501Z selecting default "shared_buffers" ... 128MB
+local-postgres-1  | 2026-11-18T05:06:20.083862290Z selecting default time zone ... UTC
+local-postgres-1  | 2026-11-18T05:06:20.084247525Z creating configuration files ... ok
+local-postgres-1  | 2026-11-18T05:06:20.276324903Z running bootstrap script ... ok
+local-postgres-1  | 2026-11-18T05:06:20.538126700Z sh: locale: not found
+local-postgres-1  | 2026-11-18T05:06:20.538228229Z 2026-11-18 05:06:20.537 UTC [34] WARNING:  no usable system locales were found
+local-postgres-1  | 2026-11-18T05:06:21.069956696Z performing post-bootstrap initialization ... ok
+local-postgres-1  | 2026-11-18T05:06:22.106461453Z initdb: warning: enabling "trust" authentication for local connections
+local-postgres-1  | 2026-11-18T05:06:22.106484808Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+local-postgres-1  | 2026-11-18T05:06:22.106498988Z syncing data to disk ... ok
+local-postgres-1  | 2026-11-18T05:06:22.106507180Z
+local-postgres-1  | 2026-11-18T05:06:22.106509853Z
+local-postgres-1  | 2026-11-18T05:06:22.106512424Z Success. You can now start the database server using:
+local-postgres-1  | 2026-11-18T05:06:22.106514867Z
+local-postgres-1  | 2026-11-18T05:06:22.106516732Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+local-postgres-1  | 2026-11-18T05:06:22.106518752Z
+local-postgres-1  | 2026-11-18T05:06:22.226377197Z waiting for server to start....2026-11-18 05:06:22.226 UTC [40] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+app-browser-2     | 2026-11-18T05:07:39.191397893Z {"level":"info","event":"started","tile":"browser","module":"session","template":"browser-session","wiring":"mounted","checks":["protected schema/grants","HTTPS OIDC discovery; issuer outage refuses startup readiness/login"]}
+app-browser-2     | 2026-11-18T05:07:39.192250319Z Application ready
+app-browser-2     | 2026-11-18T05:07:55.704728565Z {"service":"browser","level":"info","event":"request-failed","requestId":"f842d226-7292-4f0f-8221-4cb5d640b086","correlationId":"f842d226-7292-4f0f-8221-4cb5d640b086","method":"GET","route":"/modules/navigate","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":905}
+app-browser-2     | 2026-11-18T05:07:58.203561555Z {"service":"browser","level":"info","event":"request-failed","requestId":"deb9b890-6903-4075-a6b8-f5993c16bf53","correlationId":"deb9b890-6903-4075-a6b8-f5993c16bf53","method":"GET","route":"/modules/navigate","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":806}
+app-browser-2     | 2026-11-18T05:07:58.401920748Z {"service":"browser","level":"info","event":"request-completed","requestId":"8f9f8ccc-63d6-4433-a70c-417fea1bf302","correlationId":"8f9f8ccc-63d6-4433-a70c-417fea1bf302","method":"GET","route":"/modules/session/session","status":200,"durationMs":10}
+app-browser-2     | 2026-11-18T05:08:00.578819682Z {"service":"browser","level":"error","event":"request-failed","requestId":"91d7bebc-f345-40f5-be72-231be1e826a4","correlationId":"91d7bebc-f345-40f5-be72-231be1e826a4","method":"GET","route":"/modules/navigate","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":17}
+app-browser-2     | 2026-11-18T05:08:00.970886670Z {"service":"browser","level":"info","event":"request-completed","requestId":"23406ea0-53b8-45f5-ae90-f3ac1976bb20","correlationId":"23406ea0-53b8-45f5-ae90-f3ac1976bb20","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+app-gateway-1     | 2026-11-18T05:07:19.396668803Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-gateway-2     | 2026-11-18T05:07:32.848223193Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-gateway-1     | 2026-11-18T05:07:19.431006516Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-gateway-1     | 2026-11-18T05:07:19.431609367Z Application ready
+local-postgres-1  | 2026-11-18T05:06:22.256200917Z 2026-11-18 05:06:22.255 UTC [40] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+app-gateway-2     | 2026-11-18T05:07:32.884386504Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+local-postgres-1  | 2026-11-18T05:06:22.324687834Z 2026-11-18 05:06:22.324 UTC [43] LOG:  database system was shut down at 2026-11-18 05:06:21 UTC
+cache-records-1   | 2026-11-18T05:06:21.130461194Z 7:M 18 Nov 2026 05:06:21.128 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+app-gateway-2     | 2026-11-18T05:07:32.884981392Z Application ready
+local-postgres-1  | 2026-11-18T05:06:22.358125777Z 2026-11-18 05:06:22.357 UTC [40] LOG:  database system is ready to accept connections
+local-postgres-1  | 2026-11-18T05:06:22.452256898Z  done
+local-postgres-1  | 2026-11-18T05:06:22.452279803Z server started
+local-postgres-1  | 2026-11-18T05:06:22.477608459Z
+local-postgres-1  | 2026-11-18T05:06:22.477630096Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+local-postgres-1  | 2026-11-18T05:06:22.477633044Z
+local-postgres-1  | 2026-11-18T05:06:22.482411533Z waiting for server to shut down....2026-11-18 05:06:22.478 UTC [40] LOG:  received fast shutdown request
+local-postgres-1  | 2026-11-18T05:06:22.522225497Z 2026-11-18 05:06:22.519 UTC [40] LOG:  aborting any active transactions
+local-postgres-1  | 2026-11-18T05:06:22.522248154Z 2026-11-18 05:06:22.521 UTC [40] LOG:  background worker "logical replication launcher" (PID 46) exited with exit code 1
+local-postgres-1  | 2026-11-18T05:06:22.523287311Z 2026-11-18 05:06:22.522 UTC [41] LOG:  shutting down
+app-items-worker-2  | 2026-11-18T05:07:47.898220051Z {"event":"probe","tile":"items-worker","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-edge-1          | 2026-11-18T05:07:25.694388436Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+app-edge-1          | 2026-11-18T05:07:25.694417072Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+app-edge-1          | 2026-11-18T05:07:25.694979816Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+app-edge-1          | 2026-11-18T05:07:25.728452785Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+app-edge-1          | 2026-11-18T05:07:25.735903340Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+app-edge-1          | 2026-11-18T05:07:25.736038802Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+app-edge-1          | 2026-11-18T05:07:25.736115446Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+app-edge-1          | 2026-11-18T05:07:25.738003925Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+app-edge-1          | 2026-11-18T05:07:25.739141249Z /docker-entrypoint.sh: Configuration complete; ready for start up
+cache-admission-1   | 2026-11-18T05:06:20.493634686Z 7:M 18 Nov 2026 05:06:20.493 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-admission-1   | 2026-11-18T05:06:20.493695007Z 7:M 18 Nov 2026 05:06:20.493 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-admission-1   | 2026-11-18T05:06:20.493697744Z 7:M 18 Nov 2026 05:06:20.493 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+app-items-worker-2  | 2026-11-18T05:07:47.898979065Z Application ready
+cache-admission-1   | 2026-11-18T05:06:20.493699975Z 7:M 18 Nov 2026 05:06:20.493 * Configuration loaded
+cache-admission-1   | 2026-11-18T05:06:20.494046995Z 7:M 18 Nov 2026 05:06:20.493 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-admission-1   | 2026-11-18T05:06:20.494052543Z 7:M 18 Nov 2026 05:06:20.493 * monotonic clock: POSIX clock_gettime
+cache-admission-1   | 2026-11-18T05:06:20.494546443Z 7:M 18 Nov 2026 05:06:20.494 * Running mode=standalone, port=6379.
+cache-admission-1   | 2026-11-18T05:06:20.494858361Z 7:M 18 Nov 2026 05:06:20.494 * Server initialized
+cache-admission-1   | 2026-11-18T05:06:20.560233427Z 7:M 18 Nov 2026 05:06:20.559 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-admission-1   | 2026-11-18T05:06:20.686858373Z 7:M 18 Nov 2026 05:06:20.686 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-18T05:06:20.686878807Z 7:M 18 Nov 2026 05:06:20.686 * Ready to accept connections tcp
+cache-records-1     | 2026-11-18T05:06:21.130502035Z 7:M 18 Nov 2026 05:06:21.128 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-records-1     | 2026-11-18T05:06:21.130504644Z 7:M 18 Nov 2026 05:06:21.128 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-records-1     | 2026-11-18T05:06:21.130506793Z 7:M 18 Nov 2026 05:06:21.128 * Configuration loaded
+cache-records-1     | 2026-11-18T05:06:21.130508887Z 7:M 18 Nov 2026 05:06:21.129 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-records-1     | 2026-11-18T05:06:21.130511513Z 7:M 18 Nov 2026 05:06:21.129 * monotonic clock: POSIX clock_gettime
+cache-records-1     | 2026-11-18T05:06:21.130513607Z 7:M 18 Nov 2026 05:06:21.129 * Running mode=standalone, port=6379.
+cache-records-1     | 2026-11-18T05:06:21.130515591Z 7:M 18 Nov 2026 05:06:21.129 * Server initialized
+cache-records-1     | 2026-11-18T05:06:21.198671055Z 7:M 18 Nov 2026 05:06:21.198 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-records-1     | 2026-11-18T05:06:21.249793246Z 7:M 18 Nov 2026 05:06:21.249 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-records-1     | 2026-11-18T05:06:21.249817657Z 7:M 18 Nov 2026 05:06:21.249 * Ready to accept connections tcp
+local-postgres-1    | 2026-11-18T05:06:22.567132621Z 2026-11-18 05:06:22.565 UTC [41] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-18T05:06:22.721836523Z 2026-11-18 05:06:22.720 UTC [41] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.034 s, sync=0.016 s, total=0.198 s; sync files=2, longest=0.009 s, average=0.008 s; distance=0 kB, estimate=0 kB; lsn=0/14EF2C8, redo lsn=0/14EF2C8
+local-postgres-1    | 2026-11-18T05:06:22.726754371Z 2026-11-18 05:06:22.726 UTC [40] LOG:  database system is shut down
+local-postgres-1    | 2026-11-18T05:06:22.779375555Z  done
+local-postgres-1    | 2026-11-18T05:06:22.779404118Z server stopped
+local-postgres-1    | 2026-11-18T05:06:22.780427772Z
+local-postgres-1    | 2026-11-18T05:06:22.780443991Z PostgreSQL init process complete; ready for start up.
+local-postgres-1    | 2026-11-18T05:06:22.780446517Z
+local-postgres-1    | 2026-11-18T05:06:22.851637108Z 2026-11-18 05:06:22.851 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T05:06:22.851660078Z 2026-11-18 05:06:22.851 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1    | 2026-11-18T05:06:22.851662631Z 2026-11-18 05:06:22.851 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1    | 2026-11-18T05:06:22.890218470Z 2026-11-18 05:06:22.890 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T05:06:22.934769631Z 2026-11-18 05:06:22.934 UTC [54] LOG:  database system was shut down at 2026-11-18 05:06:22 UTC
+local-postgres-1    | 2026-11-18T05:06:22.960354945Z 2026-11-18 05:06:22.959 UTC [1] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-18T05:06:57.014804399Z 2026-11-18 05:06:57.014 UTC [113] ERROR:  relation "migration_model" does not exist at character 25
+local-postgres-1    | 2026-11-18T05:06:57.014828296Z 2026-11-18 05:06:57.014 UTC [113] STATEMENT:  SELECT ID, VERSION FROM MIGRATION_MODEL ORDER BY UPDATE_TIME DESC
+local-postgres-1    | 2026-11-18T05:06:57.683445127Z 2026-11-18 05:06:57.683 UTC [114] ERROR:  relation "public.databasechangeloglock" does not exist at character 22
+local-postgres-1    | 2026-11-18T05:06:57.683474838Z 2026-11-18 05:06:57.683 UTC [114] STATEMENT:  SELECT COUNT(*) FROM public.databasechangeloglock
+app-items-api-1     | 2026-11-18T05:07:19.690000102Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+identity-sign-in-1  | 2026-11-18T05:06:35.414632890Z Updating the configuration and installing your custom providers, if any. Please wait.
+identity-sign-in-1  | 2026-11-18T05:06:39.219552011Z 2026-11-18 05:06:39,215 WARN  [org.keycloak.common.Profile] (build-15) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-sign-in-1  | 2026-11-18T05:06:53.584368142Z 2026-11-18 05:06:53,583 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 17214ms
+identity-sign-in-1  | 2026-11-18T05:06:54.285352652Z Running the server in development mode. DO NOT use this configuration in production.
+identity-sign-in-1  | 2026-11-18T05:06:56.132909483Z 2026-11-18 05:06:54,790 WARN  [org.keycloak.models.sessions.infinispan.InfinispanStickySessionEncoderProviderFactory] (main) The option `shouldAttachRoute` is deprecated and will be removed in a future release. Disable it by setting `spi-sticky-session-encoder--infinispan--should-attach-route` to `false`
+identity-sign-in-1  | 2026-11-18T05:06:56.132978355Z 2026-11-18 05:06:54,817 INFO  [org.keycloak.url.HostnameV2ProviderFactory] (main) If hostname is specified, hostname-strict is effectively ignored
+identity-sign-in-1  | 2026-11-18T05:06:56.140527947Z 2026-11-18 05:06:56,126 INFO  [org.infinispan.CONTAINER] (main) ISPN000974: Virtual threads support: enabled
+identity-sign-in-1  | 2026-11-18T05:06:56.976365484Z 2026-11-18 05:06:56,975 INFO  [org.hibernate.orm.jdbc.batch] (JPA Startup Thread) HHH100501: Automatic JDBC statement batching enabled (maximum batch size 32)
+app-items-api-1     | 2026-11-18T05:07:19.691032425Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-1     | 2026-11-18T05:07:19.724289875Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-1     | 2026-11-18T05:07:19.773347308Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-1     | 2026-11-18T05:07:19.813636555Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-items-api-1     | 2026-11-18T05:07:19.813653426Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+app-items-api-1     | 2026-11-18T05:07:19.813656273Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-items-api-1     | 2026-11-18T05:07:19.814276426Z Application ready
+identity-sign-in-1  | 2026-11-18T05:06:57.007248359Z 2026-11-18 05:06:57,006 WARN  [org.keycloak.common.Profile] (main) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-sign-in-1  | 2026-11-18T05:06:57.737556672Z 2026-11-18 05:06:57,737 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
+app-items-api-2     | 2026-11-18T05:07:32.519659405Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-2     | 2026-11-18T05:07:32.520809936Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-2     | 2026-11-18T05:07:32.551809036Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-2     | 2026-11-18T05:07:32.574371635Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-2     | 2026-11-18T05:07:32.614685835Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-items-api-2     | 2026-11-18T05:07:32.614711853Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+app-items-api-2     | 2026-11-18T05:07:32.614715086Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-items-api-2     | 2026-11-18T05:07:32.615276542Z Application ready
+app-items-api-2     | 2026-11-18T05:07:55.701301132Z {"service":"items-api","level":"info","event":"request-failed","requestId":"fb5adc63-192e-4dfc-95f8-33bd86fa65f5","correlationId":"f842d226-7292-4f0f-8221-4cb5d640b086","method":"GET","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":42}
+app-items-api-2     | 2026-11-18T05:07:58.202866588Z {"service":"items-api","level":"info","event":"request-failed","requestId":"117c4216-5653-4ad9-8f35-01d0c02a19db","correlationId":"deb9b890-6903-4075-a6b8-f5993c16bf53","method":"GET","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":3}
+app-items-api-1     | 2026-11-18T05:07:38.175029051Z {"service":"items-api","level":"info","event":"request-completed","requestId":"f88dd466-5f51-457d-a45c-79944643e772","correlationId":"f88dd466-5f51-457d-a45c-79944643e772","method":"GET","route":"/livez","status":200,"durationMs":2}
+app-items-api-1     | 2026-11-18T05:07:38.175937463Z {"service":"items-api","level":"info","event":"request-completed","requestId":"b7a1b416-26dd-4576-8ee2-1a06a99c0bbb","correlationId":"b7a1b416-26dd-4576-8ee2-1a06a99c0bbb","method":"GET","route":"/readyz","status":200,"durationMs":0}
+app-items-api-1     | 2026-11-18T05:07:55.696604408Z {"service":"items-api","level":"info","event":"request-failed","requestId":"4ca13545-fa8e-4bc5-882c-c5824243b3a4","correlationId":"9b007012-e3a0-4922-a67f-25278a55f922","method":"GET","route":"/internal/modules/read-record","status":404,"code":"NOT_FOUND","retryable":false,"durationMs":46}
+app-browser-1       | 2026-11-18T05:07:20.150837379Z {"level":"info","event":"started","tile":"browser","module":"session","template":"browser-session","wiring":"mounted","checks":["protected schema/grants","HTTPS OIDC discovery; issuer outage refuses startup readiness/login"]}
+app-browser-1       | 2026-11-18T05:07:20.151786835Z Application ready
+app-browser-1       | 2026-11-18T05:07:53.579505330Z {"service":"browser","level":"info","event":"request-completed","requestId":"8d1131d5-5325-4fe3-9cc8-20647bc15c90","correlationId":"8d1131d5-5325-4fe3-9cc8-20647bc15c90","method":"GET","route":"/modules/session/login","status":302,"durationMs":12}
+app-browser-1       | 2026-11-18T05:07:54.060926741Z {"service":"browser","level":"info","event":"request-completed","requestId":"94b1bcdb-e615-46c6-90a2-e08b903d5077","correlationId":"94b1bcdb-e615-46c6-90a2-e08b903d5077","method":"GET","route":"/modules/session/callback","status":302,"durationMs":107}
+app-browser-1       | 2026-11-18T05:07:54.071508531Z {"service":"browser","level":"info","event":"request-completed","requestId":"e57bfe3b-7f24-4c90-8e00-eca3d05ac1b5","correlationId":"e57bfe3b-7f24-4c90-8e00-eca3d05ac1b5","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+app-browser-1       | 2026-11-18T05:07:54.272455176Z {"service":"browser","level":"info","event":"request-failed","requestId":"ae7e61a5-c8ed-4462-b0a5-40cbf0969370","correlationId":"ae7e61a5-c8ed-4462-b0a5-40cbf0969370","method":"POST","route":"/modules/navigate","status":403,"code":"CSRF_REQUIRED","retryable":false,"durationMs":11}
+app-browser-1       | 2026-11-18T05:07:55.697887393Z {"service":"browser","level":"info","event":"request-failed","requestId":"9b007012-e3a0-4922-a67f-25278a55f922","correlationId":"9b007012-e3a0-4922-a67f-25278a55f922","method":"GET","route":"/modules/navigate","status":404,"code":"UNAVAILABLE","retryable":false,"durationMs":898}
+app-browser-1       | 2026-11-18T05:07:56.218813785Z {"service":"browser","level":"info","event":"request-completed","requestId":"81a79927-392d-43cf-9218-8284e9bcbf0e","correlationId":"81a79927-392d-43cf-9218-8284e9bcbf0e","method":"GET","route":"/modules/session/login","status":302,"durationMs":9}
+app-browser-1       | 2026-11-18T05:07:56.323730496Z {"service":"browser","level":"info","event":"request-completed","requestId":"36bccd3f-bc60-4c08-a94d-55fb984d8831","correlationId":"36bccd3f-bc60-4c08-a94d-55fb984d8831","method":"GET","route":"/modules/session/callback","status":302,"durationMs":26}
+app-browser-1       | 2026-11-18T05:07:56.333299402Z {"service":"browser","level":"info","event":"request-completed","requestId":"841eff93-f722-40b6-9574-739814cb1a8a","correlationId":"841eff93-f722-40b6-9574-739814cb1a8a","method":"GET","route":"/modules/session/session","status":200,"durationMs":8}
+app-browser-1       | 2026-11-18T05:07:56.876256178Z {"service":"browser","level":"error","event":"request-failed","requestId":"9072a78f-f639-42a3-ab35-1a18a8530a67","correlationId":"9072a78f-f639-42a3-ab35-1a18a8530a67","method":"GET","route":"/modules/navigate","status":503,"code":"UNAVAILABLE","retryable":false,"durationMs":29}
+identity-sign-in-1  | 2026-11-18T05:07:11.141301640Z 2026-11-18 05:07:11,140 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+identity-sign-in-1  | 2026-11-18T05:07:11.391196906Z 2026-11-18 05:07:11,390 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_467529, Site name: null, Cluster name: ISPN
+identity-sign-in-1  | 2026-11-18T05:07:11.545583415Z 2026-11-18 05:07:11,545 INFO  [org.keycloak.models.workflow.WorkflowsEventListenerFactory] (main) Workflow runner task scheduled: next execution at 17:07:11, then every PT12H
+identity-sign-in-1  | 2026-11-18T05:07:11.662977774Z 2026-11-18 05:07:11,662 INFO  [org.keycloak.exportimport.dir.DirImportProvider] (main) Importing from directory /opt/keycloak/bin/../data/import
+identity-sign-in-1  | 2026-11-18T05:07:11.846352177Z 2026-11-18 05:07:11,846 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
+identity-sign-in-1  | 2026-11-18T05:07:12.702090844Z 2026-11-18 05:07:12,701 INFO  [org.keycloak.exportimport.singlefile.SingleFileImportProvider] (main) Full importing from file /opt/keycloak/bin/../data/import/realm.json
+identity-sign-in-1  | 2026-11-18T05:07:13.740789036Z 2026-11-18 05:07:13,740 INFO  [org.keycloak.exportimport.util.ImportUtils] (main) Realm 'sign-in' imported
+identity-sign-in-1  | 2026-11-18T05:07:13.740829070Z 2026-11-18 05:07:13,740 INFO  [org.keycloak.services] (main) KC-SERVICES0030: Full model import requested. Strategy: IGNORE_EXISTING
+identity-sign-in-1  | 2026-11-18T05:07:13.740962835Z 2026-11-18 05:07:13,740 INFO  [org.keycloak.services] (main) KC-SERVICES0032: Import finished successfully
+identity-sign-in-1  | 2026-11-18T05:07:13.809399883Z 2026-11-18 05:07:13,809 INFO  [org.keycloak.services] (main) KC-SERVICES0077: Created temporary admin user with username admin
+identity-sign-in-1  | 2026-11-18T05:07:13.938419512Z 2026-11-18 05:07:13,937 INFO  [org.keycloak.services.resources.KeycloakApplication] (main) Bootstrap completed in 13.998000 seconds
+identity-sign-in-1  | 2026-11-18T05:07:14.008217510Z 2026-11-18 05:07:14,007 INFO  [io.quarkus] (main) Keycloak 26.8.1 on JVM (powered by Quarkus 3.40.1) started in 17.318s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+identity-sign-in-1  | 2026-11-18T05:07:14.008247266Z 2026-11-18 05:07:14,008 INFO  [io.quarkus] (main) Profile dev activated.
+identity-sign-in-1  | 2026-11-18T05:07:14.008301378Z 2026-11-18 05:07:14,008 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, narayana-jta, opentelemetry, rest, rest-jackson, smallrye-context-propagation, smallrye-health, vertx]
+identity-sign-in-1  | 2026-11-18T05:07:53.972048236Z 2026-11-18 05:07:53,971 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:07:54.838931844Z 2026-11-18 05:07:54,838 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:07:56.308703461Z 2026-11-18 05:07:56,308 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:07:57.421803806Z 2026-11-18 05:07:57,421 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:07:58.690781230Z 2026-11-18 05:07:58,690 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:07:59.285464927Z 2026-11-18 05:07:59,285 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T05:08:01.247546665Z 2026-11-18 05:08:01,247 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-2) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+app-browser-1       | 2026-11-18T05:07:58.604389178Z {"service":"browser","level":"info","event":"request-completed","requestId":"0b82bf5d-f956-4736-a6d2-ed9a0d7ed558","correlationId":"0b82bf5d-f956-4736-a6d2-ed9a0d7ed558","method":"GET","route":"/modules/session/login","status":302,"durationMs":9}
+app-browser-1       | 2026-11-18T05:07:58.712695744Z {"service":"browser","level":"info","event":"request-completed","requestId":"46e704e7-300e-4165-8a78-3e29b7dc7686","correlationId":"46e704e7-300e-4165-8a78-3e29b7dc7686","method":"GET","route":"/modules/session/callback","status":302,"durationMs":34}
+app-browser-1       | 2026-11-18T05:07:58.722795773Z {"service":"browser","level":"info","event":"request-completed","requestId":"36ce9daa-40bd-45e3-8119-bb0d62deeb5d","correlationId":"36ce9daa-40bd-45e3-8119-bb0d62deeb5d","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+app-browser-1       | 2026-11-18T05:08:00.054971742Z {"service":"browser","level":"error","event":"request-failed","requestId":"827b18d3-22db-4aa7-b46a-ec34d2c314fe","correlationId":"827b18d3-22db-4aa7-b46a-ec34d2c314fe","method":"GET","route":"/modules/navigate","status":503,"code":"OUTCOME_UNKNOWN","retryable":false,"durationMs":792}
+app-browser-1       | 2026-11-18T05:08:01.168143327Z {"service":"browser","level":"info","event":"request-completed","requestId":"2f7ce749-5f5c-4cdf-b363-16864e5c3241","correlationId":"2f7ce749-5f5c-4cdf-b363-16864e5c3241","method":"GET","route":"/modules/session/login","status":302,"durationMs":10}
+app-browser-1       | 2026-11-18T05:08:01.262323904Z {"service":"browser","level":"info","event":"request-completed","requestId":"123c930f-3672-4286-b919-c9f19ef4c6fa","correlationId":"123c930f-3672-4286-b919-c9f19ef4c6fa","method":"GET","route":"/modules/session/callback","status":302,"durationMs":29}
+app-browser-1       | 2026-11-18T05:08:01.272310816Z {"service":"browser","level":"info","event":"request-completed","requestId":"43795db1-a8dd-42b3-8b98-4a29c6874fad","correlationId":"43795db1-a8dd-42b3-8b98-4a29c6874fad","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+app-browser-1       | 2026-11-18T05:08:01.833225986Z {"service":"browser","level":"info","event":"request-failed","requestId":"2dea505f-72ea-479b-856f-c8582a3767c2","correlationId":"2dea505f-72ea-479b-856f-c8582a3767c2","method":"GET","route":"/modules/navigate","status":401,"code":"SIGN_IN_REQUIRED","retryable":false,"durationMs":28}
+app-items-worker-1  | 2026-11-18T05:07:18.843745454Z {"event":"probe","tile":"items-worker","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-worker-1  | 2026-11-18T05:07:18.844404824Z Application ready

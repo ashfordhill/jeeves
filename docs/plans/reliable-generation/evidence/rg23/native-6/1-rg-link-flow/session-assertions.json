@@ -1,0 +1,57 @@
+[
+  {
+    "name": "concurrent refresh",
+    "expected": "one SDK rotation across two processes",
+    "actual": {
+      "copies": [
+        "90e14b382c1cd6b6a37836dfbaf91ce5a8f4d3899d97faee7f5e345e9e68eadd",
+        "b9ef431605f0a388614f8b7bd73f6cba9b18279bf156f521393351989a795065"
+      ],
+      "statuses": [404, 404],
+      "rotations": 1,
+      "generation": 1
+    }
+  },
+  {
+    "name": "temporary",
+    "expected": "distinct retained/uncertain/revoked state",
+    "actual": {
+      "status": 503,
+      "state": "false|false",
+      "localIdentity": {
+        "status": 200,
+        "signedIn": true
+      },
+      "dispatches": 1,
+      "rotations": 0
+    }
+  },
+  {
+    "name": "unknown",
+    "expected": "distinct retained/uncertain/revoked state",
+    "actual": {
+      "status": 503,
+      "state": "true|false",
+      "localIdentity": {
+        "status": 200,
+        "signedIn": true
+      },
+      "dispatches": 1,
+      "rotations": 1
+    }
+  },
+  {
+    "name": "refused",
+    "expected": "distinct retained/uncertain/revoked state",
+    "actual": {
+      "status": 401,
+      "state": "true|true",
+      "localIdentity": {
+        "status": 401,
+        "signedIn": false
+      },
+      "dispatches": 1,
+      "rotations": 0
+    }
+  }
+]

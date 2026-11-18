@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="2" failures="2" errors="0" time="131.958030161">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" timestamp="2026-11-18T05:08:16.189Z" hostname="BASEMENT-PC" tests="2" failures="2" errors="0" skipped="0" time="131.958030161">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" name="RG23: link/account sessions compose with foundation mechanisms in independent processes" time="130.414505345">
+            <failure message="expected &apos;true|true&apos; to be &apos;false|true&apos; // Object.is equality" type="AssertionError">
+AssertionError: expected &apos;true|true&apos; to be &apos;false|true&apos; // Object.is equality
+
+Expected: &quot;false|true&quot;
+Received: &quot;true|true&quot;
+
+ ❯ Object.extra jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:95:23
+ ❯ beforeStart jeeves-generator/integration/harness/foundation-scenario.ts:89:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:363:5
+ ❯ foundationScenario jeeves-generator/integration/harness/foundation-scenario.ts:32:3
+ ❯ jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:16:3
+            </failure>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" name="RG23: catalog events, remote recovery and queue receipts compose across native copies" time="1.54266269">
+            <failure message="Attachment not reported for catalog-events: src/modules/caller/catalog-events.ts" type="AssertionError">
+AssertionError: Attachment not reported for catalog-events: src/modules/caller/catalog-events.ts
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ setupApplication jeeves-generator/integration/harness/application.ts:298:5
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:362:5
+ ❯ catalogScenario jeeves-generator/integration/harness/rg-catalog.ts:139:3
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

@@ -1,0 +1,13 @@
+{
+  "originalCommit": "c3192e0",
+  "originalExpectCalls": 75,
+  "currentExpectCalls": 75,
+  "allExpectStatementsSame": true,
+  "originalNamedSections": 10,
+  "currentNamedSections": 10,
+  "callbackPreservedApartFrom": [
+    "optional RG23 pre-oracle extension",
+    "fault arms only on actual idempotency INSERT connection before dropping its COMMIT (cleanup transactions excluded)"
+  ],
+  "timeoutsAndPreconditionsUnchanged": true
+}

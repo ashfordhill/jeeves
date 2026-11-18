@@ -1,0 +1,63 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts (2 tests | 2 failed) 333137ms
+   × RG23: link/account sessions compose with foundation mechanisms in independent processes 143295ms
+   × RG23: catalog events, remote recovery and queue receipts compose across native copies 189840ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts > RG23: link/account sessions compose with foundation mechanisms in independent processes
+AssertionError: expected { unexpectedSuccess: true, dropped: 1 } to match object { outcome: 'unknown', …(2) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "code": "COMMIT_RESPONSE_LOST",
+    "dropped": 1,
+-   "outcome": "unknown",
+  }
+
+ ❯ jeeves-generator/integration/harness/foundation-scenario.ts:555:26
+    553| `,
+    554|           );
+    555|           expect(result).toMatchObject({
+       |                          ^
+    556|             outcome: "unknown",
+    557|             code: "COMMIT_RESPONSE_LOST",
+ ❯ check jeeves-generator/integration/harness/foundation-scenario.ts:50:24
+ ❯ beforeStart jeeves-generator/integration/harness/foundation-scenario.ts:528:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ foundationScenario jeeves-generator/integration/harness/foundation-scenario.ts:32:3
+ ❯ jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts:16:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts > RG23: catalog events, remote recovery and queue receipts compose across native copies
+Error: Timed out waiting for redelivery acknowledged; last observation: {"queue":"events","messageCount":0,"unacknowledged":1,"consumerCount":1}
+ ❯ poll jeeves-generator/integration/harness/process.ts:165:9
+    163|     );
+    164|   } while (performance.now() < deadline);
+    165|   throw new Error(`Timed out waiting for ${name}; last observation: ${…
+       |         ^
+    166| }
+    167|
+ ❯ jeeves-generator/integration/harness/rg-catalog.ts:518:11
+ ❯ check jeeves-generator/integration/harness/rg-catalog.ts:190:24
+ ❯ beforeStart jeeves-generator/integration/harness/rg-catalog.ts:486:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ catalogScenario jeeves-generator/integration/harness/rg-catalog.ts:180:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  23:18:54
+   Duration  333.31s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-5/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-5/junit.xml

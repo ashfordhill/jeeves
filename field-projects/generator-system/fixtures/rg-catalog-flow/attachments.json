@@ -1,0 +1,77 @@
+[
+  {
+    "source": "owned/catalog.ts",
+    "destination": "src/contracts/catalog.ts",
+    "role": "contract"
+  },
+  {
+    "source": "owned/send.ts",
+    "destination": "src/modules/caller/send.ts",
+    "role": "stub",
+    "module": "send"
+  },
+  {
+    "source": "owned/receive.ts",
+    "destination": "src/modules/callee/receive.ts",
+    "role": "stub",
+    "module": "receive"
+  },
+  {
+    "source": "owned/catalog-events.ts",
+    "destination": "src/modules/caller/catalog-events.ts",
+    "role": "hooks",
+    "module": "catalog-events"
+  },
+  {
+    "source": "owned/catalog-events.hooks.ts",
+    "destination": "src/modules/caller/catalog-events.mapping.hooks.ts",
+    "role": "hooks",
+    "module": "catalog-events"
+  },
+  {
+    "source": "owned/apply-catalog.ts",
+    "destination": "src/modules/projector/apply-catalog.ts",
+    "role": "stub",
+    "module": "apply-catalog"
+  },
+  {
+    "source": "owned/caller-db.json",
+    "destination": "infra/postgres/caller-db/products.json",
+    "role": "product"
+  },
+  {
+    "source": "owned/caller-0001.sql",
+    "destination": "infra/postgres/caller-db/products/migrations/p_caller_owner/0001-initial.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/catalog_sync.sql",
+    "destination": "infra/postgres/caller-db/products/commands/catalog_sync.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/accept_event.sql",
+    "destination": "infra/postgres/caller-db/products/commands/accept_event.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/apply_catalog.sql",
+    "destination": "infra/postgres/caller-db/products/commands/apply_catalog.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/callee-db.json",
+    "destination": "infra/postgres/callee-db/products.json",
+    "role": "product"
+  },
+  {
+    "source": "owned/callee-0001.sql",
+    "destination": "infra/postgres/callee-db/products/migrations/p_callee_owner/0001-initial.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/provider_apply.sql",
+    "destination": "infra/postgres/callee-db/products/commands/provider_apply.sql",
+    "role": "product"
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "id": "gs-922359d8-cd5a-4849-a27a-52179f52baca",
+  "selected": ["rg-mechanisms"],
+  "commit": "c3192e03f056095b0b37c2d289bf535637c3defe",
+  "dirty": "M jeeves-generator/integration/harness/application.ts\n M jeeves-generator/integration/harness/identity.ts\n M jeeves-generator/integration/harness/suites.ts\n M jeeves-generator/integration/scenarios/rg-foundations.system.test.ts\n?? field-projects/generator-system/fixtures/rg-catalog-flow/\n?? field-projects/generator-system/fixtures/rg-link-flow/\n?? jeeves-generator/integration/harness/foundation-scenario.ts\n?? jeeves-generator/integration/harness/rg-catalog.ts\n?? jeeves-generator/integration/harness/rg-issuer.mjs\n?? jeeves-generator/integration/harness/rg-mechanisms.ts\n?? jeeves-generator/integration/harness/rg-provider.mjs\n?? jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

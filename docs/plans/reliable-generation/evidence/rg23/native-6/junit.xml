@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="2" failures="1" errors="0" time="330.638520717">
+    <testsuite name="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" timestamp="2026-11-18T05:35:22.463Z" hostname="BASEMENT-PC" tests="2" failures="1" errors="0" skipped="0" time="330.638520717">
+        <testcase classname="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" name="RG23: link/account sessions compose with foundation mechanisms in independent processes" time="177.658847232">
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts" name="RG23: catalog events, remote recovery and queue receipts compose across native copies" time="152.978683699">
+            <failure message="Timed out waiting for 1; last observation: &quot;0&quot;" type="Error">
+Error: Timed out waiting for 1; last observation: &quot;0&quot;
+ ❯ poll jeeves-generator/integration/harness/process.ts:165:9
+ ❯ jeeves-generator/integration/harness/rg-catalog.ts:581:11
+ ❯ check jeeves-generator/integration/harness/rg-catalog.ts:205:24
+ ❯ beforeStart jeeves-generator/integration/harness/rg-catalog.ts:559:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ catalogScenario jeeves-generator/integration/harness/rg-catalog.ts:183:3
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

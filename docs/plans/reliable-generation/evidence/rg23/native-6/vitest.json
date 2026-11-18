@@ -1,0 +1,64 @@
+{
+  "numTotalTestSuites": 1,
+  "numPassedTestSuites": 0,
+  "numFailedTestSuites": 1,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 2,
+  "numPassedTests": 1,
+  "numFailedTests": 1,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794979755796,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "RG23: link/account sessions compose with foundation mechanisms in independent processes",
+          "status": "passed",
+          "title": "RG23: link/account sessions compose with foundation mechanisms in independent processes",
+          "duration": 177658.847232,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG23: catalog events, remote recovery and queue receipts compose across native copies",
+          "status": "failed",
+          "title": "RG23: catalog events, remote recovery and queue receipts compose across native copies",
+          "duration": 152978.68369900002,
+          "failureMessages": [
+            "Error: Timed out waiting for 1; last observation: \"0\"\n    at poll (/home/ash/github/jeeves/jeeves-generator/integration/harness/process.ts:165:9)\n    at /home/ash/github/jeeves/jeeves-generator/integration/harness/rg-catalog.ts:581:11\n    at check (/home/ash/github/jeeves/jeeves-generator/integration/harness/rg-catalog.ts:205:24)\n    at beforeStart (/home/ash/github/jeeves/jeeves-generator/integration/harness/rg-catalog.ts:559:7)\n    at withApplication (/home/ash/github/jeeves/jeeves-generator/integration/harness/application.ts:366:5)\n    at catalogScenario (/home/ash/github/jeeves/jeeves-generator/integration/harness/rg-catalog.ts:183:3)\n    at file:///home/ash/github/jeeves/node_modules/.pnpm/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@24.19.2_jsdom@29.1.1_@noble+hashes@2_b72d06d6de49ea9f9ac618588292c926/node_modules/vitest/dist/chunks/run.CQOUYP-x.js:2783:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794979755972,
+      "endTime": 1794980108114.6836,
+      "status": "failed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts"
+    }
+  ]
+}

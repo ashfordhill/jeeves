@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "namespaces": [
+    {
+      "schema": "p_caller_owner",
+      "migrations": [
+        {
+          "version": "0001",
+          "file": "infra/postgres/caller-db/products/migrations/p_caller_owner/0001-initial.sql"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "schema": "p_caller_owner",
+      "name": "items"
+    },
+    {
+      "schema": "p_caller_owner",
+      "name": "inbox"
+    },
+    {
+      "schema": "p_caller_owner",
+      "name": "deliveries"
+    }
+  ],
+  "views": [],
+  "operations": [
+    {
+      "name": "catalog_sync",
+      "module": "send",
+      "host": "caller",
+      "kind": "command",
+      "file": "infra/postgres/caller-db/products/commands/catalog_sync.sql",
+      "parameters": 2,
+      "relations": [
+        {
+          "schema": "p_caller_owner",
+          "name": "items",
+          "operations": ["insert", "update"]
+        }
+      ]
+    },
+    {
+      "name": "accept_event",
+      "module": "catalog-events",
+      "host": "caller",
+      "kind": "command",
+      "file": "infra/postgres/caller-db/products/commands/accept_event.sql",
+      "parameters": 3,
+      "relations": [
+        {
+          "schema": "p_caller_owner",
+          "name": "inbox",
+          "operations": ["insert", "update"]
+        }
+      ]
+    },
+    {
+      "name": "apply_catalog",
+      "module": "apply-catalog",
+      "host": "projector",
+      "kind": "command",
+      "file": "infra/postgres/caller-db/products/commands/apply_catalog.sql",
+      "parameters": 3,
+      "relations": [
+        {
+          "schema": "p_caller_owner",
+          "name": "deliveries",
+          "operations": ["insert", "update"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "id": "gs-2d4c3537-0abd-41e3-a6f5-228ae5ffc08e",
+  "selected": ["rg-mechanisms"],
+  "outcome": "failed",
+  "elapsedMs": 607,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/run.json"
+}

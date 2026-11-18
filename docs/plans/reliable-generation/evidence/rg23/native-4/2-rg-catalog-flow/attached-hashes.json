@@ -1,0 +1,50 @@
+{
+  "changedOwned": [
+    {
+      "path": "infra/postgres/callee-db/products.json",
+      "ownership": "generated-extension",
+      "sha256": "85840efad6ce9b5793b47d92ed67d6c09491e19fb3f8f0d7206645b5b022079a"
+    },
+    {
+      "path": "infra/postgres/callee-db/products/migrations/p_callee_owner/0001-initial.sql",
+      "ownership": "generated-extension",
+      "sha256": "b32603820eb3ac0f62770aedcb24482cb0632e5fe955305921265810acc4f16b"
+    },
+    {
+      "path": "infra/postgres/caller-db/products.json",
+      "ownership": "generated-extension",
+      "sha256": "249e92aed57dcad050d02fbc8a06ffa350bcc46bbf8d0f061e446469082a0d4e"
+    },
+    {
+      "path": "infra/postgres/caller-db/products/migrations/p_caller_owner/0001-initial.sql",
+      "ownership": "generated-extension",
+      "sha256": "6593940495c191264f4b4b3095afe3d1ae2eedf65183b69d82c3a01338748746"
+    },
+    {
+      "path": "src/modules/callee/receive.ts",
+      "ownership": "generated-extension",
+      "sha256": "50c0df390dda84107b20002a98fe353624bca93a0a600c1c19a8ef37342dd73f"
+    },
+    {
+      "path": "src/modules/caller/catalog-events.mapping.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "71f5f0d1cfabd344108d6ae40fd9ce22f52e543b5a7b2fdf3c56c3061c56f0e3"
+    },
+    {
+      "path": "src/modules/caller/catalog-events.ts",
+      "ownership": "generated-extension",
+      "sha256": "0aefd5a71a981e8f98fda08c8ec07b9027d915a0d22df08e4c5585f9fa20efc7"
+    },
+    {
+      "path": "src/modules/caller/send.ts",
+      "ownership": "generated-extension",
+      "sha256": "1947b4f6695fa23590ff819b5e9a315c71e8c78767abde1ef1b2bf589b2a34d0"
+    },
+    {
+      "path": "src/modules/projector/apply-catalog.ts",
+      "ownership": "generated-extension",
+      "sha256": "96680fb6a63a0e447070f107f5500b6021180484ff4df7f306ddca8fd08bcb93"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

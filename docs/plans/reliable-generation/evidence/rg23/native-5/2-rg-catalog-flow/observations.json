@@ -1,0 +1,3623 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-18T05:23:01.328Z",
+    "value": [
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-app-callee-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-app-caller-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-app-projector-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-identity-issuer-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-d876f115-9b95-4136-ae7d-fea289fc6724-2-rg-provider-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": []
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213599,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.617229719Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 215038,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:02.303710272Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-projector",
+    "containers": [
+      {
+        "id": "8c5924737fb50e4a8638da5d1198481a56200a65efa17c1cdcc95a0dc4402792",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 213676,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:22:46.956503179Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:52.228774367-06:00",
+                "End": "2026-11-17T23:22:52.272460134-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:00.203266343-06:00",
+                "End": "2026-11-17T23:23:00.246292675-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:05.247277723-06:00",
+                "End": "2026-11-17T23:23:05.290565691-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "d1cdfc7fec57321875e1e72cc431945b05977dff6451062bc3c991f33c1dac5a",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 214914,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:01.943619679Z",
+          "FinishedAt": "0001-01-01T00:00:00Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.21465083-06:00",
+                "End": "2026-11-17T23:23:07.268923547-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "fault": "app-caller stop",
+    "container": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+    "at": "2026-11-18T05:23:07.977Z",
+    "monotonicAt": 232871.632599,
+    "elapsedMs": 421,
+    "result": "Flag --time has been deprecated, use --timeout instead\n1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170"
+  },
+  {
+    "session": "inbox-product-lock",
+    "sql": "SELECT 1;",
+    "result": "1",
+    "at": "2026-11-18T05:23:08.546Z"
+  },
+  {
+    "session": "inbox-acceptance-gate",
+    "sql": "SELECT 1;",
+    "result": "1",
+    "at": "2026-11-18T05:23:08.691Z"
+  },
+  {
+    "session": "inbox-product-lock",
+    "sql": "BEGIN; LOCK TABLE p_caller_owner.inbox IN ACCESS EXCLUSIVE MODE;",
+    "result": "",
+    "at": "2026-11-18T05:23:08.700Z"
+  },
+  {
+    "session": "inbox-acceptance-gate",
+    "sql": "BEGIN; LOCK TABLE jeeves.work_records IN ACCESS EXCLUSIVE MODE;",
+    "result": "",
+    "at": "2026-11-18T05:23:08.710Z"
+  },
+  {
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_caller_db' AND wait_event_type='Lock' AND query LIKE 'INSERT INTO jeeves.work_records%'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT count(*) FROM pg_stat_activity WHERE datname='d_caller_db' AND wait_event_type='Lock' AND query LIKE 'INSERT INTO jeeves.work_records%'",
+    "result": "1"
+  },
+  {
+    "session": "inbox-acceptance-gate",
+    "sql": "COMMIT;",
+    "result": "",
+    "at": "2026-11-18T05:23:09.425Z"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.work_records WHERE work_key='inbox-one'",
+    "result": "0"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.work_records WHERE work_key='inbox-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT state FROM jeeves.work_records WHERE work_key='inbox-one'",
+    "result": "accepted"
+  },
+  {
+    "fault": "app-caller kill",
+    "container": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+    "at": "2026-11-18T05:23:10.418Z",
+    "monotonicAt": 235312.782095,
+    "elapsedMs": 375,
+    "result": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67"
+  },
+  {
+    "session": "inbox-product-lock",
+    "sql": "COMMIT;",
+    "result": "",
+    "at": "2026-11-18T05:23:10.821Z"
+  },
+  {
+    "fault": "app-caller start",
+    "container": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+    "at": "2026-11-18T05:23:10.912Z",
+    "monotonicAt": 235806.681958,
+    "elapsedMs": 343,
+    "result": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170"
+  },
+  {
+    "sql": "SELECT state FROM jeeves.work_records WHERE work_key='inbox-one'",
+    "result": "accepted"
+  },
+  {
+    "sql": "SELECT state FROM jeeves.work_records WHERE work_key='inbox-one'",
+    "result": "completed"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.inbox WHERE id='inbox-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='inbox-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "retry|WORK_HANDLER_FAILED"
+  },
+  {
+    "sql": "SELECT state||'|'||error FROM jeeves.work_records WHERE work_key='terminal-one'",
+    "result": "failed|WORK_ATTEMPTS_EXHAUSTED"
+  },
+  {
+    "fault": "app-caller start",
+    "container": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+    "at": "2026-11-18T05:23:17.985Z",
+    "monotonicAt": 242879.296201,
+    "elapsedMs": 367,
+    "result": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67"
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:21.303856974-06:00",
+                "End": "2026-11-17T23:23:21.349968724-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:21.303856974-06:00",
+                "End": "2026-11-17T23:23:21.349968724-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:21.303856974-06:00",
+                "End": "2026-11-17T23:23:21.349968724-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:21.303856974-06:00",
+                "End": "2026-11-17T23:23:21.349968724-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:21.303856974-06:00",
+                "End": "2026-11-17T23:23:21.349968724-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "starting",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:21.303856974-06:00",
+                "End": "2026-11-17T23:23:21.349968724-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "condition": "healthy copies",
+    "service": "app-caller",
+    "containers": [
+      {
+        "id": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 219847,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:18.077019105Z",
+          "FinishedAt": "2026-11-18T05:23:10.480616767Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:22:51.867180234-06:00",
+                "End": "2026-11-17T23:22:51.90999592-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:22:56.910640504-06:00",
+                "End": "2026-11-17T23:22:56.955742598-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:04.88705542-06:00",
+                "End": "2026-11-17T23:23:04.931003776-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:09.932276237-06:00",
+                "End": "2026-11-17T23:23:09.980922455-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:23.349438085-06:00",
+                "End": "2026-11-17T23:23:23.393906928-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "1e4a04f8db1762af386b58d0afa163aadd493319fe502acfffb57563d94ea170",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 217741,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-11-18T05:23:11.0076159Z",
+          "FinishedAt": "2026-11-18T05:23:08.045721911Z",
+          "Health": {
+            "Status": "healthy",
+            "FailingStreak": 0,
+            "Log": [
+              {
+                "Start": "2026-11-17T23:23:07.563478417-06:00",
+                "End": "2026-11-17T23:23:07.615431553-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:16.253464543-06:00",
+                "End": "2026-11-17T23:23:16.303316038-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              },
+              {
+                "Start": "2026-11-17T23:23:21.303856974-06:00",
+                "End": "2026-11-17T23:23:21.349968724-06:00",
+                "ExitCode": 0,
+                "Output": ""
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "session": "inbox-acceptance-gate",
+    "closed": true,
+    "exitCode": 0
+  },
+  {
+    "session": "inbox-product-lock",
+    "closed": true,
+    "exitCode": 0
+  },
+  {
+    "sql": "SELECT fence||'|'||work_id FROM jeeves.work_records WHERE work_key='replicate-one'",
+    "result": "1|966c100e-f4ac-4f56-8bb9-49de08e33de6"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_callee_owner.items WHERE id='replicate-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT lease_until::text FROM jeeves.work_records WHERE work_key='replicate-one'",
+    "result": "2026-11-18 05:23:54.70165+00"
+  },
+  {
+    "fault": "app-caller pause",
+    "container": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+    "at": "2026-11-18T05:23:25.461Z",
+    "monotonicAt": 250355.612828,
+    "elapsedMs": 66,
+    "result": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:23:54.70165+00'::timestamptz)::text",
+    "result": "true"
+  },
+  {
+    "sql": "SELECT state FROM jeeves.work_records WHERE work_key='replicate-one'",
+    "result": "running"
+  },
+  {
+    "sql": "SELECT state FROM jeeves.work_records WHERE work_key='replicate-one'",
+    "result": "completed"
+  },
+  {
+    "fault": "app-caller unpause",
+    "container": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+    "at": "2026-11-18T05:23:55.578Z",
+    "monotonicAt": 277539.937942,
+    "elapsedMs": 67,
+    "result": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67"
+  },
+  {
+    "sql": "SELECT fence||'|'||work_id FROM jeeves.work_records WHERE work_key='replicate-one'",
+    "result": "2|966c100e-f4ac-4f56-8bb9-49de08e33de6"
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.items WHERE id='replicate-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT effects FROM p_callee_owner.items WHERE id='replicate-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.items WHERE id='replicate-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_callee_owner.items WHERE id='replicate-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT state||'|'||fence FROM jeeves.work_records WHERE work_key='fence-one'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT state||'|'||fence FROM jeeves.work_records WHERE work_key='fence-one'",
+    "result": "running|1"
+  },
+  {
+    "sql": "SELECT lease_until::text FROM jeeves.work_records WHERE work_key='fence-one'",
+    "result": "2026-11-18 05:24:26.826268+00"
+  },
+  {
+    "fault": "app-caller pause",
+    "container": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+    "at": "2026-11-18T05:23:57.200Z",
+    "monotonicAt": 279162.809789,
+    "elapsedMs": 60,
+    "result": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "false"
+  },
+  {
+    "sql": "SELECT (clock_timestamp()>'2026-11-18 05:24:26.826268+00'::timestamptz)::text",
+    "result": "true"
+  },
+  {
+    "fault": "app-caller unpause",
+    "container": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67",
+    "at": "2026-11-18T05:24:27.375Z",
+    "monotonicAt": 306404.295316,
+    "elapsedMs": 61,
+    "result": "3580db8aa53abf0111af35ba2da285198232e26041d57267a6a21d3f5c8ecd67"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.inbox WHERE id='fence-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='fence-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM p_caller_owner.deliveries WHERE id='delivery-one'",
+    "result": "1"
+  },
+  {
+    "sql": "SELECT count(*) FROM jeeves.consumer_receipts WHERE event_id='delivery-one' AND result IS NOT NULL AND retain_until>=completed_at+interval '60 seconds'",
+    "result": "1"
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 2
+    }
+  },
+  {
+    "fault": "app-projector kill",
+    "container": "8c5924737fb50e4a8638da5d1198481a56200a65efa17c1cdcc95a0dc4402792",
+    "at": "2026-11-18T05:24:29.237Z",
+    "monotonicAt": 308266.801878,
+    "elapsedMs": 400,
+    "result": "8c5924737fb50e4a8638da5d1198481a56200a65efa17c1cdcc95a0dc4402792"
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  },
+  {
+    "broker": "state",
+    "queue": "events",
+    "result": {
+      "queue": "events",
+      "messageCount": 0,
+      "unacknowledged": 1,
+      "consumerCount": 1
+    }
+  }
+]

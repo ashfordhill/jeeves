@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-link-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected 'true|true' to be 'false|true' // Object.is equality"
+}

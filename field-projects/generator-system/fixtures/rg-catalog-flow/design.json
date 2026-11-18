@@ -1,0 +1,655 @@
+{
+  "schemaVersion": 3,
+  "revision": 27,
+  "elements": [
+    {
+      "id": "caller",
+      "name": "Caller",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "callee",
+      "name": "Callee",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "issuer",
+      "name": "Issuer",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "caller-db",
+      "name": "Caller DB",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "callee-db",
+      "name": "Callee DB",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "events",
+      "name": "Catalog events",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "projector",
+      "name": "Catalog projector",
+      "classification": {
+        "kind": "Application"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "caller-callee",
+      "kind": "calls",
+      "from": {
+        "element": "caller"
+      },
+      "to": {
+        "element": "callee"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "callee-issuer",
+      "kind": "calls",
+      "from": {
+        "element": "callee"
+      },
+      "to": {
+        "element": "issuer"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "caller-issuer",
+      "kind": "calls",
+      "from": {
+        "element": "caller"
+      },
+      "to": {
+        "element": "issuer"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "caller-db-link",
+      "kind": "uses-database",
+      "from": {
+        "element": "caller"
+      },
+      "to": {
+        "element": "caller-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "callee-db-link",
+      "kind": "uses-database",
+      "from": {
+        "element": "callee"
+      },
+      "to": {
+        "element": "callee-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "publish-events",
+      "kind": "depends-on",
+      "from": {
+        "element": "caller"
+      },
+      "to": {
+        "element": "events"
+      },
+      "planned": {
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "projector-events",
+      "kind": "depends-on",
+      "from": {
+        "element": "events"
+      },
+      "to": {
+        "element": "projector"
+      },
+      "planned": {
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "projector-caller-db",
+      "kind": "uses-database",
+      "from": {
+        "element": "projector"
+      },
+      "to": {
+        "element": "caller-db"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Workload fixture",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "caller",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker",
+            "requestTimeoutMs": 10000
+          }
+        },
+        {
+          "element": "callee",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "issuer",
+          "definition": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "language": "typescript",
+            "exposure": "internal",
+            "provider": "oidc",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "caller-db",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "caller"
+          }
+        },
+        {
+          "element": "callee-db",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "unspecified",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "callee"
+          }
+        },
+        {
+          "element": "events",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "caller"
+          }
+        },
+        {
+          "element": "projector",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "execution": "docker"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "caller-callee",
+          "settings": {}
+        },
+        {
+          "connection": "callee-issuer",
+          "settings": {}
+        },
+        {
+          "connection": "caller-issuer",
+          "settings": {}
+        },
+        {
+          "connection": "caller-db-link",
+          "settings": {}
+        },
+        {
+          "connection": "callee-db-link",
+          "settings": {}
+        },
+        {
+          "connection": "publish-events",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "projector-events",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "projector-caller-db",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "send",
+          "host": "caller",
+          "name": "Send",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "receive",
+          "host": "callee",
+          "name": "Receive",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "catalog-events",
+          "host": "caller",
+          "name": "Webhook receiver",
+          "settings": {
+            "kind": "webhook-receiver",
+            "bodyLimitBytes": "65536",
+            "replayWindowSeconds": 300
+          }
+        },
+        {
+          "id": "apply-catalog",
+          "host": "projector",
+          "name": "Event consumer",
+          "settings": {
+            "kind": "event-consumer"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "send-callee",
+          "from": "send",
+          "to": {
+            "kind": "element",
+            "id": "callee",
+            "via": "caller-callee"
+          }
+        },
+        {
+          "id": "send-issuer",
+          "from": "send",
+          "to": {
+            "kind": "element",
+            "id": "issuer",
+            "via": "caller-issuer"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "receive-issuer",
+          "from": "receive",
+          "to": {
+            "kind": "element",
+            "id": "issuer",
+            "via": "callee-issuer"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "send-caller-db",
+          "from": "send",
+          "to": {
+            "kind": "element",
+            "id": "caller-db",
+            "via": "caller-db-link"
+          }
+        },
+        {
+          "id": "receive-callee-db",
+          "from": "receive",
+          "to": {
+            "kind": "element",
+            "id": "callee-db",
+            "via": "callee-db-link"
+          }
+        },
+        {
+          "id": "catalog-events-caller-db",
+          "from": "catalog-events",
+          "to": {
+            "kind": "element",
+            "id": "caller-db",
+            "via": "caller-db-link"
+          }
+        },
+        {
+          "id": "apply-catalog-events",
+          "from": "apply-catalog",
+          "to": {
+            "kind": "element",
+            "id": "events",
+            "via": "projector-events"
+          }
+        },
+        {
+          "id": "apply-catalog-caller-db",
+          "from": "apply-catalog",
+          "to": {
+            "kind": "element",
+            "id": "caller-db",
+            "via": "projector-caller-db"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "read-caller",
+          "lane": "download",
+          "element": "caller"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Read"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "send",
+        "target": {
+          "kind": "component",
+          "component": "send",
+          "host": "caller"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "receive",
+        "target": {
+          "kind": "component",
+          "component": "receive",
+          "host": "callee"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "catalog-events",
+        "target": {
+          "kind": "component",
+          "component": "catalog-events",
+          "host": "caller"
+        },
+        "template": {
+          "id": "webhook-receiver",
+          "version": "0.1.0",
+          "sha256": "e62566dba466a52da0278679441bd7c70586c0513583dcaca700b146fb7a7198"
+        },
+        "binding": {
+          "kind": "webhook-receiver",
+          "state": {
+            "resource": "caller-db",
+            "connection": "caller-db-link"
+          }
+        }
+      },
+      {
+        "id": "apply-catalog",
+        "target": {
+          "kind": "component",
+          "component": "apply-catalog",
+          "host": "projector"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "caller-owner",
+        "name": "Caller"
+      },
+      {
+        "id": "callee-owner",
+        "name": "Callee"
+      }
+    ],
+    "roles": [
+      {
+        "element": "caller",
+        "owner": "caller-owner",
+        "kind": "api"
+      },
+      {
+        "element": "callee",
+        "owner": "callee-owner",
+        "kind": "api"
+      },
+      {
+        "element": "projector",
+        "owner": "caller-owner",
+        "kind": "worker",
+        "sharedWith": "caller"
+      }
+    ],
+    "resources": [
+      {
+        "element": "caller-db",
+        "authority": "caller-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      },
+      {
+        "element": "callee-db",
+        "authority": "callee-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      }
+    ],
+    "grants": [
+      {
+        "role": "callee",
+        "resource": "callee-db",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "items",
+              "operations": ["INSERT", "SELECT", "UPDATE"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "caller",
+        "resource": "caller-db",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "items",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            },
+            {
+              "name": "inbox",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "projector",
+        "resource": "caller-db",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "deliveries",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            }
+          ],
+          "views": []
+        }
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "callee-db-link",
+        "access": "read-write"
+      },
+      {
+        "connection": "caller-db-link",
+        "access": "read-write"
+      },
+      {
+        "connection": "projector-caller-db",
+        "access": "read-write"
+      }
+    ]
+  }
+}

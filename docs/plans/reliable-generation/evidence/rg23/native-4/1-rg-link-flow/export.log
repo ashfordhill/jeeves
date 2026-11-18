@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-link-flow/design.json /tmp/jeeves-system-UPR5Js/1-rg-link-flow
+{
+  directory: '/tmp/jeeves-system-UPR5Js/1-rg-link-flow',
+  files: 111,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 20
+}

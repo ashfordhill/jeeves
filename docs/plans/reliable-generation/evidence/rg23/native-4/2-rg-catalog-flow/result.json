@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-catalog-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: Timed out waiting for completed; last observation: \"running\""
+}

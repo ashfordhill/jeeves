@@ -17,9 +17,11 @@ if (args[0] === "--cleanup") {
   const suites = implementedSuites;
   let suite = "core";
   let artifacts = "";
+  let testNamePattern: string | undefined;
   for (const arg of args) {
     if (arg.startsWith("--suite=")) suite = arg.slice(8);
     else if (arg.startsWith("--artifacts=")) artifacts = resolve(arg.slice(12));
+    else if (arg.startsWith("--test-name=")) testNamePattern = arg.slice(12);
     else throw new Error(`Unknown option ${arg}`);
   }
   if (suite !== "all" && !suites.includes(suite))
@@ -53,6 +55,7 @@ if (args[0] === "--cleanup") {
     await writeJson(join(artifacts, "identity.json"), {
       id,
       selected,
+      testNamePattern,
       commit: (await command("git", ["rev-parse", "HEAD"])).trim(),
       dirty: (
         await command("git", [
@@ -85,7 +88,14 @@ if (args[0] === "--cleanup") {
     // test deadline changes.
     const output = await command(
       "pnpm",
-      ["exec", "vitest", "run", "--config", "jeeves-generator/integration/vitest.config.ts"],
+      [
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "jeeves-generator/integration/vitest.config.ts",
+        ...(testNamePattern ? ["--testNamePattern", testNamePattern] : []),
+      ],
       {
         timeoutMs: suite === "all" ? 2_400_000 : 1_200_000,
         env: {
@@ -101,13 +111,19 @@ if (args[0] === "--cleanup") {
     console.log(clean(output));
     // `passWithNoTests: false` fails an empty run; this also fails `all` when one selected
     // suite's scenario files are gone while the others still pass.
-    const results = await json<{ testResults: { name: string }[] }>(join(artifacts, "vitest.json"));
+    const results = await json<{
+      numPassedTests: number;
+      numFailedTests: number;
+      testResults: { name: string }[];
+    }>(join(artifacts, "vitest.json"));
     const missing = missingSuites(
       selected,
       results.testResults.map((file) => file.name),
     );
     if (missing.length)
       throw new Error(`Selected suites ran no scenario file: ${missing.join(", ")}`);
+    if (results.numPassedTests + results.numFailedTests === 0)
+      throw new Error("Selected test filter ran no executed tests (skipped tests are not a pass)");
   } catch (error) {
     failed = error;
     const record = await json<RunRecord>(recordPath);

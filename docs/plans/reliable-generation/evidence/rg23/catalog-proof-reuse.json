@@ -1,0 +1,14 @@
+{
+  "catalogSourceFiles": 18,
+  "catalogSourceIdentical": true,
+  "retainedProof": "native-5/2-rg-catalog-flow/named-assertions.json",
+  "targetedRun": "native-6/2-rg-catalog-flow",
+  "emittedFiles": 94,
+  "emittedPathsAndHashesIdentical": true,
+  "native-5EffectiveSourceSha256": "e223b248d2ffacfbd4e2c465835fc562c87829c3abb65168b10caf806adf947b",
+  "native-6EffectiveSourceSha256": "776aebafe61ba86de5b0f1dedc813f2c4d790f28a947797cfaf228f62f6620da",
+  "targetedFinalRun": "native-7/1-rg-catalog-flow",
+  "catalogSourceIdenticalThroughNative7": true,
+  "catalogEmittedPayloadsIdenticalThroughNative7": 94,
+  "native-7EffectiveSourceSha256": "346a5fad046331d124e43cd57a015fe6fd32190f8c74eaea810fae0afffe1439"
+}

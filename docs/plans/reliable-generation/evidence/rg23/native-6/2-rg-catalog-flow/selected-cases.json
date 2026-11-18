@@ -1,0 +1,9 @@
+{
+  "mode": "receipt/retention/broker targeted",
+  "notRerun": [
+    "HMAC durable acceptance survives process death",
+    "paused stale holder and stable remote identity",
+    "fresh-context stale fence rejection"
+  ],
+  "priorEvidence": "native-5/2-rg-catalog-flow/named-assertions.json"
+}

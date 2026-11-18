@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "gs-053b7616-68e1-492f-ae21-3e3c94864115",
+  "suite": "rg-mechanisms",
+  "temporary": "/tmp/jeeves-system-SD2GZx",
+  "stacks": [
+    {
+      "project": "gs-053b7616-68e1-492f-ae21-3e3c94864115-1",
+      "fixture": "rg-link-flow",
+      "application": "/tmp/jeeves-system-SD2GZx/1-rg-link-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow",
+      "ports": [38319, 36903, 46605]
+    },
+    {
+      "project": "gs-053b7616-68e1-492f-ae21-3e3c94864115-2",
+      "fixture": "rg-catalog-flow",
+      "application": "/tmp/jeeves-system-SD2GZx/2-rg-catalog-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow",
+      "ports": [40435, 36255, 43319]
+    }
+  ]
+}

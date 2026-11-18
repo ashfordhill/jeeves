@@ -1,0 +1,49 @@
+{
+  "native-1": {
+    "temporaryRemoved": true,
+    "emptyOwnedResources": true,
+    "projects": ["gs-7cf3e585-1e78-479d-b153-d452e193498b-1"]
+  },
+  "native-2": {
+    "temporaryRemoved": true,
+    "emptyOwnedResources": true,
+    "projects": ["gs-89503b21-7f8b-466f-8ff3-fa23b3fea2b9-1"]
+  },
+  "native-7": {
+    "temporaryRemoved": true,
+    "emptyOwnedResources": true,
+    "projects": ["gs-23670c26-3412-4b71-8004-766cef9f3277-1"]
+  },
+  "native-4": {
+    "temporaryRemoved": true,
+    "emptyOwnedResources": true,
+    "projects": [
+      "gs-922359d8-cd5a-4849-a27a-52179f52baca-1",
+      "gs-922359d8-cd5a-4849-a27a-52179f52baca-2"
+    ]
+  },
+  "native-5": {
+    "temporaryRemoved": true,
+    "emptyOwnedResources": true,
+    "projects": [
+      "gs-d876f115-9b95-4136-ae7d-fea289fc6724-1",
+      "gs-d876f115-9b95-4136-ae7d-fea289fc6724-2"
+    ]
+  },
+  "native-6": {
+    "temporaryRemoved": true,
+    "emptyOwnedResources": true,
+    "projects": [
+      "gs-053b7616-68e1-492f-ae21-3e3c94864115-1",
+      "gs-053b7616-68e1-492f-ae21-3e3c94864115-2"
+    ]
+  },
+  "native-3": {
+    "temporaryRemoved": true,
+    "emptyOwnedResources": true,
+    "projects": [
+      "gs-3e16adf0-3bfc-4fce-8e7f-8f0c38252409-1",
+      "gs-3e16adf0-3bfc-4fce-8e7f-8f0c38252409-2"
+    ]
+  }
+}

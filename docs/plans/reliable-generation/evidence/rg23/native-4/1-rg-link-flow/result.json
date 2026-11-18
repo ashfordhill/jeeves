@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-link-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected { status: 503, body: { …(2) }, …(2) } to match object { status: 200, body: { …(3) } }\n(5 matching properties omitted from actual)"
+}

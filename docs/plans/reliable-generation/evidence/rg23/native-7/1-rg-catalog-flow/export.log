@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-catalog-flow/design.json /tmp/jeeves-system-gYRtgx/1-rg-catalog-flow
+{
+  directory: '/tmp/jeeves-system-gYRtgx/1-rg-catalog-flow',
+  files: 95,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 7
+}

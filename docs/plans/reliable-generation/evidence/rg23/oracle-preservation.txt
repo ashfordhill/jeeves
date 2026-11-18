@@ -1,0 +1,2 @@
+See oracle-preservation.json. Original75 expect statements/10 named sections preserved.
+Callback differs only in optional RG23 extension and corrected mutation-COMMIT fault targeting, plus formatting.

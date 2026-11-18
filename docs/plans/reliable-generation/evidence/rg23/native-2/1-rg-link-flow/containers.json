@@ -1,0 +1,24 @@
+{
+  "containers": [
+    "fd57a72bfd09",
+    "6c008ed2ebc4",
+    "58f7c28297b3",
+    "254cfc80fc40",
+    "85aaf20219ff",
+    "48ab595db69f",
+    "5d801389f6ef",
+    "ec44eb79f055",
+    "534b0242968a",
+    "a3745ef037af",
+    "daa4134e1ffd",
+    "cf3deb049bec",
+    "3adbd921845a"
+  ],
+  "networks": ["0f72ef9407c4"],
+  "volumes": [
+    "gs-89503b21-7f8b-466f-8ff3-fa23b3fea2b9-1_cache-admission",
+    "gs-89503b21-7f8b-466f-8ff3-fa23b3fea2b9-1_cache-records",
+    "gs-89503b21-7f8b-466f-8ff3-fa23b3fea2b9-1_postgres-data"
+  ],
+  "images": ["gs-89503b21-7f8b-466f-8ff3-fa23b3fea2b9-1-app:latest"]
+}

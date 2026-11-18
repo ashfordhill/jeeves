@@ -1,0 +1,125 @@
+identity-sign-in-1  | 2026-11-18T04:56:29.396400622Z Updating the configuration and installing your custom providers, if any. Please wait.
+identity-sign-in-1  | 2026-11-18T04:56:31.954454674Z 2026-11-18 04:56:31,951 WARN  [org.keycloak.common.Profile] (build-13) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-sign-in-1  | 2026-11-18T04:56:47.007502202Z 2026-11-18 04:56:47,007 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 13840ms
+identity-sign-in-1  | 2026-11-18T04:56:47.579989673Z Running the server in development mode. DO NOT use this configuration in production.
+identity-sign-in-1  | 2026-11-18T04:56:49.203273860Z 2026-11-18 04:56:48,063 WARN  [org.keycloak.models.sessions.infinispan.InfinispanStickySessionEncoderProviderFactory] (main) The option `shouldAttachRoute` is deprecated and will be removed in a future release. Disable it by setting `spi-sticky-session-encoder--infinispan--should-attach-route` to `false`
+identity-sign-in-1  | 2026-11-18T04:56:49.203566935Z 2026-11-18 04:56:48,091 INFO  [org.keycloak.url.HostnameV2ProviderFactory] (main) If hostname is specified, hostname-strict is effectively ignored
+identity-sign-in-1  | 2026-11-18T04:56:49.210230680Z 2026-11-18 04:56:49,196 INFO  [org.infinispan.CONTAINER] (main) ISPN000974: Virtual threads support: enabled
+identity-sign-in-1  | 2026-11-18T04:56:49.942021094Z 2026-11-18 04:56:49,941 INFO  [org.hibernate.orm.jdbc.batch] (JPA Startup Thread) HHH100501: Automatic JDBC statement batching enabled (maximum batch size 32)
+identity-sign-in-1  | 2026-11-18T04:56:49.968511552Z 2026-11-18 04:56:49,967 WARN  [org.keycloak.common.Profile] (main) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+identity-sign-in-1  | 2026-11-18T04:56:50.665831165Z 2026-11-18 04:56:50,665 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
+identity-sign-in-1  | 2026-11-18T04:57:00.254172158Z 2026-11-18 04:57:00,253 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+identity-sign-in-1  | 2026-11-18T04:57:00.467739661Z 2026-11-18 04:57:00,467 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_892767, Site name: null, Cluster name: ISPN
+identity-sign-in-1  | 2026-11-18T04:57:00.661660811Z 2026-11-18 04:57:00,658 INFO  [org.keycloak.models.workflow.WorkflowsEventListenerFactory] (main) Workflow runner task scheduled: next execution at 16:57, then every PT12H
+identity-sign-in-1  | 2026-11-18T04:57:00.669287679Z 2026-11-18 04:57:00,668 INFO  [org.keycloak.exportimport.dir.DirImportProvider] (main) Importing from directory /opt/keycloak/bin/../data/import
+identity-sign-in-1  | 2026-11-18T04:57:00.815861500Z 2026-11-18 04:57:00,815 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
+identity-sign-in-1  | 2026-11-18T04:57:01.788381920Z 2026-11-18 04:57:01,788 INFO  [org.keycloak.exportimport.singlefile.SingleFileImportProvider] (main) Full importing from file /opt/keycloak/bin/../data/import/realm.json
+identity-sign-in-1  | 2026-11-18T04:57:02.747502947Z 2026-11-18 04:57:02,747 INFO  [org.keycloak.exportimport.util.ImportUtils] (main) Realm 'sign-in' imported
+identity-sign-in-1  | 2026-11-18T04:57:02.747533585Z 2026-11-18 04:57:02,747 INFO  [org.keycloak.services] (main) KC-SERVICES0030: Full model import requested. Strategy: IGNORE_EXISTING
+identity-sign-in-1  | 2026-11-18T04:57:02.747621190Z 2026-11-18 04:57:02,747 INFO  [org.keycloak.services] (main) KC-SERVICES0032: Import finished successfully
+identity-sign-in-1  | 2026-11-18T04:57:02.812286855Z 2026-11-18 04:57:02,811 INFO  [org.keycloak.services] (main) KC-SERVICES0077: Created temporary admin user with username admin
+identity-sign-in-1  | 2026-11-18T04:57:02.947792160Z 2026-11-18 04:57:02,947 INFO  [org.keycloak.services.resources.KeycloakApplication] (main) Bootstrap completed in 12.978000 seconds
+identity-sign-in-1  | 2026-11-18T04:57:03.011794947Z 2026-11-18 04:57:03,011 INFO  [io.quarkus] (main) Keycloak 26.8.1 on JVM (powered by Quarkus 3.40.1) started in 15.859s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+identity-sign-in-1  | 2026-11-18T04:57:03.011824474Z 2026-11-18 04:57:03,011 INFO  [io.quarkus] (main) Profile dev activated.
+identity-sign-in-1  | 2026-11-18T04:57:03.011827018Z 2026-11-18 04:57:03,011 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, narayana-jta, opentelemetry, rest, rest-jackson, smallrye-context-propagation, smallrye-health, vertx]
+app-items-worker-1  | 2026-11-18T04:57:12.015336351Z {"event":"probe","tile":"items-worker","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-worker-1  | 2026-11-18T04:57:12.015934233Z Application ready
+app-browser-1       | 2026-11-18T04:57:08.122319707Z {"level":"error","event":"startup-failed","error":"Error: Invalid setting JEEVES_BROWSER_SESSION_KEYS"}
+app-browser-1       | 2026-11-18T04:57:08.122461362Z Application startup failed
+app-browser-1       | 2026-11-18T04:57:08.122663053Z {"level":"info","event":"drain-started"}
+app-browser-1       | 2026-11-18T04:57:08.122932421Z {"level":"info","event":"admission-stopped"}
+app-browser-1       | 2026-11-18T04:57:08.123083490Z {"level":"info","event":"operations-cancelled"}
+app-browser-1       | 2026-11-18T04:57:08.123100377Z {"level":"info","event":"drain-completed"}
+app-items-api-1     | 2026-11-18T04:57:08.532069116Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-1     | 2026-11-18T04:57:08.533081318Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-items-api-1     | 2026-11-18T04:57:08.576651043Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-1     | 2026-11-18T04:57:08.599564911Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-1     | 2026-11-18T04:57:08.640683476Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-items-api-1     | 2026-11-18T04:57:08.640706537Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+app-items-api-1     | 2026-11-18T04:57:08.640710854Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-items-api-1     | 2026-11-18T04:57:08.641273827Z Application ready
+app-gateway-1       | 2026-11-18T04:57:08.888933179Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+cache-admission-1   | 2026-11-18T04:56:19.204854577Z 7:M 18 Nov 2026 04:56:19.204 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-admission-1   | 2026-11-18T04:56:19.204899359Z 7:M 18 Nov 2026 04:56:19.204 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-admission-1   | 2026-11-18T04:56:19.204924248Z 7:M 18 Nov 2026 04:56:19.204 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-admission-1   | 2026-11-18T04:56:19.204929979Z 7:M 18 Nov 2026 04:56:19.204 * Configuration loaded
+cache-admission-1   | 2026-11-18T04:56:19.205323938Z 7:M 18 Nov 2026 04:56:19.205 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-admission-1   | 2026-11-18T04:56:19.205334389Z 7:M 18 Nov 2026 04:56:19.205 * monotonic clock: POSIX clock_gettime
+cache-admission-1   | 2026-11-18T04:56:19.205887324Z 7:M 18 Nov 2026 04:56:19.205 * Running mode=standalone, port=6379.
+cache-admission-1   | 2026-11-18T04:56:19.206221054Z 7:M 18 Nov 2026 04:56:19.206 * Server initialized
+cache-admission-1   | 2026-11-18T04:56:19.256855793Z 7:M 18 Nov 2026 04:56:19.256 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-admission-1   | 2026-11-18T04:56:19.334536424Z 7:M 18 Nov 2026 04:56:19.334 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-18T04:56:19.334554260Z 7:M 18 Nov 2026 04:56:19.334 * Ready to accept connections tcp
+app-gateway-1       | 2026-11-18T04:57:08.942188964Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-gateway-1       | 2026-11-18T04:57:08.942965797Z Application ready
+cache-records-1     | 2026-11-18T04:56:18.782567499Z 7:M 18 Nov 2026 04:56:18.782 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-records-1     | 2026-11-18T04:56:18.782598798Z 7:M 18 Nov 2026 04:56:18.782 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-records-1     | 2026-11-18T04:56:18.782601012Z 7:M 18 Nov 2026 04:56:18.782 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-records-1     | 2026-11-18T04:56:18.782602564Z 7:M 18 Nov 2026 04:56:18.782 * Configuration loaded
+cache-records-1     | 2026-11-18T04:56:18.783088474Z 7:M 18 Nov 2026 04:56:18.783 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-records-1     | 2026-11-18T04:56:18.783093901Z 7:M 18 Nov 2026 04:56:18.783 * monotonic clock: POSIX clock_gettime
+cache-records-1     | 2026-11-18T04:56:18.784045461Z 7:M 18 Nov 2026 04:56:18.783 * Running mode=standalone, port=6379.
+cache-records-1     | 2026-11-18T04:56:18.784298399Z 7:M 18 Nov 2026 04:56:18.784 * Server initialized
+cache-records-1     | 2026-11-18T04:56:18.813327429Z 7:M 18 Nov 2026 04:56:18.813 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-records-1     | 2026-11-18T04:56:18.861566334Z 7:M 18 Nov 2026 04:56:18.861 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+local-postgres-1    | 2026-11-18T04:56:18.399714547Z The files belonging to this database system will be owned by user "postgres".
+cache-records-1     | 2026-11-18T04:56:18.861581249Z 7:M 18 Nov 2026 04:56:18.861 * Ready to accept connections tcp
+local-postgres-1    | 2026-11-18T04:56:18.399747445Z This user must also own the server process.
+local-postgres-1    | 2026-11-18T04:56:18.399750099Z
+local-postgres-1    | 2026-11-18T04:56:18.399808812Z The database cluster will be initialized with locale "en_US.utf8".
+local-postgres-1    | 2026-11-18T04:56:18.399814341Z The default database encoding has accordingly been set to "UTF8".
+local-postgres-1    | 2026-11-18T04:56:18.399816784Z The default text search configuration will be set to "english".
+local-postgres-1    | 2026-11-18T04:56:18.399818694Z
+local-postgres-1    | 2026-11-18T04:56:18.399820311Z Data page checksums are disabled.
+local-postgres-1    | 2026-11-18T04:56:18.399858663Z
+local-postgres-1    | 2026-11-18T04:56:18.399944028Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+local-postgres-1    | 2026-11-18T04:56:18.408523347Z creating subdirectories ... ok
+local-postgres-1    | 2026-11-18T04:56:18.408658224Z selecting dynamic shared memory implementation ... posix
+local-postgres-1    | 2026-11-18T04:56:18.437046639Z selecting default "max_connections" ... 100
+local-postgres-1    | 2026-11-18T04:56:18.460882723Z selecting default "shared_buffers" ... 128MB
+local-postgres-1    | 2026-11-18T04:56:18.554443175Z selecting default time zone ... UTC
+local-postgres-1    | 2026-11-18T04:56:18.555522657Z creating configuration files ... ok
+local-postgres-1    | 2026-11-18T04:56:18.678016405Z running bootstrap script ... ok
+local-postgres-1    | 2026-11-18T04:56:18.905800194Z sh: locale: not found
+local-postgres-1    | 2026-11-18T04:56:18.905895442Z 2026-11-18 04:56:18.905 UTC [35] WARNING:  no usable system locales were found
+local-postgres-1    | 2026-11-18T04:56:19.352525546Z performing post-bootstrap initialization ... ok
+local-postgres-1    | 2026-11-18T04:56:19.855087382Z syncing data to disk ... ok
+local-postgres-1    | 2026-11-18T04:56:19.855111260Z
+local-postgres-1    | 2026-11-18T04:56:19.855113657Z
+local-postgres-1    | 2026-11-18T04:56:19.855115577Z Success. You can now start the database server using:
+local-postgres-1    | 2026-11-18T04:56:19.855117579Z
+local-postgres-1    | 2026-11-18T04:56:19.855119324Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+local-postgres-1    | 2026-11-18T04:56:19.855121142Z
+local-postgres-1    | 2026-11-18T04:56:19.855087382Z initdb: warning: enabling "trust" authentication for local connections
+local-postgres-1    | 2026-11-18T04:56:19.855126111Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+local-postgres-1    | 2026-11-18T04:56:19.930979178Z waiting for server to start....2026-11-18 04:56:19.930 UTC [41] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T04:56:19.952221373Z 2026-11-18 04:56:19.952 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T04:56:20.006044621Z 2026-11-18 04:56:20.005 UTC [44] LOG:  database system was shut down at 2026-11-18 04:56:19 UTC
+local-postgres-1    | 2026-11-18T04:56:20.026067083Z 2026-11-18 04:56:20.025 UTC [41] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-18T04:56:20.076483508Z  done
+local-postgres-1    | 2026-11-18T04:56:20.076501445Z server started
+local-postgres-1    | 2026-11-18T04:56:20.093240231Z
+local-postgres-1    | 2026-11-18T04:56:20.093255449Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+local-postgres-1    | 2026-11-18T04:56:20.093257552Z
+local-postgres-1    | 2026-11-18T04:56:20.094003307Z waiting for server to shut down...2026-11-18 04:56:20.093 UTC [41] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-18T04:56:20.114040123Z .2026-11-18 04:56:20.113 UTC [41] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-18T04:56:20.115645266Z 2026-11-18 04:56:20.115 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+local-postgres-1    | 2026-11-18T04:56:20.115947071Z 2026-11-18 04:56:20.115 UTC [42] LOG:  shutting down
+local-postgres-1    | 2026-11-18T04:56:20.140397899Z 2026-11-18 04:56:20.140 UTC [42] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-18T04:56:20.297618386Z 2026-11-18 04:56:20.297 UTC [42] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.032 s, sync=0.015 s, total=0.182 s; sync files=2, longest=0.008 s, average=0.008 s; distance=0 kB, estimate=0 kB; lsn=0/14EF2C8, redo lsn=0/14EF2C8
+local-postgres-1    | 2026-11-18T04:56:20.302983497Z 2026-11-18 04:56:20.302 UTC [41] LOG:  database system is shut down
+local-postgres-1    | 2026-11-18T04:56:20.394384069Z  done
+local-postgres-1    | 2026-11-18T04:56:20.394405624Z server stopped
+local-postgres-1    | 2026-11-18T04:56:20.395282204Z
+local-postgres-1    | 2026-11-18T04:56:20.395288183Z PostgreSQL init process complete; ready for start up.
+local-postgres-1    | 2026-11-18T04:56:20.395290277Z
+local-postgres-1    | 2026-11-18T04:56:20.457329459Z 2026-11-18 04:56:20.457 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T04:56:20.457350546Z 2026-11-18 04:56:20.457 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1    | 2026-11-18T04:56:20.457352952Z 2026-11-18 04:56:20.457 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1    | 2026-11-18T04:56:20.492426016Z 2026-11-18 04:56:20.492 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T04:56:20.532259852Z 2026-11-18 04:56:20.532 UTC [55] LOG:  database system was shut down at 2026-11-18 04:56:20 UTC
+local-postgres-1    | 2026-11-18T04:56:20.553784669Z 2026-11-18 04:56:20.553 UTC [1] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-18T04:56:49.991691609Z 2026-11-18 04:56:49.991 UTC [107] ERROR:  relation "migration_model" does not exist at character 25
+local-postgres-1    | 2026-11-18T04:56:49.991727050Z 2026-11-18 04:56:49.991 UTC [107] STATEMENT:  SELECT ID, VERSION FROM MIGRATION_MODEL ORDER BY UPDATE_TIME DESC
+local-postgres-1    | 2026-11-18T04:56:50.616605994Z 2026-11-18 04:56:50.616 UTC [108] ERROR:  relation "public.databasechangeloglock" does not exist at character 22
+local-postgres-1    | 2026-11-18T04:56:50.616641647Z 2026-11-18 04:56:50.616 UTC [108] STATEMENT:  SELECT COUNT(*) FROM public.databasechangeloglock

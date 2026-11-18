@@ -1,0 +1,23 @@
+$ pnpm --filter @jeeves/generator test:generated --suite=rg-mechanisms --test-name=RG23-no-scenario-should-match --artifacts=/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/result-guard-no-match
+$ tsx integration/run.ts --suite=rg-mechanisms --test-name=RG23-no-scenario-should-match --artifacts=/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/result-guard-no-match
+Generated system suites: rg-mechanisms; artifacts: /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/result-guard-no-match
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ↓ |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts (2 tests | 2 skipped)
+
+ Test Files  1 skipped (1)
+      Tests  2 skipped (2)
+   Start at  23:48:37
+   Duration  171ms (transform 79%, import 19%, worker 2%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/junit.xml
+
+Error: Selected test filter ran no executed tests (skipped tests are not a pass)
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator
+
+[ELIFECYCLE] Command failed with exit code 1.

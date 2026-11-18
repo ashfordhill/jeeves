@@ -1,0 +1,10 @@
+{
+  "emitterChanges": [],
+  "templateChanges": [],
+  "rootDependencyChanges": [],
+  "publicApiVersion": 8,
+  "generatedDependencyPinsUnchanged": true,
+  "frameworkMigrationsUnchanged": true,
+  "pinUpdatesRequired": false,
+  "actualExportCheckerAndTypeScript": "native6 link and native7 catalog build logs; TypeScript7.0.2"
+}

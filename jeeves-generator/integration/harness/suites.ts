@@ -10,6 +10,7 @@ export const implementedSuites = [
   "faults",
   "pubsub",
   "rg-foundations",
+  "rg-mechanisms",
 ];
 
 /** Selected suites that contributed no scenario file to a run (a missing file is not a pass). */

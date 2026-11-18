@@ -1,0 +1,194 @@
+jeeves-generator/integration/harness/rg-issuer.mjs:9:33 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+     7 │ const root = "/rg";
+     8 │ const issuer = "https://rg-issuer:8443";
+   > 9 │ const credential = readFileSync(root + "/browser-secret", "utf8").trim();
+       │                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+    10 │ let rotations = 0,
+    11 │   refreshes = 0,
+
+  i Unsafe fix: Use a template literal.
+
+      7   7 │   const root = "/rg";
+      8   8 │   const issuer = "https://rg-issuer:8443";
+      9     │ - const·credential·=·readFileSync(root·+·"/browser-secret",·"utf8").trim();
+          9 │ + const·credential·=·readFileSync(`${root}/browser-secret`,·"utf8").trim();
+     10  10 │   let rotations = 0,
+     11  11 │     refreshes = 0,
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:13:50 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    11 │   refreshes = 0,
+    12 │   healthy = false;
+  > 13 │ const controller = () => JSON.parse(readFileSync(root + "/control.json", "utf8"));
+       │                                                  ^^^^^^^^^^^^^^^^^^^^^^
+    14 │ async function provision() {
+    15 │   const admin = readFileSync("/run/secrets/identity-admin-sign-in", "utf8").trim();
+
+  i Unsafe fix: Use a template literal.
+
+     11  11 │     refreshes = 0,
+     12  12 │     healthy = false;
+     13     │ - const·controller·=·()·=>·JSON.parse(readFileSync(root·+·"/control.json",·"utf8"));
+         13 │ + const·controller·=·()·=>·JSON.parse(readFileSync(`${root}/control.json`,·"utf8"));
+     14  14 │   async function provision() {
+     15  15 │     const admin = readFileSync("/run/secrets/identity-admin-sign-in", "utf8").trim();
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:30:36 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    28 │   if (tokenReply.status !== 200) throw Error("Task admin issuance failed");
+    29 │   const token = (await tokenReply.json()).access_token;
+  > 30 │   const headers = { authorization: "Bearer " + token, "content-type": "application/json" };
+       │                                    ^^^^^^^^^^^^^^^^^
+    31 │   const base = "http://identity-sign-in:8080/admin/realms/sign-in";
+    32 │   const update = await fetch(base, {
+
+  i Unsafe fix: Use a template literal.
+
+     28  28 │     if (tokenReply.status !== 200) throw Error("Task admin issuance failed");
+     29  29 │     const token = (await tokenReply.json()).access_token;
+     30     │ - ··const·headers·=·{·authorization:·"Bearer·"·+·token,·"content-type":·"application/json"·};
+         30 │ + ··const·headers·=·{·authorization:·`Bearer·${token}`,·"content-type":·"application/json"·};
+     31  31 │     const base = "http://identity-sign-in:8080/admin/realms/sign-in";
+     32  32 │     const update = await fetch(base, {
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:42:30 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    40 │   });
+    41 │   if (update.status !== 204) throw Error("Task realm rotation policy failed");
+  > 42 │   const result = await fetch(base + "/clients", {
+       │                              ^^^^^^^^^^^^^^^^^
+    43 │     method: "POST",
+    44 │     headers,
+
+  i Unsafe fix: Use a template literal.
+
+     40  40 │     });
+     41  41 │     if (update.status !== 204) throw Error("Task realm rotation policy failed");
+     42     │ - ··const·result·=·await·fetch(base·+·"/clients",·{
+         42 │ + ··const·result·=·await·fetch(`${base}/clients`,·{
+     43  43 │       method: "POST",
+     44  44 │       headers,
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:72:23 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    70 │ }
+    71 │ const proxy = https.createServer(
+  > 72 │   { key: readFileSync(root + "/server.key"), cert: readFileSync(root + "/server.crt") },
+       │                       ^^^^^^^^^^^^^^^^^^^^
+    73 │   async (req, res) => {
+    74 │     try {
+
+  i Unsafe fix: Use a template literal.
+
+     70  70 │   }
+     71  71 │   const proxy = https.createServer(
+     72     │ - ··{·key:·readFileSync(root·+·"/server.key"),·cert:·readFileSync(root·+·"/server.crt")·},
+         72 │ + ··{·key:·readFileSync(`${root}/server.key`),·cert:·readFileSync(root·+·"/server.crt")·},
+     73  73 │     async (req, res) => {
+     74  74 │       try {
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:72:65 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    70 │ }
+    71 │ const proxy = https.createServer(
+  > 72 │   { key: readFileSync(root + "/server.key"), cert: readFileSync(root + "/server.crt") },
+       │                                                                 ^^^^^^^^^^^^^^^^^^^^
+    73 │   async (req, res) => {
+    74 │     try {
+
+  i Unsafe fix: Use a template literal.
+
+     70  70 │   }
+     71  71 │   const proxy = https.createServer(
+     72     │ - ··{·key:·readFileSync(root·+·"/server.key"),·cert:·readFileSync(root·+·"/server.crt")·},
+         72 │ + ··{·key:·readFileSync(root·+·"/server.key"),·cert:·readFileSync(`${root}/server.crt`)·},
+     73  73 │     async (req, res) => {
+     74  74 │       try {
+
+
+jeeves-generator/integration/harness/rg-issuer.mjs:95:22 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    93 │         }
+    94 │       }
+  > 95 │       const target = "http://identity-sign-in:8080" + req.url;
+       │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    96 │       const response = await fetch(target, {
+    97 │         method: req.method,
+
+  i Unsafe fix: Use a template literal.
+
+     93  93 │           }
+     94  94 │         }
+     95     │ - ······const·target·=·"http://identity-sign-in:8080"·+·req.url;
+         95 │ + ······const·target·=·`http://identity-sign-in:8080${req.url}`;
+     96  96 │         const response = await fetch(target, {
+     97  97 │           method: req.method,
+
+
+jeeves-generator/integration/harness/rg-mechanisms.ts:176:164 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    174 │ const login=await fetch(action,{method:'POST',redirect:'manual',headers:{cookie:cookies(),'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:${JSON.stringify(username)},password:${JSON.stringify(password)},credentialId:''})});absorb(login);await login.text();if(login.status!==302)throw Error('Issuer login '+login.status);
+    175 │ const target=new URL(login.headers.get('location'));const callback=await fetch('http://127.0.0.1:3000'+target.pathname+target.search,{headers:{cookie:cookies()},redirect:'manual'});absorb(callback);await callback.text();if(callback.status!==302)throw Error('Callback '+callback.status);
+  > 176 │ const state=await fetch('http://127.0.0.1:3000/modules/session/session',{headers:{cookie:cookies()}});const body=await state.json();writeFileSync(${JSON.stringify("/rg/" + handoff)},JSON.stringify({cookie:cookies(),csrf:body.csrf,status:state.status}),{mode:0o600});${finish("{status:state.status}")}
+        │                                                                                                                                                                    ^^^^^^^^^^^^^^^^
+    177 │ `,
+    178 │   );
+
+  i Unsafe fix: Use a template literal.
+
+    174 174 │   const login=await fetch(action,{method:'POST',redirect:'manual',headers:{cookie:cookies(),'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:${JSON.stringify(username)},password:${JSON.stringify(password)},credentialId:''})});absorb(login);await login.text();if(login.status!==302)throw Error('Issuer login '+login.status);
+    175 175 │   const target=new URL(login.headers.get('location'));const callback=await fetch('http://127.0.0.1:3000'+target.pathname+target.search,{headers:{cookie:cookies()},redirect:'manual'});absorb(callback);await callback.text();if(callback.status!==302)throw Error('Callback '+callback.status);
+    176     │ - const·state=await·fetch('http://127.0.0.1:3000/modules/session/session',{headers:{cookie:cookies()}});const·body=await·state.json();writeFileSync(${JSON.stringify("/rg/"·+·handoff)},JSON.stringify({cookie:cookies(),csrf:body.csrf,status:state.status}),{mode:0o600});${finish("{status:state.status}")}
+        176 │ + const·state=await·fetch('http://127.0.0.1:3000/modules/session/session',{headers:{cookie:cookies()}});const·body=await·state.json();writeFileSync(${JSON.stringify(`/rg/${handoff}`)},JSON.stringify({cookie:cookies(),csrf:body.csrf,status:state.status}),{mode:0o600});${finish("{status:state.status}")}
+    177 177 │   `,
+    178 178 │     );
+
+
+jeeves-generator/integration/harness/rg-provider.mjs:39:11 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    37 │       const target = incoming
+    38 │         ? "http://app-caller:3000/modules/catalog-events"
+  > 39 │         : "http://app-callee:3000" + req.url;
+       │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    40 │       const result = await fetch(target, {
+    41 │         method: req.method,
+
+  i Unsafe fix: Use a template literal.
+
+    37 37 │         const target = incoming
+    38 38 │           ? "http://app-caller:3000/modules/catalog-events"
+    39    │ - ········:·"http://app-callee:3000"·+·req.url;
+       39 │ + ········:·`http://app-callee:3000${req.url}`;
+    40 40 │         const result = await fetch(target, {
+    41 41 │           method: req.method,
+
+
+Skipped 9 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
+
+Checked 31 files in 18ms. Fixed 2 files.
+Found 9 infos.

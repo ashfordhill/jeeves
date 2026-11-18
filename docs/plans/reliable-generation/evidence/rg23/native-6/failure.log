@@ -1,0 +1,35 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts (2 tests | 1 failed) 330639ms
+   ✓ RG23: link/account sessions compose with foundation mechanisms in independent processes 177659ms
+   × RG23: catalog events, remote recovery and queue receipts compose across native copies 152979ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts > RG23: catalog events, remote recovery and queue receipts compose across native copies
+Error: Timed out waiting for 1; last observation: "0"
+ ❯ poll jeeves-generator/integration/harness/process.ts:165:9
+    163|     );
+    164|   } while (performance.now() < deadline);
+    165|   throw new Error(`Timed out waiting for ${name}; last observation: ${…
+       |         ^
+    166| }
+    167|
+ ❯ jeeves-generator/integration/harness/rg-catalog.ts:581:11
+ ❯ check jeeves-generator/integration/harness/rg-catalog.ts:205:24
+ ❯ beforeStart jeeves-generator/integration/harness/rg-catalog.ts:559:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ catalogScenario jeeves-generator/integration/harness/rg-catalog.ts:183:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  23:29:15
+   Duration  330.82s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-6/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg23/native-6/junit.xml
