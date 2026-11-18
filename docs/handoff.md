@@ -19732,3 +19732,30 @@ workload settings the same way.
   No Part A activation, later unit, branch/worktree/stash, push or deployment. One explicit-path
   local commit follows: `WD11: generated database access survives a transaction pooler`.
   Stop for coordinator acceptance.
+
+
+## 2026-11-18 — WD12 stopped
+
+- Acceptance needs an owner decision on application-valid request/auth/message inputs and a
+  product-effect oracle. Existing operator contracts and API8 stubs define neither. A supported
+  no-op callback, invoked twice with the actual catalog DTO, records one receipt and healthy
+  progress but zero catalog delivery effects. A mandatory application test/oracle interface
+  changes the approved export contract; receipt-only proof weakens Acceptance. Neither was added.
+- [Stopped patch](plans/wires-and-deployment/stopped/WD12.patch) preserves the bounded review,
+  counterexample, new application-owned variant and evidence. Fresh public CLI link/catalog
+  exports have 113/97 files, zero findings and 85/74 unchanged scaffold hashes. Both actual API8
+  checkers and the focused exported-runtime/PGlite test pass. No emitter/pin/generator README
+  changed; no native drill, bad-readiness variant or WD12 Acceptance pass is claimed.
+- Restored-tree serial gates pass: `pnpm check` 153 files / 1,424 tests (114.58s), native E2E
+  89/89 (5.0m, TinyURL and both unchanged mouse rebuilds), web build (838ms). Inherited lint
+  diagnostics and chunk warning remain. Logs and preservation receipts are inside the patch;
+  raw logs also remain at `/tmp/jeeves-wd12-restored-{check,e2e,build}.log`.
+- All 7,400 starting byte/mode/absence states matched before this append; only this handoff
+  and the patch remain. Original 42 full container triples / 9 networks / 23 volumes / 43 images
+  and both old E2E rows match; no task project/container remains, E2E ports are free. Owner
+  4300/4310 PIDs stay 1124326/768143. Read-only RG21 audit passes with process-local Git abbreviation.
+- Worker ready markers and optional-cache fallback are feasible nearest-detail adaptations,
+  not blockers; existing necessary-dependency readiness guarantees remain intact. No production
+  route/capability, dependency, root/owner/old export/evidence edit, Part A activation, later
+  unit, branch/worktree/stash/delegation, paid/live call, push or deployment. One explicit-path
+  local stop commit follows: `WD12: stopped, application effect oracle is unspecified`. Stop for review.
