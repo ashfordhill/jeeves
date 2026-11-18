@@ -69,6 +69,7 @@ function environment(model: NormalizedGeneration, runtime: Runtime) {
     names.push(...tls);
   if (service.identity) names.push("OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL");
   if (process?.workload) names.push(...workloadEnv);
+  if (process?.frontDoor) names.push("JEEVES_EDGE_STAMP_KEY", "JEEVES_EDGE_STAMP_KEY_PREVIOUS");
   names.push(...(service.external ?? []).map((id) => `JEEVES_EXTERNAL_${endpointId(id)}_URL`));
   if (readSecrets.length) names.push("SECRET_DIR", ...readSecrets.map(secretVariable));
   for (const selection of selections) {
@@ -224,6 +225,14 @@ export function deploymentFiles(
               "webhook-receiver",
             ].includes(s.binding.kind),
           ),
+        ...(process?.frontDoor && {
+          frontDoor: {
+            header: "x-edge-stamp",
+            keyEnv: "JEEVES_EDGE_STAMP_KEY",
+            previousKeyEnv: "JEEVES_EDGE_STAMP_KEY_PREVIOUS",
+            maxAgeSeconds: 60,
+          },
+        }),
         env: environment(model, runtime),
         uses,
         calls: unique(service.calls ?? []),
@@ -292,6 +301,11 @@ export function deploymentFiles(
         ? [
             `- HTTP port: ${p.port}`,
             `- Health: live ${code(p.health.live)}, ready ${code(p.health.ready)}`,
+          ]
+        : []),
+      ...(p.frontDoor
+        ? [
+            "- Front door: require x-edge-stamp v1 HMAC-SHA256 over seconds.METHOD.path (without query), within ±60 seconds; configure JEEVES_EDGE_STAMP_KEY and optionally JEEVES_EDGE_STAMP_KEY_PREVIOUS. Exact health paths and compiled workload-authenticated internal routes retain their own authentication. The stamp grants no user or workload authority.",
           ]
         : []),
       `- alwaysOn: ${p.alwaysOn}`,

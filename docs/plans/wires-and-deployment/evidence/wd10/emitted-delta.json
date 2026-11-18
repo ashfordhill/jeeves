@@ -1,0 +1,178 @@
+{
+  "comparison": "Same WD10 fixture; explicit none versus required; hooks identical; emitted via public CLI",
+  "noneFiles": 53,
+  "requiredFiles": 55,
+  "changedOrAdded": [
+    {
+      "path": ".jeeves/inputs/design.json",
+      "none": {
+        "bytes": 1188,
+        "sha256": "47c5572309fcd2488a9d7d710d9089ef2115ad0ac4a61ace3f9ec7e371544a10"
+      },
+      "required": {
+        "bytes": 1192,
+        "sha256": "a055ba3a26da8b9908669d29b9a6d517a7e449cf1f9f993823a373b8185d4ffb"
+      }
+    },
+    {
+      "path": ".jeeves/manifest.json",
+      "none": {
+        "bytes": 2372484,
+        "sha256": "243ddb054d5423d1f069775a808800aa3f3d8ba93ffc71e8343af42abc979fcf"
+      },
+      "required": {
+        "bytes": 2434762,
+        "sha256": "8009a63cf151efb1fa7ba2dad02a1b9f01e8e08b8dd4994b6c45ee148e1a73db"
+      }
+    },
+    {
+      "path": ".jeeves/normalized.json",
+      "none": {
+        "bytes": 2515,
+        "sha256": "a3de82b4bf456f5e72e8e475228991fa0339e43d7854c74e16742b188998fb39"
+      },
+      "required": {
+        "bytes": 2538,
+        "sha256": "c218ddc35e3dfa3a22609ef8026923715f4cfdd066d0825d842ec5ee3e3d0d3c"
+      }
+    },
+    {
+      "path": ".jeeves/report.json",
+      "none": {
+        "bytes": 621172,
+        "sha256": "7062962202be1e8e7dc602383fdba6b3e36b2b04ac6a0f2cbd1ca3d43a7f2346"
+      },
+      "required": {
+        "bytes": 621255,
+        "sha256": "d6acab5b31bcae0d92bd9a853633dd05f82c3d5dbf156305d3713d2d075bb048"
+      }
+    },
+    {
+      "path": "README.md",
+      "none": {
+        "bytes": 9085,
+        "sha256": "007ea70a8e31c83cc26ed63f941bf98b81e430c8a080973257a4f34f9ac5ad04"
+      },
+      "required": {
+        "bytes": 9524,
+        "sha256": "f5d7cb751544eef27cef3a9cf600f5b90a123ad7c7dfb8cd5bc236144e5e2fa6"
+      }
+    },
+    {
+      "path": "compose.yaml",
+      "none": {
+        "bytes": 1018,
+        "sha256": "250bdd92df44c8ac7b62f9f1c34f113f87a5210de37bca271131efa2d8785f71"
+      },
+      "required": {
+        "bytes": 1781,
+        "sha256": "e07df0ac0ab0dca9f4930ab3b2d3bf57f5bca90f3189eb1b687bdb490882345b"
+      }
+    },
+    {
+      "path": "deploy/README.md",
+      "none": {
+        "bytes": 1357,
+        "sha256": "d7080a309ea7d02db2de3b1d081a7719636085252948c7448114651a8404f0d7"
+      },
+      "required": {
+        "bytes": 1754,
+        "sha256": "51b2ffd8402c098d8f6a50a98b2357a90c717a7471cddc3f1ee3c10cf5a5892f"
+      }
+    },
+    {
+      "path": "deploy/contract.json",
+      "none": {
+        "bytes": 216,
+        "sha256": "5d60ae55f107aee13d13df9ce1c90ed0c772ec62031284d20c2e2852346370e6"
+      },
+      "required": {
+        "bytes": 412,
+        "sha256": "53b171591c4b8dbb6f1ecadc62da6c8d2610efbe8e75798d8a00e35a9d1e639b"
+      }
+    },
+    {
+      "path": "diagnostics/generation.json",
+      "none": {
+        "bytes": 2515,
+        "sha256": "a3de82b4bf456f5e72e8e475228991fa0339e43d7854c74e16742b188998fb39"
+      },
+      "required": {
+        "bytes": 2538,
+        "sha256": "c218ddc35e3dfa3a22609ef8026923715f4cfdd066d0825d842ec5ee3e3d0d3c"
+      }
+    },
+    {
+      "path": "infra/edge/nginx.conf",
+      "none": {
+        "bytes": 640,
+        "sha256": "edcbb67c1e3cc8e6e9d241f9a6a5ad3cc426141172a4acf5454072de14668672"
+      },
+      "required": {
+        "bytes": 608,
+        "sha256": "6e1749d071fd26a990de9e7c4b7a508344cb8711edc47b5da20e14863e563929"
+      }
+    },
+    {
+      "path": "infra/local.json",
+      "none": {
+        "bytes": 271,
+        "sha256": "e5b4f2d8cfd9499d5a869a81e81394a3eb413ecfc5a1698d6566974312290b7a"
+      },
+      "required": {
+        "bytes": 326,
+        "sha256": "b83f4ae17dca7de0a78d1f2c2a92770a617c4b76fe9490545875e17e67b1e90f"
+      }
+    },
+    {
+      "path": "scripts/edge-stamp.mjs",
+      "none": null,
+      "required": {
+        "bytes": 3046,
+        "sha256": "0e2ab04fc98734c89d8cd866552d0cafc19eca01ae32937f1e44ab241a54372d"
+      }
+    },
+    {
+      "path": "scripts/setup.mjs",
+      "none": {
+        "bytes": 5338,
+        "sha256": "3c25f4c34f69987fafefd4dc9f268a366d1faf7e9bcbb50ed796019d810996e2"
+      },
+      "required": {
+        "bytes": 5486,
+        "sha256": "1adc1e3728d83a3e5c0978074f43b856006f11756d57415eedf2dec91f8d5ad4"
+      }
+    },
+    {
+      "path": "src/processes/front.ts",
+      "none": {
+        "bytes": 3704,
+        "sha256": "a7f006fbee1ed8bbbfb61456dda8fedf7c6d6f86e5d9e823c2b5de2e457af133"
+      },
+      "required": {
+        "bytes": 3887,
+        "sha256": "887249db52b8d20948f26d4eb4d7eb2511a2a8460738e3665b55876bf08d9efa"
+      }
+    },
+    {
+      "path": "src/runtime/front-door.ts",
+      "none": null,
+      "required": {
+        "bytes": 4083,
+        "sha256": "f54ed2725894bceb4f318d0853467bd31df18e66778e8e3e4ca9455ce277bdb7"
+      }
+    },
+    {
+      "path": "src/runtime/http.ts",
+      "none": {
+        "bytes": 12633,
+        "sha256": "59f11ece27c6a698449e395b11d92a820a9e207f2f63469c9909680ce5fe0a46"
+      },
+      "required": {
+        "bytes": 12880,
+        "sha256": "c66a644759181987551c524c77db4a6d9a4d39c291c5b0d8cf7f6e38c85a687c"
+      }
+    }
+  ],
+  "processesOffPinsChanged": false
+}

@@ -11,6 +11,7 @@ import { callableContractRefusal, type GenerationInstalledSupport } from "./gene
 import { hasModuleSelections } from "./module-generation.ts";
 import { studioComponentDefinitions } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
+import { studioModelSchema } from "./studio-model.ts";
 import {
   buildStudioCommand,
   moduleAuthoringBaseline,
@@ -154,6 +155,21 @@ export function buildSupportedAuthoringCommand(
         : `Callable ${required.id}@${required.version} has no installed adapter.`;
       if (reason) throw new Error(reason);
     }
+  }
+  if (command.type === "addTile") {
+    const batch = buildStudioCommand(design, command);
+    // Normal creation defaults are authoring behavior, never a migration of saved input.
+    for (const op of batch.ops) {
+      if (op.op !== "setStudio" || !op.studio) continue;
+      const studio = studioModelSchema.parse(op.studio);
+      const binding = studio.elements.find((row) => row.element === command.tile.id);
+      if (binding && "exposure" in binding.settings && binding.settings.kind !== "identity") {
+        binding.settings.frontDoor = "required";
+        if ("lane" in command.from) binding.settings.exposure = "public";
+      }
+      op.studio = studio;
+    }
+    return checked(batch);
   }
   if ((command.type !== "edit" && command.type !== "editComponent") || !command.settings)
     return checked(buildStudioCommand(design, command));

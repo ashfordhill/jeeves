@@ -209,6 +209,7 @@ function applicationSettings<K extends StudioKind, S extends z.ZodRawShape>(kind
 export const studioServiceSettingsSchema = applicationSettings("service", {
   language: kindLanguageSchema("service"),
   exposure: studioExposureSchema,
+  frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
 });
@@ -220,6 +221,7 @@ export const studioWorkerSettingsSchema = applicationSettings("worker", {
 export const studioBillingSettingsSchema = applicationSettings("billing", {
   language: kindLanguageSchema("billing"),
   exposure: studioExposureSchema,
+  frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
   provider: studioBillingProviderSchema,
@@ -227,6 +229,7 @@ export const studioBillingSettingsSchema = applicationSettings("billing", {
 export const studioRedirectSettingsSchema = applicationSettings("redirect", {
   language: kindLanguageSchema("redirect"),
   exposure: studioExposureSchema,
+  frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
   lookupStoreConnection: idSchema.optional(),
@@ -235,6 +238,7 @@ export const studioRedirectSettingsSchema = applicationSettings("redirect", {
 export const studioNotificationSettingsSchema = applicationSettings("notification", {
   language: kindLanguageSchema("notification"),
   exposure: studioExposureSchema,
+  frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
   provider: studioNotificationProviderSchema,
@@ -242,6 +246,7 @@ export const studioNotificationSettingsSchema = applicationSettings("notificatio
 export const studioIdentitySettingsSchema = applicationSettings("identity", {
   language: kindLanguageSchema("identity"),
   exposure: studioExposureSchema,
+  frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
   provider: studioIdentityProviderSchema,
@@ -249,12 +254,14 @@ export const studioIdentitySettingsSchema = applicationSettings("identity", {
 export const studioUploadsSettingsSchema = applicationSettings("uploads", {
   language: kindLanguageSchema("uploads"),
   exposure: studioExposureSchema,
+  frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
   transfer: studioUploadTransferSchema,
 });
 export const studioGatewaySettingsSchema = applicationSettings("gateway", {
   exposure: studioExposureSchema,
+  frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
   routing: studioGatewayRoutingSchema,

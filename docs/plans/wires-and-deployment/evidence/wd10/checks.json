@@ -1,0 +1,77 @@
+{
+  "unit": "WD10",
+  "base": "cf5be26a4d62f18991872d417271d103359d2f9e",
+  "node": "24.21.0",
+  "standardChecks": {
+    "pnpm check": {
+      "result": "pass",
+      "files": 152,
+      "tests": 1417,
+      "seconds": 154.84,
+      "log": "/tmp/jeeves-wd10/check-final-3.log",
+      "inheritedLintWarnings": 8,
+      "inheritedLintInfos": 12
+    },
+    "pnpm test:e2e": {
+      "result": "pass",
+      "native": true,
+      "tests": 89,
+      "log": "/tmp/jeeves-wd10/e2e-final.log",
+      "includes": [
+        "TinyURL lane canvas",
+        "both WD10 mouse/chat cases",
+        "YouTube v2 mouse rebuild",
+        "YouTube v3 mouse build with unchanged100 score"
+      ],
+      "elapsed": "5.7m"
+    },
+    "pnpm --filter @jeeves/web build": {
+      "result": "pass",
+      "seconds": 1.32,
+      "log": "/tmp/jeeves-wd10/build-final-2.log",
+      "inheritedChunkWarning": true
+    }
+  },
+  "focused": {
+    "cryptoStartupRawBoundary": 16,
+    "offlineWorkspaceAuthoring": 3,
+    "combinedFinalParityRun": 46,
+    "focusedBrowser": {
+      "passed": 2,
+      "seconds": 13.6
+    },
+    "nativeHttpObservations": 27,
+    "nativeGuardLimitation": "Required user runs before workload verification in this fixture; no native issuer or valid workload/user token proof. Existing workload/browser tests passed separately.",
+    "offlineEval": "scripted good/pattern/bad and synthetic replay; fetch forbidden; scripted-good scores100; deterministic only, no model-quality evidence",
+    "publicCliExports": {
+      "required": 55,
+      "none": 53,
+      "workload": 65
+    },
+    "generatedBoundaryChecker": "API8 passes on all3 exports",
+    "generatedTypescript": "7.0.2 passes on all3 exports",
+    "publicUpdateCheck": "0 refused/create/replace/remove/orphan; preserved own hook",
+    "installOrPull": false
+  },
+  "compatibility": {
+    "parentCapturedBeforeEdits": true,
+    "legacyPayloadsIdentical": 51,
+    "legacyTotalFiles": 53,
+    "onlyChanged": [".jeeves/report.json", ".jeeves/manifest.json"],
+    "processesOffPins": "all3 unchanged; no refresh"
+  },
+  "failuresRetained": {
+    "rawLogs": "/tmp/jeeves-wd10/",
+    "initialFullCheck": "own test union-narrowing errors; corrected guards",
+    "intermediateFullCheck": "two exact process-control expectations plus new fail-first route assertion; final152/1417 pass",
+    "initialBrowser": "86 pass/2 fail; own tile-center selected module; v3 exposed actual raw mouse/supported chat creation divergence",
+    "focusedBrowser": "own async checkbox.check and exact combined chat text expectations; corrected click/wait and substring plus saved-state/blueprint/export assertions retained",
+    "native": "initial internal-network no published port; separate fail-first internal descendant404 versus expected403, corrected exact roots/methods",
+    "generated": "initial wrong checker cwd, strict TS undefined-index findings, and fixture missing matching caller user guard; fixed through sources/regeneration, never patched generated implementations"
+  },
+  "evidenceLimits": [
+    "Initial v3 trace/PNG was cleared by focused Playwright before copying; complete initial E2E failure log retained; no reconstruction or old-failure rerun.",
+    "Own initial browser trace/context/PNG and later focused failures retained in /tmp; selected context/PNG committed.",
+    "No new broad generated-system, live issuer, deployment, cloud or paid check."
+  ]
+}

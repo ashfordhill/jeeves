@@ -1,0 +1,20 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: internal descendant requires stamp
+
+404 !== 403
+
+    at check (file:///home/ash/github/jeeves/docs/plans/wires-and-deployment/evidence/wd10/native.mjs:99:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/ash/github/jeeves/docs/plans/wires-and-deployment/evidence/wd10/native.mjs:160:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 404,
+  expected: 403,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

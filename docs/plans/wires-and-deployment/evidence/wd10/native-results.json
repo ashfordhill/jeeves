@@ -1,0 +1,117 @@
+{
+  "prefix": "jeeves-wd10-707338",
+  "results": [
+    {
+      "name": "health /livez",
+      "status": 200
+    },
+    {
+      "name": "health /readyz",
+      "status": 200
+    },
+    {
+      "name": "health /healthz",
+      "status": 200
+    },
+    {
+      "name": "missing",
+      "status": 403
+    },
+    {
+      "name": "unmatched before routing",
+      "status": 403
+    },
+    {
+      "name": "malformed JSON before parser",
+      "status": 403
+    },
+    {
+      "name": "unsupported content type before parser",
+      "status": 403
+    },
+    {
+      "name": "oversize before parser",
+      "status": 403
+    },
+    {
+      "name": "old",
+      "status": 403
+    },
+    {
+      "name": "future",
+      "status": 403
+    },
+    {
+      "name": "wrong MAC",
+      "status": 403
+    },
+    {
+      "name": "wrong method",
+      "status": 403
+    },
+    {
+      "name": "wrong path",
+      "status": 403
+    },
+    {
+      "name": "current",
+      "status": 200
+    },
+    {
+      "name": "previous",
+      "status": 200
+    },
+    {
+      "name": "none unchanged",
+      "status": 200
+    },
+    {
+      "name": "unknown internal requires stamp",
+      "status": 403
+    },
+    {
+      "name": "internal descendant requires stamp",
+      "status": 403
+    },
+    {
+      "name": "unregistered internal PUT requires stamp",
+      "status": 403
+    },
+    {
+      "name": "automatic HEAD retains Required user guard",
+      "status": 401
+    },
+    {
+      "name": "internal root retains Required user guard",
+      "status": 401
+    },
+    {
+      "name": "Required user guard refuses before workload verification",
+      "status": 401
+    },
+    {
+      "name": "stamp never replaces Required user",
+      "status": 401
+    },
+    {
+      "name": "internal stamp never bypasses Required user guard",
+      "status": 401
+    },
+    {
+      "name": "generated nginx + local stamp edge",
+      "status": 200
+    },
+    {
+      "name": "missing key startup before readiness",
+      "exitCode": 1,
+      "readyMarkerAbsent": true
+    },
+    {
+      "name": "single reason-only refusal log; stamp/key/URI absent",
+      "refusalRecords": 10
+    }
+  ],
+  "exactTaskResourcesRemoved": true,
+  "nativeAuthorizationLimit": "The Required user wrapper runs first; the internal 401 probes report SIGN_IN_REQUIRED in captured logs. They do not separately exercise issuer/workload verification. Exact exempt roots retain the unchanged workload wrapper and caller allowlists, covered separately by existing workload/browser regression tests.",
+  "annotation": "Observation names corrected from the captured generated wrapper and logs; measured statuses and counts unchanged. Raw native-v3.log and diagnostics remain under /tmp/jeeves-wd10/."
+}

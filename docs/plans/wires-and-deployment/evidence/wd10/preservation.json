@@ -1,0 +1,32 @@
+{
+  "unit": "WD10",
+  "startingHead": "cf5be26a4d62f18991872d417271d103359d2f9e",
+  "protectedByteModeAbsenceStatesVerified": 7303,
+  "protectedPathChanges": [],
+  "ownStartingModesPreserved": true,
+  "oldHandoffPrefixPreserved": true,
+  "resourceCounts": {
+    "containers": 42,
+    "networks": 9,
+    "volumes": 23,
+    "images": 43,
+    "projects": 2
+  },
+  "exactOriginalResourcesAndProjectRowsPreserved": true,
+  "ownProjectsRemaining": 0,
+  "ownerPortAddressesUnchanged": true,
+  "ownerWebPid": 1124326,
+  "ownerWebPidUnchanged": true,
+  "ownerApiChild": {
+    "before": 656661,
+    "after": 695306,
+    "observedIntermediate": 684641,
+    "preexistingWatcherPid": 1124324,
+    "watcherCommandUnchangedAcrossObservations": true,
+    "explanation": "API child reload under the pre-existing watcher, consistent with authorized shared spec/generator edits (inference). No owner-port requests or service control actions."
+  },
+  "e2ePortsFree": true,
+  "primaryBranch": "main",
+  "newUnrelatedPaths": [],
+  "rg21Audit": "Read-only existing preservation.py passes with process-local core.abbrev=7; no baseline/config edits."
+}

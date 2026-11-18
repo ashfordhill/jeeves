@@ -337,3 +337,12 @@ The `browser-session` binding names the lead's selected Identity and writable ow
 
 
 RG21 session forwarding binds declared Service calls to generated route-operation handles. Browser session callers require a matching Identity bearer Auth guard on the callee and independent workload slots on both processes. Product routes compose immutable bounded JSON results through the public API; tokens stay private. Only a read can refresh/retry once after a generated user-authentication refusal; POST and uncertain outcomes are never automatically replayed. Finite conditional/request and ETag/Allow/JSON content-type/Retry-After response headers retain the request budget. No new normal setting, arbitrary proxy, background user authority or mutation replay contract is implied. See [the forwarding contract](plans/reliable-generation/evidence/rg21/protocol.md).
+
+## Front-door requirement
+
+Service settings preserve optional `frontDoor: "required" | "none"` alongside Exposure.
+An absent field remains absent and means none for generation; reading a blueprint never migrates
+it. Mouse and chat edits emit the same source setting. With Runnable processes on, only public
+HTTP processes can require the private edge stamp. The deployment contract then includes its
+header, current/previous key environment names and 60-second window. This requirement supplies no
+end-user/workload authority and no provisioning configuration.

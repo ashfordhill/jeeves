@@ -74,6 +74,10 @@ test("rebuilds YouTube v2 from a blank project by mouse", async ({ page }, testI
     const rows = v2Diff(frozenV2Design(), saved, installed);
     const report = v2DiffReport(rows);
     const compiledDefaults = [
+      // WD10 normal creation adds these exact fields; the frozen saved input remains unchanged.
+      { area: "tile setting", key: "Search API.frontDoor", candidate: "required" },
+      { area: "tile setting", key: "Upload API.frontDoor", candidate: "required" },
+      { area: "tile setting", key: "Watch API.frontDoor", candidate: "required" },
       {
         area: "module setting",
         key: "Receipt and increment.deliveryHorizonSeconds",

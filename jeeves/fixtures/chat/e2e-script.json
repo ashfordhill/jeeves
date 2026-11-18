@@ -241,6 +241,30 @@
           "text": "Added Click archive after the Redirect service. My first batch used a command that doesn't exist, so nothing of it was kept; the second went through."
         }
       ]
+    },
+    {
+      "match": "Require the WD10 front door",
+      "steps": [
+        {
+          "toolCalls": [
+            {
+              "name": "applyStudioCommands",
+              "arguments": {
+                "baseRevision": 3,
+                "commands": [
+                  {
+                    "type": "setSetting",
+                    "tile": "front",
+                    "setting": "frontDoor",
+                    "value": "required"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        { "text": "WD10 front door required." }
+      ]
     }
   ]
 }

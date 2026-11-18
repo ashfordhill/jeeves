@@ -280,6 +280,15 @@ const exposure = {
   choices: choices(studioExposureSchema.options),
   help: "Network intent; this does not establish authentication or authorization.",
 } as const;
+const frontDoor = {
+  path: "settings.frontDoor",
+  label: "Front door",
+  group: "General",
+  control: "select",
+  choices: choices(["required", "none"] as const),
+  when: { path: "settings.exposure", equals: "public" },
+  help: "Require the front door's signed stamp before public requests. Saved designs without this field use none.",
+} as const;
 const owner = (required = false) =>
   ({
     path: "owner",
@@ -334,7 +343,7 @@ export const studioDefinitions = Object.freeze({
     classification: applicationClassification,
     role: "application",
     visual: { icon: "server", color: "api", shape: "service" },
-    fields: [...general, ...codedApplication("service"), exposure],
+    fields: [...general, ...codedApplication("service"), exposure, frontDoor],
     relationships: ["calls", "uses-resource", "publish", "consume"],
     c4bObligations: applicationObligations,
   }),
@@ -413,6 +422,7 @@ export const studioDefinitions = Object.freeze({
       ...general,
       ...codedApplication("billing"),
       exposure,
+      frontDoor,
       {
         path: "settings.provider",
         label: "Payment provider",
@@ -439,6 +449,7 @@ export const studioDefinitions = Object.freeze({
       ...general,
       ...codedApplication("redirect"),
       exposure,
+      frontDoor,
       {
         path: "settings.lookupStoreConnection",
         label: "Lookup store",
@@ -474,6 +485,7 @@ export const studioDefinitions = Object.freeze({
       ...general,
       ...codedApplication("notification"),
       exposure,
+      frontDoor,
       {
         path: "settings.provider",
         label: "Delivery provider",
@@ -500,6 +512,7 @@ export const studioDefinitions = Object.freeze({
       ...general,
       ...codedApplication("identity"),
       exposure,
+      frontDoor,
       {
         path: "settings.provider",
         label: "Identity integration",
@@ -527,6 +540,7 @@ export const studioDefinitions = Object.freeze({
       ...general,
       ...codedApplication("uploads"),
       exposure,
+      frontDoor,
       {
         path: "settings.transfer",
         label: "Transfer",
@@ -555,6 +569,7 @@ export const studioDefinitions = Object.freeze({
       execution,
       host,
       exposure,
+      frontDoor,
       {
         path: "settings.routing",
         label: "Routing",

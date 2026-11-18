@@ -19667,3 +19667,37 @@ workload settings the same way.
   with process-local Git abbreviation.
 - One explicit-path local commit follows: `WD09: emit a deployment contract with every export`.
   No provisioning, deployment, dependency, studio wire activation or later unit. Stop for acceptance.
+
+## 2026-11-18 — WD10 front-door stamp complete
+
+- Public runnable HTTP tiles can require the front door's private v1 HMAC stamp. Schema,
+  normal controls, blueprint, generation, deployment contract and chat agree. Real mouse fan
+  creation now uses the supported builder; new HTTP tiles store required, while old absence
+  remains none. The form shows effective None without saving a field. Vendor Identity has no
+  required consumer/control; internal and processes-off settings remain inactive.
+- Generated raw HTTP gate checks bounded seconds, method/path MAC, ±60 seconds and both private
+  keys before routing/parsing/admission/sessions. It strips the stamp and emits standard 403 plus
+  one reason-only log; missing keys fail startup before clients/readiness. Only exact compiled
+  internal GET/POST roots and automatic HEAD handlers are exempt, preserving existing guards.
+  Generated nginx uses a Node-core local stamper with a setup-generated mode-0600 key file.
+- Final `pnpm check`: 152 files / 1,417 tests, 154.84s; native E2E 89/89, 5.7m, including TinyURL,
+  both new mouse/chat cases and both unchanged mouse-build assertions; web build 1.32s. Focused
+  browser 2/2 and native HTTP 27 observations pass; actual API8 checker/TypeScript 7.0.2 pass on
+  three public CLI exports, public update check unchanged, offline chat replay passes. Inherited
+  8 lint warnings / 12 infos and Vite chunk warning remain. No install, pull or live/paid call.
+- [Evidence](plans/wires-and-deployment/evidence/wd10/README.md) records all failed attempts and
+  exact emitted delta. Fail-first review caught an internal descendant/method exemption and
+  actual mouse/chat creation divergence; both corrected. V2's explicit expected delta gains only
+  three exact required fields; v3 expectations/100 score and frozen inputs stay unchanged.
+  Native internal 401 probes reach Required user first, not issuer/workload verification; existing
+  workload/browser regressions provide separate auth evidence. Initial v3 trace/PNG was cleared
+  before copying; its full failure log remains. No reconstructed failure or broader proof claim.
+- Captured parent export: all 51 non-inventory payloads byte-identical; only report/manifest move.
+  Three processes-off pins unchanged. Protected byte/mode/absence states, owner/root work,
+  accepted SQL/dependencies and frozen v1 preserved; original 42 full container triples / 9
+  networks / 23 volumes / 43 images and two old E2E rows match, own projects zero, E2E ports free.
+  Owner web PID unchanged; API child 656661→695306 under pre-existing watcher 1124324, consistent
+  with authorized shared source edits. No owner-port request/control action. Read-only RG21
+  audit passes with process-local Git abbreviation. No Part A activation, later unit, branch,
+  worktree, stash, unrelated cleanup, push or deployment. One explicit-path local commit follows:
+  `WD10: public services can require the front door's stamp`. Stop for review.

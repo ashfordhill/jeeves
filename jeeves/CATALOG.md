@@ -20,6 +20,12 @@ access too), an Auth guard's Sign-in (Required or Optional), and with Runnable p
 stub-only Queue's Provider (below). Fixed policies/providers/language and unsupported alternatives
 stay out of forms. Mouse/chat share `buildSupportedAuthoringCommand`; historical declarations stay
 unchanged on read. Source-schema tables below do not imply editable or executable support.
+A public runnable HTTP process also offers **Front door** (`required` / `none`). Normal new
+HTTP tiles store required; saved absence means none. Its private HMAC stamp is checked
+before HTTP routing/parsing/admission/sessions, with health and compiled workload adapters exempt.
+It never supplies user or workload identity. The installed Identity vendor has no stamp consumer
+and offers no required choice. See [settings](../docs/studio-settings.md#applications).
+
 The one export option is **Runnable processes** (`generation.processes`, Generate project's
 checkbox and chat's `setRunnableProcesses`): every Service, Uploads, Worker, Redirect, Billing and
 Notifications tile then exports as its own process ([export](../docs/studio.md#experimental-project-export)).

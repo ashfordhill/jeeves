@@ -1,0 +1,58 @@
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { createServer, type IncomingMessage, type RequestListener } from "node:http";
+import { formatHttpError } from "./admission.ts";
+
+export type FrontDoorSettings = Readonly<{ current: string; previous?: string }>;
+/** Private startup configuration. Validate before creating clients, routes or product hooks. */
+export function frontDoorSettings(): FrontDoorSettings {
+  const current = process.env.JEEVES_EDGE_STAMP_KEY;
+  const previous = process.env.JEEVES_EDGE_STAMP_KEY_PREVIOUS;
+  const valid = (key: unknown): key is string => typeof key === "string" && /^[\x21-\x7e]{32,512}$/.test(key);
+  if (!valid(current)) throw new Error("Invalid setting JEEVES_EDGE_STAMP_KEY");
+  if (previous !== undefined && !valid(previous)) throw new Error("Invalid setting JEEVES_EDGE_STAMP_KEY_PREVIOUS");
+  return Object.freeze({ current, ...(previous !== undefined && { previous }) });
+}
+export function stampRefusal(settings: FrontDoorSettings, header: unknown, method: string, path: string, now = Date.now()) {
+  if (header === undefined) return "EDGE_STAMP_MISSING";
+  if (typeof header !== "string" || header.length > 80) return "EDGE_STAMP_FORMAT";
+  const parts = /^v1\.(0|[1-9]\d{0,9})\.([a-f0-9]{64})$/.exec(header);
+  if (!parts?.[1] || !parts[2]) return "EDGE_STAMP_FORMAT";
+  if (Math.abs(Number(parts[1]) - Math.floor(now / 1000)) > 60) return "EDGE_STAMP_TIME";
+  const input = `${parts[1]}.${method}.${path}`;
+  const supplied = Buffer.from(parts[2], "hex");
+  const equal = (key: string) => Number(timingSafeEqual(supplied, createHmac("sha256", key).update(input).digest()));
+  // Evaluate both configured keys even when the first matches. No string MAC comparison.
+  const match = equal(settings.current) | (settings.previous === undefined ? 0 : equal(settings.previous));
+  return match ? undefined : "EDGE_STAMP_MAC";
+}
+function stripStamp(request: IncomingMessage) {
+  delete request.headers["x-edge-stamp"];
+  // rawHeaders and headersDistinct must not carry private authentication material to adapters.
+  for (let i = request.rawHeaders.length - 2; i >= 0; i -= 2)
+    if (request.rawHeaders[i]?.toLowerCase() === "x-edge-stamp") request.rawHeaders.splice(i, 2);
+}
+/** Only compiled routes already wrapped in workloadRoutes are exempt. Prefix /internal/ alone
+ * grants nothing; exact GET/POST roots (and Fastify’s generated HEAD handler) retain workload AND user guards. */
+export function frontDoorServer(settings: FrontDoorSettings, workloadRoutes: readonly string[] = []) {
+  return (dispatch: RequestListener) => createServer((request, response) => {
+    const path = (request.url ?? "").split("?", 1)[0] ?? "";
+    const headers = request.rawHeaders.filter((_, i) => i % 2 === 0 && request.rawHeaders[i]?.toLowerCase() === "x-edge-stamp");
+    const header = headers.length > 1 ? [] : request.headers["x-edge-stamp"];
+    const exempt = ["/livez", "/readyz", "/healthz"].includes(path) ||
+      (["GET", "POST", "HEAD"].includes(request.method ?? "") && workloadRoutes.includes(path));
+    const reason = exempt ? undefined : stampRefusal(settings, header, request.method ?? "", path);
+    stripStamp(request);
+    if (!reason) return dispatch(request, response);
+    // No application formatter, request context, route lookup, parser, admission or session runs.
+    // One reason-only record: never paths, stamps, keys, headers or attacker-controlled text.
+    try { console.log(JSON.stringify({ reason })); } catch { /* Refusal remains closed. */ }
+    const requestId = randomUUID();
+    const body = JSON.stringify(formatHttpError({ status: 403, code: "FORBIDDEN", message: "Request refused.",
+      retryable: false, requestId, correlationId: requestId }));
+    response.writeHead(403, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer", "X-Request-Id": requestId, "X-Correlation-Id": requestId,
+      "Connection": "close" });
+    response.once("finish", () => request.destroy());
+    response.end(body);
+  });
+}

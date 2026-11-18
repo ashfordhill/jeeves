@@ -390,6 +390,10 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   const files: V2TemplateFile[] = [];
   const services: Record<string, Record<string, unknown>> = {};
   const volumes: Record<string, object> = {};
+  const stampHosts = (model.processes ?? [])
+    .filter((p) => p.frontDoor === "required")
+    .map((p) => p.tile)
+    .sort();
   const secrets: Record<string, { file: string }> = {};
   const secretNames = new Set<string>();
   const secret = (name: string) => {
@@ -1213,6 +1217,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
           image: `${composeVariable("COMPOSE_PROJECT_NAME")}-media`,
           build: { context: ".", target: "media" },
         }),
+        ...(stampHosts.includes(service.host) && { env_file: [".runtime/secrets/edge-stamp.env"] }),
         secrets: [...new Set(credentials)],
         // Exactly what its process reads: its endpoints (the local ones, a stub Identity client's
         // JEEVES_IDENTITY_<ID>_URL among them) and a sign-in's OIDC_*. An External API's URL is
@@ -1266,6 +1271,30 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   gaps.push(...delivery.gaps);
   for (const row of delivery.routes) provenance(row.sourcePaths);
   const cdn = delivery.routes.map(({ cdn, bucket }) => ({ cdn, bucket }));
+  if (stampHosts.length) {
+    if (services["app-edge-stamp"])
+      refuse(
+        "LOCAL_IDENTITY_LIMIT",
+        "edge-stamp",
+        "A tile with ID edge-stamp conflicts with the local stamp helper; rename it.",
+      );
+    secret("edge-stamp.env");
+    services["app-edge-stamp"] = {
+      ...app("edge-stamp"),
+      profiles: ["application"],
+      env_file: [".runtime/secrets/edge-stamp.env"],
+      depends_on: Object.fromEntries(
+        stampHosts.map((host) => [`app-${host}`, { condition: "service_healthy" }]),
+      ),
+      healthcheck: health([
+        "CMD",
+        "node",
+        "-e",
+        "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+      ]),
+    };
+    application.push("app-edge-stamp");
+  }
   if (edgeHosts.length || cdn.length) {
     if (
       new Set(edgeHosts).size !== edgeHosts.length ||
@@ -1293,6 +1322,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       profiles: ["application"],
       depends_on: Object.fromEntries([
         ...edgeHosts.map((host) => [`app-${host}`, { condition: "service_healthy" }]),
+        ...(stampHosts.length ? [["app-edge-stamp", { condition: "service_healthy" }]] : []),
         ...(cdn.length ? [["local-objects", { condition: "service_healthy" }]] : []),
       ]),
       ports: [`127.0.0.1:${composeVariable("LOCAL_HTTP_PORT")}:8080`],
@@ -1310,7 +1340,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     files.push(
       file(
         "infra/edge/nginx.conf",
-        edgeConfig(edgeHosts, cdn),
+        edgeConfig(edgeHosts, cdn, stampHosts),
         edge.map((c) => c.emitter),
       ),
     );
@@ -1320,6 +1350,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     .sort();
   const plan = {
     version: 1,
+    ...(stampHosts.length && { edgeStamp: stampHosts }),
     resources,
     databases,
     logins,
@@ -1402,6 +1433,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
     "scripts/status.mjs",
     "scripts/check-extensions.mjs",
     "scripts/setup.mjs",
+    ...(stampHosts.length ? ["scripts/edge-stamp.mjs"] : []),
     "scripts/local.mjs",
     "scripts/migrate.mjs",
     "scripts/broker-init.mjs",
@@ -1416,9 +1448,16 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       path,
       path === "scripts/local.mjs" && model.processes
         ? gateOnProcesses(context.asset(`${assets}${path}`))
-        : path === "scripts/migrate.mjs" && model.processes
-          ? migrateWithProducts(context.asset(`${assets}${path}`))
-          : context.asset(`${assets}${path}`),
+        : path === "scripts/setup.mjs" && stampHosts.length
+          ? new TextDecoder()
+              .decode(context.asset(`${assets}${path}`))
+              .replace(
+                "  const values = {};",
+                '  writeFileSync(".runtime/secrets/edge-stamp.env", "JEEVES_EDGE_STAMP_KEY=" + randomBytes(32).toString("hex") + "\\n", { mode: 0o600, flag: "wx" });\n  const values = {};',
+              )
+          : path === "scripts/migrate.mjs" && model.processes
+            ? migrateWithProducts(context.asset(`${assets}${path}`))
+            : context.asset(`${assets}${path}`),
     );
     files.push(
       packageManifests.has(path) ? { ...emitted, ownership: "generated-extension" } : emitted,
@@ -1505,7 +1544,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       "README.md",
       `# Generated local v2 foundation\n\nExperimental provider/project foundation. Inspect .jeeves/report.json for missing features and hooks. No application readiness or strict certification is claimed.\n\nNode 24.21.0 and pnpm 12.16.1. Run \`pnpm install --frozen-lockfile\` then \`pnpm build\`. \`package.json\`, \`pnpm-lock.yaml\` and \`pnpm-workspace.yaml\` are yours: add a package with \`pnpm add <name>@<exact version>\`. \`pnpm-workspace.yaml\`'s \`allowBuilds\` says which packages' install scripts run: the template's dependencies run none (\`protobufjs: false\`), so neither command needs \`--ignore-scripts\`. Set a unique \`COMPOSE_PROJECT_NAME\` and three distinct free loopback ports: \`LOCAL_HTTP_PORT\`, \`LOCAL_IDENTITY_PORT\`, \`LOCAL_OBJECT_PORT\`. Run \`pnpm first-run\` once, \`pnpm stop\` to stop all profiles and \`pnpm start\` for normal restart. Reuse those exact values and private .runtime with the original Docker volumes. No resets or credential rotation occur. An interrupted single-use storage bootstrap requires manual inspection.\n\n**Your own configuration.** \`compose.override.yaml\` beside \`compose.yaml\` is yours: export never writes it and \`update:v2\` never touches it. Docker Compose merges it into every command \`pnpm first-run\`, \`start\` and \`stop\` run, so give your modules their own \`environment\` and \`secrets\` there, or add a service of your own (for example a scheduler that calls your routes). A service of your own starts with \`pnpm start\` only when a generated service \`depends_on\` it, which your override may add; otherwise start it with your own \`docker compose up\`. Don't redefine a generated service's image, command, ports or healthcheck. A change applies at the next \`pnpm start\`.\n\nMigration owners/admin are mounted only into setup. \`scripts/migrate.mjs\` reaches PostgreSQL at \`PGHOST\` and \`PGPORT\` with \`JEEVES_MIGRATE_TLS\` (\`disable\`, or \`verify-full\` with an optional \`JEEVES_MIGRATE_CA_FILE\` and \`JEEVES_MIGRATE_TLS_SERVERNAME\`), read as a database's \`_TLS\` is; \`PGSSLMODE\` can't change it, and with \`JEEVES_REQUIRE_TLS=true\` it must be \`verify-full\` unless \`PGHOST\` is a socket directory. A credential is read from \`JEEVES_SECRET_<NAME>_FILE\` when that is set (an absolute path; \`<NAME>\` is the secret's name upper-cased, with \`-\` and \`.\` as \`_\`), else from \`SECRET_DIR/<name>\` (\`/run/secrets/<name>\`, where Compose mounts it). Runtime logins receive no implicit table access; features contribute explicit relation/view grants. PostgreSQL names are quoted and provider/composed-name limits refuse rather than truncate. Storage originals remain private; local public websites are a declared local-security limitation.\n\nCleanup only an owned disposable export: \`docker compose --profile '*' down --volumes --remove-orphans\` with its recorded project/ports, then remove its .runtime. Never run cleanup against a retained runtime.\n${
         model.processes
-          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer readiness at \`GET /readyz\` (and \`/healthz\` for compatibility), and liveness at \`GET /livez\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT only on named published views and declared template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. A database a stub writes also has Jeeves's own \`jeeves.idempotency_records\` (\`infra/postgres/<database>/050-jeeves-idempotency.sql\`), which only the logins of the tiles whose stubs write it use: private legacy clients retain their 24-hour records. New public local operations use \`defineLocalOperation\` and the append-only 051 metadata migration: one authenticated account scope, committed replay before new-work admission, registered same-DB commands and atomic replay storage. Configure a private replay ring for secret responses; see .jeeves/extensions.md. Cleanup starts with the configured operation runtime and sweeps at most 1,000 expired committed rows every 60 seconds independently of traffic. Each stub declares the settings it reads in its file's \`settings\` export (\`declareSettings\` with \`text()\`, \`integer()\`, \`url()\`, \`signingKeys(purpose)\`, \`sealingKeys(purpose)\` and \`optional(kind)\` from \`src/extension-api/index.ts\`); its process reads them in its configuration pass, before any client is built or probed, and gives the same frozen values to the stub as \`dependencies.settings\` (rings yield purpose-bound handles, never raw keys): a missing or invalid one fails startup with \`Invalid setting <NAME>\`, never its value. \`compose.yaml\` sets none of them: set a setting in \`compose.override.yaml\`'s \`environment\`, and a signing or sealing ring as a file read as a credential is (above), \`<name>\` being the setting's name lower-cased with \`_\` as \`-\` (\`PROBE_TOKEN\` is \`probe-token\`), through its \`secrets\`; \`processes.tiles[].stubSettings\` in .jeeves/report.json names the files each process reads them from. Product SQL is application-owned: \`infra/postgres/<database>/products.json\` declares ordered migrations per namespace, tables, published views and registered parameterized queries/commands. Migrations run once under checksums and a transaction lock, as a namespace-only role; failed migrations roll back. Add versions, never edit applied SQL. Legacy \`modules/*.sql\` files are preserved but never executed. See .jeeves/extensions.md for the explicit baseline path. Product operations receive registered handles using separate product-only credentials; template tables remain protected. Only exact compiled table operations and named view audiences can be granted. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
+          ? `\nRunnable processes: each application tile runs as \`app-<id>\` from \`src/processes/<id>.ts\`, healthy once its ready marker exists; HTTP processes answer readiness at \`GET /readyz\` (and \`/healthz\` for compatibility), and liveness at \`GET /livez\` on port 3000 inside the Compose network.${edgeHosts.length ? " `app-edge` publishes each public HTTP process at `http://127.0.0.1:$LOCAL_HTTP_PORT/api/<id>/` and answers `GET /healthz` itself; internal ones are reached only inside the network at `http://app-<id>:3000`." : ""}${stampHosts.length ? " Required public services use the private `x-edge-stamp` gate. Local setup generates `.runtime/secrets/edge-stamp.env` (0600); nginx forwards those targets through `app-edge-stamp`, which overwrites client stamps. Keep its `JEEVES_EDGE_STAMP_KEY` private; optional `JEEVES_EDGE_STAMP_KEY_PREVIOUS` supports key overlap. Health stays reachable. The stamp never replaces user or workload authentication." : ""} A module's routes are under \`/modules/<module id>\`: a stub or a generated hook in \`src/modules/\` answers 501 \`NOT_IMPLEMENTED\` until you write it. A consumer module or worker template runs a loop on its queue (a topic's \`<topic>--<id>\` subscriber): "Not implemented" sends the message to \`<queue>.failed\` with one log line, other errors retry within the loop's limit (a stub's 5 times, waiting 250 ms doubling up to 10 s), an unreachable store waits 5 s and keeps the attempt, a failed \`fetch\` to an outside host keeps the normal retries, and \`pnpm stop\` drains the loops. Every store or channel a stub links to is provisioned for its tile with its links' widest access (a database login with CONNECT and USAGE on public, SELECT only on named published views and declared template views; a queue, topic or subscriber; a cache; a bucket key; a search service with no index), and \`src/runtime/module-clients.ts\` gives each stub real clients, each probed once at startup. A database a stub writes also has Jeeves's own \`jeeves.idempotency_records\` (\`infra/postgres/<database>/050-jeeves-idempotency.sql\`), which only the logins of the tiles whose stubs write it use: private legacy clients retain their 24-hour records. New public local operations use \`defineLocalOperation\` and the append-only 051 metadata migration: one authenticated account scope, committed replay before new-work admission, registered same-DB commands and atomic replay storage. Configure a private replay ring for secret responses; see .jeeves/extensions.md. Cleanup starts with the configured operation runtime and sweeps at most 1,000 expired committed rows every 60 seconds independently of traffic. Each stub declares the settings it reads in its file's \`settings\` export (\`declareSettings\` with \`text()\`, \`integer()\`, \`url()\`, \`signingKeys(purpose)\`, \`sealingKeys(purpose)\` and \`optional(kind)\` from \`src/extension-api/index.ts\`); its process reads them in its configuration pass, before any client is built or probed, and gives the same frozen values to the stub as \`dependencies.settings\` (rings yield purpose-bound handles, never raw keys): a missing or invalid one fails startup with \`Invalid setting <NAME>\`, never its value. \`compose.yaml\` sets none of them: set a setting in \`compose.override.yaml\`'s \`environment\`, and a signing or sealing ring as a file read as a credential is (above), \`<name>\` being the setting's name lower-cased with \`_\` as \`-\` (\`PROBE_TOKEN\` is \`probe-token\`), through its \`secrets\`; \`processes.tiles[].stubSettings\` in .jeeves/report.json names the files each process reads them from. Product SQL is application-owned: \`infra/postgres/<database>/products.json\` declares ordered migrations per namespace, tables, published views and registered parameterized queries/commands. Migrations run once under checksums and a transaction lock, as a namespace-only role; failed migrations roll back. Add versions, never edit applied SQL. Legacy \`modules/*.sql\` files are preserved but never executed. See .jeeves/extensions.md for the explicit baseline path. Product operations receive registered handles using separate product-only credentials; template tables remain protected. Only exact compiled table operations and named view audiences can be granted. \`first-run\` and \`start\` start them only while \`processes.runnable\` in .jeeves/report.json is true; its \`processes.tiles\` lists each process's routes, loops and provisioned stores. No restart policy: a failed process stays exited until \`pnpm start\`.\n${endpointsReadme}`
           : ""
       }${pubsubReadme}`,
     ),
@@ -1697,6 +1736,7 @@ const cdnTypes: readonly (readonly [string, string])[] = [
 function edgeConfig(
   hosts: readonly string[],
   cdn: readonly { cdn: string; bucket: string }[] = [],
+  stampHosts: readonly string[] = [],
 ) {
   const json = (value: object) => `'${JSON.stringify(value)}'`;
   return `${[
@@ -1721,9 +1761,10 @@ function edgeConfig(
     // A process that is down (stopped, or exited after losing its broker) answers JSON too.
     "    error_page 502 504 = @unavailable;",
     `    location = /healthz { return 200 ${json({ service: "edge", application: "ready" })}; }`,
-    ...hosts.map(
-      (host) =>
-        `    location /api/${host}/ { set $backend app-${host}:3000; rewrite ^/api/${host}/(.*)$ /$1 break; proxy_pass http://$backend; }`,
+    ...hosts.map((host) =>
+      stampHosts.includes(host)
+        ? `    location /api/${host}/ { set $backend app-edge-stamp:3000; proxy_pass http://$backend; }`
+        : `    location /api/${host}/ { set $backend app-${host}:3000; rewrite ^/api/${host}/(.*)$ /$1 break; proxy_pass http://$backend; }`,
     ),
     ...cdn.flatMap(({ cdn: id, bucket }) => [
       `    location /cdn/${id}/ {`,

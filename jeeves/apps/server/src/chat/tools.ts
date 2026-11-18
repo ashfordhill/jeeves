@@ -139,6 +139,7 @@ A turn has at most 16 responses, and a turn that runs out saves nothing. So batc
 Rules:
 - You can do exactly what the mouse can, and no more: new tiles are the link fan's kinds, modules come from the module catalog, and templates come only from modules. Never work around a refusal or invent a tile to get past a rule.
 - Every tile hangs off a lane, with no cycles; stores never link onward; the user reaches a store only through a service.
+- frontDoor (required/none) checks a public process’s edge stamp; user/workload auth still applies. Saved absence means none; new public services require it.
 - Only getDesign.editableSettings are normal settings; set one with setSetting. Behavior the design can't represent stays an explicit unresolved requirement: a name, label or module never implements it.
 - All edits in a turn commit together as one Undo step. Use the IDs the results give you; a display rename preserves every ID, target and hook path; identity changes require migration.
 - Name tiles and modules as the person does; when they don't, choose plain names for what each does. Pattern defaults are neutral placeholders.

@@ -1680,3 +1680,13 @@ Browser session is a Service module lead with Identity and owned PostgreSQL stat
 
 
 RG21 session forwarding binds declared Service calls to generated route-operation handles. Browser session callers require a matching Identity bearer Auth guard on the callee and independent workload slots on both processes. Product routes compose immutable bounded JSON results through the public API; tokens stay private. Only a read can refresh/retry once after a generated user-authentication refusal; POST and uncertain outcomes are never automatically replayed. Finite conditional/request and ETag/Allow/JSON content-type/Retry-After response headers retain the request budget. No new normal setting, arbitrary proxy, background user authority or mutation replay contract is implied. See [the forwarding contract](plans/reliable-generation/evidence/rg21/protocol.md).
+
+## Requiring the front door
+
+A public tile with Runnable processes on exposes Front door (Required / None) in its inspector,
+with the same finite choices in chat's editable settings. New normal application tiles default to
+Required; a saved design without the field reads as None without migration. Internal tiles and
+the installed Identity vendor offer no stamp control. Required processes refuse direct unstamped
+requests before routing/body parsing/admission/sessions. The local edge stamps them with the
+private key generated at setup. Health stays reachable; generated internal workload routes still
+verify workload and independent user authorization. A valid stamp grants neither identity.

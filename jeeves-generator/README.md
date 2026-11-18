@@ -61,6 +61,33 @@ with cold adoption proved only.
 The rest of this page is reference. Sections describing frozen-v1 exports and private runtime
 internals do not authorize hook imports from `src/runtime/`; current application code uses API8.
 
+## Front-door stamp
+
+Public runnable HTTP tiles can set `frontDoor: "required" | "none"`. Normal new tiles store
+required; old saved input without the field remains none, retaining all old service/runtime
+payload bytes. It is inactive with Runnable processes off or while the tile is internal.
+The installed Identity vendor has no required-stamp adapter and offers no normal control.
+
+Required processes validate `x-edge-stamp: v1.<unix seconds>.<lowercase hex>` with HMAC-SHA256 over
+`<seconds>.<METHOD>.<path without query>`, within ±60 seconds, using `JEEVES_EDGE_STAMP_KEY` or
+`JEEVES_EDGE_STAMP_KEY_PREVIOUS`. Both configured MACs use constant-time comparison. Keys must be
+32–512 printable non-whitespace ASCII characters; missing/invalid current configuration fails
+startup before clients and readiness. An invalid stamp gets the standard 403 body and one
+reason-only log at the raw HTTP boundary, before Fastify routing, body parsing, admission and
+sessions. The private header is removed before adapters or product DTOs run. A stamp supplies no
+user/workload identity. Exact health paths are exempt; only compiled internal workload adapters
+are exempt, preserving their existing workload and independent user guards.
+
+Local setup generates `.runtime/secrets/edge-stamp.env` with mode 0600. Only required application
+services and `app-edge-stamp` load it. The generated nginx edge sends required targets through
+that Node-core helper; it overwrites client stamps and signs the actual forwarded method/path.
+Unrequired targets and CDN behavior retain their prior nginx paths. The helper is local edge
+plumbing, with no new dependency or production issuer. Production front doors must implement the
+same protocol and manage their own private current/previous keys and synchronized clocks.
+The protocol does not bind bodies or queries or prevent replay inside its bounded window.
+[WD10 evidence](../docs/plans/wires-and-deployment/evidence/wd10/README.md) records native refusals,
+edge forwarding, auth preservation, source compatibility and mouse/offline-chat parity.
+
 ## Deployment contract
 
 Every current v2 export contains generated scaffolds `deploy/contract.json` (version 1) and

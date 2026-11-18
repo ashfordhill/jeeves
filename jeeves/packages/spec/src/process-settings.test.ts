@@ -66,6 +66,7 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
     const design = runStudioCommands(off, [on]);
     for (const tile of ["links-api", "stats-api", "upload-api"])
       expect(controls(design, tile)).toEqual([
+        ...(tile === "upload-api" ? [["process.frontDoor", "none", "descriptor-default"]] : []),
         ["process.requestTimeoutMs", 1000, "descriptor-default"],
         ["process.concurrencyLimit", 1000, "descriptor-default"],
       ]);
@@ -131,11 +132,20 @@ describe("process settings on stub tiles (v3 contract, section 4, D5)", () => {
 
   it("leaves a template's own control, and Video HLS's fixed concurrency hidden", () => {
     const design = runStudioCommands(v2ModuleDesign(), [on]);
-    // Every v2 process tile has a template that consumes its limits: no process control.
-    expect(normalGenerationControls(design, installed).filter((item) => item.process)).toEqual([]);
+    // Templates consume their limits; only the added public front-door process choice remains.
+    expect(
+      normalGenerationControls(design, installed)
+        .filter((item) => item.process)
+        .map((item) => [item.process, item.input, item.value]),
+    ).toEqual([
+      ["search", "process.frontDoor", "none"],
+      ["upload", "process.frontDoor", "none"],
+      ["watch", "process.frontDoor", "none"],
+    ]);
     expect(controls(design, "watch").map(([input]) => input)).toEqual([
       "host.requestTimeoutMs",
       "host.concurrencyLimit",
+      "process.frontDoor",
     ]);
     expect(controls(design, "view-counter").map(([input]) => input)).toEqual(["host.concurrency"]);
     expect(controls(design, "transcoder")).toEqual([]);

@@ -16,6 +16,7 @@ Docker, TypeScript, exact providers, codecs, renditions, deadlines and event pol
 | Normal control | Actual selected consumer | Bound |
 | --- | --- | --- |
 | Request timeout | HTTP service deadline: a template's, or (Runnable processes on) the tile's process | 1–300000 ms |
+| Front door | Public runnable HTTP process, before routing/parsing/admission/sessions | Required or None |
 | Concurrency limit | HTTP admission: a template's, or (Runnable processes on) the tile's process | 1–100000 |
 | Worker concurrency | AMQP handler admission, except fixed media worker; (Runnable processes on) its stub loops too | 1–1024 |
 | TTL | Positive cache reader | 1–604800 seconds |
@@ -115,6 +116,23 @@ ownership/access and operation/cache declarations in schema v3 as one seed edit.
 change per-kind creation defaults or migrate older projects/studies. No new settings were added.
 
 ## Applications
+
+**Front door** (`settings.frontDoor?`, on kinds with Exposure) is `required` or `none`.
+The normal form and chat offer it only on a public runnable HTTP process. New normal tiles
+store `required` (inactive while internal); a new lane-entry service also stores public Exposure.
+Reading a saved design never adds the field: absence means `none`, preserving its service source.
+The installed Identity vendor has no stamp consumer and offers no such normal control; its source
+schema can retain `none`, while `required` on that vendor is refused.
+
+Required services accept `x-edge-stamp: v1.<unix seconds>.<lowercase HMAC-SHA256 hex>` over
+`<seconds>.<METHOD>.<path without query>`, within ±60 seconds. Health paths are exempt; only
+compiled internal workload adapters are exempt, retaining workload and independent user checks.
+Missing/invalid stamps get the standard 403 body before routing, parsing, admission or sessions,
+and one reason-only log. The private header is removed before dispatch. Startup requires
+`JEEVES_EDGE_STAMP_KEY`; optional `JEEVES_EDGE_STAMP_KEY_PREVIOUS` permits overlap. Keys are
+32–512 printable non-whitespace ASCII characters. Neither keys nor stamps are product settings.
+The generated local edge uses a setup-generated private key. Runnable processes off has no
+per-tile process/gate; this setting is then inactive and is not offered as a normal control.
 
 `S` is `architecture.studio.elements[].settings`. "Common" means service, worker, billing,
 redirect, notification, identity, uploads and gateway; "coded" means the common kinds except

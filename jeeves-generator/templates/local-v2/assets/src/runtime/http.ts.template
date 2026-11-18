@@ -26,6 +26,10 @@ export interface HttpRoutes {
 }
 export async function createHttpService(options: {
   id: string;
+/* @frontDoor-start */
+  /** Private generated gate, ahead of Fastify routing and all application hooks. */
+  frontDoor?: (handler: import("node:http").RequestListener) => import("node:http").Server;
+/* @frontDoor-end */
   settings: HttpSettings;
   stopping?: AbortSignal;
   formatError?: HttpErrorFormatter;
@@ -36,7 +40,7 @@ export async function createHttpService(options: {
 }) {
   const scope = currentProcess();
   const admission = createAdmission(options.settings);
-  const app = Fastify({ logger: false, bodyLimit: 65536 });
+  const app = Fastify({ logger: false, bodyLimit: 65536/* @frontDoor-start */, ...(options.frontDoor ? { serverFactory: options.frontDoor } : {})/* @frontDoor-end */ });
   const requests = new WeakMap<object, { running: ReturnType<typeof operation>; started: number; dispatched: boolean; close(): void }>();
   const errors = new WeakMap<object, ReturnType<typeof classifyHttpError>>();
   const log = (entry: Record<string, unknown>) => {

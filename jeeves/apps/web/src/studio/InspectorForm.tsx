@@ -130,7 +130,7 @@ function DraftField({
   references: readonly Choice[];
   help?: boolean;
   className?: string;
-  /** What an empty integer field runs, such as a process's initial limit. */
+  /** What an unsaved process setting runs: an integer hint or a select's effective value. */
   placeholder?: string;
   onSelect: (value: string) => void;
 }) {
@@ -190,7 +190,7 @@ function DraftField({
       ) : (
         <select
           {...common}
-          value={String(value ?? "")}
+          value={String(value ?? (field.control === "select" ? placeholder : undefined) ?? "")}
           onChange={(event) => onSelect(event.currentTarget.value)}
         >
           {field.control === "reference" ? (

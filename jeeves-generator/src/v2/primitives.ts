@@ -2,6 +2,7 @@ import { generationCapabilities, generationRuntime } from "@jeeves/spec";
 import { pointerPart } from "../json.ts";
 import { type ClientSection, stubClients } from "./client-wiring.ts";
 import { durableKinds } from "./durability.ts";
+import { frontDoorHttp, hasFrontDoor } from "./front-door.ts";
 import { type V2Emitter, v2Compare } from "./registry.ts";
 
 const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
@@ -57,6 +58,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       // A stub's clients use the libraries of the stores it is provisioned (tile process contract,
       // section 6); its cache client uses the cache read's bounded client, valkey.ts.
       for (const process of model.processes ?? []) {
+        if (process.frontDoor === "required") add(["front-door"], ["generation", "processes"]);
         if (process.workload)
           add(["admission", "http", "work-integration"], ["generation", "processes"]);
         if (process.shape === "http") add(["admission", "http"], ["generation", "processes"]);
@@ -135,7 +137,10 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
           .sort(([a], [b]) => v2Compare(a, b))
           .map(([name, paths]) => ({
             path: `src/runtime/${name}.ts`,
-            content: asset(`${assets}${name}.ts${name === "durable-sql" ? "" : ".template"}`),
+            content:
+              name === "http"
+                ? frontDoorHttp(asset(`${assets}http.ts.template`), hasFrontDoor(model))
+                : asset(`${assets}${name}.ts${name === "durable-sql" ? "" : ".template"}`),
             ownership: "generated-scaffold" as const,
             sourcePaths: [...paths].sort(),
           })),

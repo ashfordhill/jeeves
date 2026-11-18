@@ -1,0 +1,27 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/front-door.test.ts (16 tests | 1 failed) 361ms
+   ❯ WD10 front door (16)
+     × gates raw HTTP ahead of dispatch/body and logs exactly one safe reason 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/front-door.test.ts > WD10 front door > gates raw HTTP ahead of dispatch/body and logs exactly one safe reason
+AssertionError: expected "vi.fn()" to be called 4 times, but got 5 times
+ ❯ src/v2/front-door.test.ts:137:24
+    135|       ])
+    136|         emit(url);
+    137|       expect(dispatch).toHaveBeenCalledTimes(4);
+       |                        ^
+    138|       for (const method of ["PUT", "DELETE", "PATCH", "OPTIONS"])
+    139|         emit("/internal/modules/protected", undefined, false, method);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  04:37:50
+   Duration  3.24s (transform 61%, import 27%, tests 12%)
+

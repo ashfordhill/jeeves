@@ -299,9 +299,13 @@ function reportRow(
     service: `app-${process.tile}`,
     shape: process.shape,
     ...(process.exposure && { exposure: process.exposure }),
+    ...(process.frontDoor && { frontDoor: process.frontDoor }),
     ...(http && process.exposure === "public" && { edge: `/api/${process.tile}/` }),
     entry: processPaths(process.tile).entry,
-    environment: environmentOf(serviceOf(process, mounts)),
+    environment: unique([
+      ...environmentOf(serviceOf(process, mounts)),
+      ...(process.frontDoor ? ["JEEVES_EDGE_STAMP_KEY", "JEEVES_EDGE_STAMP_KEY_PREVIOUS"] : []),
+    ]),
     ...(stubSettings.length && { stubSettings }),
     settings: settings(process),
     routes: http
@@ -392,6 +396,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
     kind: process.kind,
     shape: process.shape,
     ...(process.exposure && { exposure: process.exposure }),
+    ...(process.frontDoor && { frontDoor: process.frontDoor }),
     ...(http && {
       settings: Object.fromEntries(settings(process).map((item) => [item.setting, item.value])),
       listen: { host: "0.0.0.0", port: 3000 },
@@ -430,6 +435,12 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
   // A tile with a sign-in mounts every module route through it.
   const guard = mounts.find((mount) => mount.guard)?.guard;
   const imports = importLines([
+    ...(process.frontDoor === "required"
+      ? [
+          { from: "../runtime/front-door.ts", name: "frontDoorSettings" },
+          { from: "../runtime/front-door.ts", name: "frontDoorServer" },
+        ]
+      : []),
     ...(process.workload
       ? [
           { from: "../runtime/workload.ts", name: "workloadSettings" },
@@ -472,6 +483,27 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
       : []),
   ];
   const validation = [
+    ...(process.frontDoor === "required"
+      ? [
+          "const frontDoor = frontDoorServer(frontDoorSettings(), " +
+            JSON.stringify(
+              process.stubs
+                .filter(
+                  (stub) =>
+                    stub.role === "route" && process.workload && process.workloadCallers?.length,
+                )
+                .flatMap((stub) => [
+                  `/internal/modules/${stub.module}`,
+                  ...(stub.stores?.some(
+                    (store) => store.kind === "database" && store.access !== "read",
+                  )
+                    ? [`/internal/work/${stub.module}`]
+                    : []),
+                ]),
+            ) +
+            ");",
+        ]
+      : []),
     ...(process.workload
       ? ["const workloadConfiguration = workloadSettings(config.workload);"]
       : []),
@@ -487,6 +519,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         "  const service = await createHttpService({",
         "    stopping: scope.signal,",
         "    id: config.tile,",
+        ...(process.frontDoor === "required" ? ["    frontDoor,"] : []),
         "    settings: config.settings,",
         "    formatError: formatHttpError,",
         ...(configure.length

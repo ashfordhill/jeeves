@@ -192,6 +192,8 @@ export type NormalizedProcess = {
   shape: "http" | "worker";
   /** HTTP only: public for a lane entry or a saved public exposure, else internal. */
   exposure?: "public" | "internal";
+  /** Absence is legacy none; only public HTTP processes can require the stamp. */
+  frontDoor?: "required";
   http?: {
     requestTimeoutMs: NormalizedProcessSetting;
     concurrencyLimit: NormalizedProcessSetting;
@@ -1079,7 +1081,7 @@ export function resolveGeneration(
             "Declared setting has no selected template consumer and remains unsupported.",
           );
     };
-    if (mechanism && hostBinding) audit(hostBinding.settings, elementPath(host));
+    if (mechanism && hostBinding) audit(hostBinding.settings, elementPath(host), ["frontDoor"]);
     for (const requirement of capability.resources) {
       const dependency = dependencyOf(selection, requirement.field);
       if (!dependency) continue;
@@ -1188,11 +1190,13 @@ export function resolveGeneration(
           if (["kind", "execution", "provider", "language"].includes(key)) continue;
           const value = identityBinding.settings[key as keyof typeof identityBinding.settings];
           const fixed =
-            key === "exposure"
-              ? "public"
-              : key === "minReplicas" || key === "maxReplicas"
-                ? 1
-                : undefined;
+            key === "frontDoor"
+              ? "none"
+              : key === "exposure"
+                ? "public"
+                : key === "minReplicas" || key === "maxReplicas"
+                  ? 1
+                  : undefined;
           if (fixed === undefined || value !== fixed)
             report(
               "NEEDS_TEMPLATE",
@@ -1711,46 +1715,77 @@ function processSettings(
     const binding = studio?.elements.find((entry) => entry.element === process.tile);
     const current = { ...process.http, ...process.worker };
     const hosted = new Set([...process.templates, ...process.stubs].map((item) => item.selection));
-    return generationProcessSettings[process.shape === "http" ? "http" : "worker"].flatMap(
-      (rule): GenerationSettingDecision[] => {
-        const value = current[rule.setting as keyof typeof current];
-        const scheduledOnly =
-          process.stubs.some((stub) => stub.role === "scheduled-task") &&
-          !process.stubs.some((stub) => stub.role === "loop") &&
-          process.templates.length === 0;
-        if (
-          (rule.setting === "concurrency" && scheduledOnly) ||
-          !value ||
-          value.origin === "template" ||
-          !generationProcessSettingKinds[rule.setting]?.includes(process.kind) ||
-          decisions.some(
-            (item) =>
-              item.input === `host.${rule.setting}` &&
-              item.selection !== undefined &&
-              hosted.has(item.selection),
+    const frontDoor: GenerationSettingDecision[] =
+      process.shape === "http" && process.exposure === "public"
+        ? [
+            {
+              process: process.tile,
+              input: "process.frontDoor",
+              sourcePaths: [[...process.sourcePath, "settings", "frontDoor"]],
+              origin:
+                binding &&
+                "frontDoor" in binding.settings &&
+                binding.settings.frontDoor !== undefined
+                  ? "source"
+                  : "descriptor-default",
+              value: process.frontDoor ?? "none",
+              supported: { values: ["required", "none"] },
+              consumer: "tile-process.frontDoor",
+              outputPaths: [`src/processes/${process.tile}.ts`],
+              status: "supported",
+              userNeed: "Require requests to pass through the front door.",
+              normalControl:
+                installed &&
+                !!binding &&
+                "exposure" in binding.settings &&
+                binding.settings.exposure === "public" &&
+                studioDefinitionStatus(binding.definition, binding.settings.kind) === "known",
+            },
+          ]
+        : [];
+    return [
+      ...frontDoor,
+      ...generationProcessSettings[process.shape === "http" ? "http" : "worker"].flatMap(
+        (rule): GenerationSettingDecision[] => {
+          const value = current[rule.setting as keyof typeof current];
+          const scheduledOnly =
+            process.stubs.some((stub) => stub.role === "scheduled-task") &&
+            !process.stubs.some((stub) => stub.role === "loop") &&
+            process.templates.length === 0;
+          if (
+            (rule.setting === "concurrency" && scheduledOnly) ||
+            !value ||
+            value.origin === "template" ||
+            !generationProcessSettingKinds[rule.setting]?.includes(process.kind) ||
+            decisions.some(
+              (item) =>
+                item.input === `host.${rule.setting}` &&
+                item.selection !== undefined &&
+                hosted.has(item.selection),
+            )
           )
-        )
-          return [];
-        return [
-          {
-            process: process.tile,
-            input: `process.${rule.setting}`,
-            sourcePaths: [[...process.sourcePath, "settings", rule.setting]],
-            origin: value.origin === "tile" ? "source" : "descriptor-default",
-            value: value.value,
-            supported: rule.supported,
-            consumer: `tile-process.${rule.setting}`,
-            outputPaths: [`src/processes/${process.tile}.ts`],
-            status: supports(rule.supported, value.value) ? "supported" : "unsupported",
-            userNeed: rule.userNeed,
-            normalControl:
-              installed &&
-              !!binding &&
-              studioDefinitionStatus(binding.definition, binding.settings.kind) === "known",
-          },
-        ];
-      },
-    );
+            return [];
+          return [
+            {
+              process: process.tile,
+              input: `process.${rule.setting}`,
+              sourcePaths: [[...process.sourcePath, "settings", rule.setting]],
+              origin: value.origin === "tile" ? "source" : "descriptor-default",
+              value: value.value,
+              supported: rule.supported,
+              consumer: `tile-process.${rule.setting}`,
+              outputPaths: [`src/processes/${process.tile}.ts`],
+              status: supports(rule.supported, value.value) ? "supported" : "unsupported",
+              userNeed: rule.userNeed,
+              normalControl:
+                installed &&
+                !!binding &&
+                studioDefinitionStatus(binding.definition, binding.settings.kind) === "known",
+            },
+          ];
+        },
+      ),
+    ];
   });
 }
 
@@ -1994,6 +2029,9 @@ function normalizedProcesses(
       shape,
       ...(shape === "http" && {
         exposure: entries.has(tile) || saved === "public" ? "public" : "internal",
+        ...((entries.has(tile) || saved === "public") &&
+          "frontDoor" in binding.settings &&
+          binding.settings.frontDoor === "required" && { frontDoor: "required" as const }),
         http: {
           requestTimeoutMs: limit(
             "requestTimeoutMs",

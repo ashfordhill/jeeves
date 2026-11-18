@@ -669,7 +669,11 @@ describe("studio chat tools", () => {
     expect(run(workspace, "applyStudioCommands", { baseRevision: 0, commands }).ok).toBe(true);
     let mouse = emptyDesign();
     const ops = commands.flatMap((command) => {
-      const batch = buildStudioCommand(mouse, command as StudioCommand);
+      const batch = buildSupportedAuthoringCommand(
+        mouse,
+        command as StudioCommand,
+        installedGenerationSupport(),
+      );
       const result = applyOperations(mouse, batch.ops);
       if (!result.ok) throw new Error(JSON.stringify(result.errors));
       mouse = result.design;
@@ -698,6 +702,7 @@ describe("studio chat tools", () => {
       ["links-api", "process.concurrencyLimit", 1000],
       ["stats-api", "process.requestTimeoutMs", 1000],
       ["stats-api", "process.concurrencyLimit", 1000],
+      ["upload-api", "process.frontDoor", "none"],
       ["upload-api", "process.requestTimeoutMs", 1000],
       ["upload-api", "process.concurrencyLimit", 1000],
       ["visit-worker", "process.concurrency", 1],

@@ -29,6 +29,7 @@ import {
 } from "@jeeves/spec";
 import { useMemo } from "react";
 import { commitAction } from "../studio/actions.ts";
+import { buildEditorCommand } from "../studio/generation-support.ts";
 import { StudioIcon } from "../studio/StudioIcon.tsx";
 import { LaneIcon } from "./LaneIcon.tsx";
 import { tileShape } from "./tiles/Tile.tsx";
@@ -186,7 +187,7 @@ export function useLaneCreation({
       void commitAction(
         projectId,
         (latest) =>
-          buildStudioCommand(latest, {
+          buildEditorCommand(latest, {
             type: "addTile",
             from,
             side: "after",
