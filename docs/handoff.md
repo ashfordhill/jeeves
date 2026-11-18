@@ -19491,3 +19491,24 @@ workload settings the same way.
 - No schema/blueprint/chat/generation/settings/template/dependency change, root/owner studio edit,
   later unit, paid/live call, push or deployment. One scoped local commit follows:
   `WD03: board returns in lanes`. Stop for coordinator review.
+
+
+## 2026-11-18 — WD04 board wires complete for coordinator review
+
+- Added the exact optional wire geometry and Board `lanes`/`wire`/`dot` props, outlined colour/
+  beads/soft-head renderer, shared chip JSX and dot/wire CSS. Legacy layout/artwork stay unchanged
+  without these props; generic board only, studio wires still off. No other production edit.
+- All 11 named focused tests pass (15 skip), including geometry, mouse selection/chip, 12px hit
+  band, real-ELK lane ranks and live/frozen dot/wire rendering. Every preexisting board test
+  body/assertion/fixture is byte-preserved; only one import and a new wires describe are added.
+- `pnpm check` 147 files / 1380 tests, native E2E 87/87 (TinyURL and both mouse rebuilds), web build
+  and preservation pass. Full gates ran once; inherited lint/chunk warnings remain.
+  [Evidence and limits](plans/wires-and-deployment/evidence/wd04/progress.md).
+- Moved-shape adjustment: snapshot now clones the live resolved layout, so there is one current
+  `layoutInput` call; it receives lanes and both node builders carry dot. Biome wrapping/import
+  sorting only otherwise; no supplied type/algorithm correction, design stop or alternate design.
+- All 7257 other path byte/mode/absence states, own modes, root/owner changes, original apps/
+  historical evidence, accepted SQL/dependencies/frozen v1, 42 full container triples / 9 networks /
+  23 volumes / 43 images and both old E2E rows preserved. Own projects 0; E2E ports free and owner
+  4300/4310 PIDs unchanged. No later unit, root/owner studio edit, dependency, paid/live call,
+  push or deployment. One explicit-path local commit follows: `WD04: board wires`. Stop for review.

@@ -9,6 +9,7 @@ import {
   Board,
   type BoardHandle,
   type BoardProps,
+  BoardSnapshotView,
   type LineSpec,
   type TileSpec,
 } from "./Board.tsx";
@@ -1174,5 +1175,144 @@ describe("Board", () => {
     });
     expect(onPick).toHaveBeenCalledWith("redirect", "link", "k2");
     expect(fan()).toHaveLength(0);
+  });
+
+  describe("wires", () => {
+    const tone = { light: "#267da8", dark: "#8bcbed" };
+    const wireLine: LineSpec = {
+      id: "wire",
+      source: "actor",
+      target: "redirect",
+      dashed: false,
+      directed: true,
+      label: "Wire",
+      chip: { w: 32, h: 32, content: <span>w</span> },
+      wire: () => tone,
+    };
+
+    function wireProps(): BoardProps {
+      return {
+        tiles: tiles.slice(0, 2),
+        lines: [wireLine],
+        engine: createLayoutEngine(fakeElk, { debounceMs: 0 }),
+        selected: {},
+        onSelectTile: vi.fn(),
+        onSelectLine: vi.fn(),
+        onClear: vi.fn(),
+        mode: "select",
+      };
+    }
+
+    async function ready(container: HTMLElement) {
+      await waitFor(() =>
+        expect(container.querySelector(".board")?.getAttribute("data-board")).toBe("ready"),
+      );
+    }
+
+    it("renders one wire hit path, coloured body and directed head without a crossing", async () => {
+      const props = wireProps();
+      const { container } = render(<Board {...props} />);
+      await ready(container);
+      expect(container.querySelectorAll(".react-flow__edge-path")).toHaveLength(1);
+      expect(container.querySelectorAll(".board-wire-fill")).toHaveLength(1);
+      expect(container.querySelectorAll(".board-line-arrow")).toHaveLength(1);
+      expect(container.querySelectorAll(".board-line-crossing")).toHaveLength(0);
+      expect(
+        container.querySelector(".react-flow__edge-interaction")?.getAttribute("stroke-width"),
+      ).toBe("12");
+      fireEvent.click(screen.getByRole("button", { name: "Wire" }));
+      expect(props.onSelectLine).toHaveBeenCalledWith("wire");
+    });
+
+    it("uses the selection outline when a wire is selected by mouse", async () => {
+      const props = wireProps();
+      const { container, rerender } = render(<Board {...props} />);
+      await ready(container);
+      const arrow = () => container.querySelector<SVGElement>(".board-line-arrow");
+      expect(arrow()?.style.stroke).toBe("var(--board-wire-ink)");
+      const hit = container.querySelector(".react-flow__edge-interaction");
+      if (!hit) throw new Error("Missing wire hit target");
+      fireEvent.click(hit);
+      expect(props.onSelectLine).toHaveBeenCalledWith("wire");
+      rerender(<Board {...props} selected={{ line: "wire" }} />);
+      expect(arrow()?.style.stroke).toBe("var(--board-select)");
+    });
+
+    it("marks an async wire's hit path dashed and draws beads on its body", async () => {
+      const props = wireProps();
+      const { container } = render(<Board {...props} lines={[{ ...wireLine, dashed: true }]} />);
+      await ready(container);
+      expect(
+        container.querySelector(".react-flow__edge-path")?.classList.contains("is-dashed"),
+      ).toBe(true);
+      expect(container.querySelector<SVGElement>(".board-wire-fill")?.style.strokeDasharray).toBe(
+        "0.01 12",
+      );
+    });
+
+    it("calls three wires with their route ranks 0, 1 and 2 and of 3", async () => {
+      const ref = createRef<BoardHandle>();
+      const sending = tile("s", "Source");
+      const targets = [tile("a", "A"), tile("b", "B"), tile("c", "C")];
+      const wires = targets.map((target) => ({
+        id: `s-${target.id}`,
+        source: sending.id,
+        target: target.id,
+        dashed: false,
+        wire: vi.fn<(rank: number, of: number) => typeof tone>(() => tone),
+      }));
+      const { container } = render(
+        <Board
+          {...wireProps()}
+          ref={ref}
+          tiles={[sending, ...targets]}
+          lines={wires}
+          lanes
+          engine={createLayoutEngine(new ELK(), { debounceMs: 0 })}
+        />,
+      );
+      await ready(container);
+      await waitFor(() => expect(ref.current?.snapshot()).toBeTruthy());
+      const snapshot = ref.current?.snapshot();
+      if (!snapshot) throw new Error("Missing lane wire snapshot");
+      const sorted = [...wires].sort(
+        (a, b) =>
+          (snapshot.layout.routes[a.id]?.[0]?.y ?? 0) -
+            (snapshot.layout.routes[b.id]?.[0]?.y ?? 0) || wires.indexOf(a) - wires.indexOf(b),
+      );
+      expect(new Set(sorted.map((line) => snapshot.layout.routes[line.id]?.[0]?.y)).size).toBe(3);
+      for (const [rank, line] of sorted.entries()) {
+        expect(line.wire).toHaveBeenCalledWith(rank, 3);
+        expect(line.wire.mock.calls.every((call) => call[0] === rank && call[1] === 3)).toBe(true);
+      }
+    });
+
+    it("renders a tile dot only when supplied, on the live board and snapshot", async () => {
+      const ref = createRef<BoardHandle>();
+      const props = wireProps();
+      const { container } = render(
+        <Board
+          {...props}
+          ref={ref}
+          tiles={[{ ...(tiles[0] as TileSpec), dot: tone }, tiles[1] as TileSpec]}
+        />,
+      );
+      await ready(container);
+      expect(container.querySelectorAll(".board-tile-dot")).toHaveLength(1);
+      expect(
+        screen.getByRole("group", { name: "User" }).querySelector(".board-tile-dot"),
+      ).toBeTruthy();
+      expect(
+        screen.getByRole("group", { name: "Redirect" }).querySelector(".board-tile-dot"),
+      ).toBeNull();
+      await waitFor(() => expect(ref.current?.snapshot()).toBeTruthy());
+      const snapshot = ref.current?.snapshot();
+      if (!snapshot) throw new Error("Missing dotted wire snapshot");
+      const frozen = render(
+        <BoardSnapshotView snapshot={snapshot} bounds={{ x: 0, y: 0, w: 1200, h: 800 }} />,
+      );
+      expect(frozen.container.querySelectorAll(".board-tile-dot")).toHaveLength(1);
+      expect(frozen.container.querySelectorAll(".board-wire-fill")).toHaveLength(1);
+    });
   });
 });

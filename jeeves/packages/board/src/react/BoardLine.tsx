@@ -8,7 +8,7 @@
 // a right-click goes to the board's caller (`onLineMenu`), which draws its own menu. The chip holds
 // caller content (an icon) instead of condition text.
 import { BaseEdge, type Edge, EdgeLabelRenderer, type EdgeProps } from "@xyflow/react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Point } from "../layout/metrics.ts";
 import {
   DASH_GAP,
@@ -22,6 +22,15 @@ import {
 } from "../layout/polyline.ts";
 import { useBoardContext } from "./context.ts";
 import { directionArrow } from "./directionArrow.ts";
+import {
+  WIRE_BEADS,
+  WIRE_EDGE_WIDTH,
+  WIRE_HEAD_EDGE,
+  WIRE_HEAD_FILL,
+  WIRE_HIT_WIDTH,
+  WIRE_WIDTH,
+  wireArt,
+} from "./wirePath.ts";
 
 /** The invisible hit band, wider than the drawn stroke. */
 export const LINE_HIT_WIDTH = 44;
@@ -37,6 +46,7 @@ export type BoardLineData = {
   label?: string;
   chip?: ReactNode;
   bridges?: Point[][];
+  wire?: { light: string; dark: string };
 };
 
 export type BoardLineEdge = Edge<BoardLineData, "line">;
@@ -66,6 +76,100 @@ export function BoardLine({
   const chip = rect
     ? { x: rect.x + rect.w / 2, y: rect.y + rect.h / 2, w: rect.w, h: rect.h }
     : { x: mid.x, y: mid.y, w: undefined, h: undefined };
+
+  const chipNode = data?.chip ? (
+    <EdgeLabelRenderer>
+      <button
+        type="button"
+        className="board-chip nopan nowheel"
+        data-selected={selected || undefined}
+        aria-label={data.label}
+        tabIndex={-1}
+        style={{
+          transform: `translate(-50%, -50%) translate(${chip.x}px, ${chip.y}px)`,
+          width: chip.w,
+          height: chip.h,
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          selectLine(id);
+        }}
+      >
+        {data.chip}
+      </button>
+    </EdgeLabelRenderer>
+  ) : null;
+
+  if (data?.wire) {
+    const art = wireArt(
+      points,
+      { x: sourceX, y: sourceY },
+      { x: targetX, y: targetY },
+      Boolean(data.directed),
+    );
+    const edge = selected || data.linked ? "var(--board-select)" : "var(--board-wire-ink)";
+    const beads = dashed ? WIRE_BEADS : undefined;
+    const round = { strokeLinecap: "round", strokeLinejoin: "round" } as const;
+    return (
+      <>
+        <g
+          className="board-wire"
+          style={
+            { "--wire-light": data.wire.light, "--wire-dark": data.wire.dark } as CSSProperties
+          }
+        >
+          <path
+            className="board-wire-edge"
+            d={art.body}
+            fill="none"
+            pointerEvents="none"
+            style={{
+              stroke: edge,
+              strokeWidth: selected ? WIRE_EDGE_WIDTH + 2 : WIRE_EDGE_WIDTH,
+              strokeDasharray: beads,
+              ...round,
+            }}
+          />
+          <path
+            className="board-wire-fill"
+            d={art.body}
+            fill="none"
+            pointerEvents="none"
+            style={{ strokeWidth: WIRE_WIDTH, strokeDasharray: beads, ...round }}
+          />
+          {art.head ? (
+            <>
+              <path
+                className="board-line-arrow"
+                d={art.head}
+                pointerEvents="none"
+                style={{
+                  stroke: edge,
+                  fill: edge,
+                  strokeWidth: WIRE_HEAD_EDGE,
+                  strokeLinejoin: "round",
+                }}
+              />
+              <path
+                className="board-wire-head"
+                d={art.head}
+                pointerEvents="none"
+                style={{ strokeWidth: WIRE_HEAD_FILL, strokeLinejoin: "round" }}
+              />
+            </>
+          ) : null}
+        </g>
+        <BaseEdge
+          id={id}
+          path={art.body}
+          className={dashed ? "board-line is-dashed" : "board-line"}
+          interactionWidth={WIRE_HIT_WIDTH}
+          style={{ stroke: "transparent", strokeWidth: WIRE_EDGE_WIDTH }}
+        />
+        {chipNode}
+      </>
+    );
+  }
 
   return (
     <>
@@ -116,28 +220,7 @@ export function BoardLine({
           style={{ stroke: ink, strokeWidth: width, strokeLinejoin: "miter" }}
         />
       ) : null}
-      {data?.chip ? (
-        <EdgeLabelRenderer>
-          <button
-            type="button"
-            className="board-chip nopan nowheel"
-            data-selected={selected || undefined}
-            aria-label={data.label}
-            tabIndex={-1}
-            style={{
-              transform: `translate(-50%, -50%) translate(${chip.x}px, ${chip.y}px)`,
-              width: chip.w,
-              height: chip.h,
-            }}
-            onClick={(event) => {
-              event.stopPropagation();
-              selectLine(id);
-            }}
-          >
-            {data.chip}
-          </button>
-        </EdgeLabelRenderer>
-      ) : null}
+      {chipNode}
     </>
   );
 }

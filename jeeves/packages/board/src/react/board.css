@@ -8,6 +8,7 @@
   --board-paper: #e8f4fa;
   --board-dot: #aabec8;
   --board-line: #123a50;
+  --board-wire-ink: #071c28;
   --board-ink: #071c28;
   --board-tile: #f7fcfe;
   /* Panels over the board: the removal HUD and the line chooser. */
@@ -533,4 +534,30 @@
 }
 .board-line-chooser button span {
   font-size: 12px;
+}
+
+/* Wires (`BoardLine`): the colour comes from the line, light or dark; the caller's theme picks. */
+.board-wire,
+.board-tile-dot {
+  --wire: var(--wire-light);
+}
+.board-wire-fill {
+  stroke: var(--wire);
+}
+.board-wire-head {
+  stroke: var(--wire);
+  fill: var(--wire);
+}
+.board-tile-dot {
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  width: 11px;
+  height: 11px;
+  margin-top: -5.5px;
+  box-sizing: border-box;
+  border: 1.7px solid var(--board-wire-ink);
+  border-radius: 50%;
+  background: var(--wire);
+  pointer-events: none;
 }

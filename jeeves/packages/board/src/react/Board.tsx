@@ -63,6 +63,7 @@ import {
   useStore,
 } from "@xyflow/react";
 import {
+  type CSSProperties,
   type ReactNode,
   type Ref,
   type RefObject,
@@ -126,6 +127,8 @@ import { useBoardLayout } from "./useBoardLayout.ts";
 
 export type TileShape = "rect" | "pill";
 
+export type WireTone = { light: string; dark: string };
+
 export type TileSpec = {
   id: string;
   w: number;
@@ -139,6 +142,8 @@ export type TileSpec = {
   band?: number;
   /** Named ports at fixed heights, beside the default mid-height ones (`elkGraph.ts`). */
   ports?: readonly TilePort[];
+  /** A dot on its right edge at mid-height, where its wires leave. */
+  dot?: WireTone;
 };
 
 export type LineSpec = {
@@ -166,6 +171,11 @@ export type LineSpec = {
   sourcePort?: string;
   /** The target's `in` port it enters; default: mid-height. */
   targetPort?: string;
+  /**
+   * Draw it as a wire in this colour. Called with its rank among the lines that leave the same
+   * tile, top to bottom as they leave it, and how many there are.
+   */
+  wire?: (rank: number, of: number) => WireTone;
 };
 
 export type BoardSelection = { tile?: string; line?: string };
@@ -191,6 +201,8 @@ export type BoardProps = ConnectRules & {
   tiles: readonly TileSpec[];
   lines: readonly LineSpec[];
   engine: LayoutEngine;
+  /** Give every line its own lane (`lanes.ts`). */
+  lanes?: boolean;
   selected: BoardSelection;
   onSelectTile: (id: string) => void;
   onSelectLine: (id: string) => void;
@@ -240,6 +252,7 @@ type TileData = {
   content: ReactNode;
   chrome?: ReactNode;
   ports?: readonly TilePort[];
+  dot?: WireTone;
 };
 type TileNode = Node<TileData, "tile">;
 
@@ -268,6 +281,12 @@ function Tile({ data, selected }: NodeProps<TileNode>) {
           <PortHandle key={`${port.side}:${port.id}`} port={port} />
         ))}
       </div>
+      {data.dot ? (
+        <span
+          className="board-tile-dot"
+          style={{ "--wire-light": data.dot.light, "--wire-dark": data.dot.dark } as CSSProperties}
+        />
+      ) : null}
       {data.chrome}
     </div>
   );
@@ -357,8 +376,13 @@ const nodeTypes = { tile: Tile };
 const DOT_SIZE = 2.2;
 const edgeTypes = { line: BoardLine };
 
-function layoutInput(tiles: readonly TileSpec[], lines: readonly LineSpec[]): LayoutInput {
+function layoutInput(
+  tiles: readonly TileSpec[],
+  lines: readonly LineSpec[],
+  lanes = false,
+): LayoutInput {
   return {
+    ...(lanes && { lanes: true as const }),
     tiles: tiles.map((t) => ({
       id: t.id,
       w: t.w,
@@ -420,6 +444,18 @@ function lineEdges(
     (selected.line === l.id ? 6 : hovered === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
   const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
   const { routes } = layout;
+  // A wire's rank among the lines leaving its tile, top to bottom where their routes start.
+  const leaving = new Map<string, LineSpec[]>();
+  for (const l of lines) leaving.set(l.source, [...(leaving.get(l.source) ?? []), l]);
+  const rankOf = new Map<string, { rank: number; of: number }>();
+  for (const group of leaving.values()) {
+    const sorted = [...group].sort(
+      (a, b) =>
+        (routes[a.id]?.[0]?.y ?? 0) - (routes[b.id]?.[0]?.y ?? 0) ||
+        lines.indexOf(a) - lines.indexOf(b),
+    );
+    for (const [rank, l] of sorted.entries()) rankOf.set(l.id, { rank, of: sorted.length });
+  }
   return ordered.map((l, i) => ({
     id: l.id,
     source: l.source,
@@ -436,12 +472,15 @@ function lineEdges(
       ...(linked(l) || hovered === l.id ? { linked: true } : {}),
       ...(l.label ? { label: l.label } : {}),
       ...(l.chip ? { chip: l.chip.content } : {}),
-      bridges: crossingBridges(
-        routes[l.id] ?? [],
-        ordered
-          .slice(0, i)
-          .flatMap((line) => (routes[line.id] ? [routes[line.id] as Point[]] : [])),
-      ),
+      ...(l.wire ? { wire: l.wire(rankOf.get(l.id)?.rank ?? 0, rankOf.get(l.id)?.of ?? 1) } : {}),
+      bridges: l.wire
+        ? []
+        : crossingBridges(
+            routes[l.id] ?? [],
+            ordered
+              .slice(0, i)
+              .flatMap((line) => (routes[line.id] ? [routes[line.id] as Point[]] : [])),
+          ),
     },
   }));
 }
@@ -450,6 +489,7 @@ function Inner({
   tiles,
   lines,
   engine,
+  lanes,
   selected,
   onSelectTile,
   onSelectLine,
@@ -479,7 +519,7 @@ function Inner({
   const connectMode = mode === "connect";
   // biome-ignore lint/correctness/useExhaustiveDependencies: another view's lines close the chooser
   useEffect(() => setLineChoice(undefined), [view]);
-  const input = layoutInput(tiles, lines);
+  const input = layoutInput(tiles, lines, lanes);
 
   const sizes = sizesOf(tiles);
   const sizesRef = useRef(sizes);
@@ -834,6 +874,7 @@ function Inner({
         content: t.content,
         ...(t.id === chromeTile ? { chrome } : {}),
         ...(t.ports?.length ? { ports: t.ports } : {}),
+        ...(t.dot ? { dot: t.dot } : {}),
       },
       draggable: false,
       connectable: false,
@@ -1063,6 +1104,7 @@ export function BoardSnapshotView({ snapshot, bounds }: { snapshot: BoardSnapsho
       shape: tile.shape,
       content: tile.content,
       ...(tile.ports?.length ? { ports: tile.ports } : {}),
+      ...(tile.dot ? { dot: tile.dot } : {}),
     },
     handles: tileHandles(tile),
     width: tile.w,
