@@ -19512,3 +19512,23 @@ workload settings the same way.
   23 volumes / 43 images and both old E2E rows preserved. Own projects 0; E2E ports free and owner
   4300/4310 PIDs unchanged. No later unit, root/owner studio edit, dependency, paid/live call,
   push or deployment. One explicit-path local commit follows: `WD04: board wires`. Stop for review.
+
+
+## 2026-11-18 — WD05 wire colour rule and saved slots complete for coordinator review
+
+- Added the exact pure hue/tone/shade-order/slot-allocation functions and project/browser-local
+  `Preferences.wires` record with empty default and nonnegative-integer validation. Nothing draws
+  with them yet; board code/tests and existing preference assertions remain byte-preserved.
+- Focused11/11, `pnpm check`148files/1389tests, native E2E87/87 (TinyURL and both mouse rebuilds),
+  web build and preservation pass. Each full gate ran once; inherited lint/chunk warnings remain.
+  [Evidence and limits](plans/wires-and-deployment/evidence/wd05/progress.md).
+- Mechanical change only: actual Biome wrapping of the supplied preference predicate. Reused
+  read-only RG21 audit first differed in automatic Git7→8-digit index headers; process-local
+  `core.abbrev=7` restores the exact owner-patch comparison. Initial output retained; no baseline/
+  config edits. Unscoped diff whitespace check found inherited owner CRLF; scoped own check passes.
+- All7262 other path byte/mode/absence states, own modes, root/owner changes, original apps/
+  historical evidence, accepted SQL/dependencies/frozenv1,42 full container triples/9 networks/
+  23 volumes/43 images and both old E2E rows preserved. Own projects0; E2E ports free, owner
+  4300/4310 PIDs unchanged. No schema/blueprint/chat/generation/settings/template/dependency edit,
+  later unit, root/owner studio edit, paid/live call, push or deployment. One explicit-path local
+  commit follows: `WD05: wire colour rule and saved slots`. Stop for review.

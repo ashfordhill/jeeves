@@ -28,3 +28,21 @@ describe("readPreferences", () => {
     expect(readPreferences("broken").view).toBe("detailed");
   });
 });
+
+describe("readPreferences wire slots", () => {
+  afterEach(() => localStorage.clear());
+
+  it("defaults to an empty wire-slot record when nothing is saved", () => {
+    expect(readPreferences("fresh").wires).toEqual({});
+  });
+
+  it("keeps a saved wire slot", () => {
+    save("saved", { wires: { a: 2 } });
+    expect(readPreferences("saved").wires).toEqual({ a: 2 });
+  });
+
+  it.each([-1, 1.5, "x"])("drops an invalid saved wire slot: %s", (slot) => {
+    save("invalid", { wires: { a: slot } });
+    expect(readPreferences("invalid").wires).toEqual({});
+  });
+});

@@ -16,6 +16,8 @@ type Preferences = {
   chatWidth: number;
   inspectorWidth: number;
   view: CanvasView;
+  /** Colour slot per tile that sends lines (`wireColours.ts`). */
+  wires: Record<string, number>;
 };
 const defaults: Preferences = {
   chatOpen: true,
@@ -23,12 +25,22 @@ const defaults: Preferences = {
   chatWidth: 300,
   inspectorWidth: 320,
   view: "detailed",
+  wires: {},
 };
 const key = (project: string) => `jeeves.studio.ui.v1:${project}`;
 const width = (value: unknown, fallback: number) =>
   typeof value === "number" && Number.isFinite(value)
     ? Math.max(240, Math.min(400, value))
     : fallback;
+const slots = (value: unknown): Record<string, number> =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? Object.fromEntries(
+        Object.entries(value).filter(
+          (entry): entry is [string, number] =>
+            Number.isInteger(entry[1]) && (entry[1] as number) >= 0,
+        ),
+      )
+    : {};
 /** A project's saved preferences; anything missing or invalid takes its default. */
 export function readPreferences(project: string): Preferences {
   try {
@@ -40,6 +52,7 @@ export function readPreferences(project: string): Preferences {
       chatWidth: width(saved.chatWidth, defaults.chatWidth),
       inspectorWidth: width(saved.inspectorWidth, defaults.inspectorWidth),
       view: savedView(saved.view) ?? defaults.view,
+      wires: slots(saved.wires),
     };
   } catch {
     return { ...defaults };
@@ -47,8 +60,8 @@ export function readPreferences(project: string): Preferences {
 }
 
 /**
- * The rails' open state and widths and the canvas view, per project in this browser. Never part
- * of the design, its history, the blueprint or chat.
+ * The rails' open state and widths, the canvas view and the tiles' wire colours, per project in
+ * this browser. Never part of the design, its history, the blueprint or chat.
  */
 export function useStudioPreferences(project: string) {
   const [preferences, setPreferences] = useState(() => readPreferences(project));
