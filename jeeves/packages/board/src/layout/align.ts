@@ -181,8 +181,8 @@ export function alignLayout(layout: BoardLayout, input: LayoutInput): BoardLayou
       if (route) routes[line.id] = route;
       continue;
     }
-    const sy = portY(line.source, line.sourcePort);
-    const ty = portY(line.target, line.targetPort);
+    const sy = portY(line.source, line.sourcePort) + (line.lane?.source ?? 0);
+    const ty = portY(line.target, line.targetPort) + (line.lane?.target ?? 0);
     const sx = source.x + sourceTile.w;
     const tx = target.x;
     const last = route.length - 1;

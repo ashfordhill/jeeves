@@ -24,7 +24,16 @@
 // they gave before ports existed. Both the flat layout and `layoutBands` take named ports; in
 // bands a named port is never split per band (`bands.ts`).
 import type { ElkExtendedEdge, ElkNode } from "elkjs/lib/elk-api.js";
-import { BRANCH_GAP, dockHint, GRID, type Point, type Size, TILE_GAP } from "./metrics.ts";
+import {
+  BRANCH_GAP,
+  dockHint,
+  GRID,
+  LANE_APPROACH,
+  LANE_GAP,
+  type Point,
+  type Size,
+  TILE_GAP,
+} from "./metrics.ts";
 
 /** A named port on one side of a tile, `y` px below its top (see the top of this file). */
 export type TilePort = { id: string; side: "in" | "out"; y: number };
@@ -102,6 +111,20 @@ export const NODE_OPTIONS: Record<string, string> = {
   "elk.portConstraints": "FIXED_POS",
 };
 
+/** With lanes, ELK never merges lines and keeps them `LANE_GAP` apart. */
+export const LANE_OPTIONS: Record<string, string> = {
+  "elk.layered.mergeEdges": "false",
+  "elk.layered.spacing.edgeNodeBetweenLayers": String(LANE_APPROACH),
+  "elk.layered.spacing.edgeEdgeBetweenLayers": String(LANE_GAP),
+  "elk.spacing.edgeEdge": String(LANE_GAP),
+};
+/** The same for the banded routing pass, which keeps its zero vertical spacing. */
+export const LANE_ROUTE_OPTIONS: Record<string, string> = {
+  "elk.layered.mergeEdges": "false",
+  "elk.layered.spacing.edgeNodeBetweenLayers": String(LANE_APPROACH),
+  "elk.layered.spacing.edgeEdgeBetweenLayers": String(LANE_GAP),
+};
+
 export const PORT_OPTIONS_IN: Record<string, string> = { "elk.port.side": "WEST" };
 export const PORT_OPTIONS_OUT: Record<string, string> = { "elk.port.side": "EAST" };
 
@@ -151,6 +174,23 @@ export function lineTargetPortId(line: LayoutLine): string {
   return line.targetPort === undefined
     ? inPortId(line.target)
     : namedPortId(line.target, line.targetPort);
+}
+
+/** Whether the lines carry lanes (`lanes.ts`): then each has its own ELK port at each end. */
+export function usesLanes(input: LayoutInput): boolean {
+  return input.lines.some((l) => l.lane !== undefined);
+}
+
+/** The ELK port a line leaves from: its own when it has a lane, else `lineSourcePortId`. */
+export function laneSourceId(line: LayoutLine): string {
+  const port = lineSourcePortId(line);
+  return line.lane ? `${port}~${line.id}` : port;
+}
+
+/** The ELK port a line enters: its own when it has a lane, else `lineTargetPortId`. */
+export function laneTargetId(line: LayoutLine): string {
+  const port = lineTargetPortId(line);
+  return line.lane ? `${port}~${line.id}` : port;
 }
 
 /** Whether any tile has a named port or any line names one. */
@@ -240,6 +280,46 @@ export function elkTile(
   };
 }
 
+/** One ELK child in a layout with lanes: one fixed port per end of each of `lines` at this tile. */
+export function elkLaneTile(t: LayoutTile, lines: readonly LayoutLine[]): ElkNode {
+  const port = (id: string, x: number, y: number, options: Record<string, string>) => ({
+    id,
+    x,
+    y,
+    width: 0,
+    height: 0,
+    layoutOptions: { ...options },
+  });
+  return {
+    id: t.id,
+    width: t.w,
+    height: t.h,
+    layoutOptions: { ...NODE_OPTIONS },
+    ports: [
+      ...lines
+        .filter((l) => l.target === t.id)
+        .map((l) =>
+          port(
+            laneTargetId(l),
+            0,
+            portOffset(t, l.targetPort) + (l.lane?.target ?? 0),
+            PORT_OPTIONS_IN,
+          ),
+        ),
+      ...lines
+        .filter((l) => l.source === t.id)
+        .map((l) =>
+          port(
+            laneSourceId(l),
+            t.w,
+            portOffset(t, l.sourcePort) + (l.lane?.source ?? 0),
+            PORT_OPTIONS_OUT,
+          ),
+        ),
+    ],
+  };
+}
+
 const compareIds = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /**
@@ -294,12 +374,13 @@ export function buildElkGraph(input: LayoutInput, previous?: PositionMap): ElkNo
       )
     : input.lines;
 
-  const children: ElkNode[] = tiles.map((t) => elkTile(t));
+  const lanes = usesLanes(input);
+  const children: ElkNode[] = tiles.map((t) => (lanes ? elkLaneTile(t, lines) : elkTile(t)));
   const edges: ElkExtendedEdge[] = lines.map((line) => {
     const edge: ElkExtendedEdge = {
       id: line.id,
-      sources: [lineSourcePortId(line)],
-      targets: [lineTargetPortId(line)],
+      sources: [laneSourceId(line)],
+      targets: [laneTargetId(line)],
     };
     const chip = line.chip;
     if (chip && chip.w > 0 && chip.h > 0) {
@@ -318,7 +399,7 @@ export function buildElkGraph(input: LayoutInput, previous?: PositionMap): ElkNo
   });
   return {
     id: "root",
-    layoutOptions: { ...ROOT_OPTIONS, ...STABILITY_OPTIONS },
+    layoutOptions: { ...ROOT_OPTIONS, ...STABILITY_OPTIONS, ...(lanes ? LANE_OPTIONS : {}) },
     children,
     edges,
   };

@@ -41,24 +41,28 @@ import { separateBranches } from "./branches.ts";
 import {
   byHint,
   checkPorts,
+  elkLaneTile,
   elkTile,
   inPortId,
+  LANE_OPTIONS,
+  LANE_ROUTE_OPTIONS,
   type LayoutInput,
   type LayoutLine,
   type LayoutTile,
-  lineSourcePortId,
-  lineTargetPortId,
+  laneSourceId,
+  laneTargetId,
   namedPortId,
   outPortId,
   type PositionMap,
   portOffset,
   ROOT_OPTIONS,
   stabilityHints,
+  usesLanes,
 } from "./elkGraph.ts";
 import { type BoardLayout, toBoardLayout } from "./elkLayout.ts";
 import type { ElkLike } from "./engine.ts";
 import { meetAtPorts } from "./junctions.ts";
-import { BRANCH_GAP, GRID, type Point, snapToGrid } from "./metrics.ts";
+import { BRANCH_GAP, GRID, LANE_GAP, type Point, snapToGrid } from "./metrics.ts";
 import { comesBack, routeReturns } from "./returns.ts";
 
 /** Space between two bands' strips. */
@@ -219,13 +223,13 @@ type Band = {
 };
 
 /** Places tracks between `lo` and `hi`, in order, at least `TRACK_CLEARANCE` apart. */
-function spread(wants: number[], lo: number, hi: number): number[] {
+function spread(wants: number[], lo: number, hi: number, gap = TRACK_CLEARANCE): number[] {
   const out: number[] = [];
   for (const [i, want] of wants.entries()) {
-    out.push(Math.max(want, i ? (out[i - 1] as number) + TRACK_CLEARANCE : lo));
+    out.push(Math.max(want, i ? (out[i - 1] as number) + gap : lo));
   }
   for (let i = out.length - 1; i >= 0; i--) {
-    const next = i < out.length - 1 ? (out[i + 1] as number) - TRACK_CLEARANCE : hi;
+    const next = i < out.length - 1 ? (out[i + 1] as number) - gap : hi;
     out[i] = Math.min(out[i] as number, next);
   }
   return out;
@@ -242,6 +246,7 @@ async function layoutBand(
   const col = (id: string) => column.get(id) ?? 0;
   const own = input.tiles.filter((t) => t.band === band);
   const ids = new Set(own.map((t) => t.id));
+  const lanes = usesLanes(input);
   const long = (l: LayoutLine) => col(l.target) - col(l.source) >= 2;
   let lines = input.lines.filter(
     (l) => !comesBack(l, column) && ids.has(l.source) && (ids.has(l.target) || long(l)),
@@ -256,7 +261,10 @@ async function layoutBand(
   // A line leaving the band ends at a stub in its target's column. NUL never starts a tile id.
   const stub = (l: LayoutLine) => `\u0000${l.id}`;
   const children: ElkNode[] = [
-    ...tiles.map((t) => ({ ...elkTile(t), x: col(t.id) * COLUMN_HINT })),
+    ...tiles.map((t) => ({
+      ...(lanes ? elkLaneTile(t, lines) : elkTile(t)),
+      x: col(t.id) * COLUMN_HINT,
+    })),
     ...lines
       .filter((l) => !ids.has(l.target))
       .map((l) => ({
@@ -266,12 +274,17 @@ async function layoutBand(
   ];
   const edges: ElkExtendedEdge[] = lines.map((l) => ({
     id: l.id,
-    sources: [lineSourcePortId(l)],
-    targets: [ids.has(l.target) ? lineTargetPortId(l) : inPortId(stub(l))],
+    sources: [laneSourceId(l)],
+    targets: [ids.has(l.target) ? laneTargetId(l) : inPortId(stub(l))],
   }));
   const raw = toBoardLayout(
     "band",
-    await elk.layout({ id: "root", layoutOptions: { ...BAND_OPTIONS }, children, edges }),
+    await elk.layout({
+      id: "root",
+      layoutOptions: { ...BAND_OPTIONS, ...(lanes ? LANE_OPTIONS : {}) },
+      children,
+      edges,
+    }),
   );
   const aligned = alignLayout(raw, { tiles: own, lines: lines.filter((l) => ids.has(l.target)) });
 
@@ -281,9 +294,13 @@ async function layoutBand(
     (layout.positions[id]?.y ?? 0) + (size.get(id)?.h ?? 0) / 2;
   /* Where a line leaves its source or enters its target: its named port, else mid-height. */
   const from = (layout: BoardLayout, l: LayoutLine) =>
-    (layout.positions[l.source]?.y ?? 0) + portOffset(size.get(l.source), l.sourcePort);
+    (layout.positions[l.source]?.y ?? 0) +
+    portOffset(size.get(l.source), l.sourcePort) +
+    (l.lane?.source ?? 0);
   const into = (layout: BoardLayout, l: LayoutLine) =>
-    (layout.positions[l.target]?.y ?? 0) + portOffset(size.get(l.target), l.targetPort);
+    (layout.positions[l.target]?.y ?? 0) +
+    portOffset(size.get(l.target), l.targetPort) +
+    (l.lane?.target ?? 0);
   const centreX = new Map<number, number>();
   for (const t of own) centreX.set(col(t.id), (raw.positions[t.id]?.x ?? 0) + t.w / 2);
 
@@ -321,7 +338,7 @@ async function layoutBand(
     let run: number[] = [];
     const place = (hi: number) => {
       const wants = run.map((y) => list.find((t) => t.raw === y)?.want ?? y);
-      const ys = spread(wants, lo, hi);
+      const ys = spread(wants, lo, hi, lanes ? LANE_GAP : TRACK_CLEARANCE);
       for (const [i, y] of run.entries()) {
         const at = ys[i] as number;
         [top, bottom] = [
@@ -433,6 +450,7 @@ export async function layoutBands(
   previous?: PositionMap,
 ): Promise<BoardLayout> {
   checkPorts(input);
+  const lanes = usesLanes(input);
   const column = endColumns(input, bandColumns(input) ?? new Map<string, number>());
   const col = (id: string) => column.get(id) ?? 0;
   const hints = stabilityHints(input, previous);
@@ -471,7 +489,7 @@ export async function layoutBands(
   const ins = portIds(forward.lines, "target");
   const outs = portIds(forward.lines, "source");
   const children: ElkNode[] = input.tiles.map((t: LayoutTile) => ({
-    ...elkTile(t, ins.all(t.id), outs.all(t.id)),
+    ...(lanes ? elkLaneTile(t, forward.lines) : elkTile(t, ins.all(t.id), outs.all(t.id))),
     x: col(t.id) * COLUMN_HINT,
     y: tops.get(t.id) ?? 0,
   }));
@@ -480,8 +498,8 @@ export async function layoutBands(
   const edges: ElkExtendedEdge[] = forward.lines.map((l) => {
     const edge: ElkExtendedEdge = {
       id: l.id,
-      sources: [outs.id(l)],
-      targets: [ins.id(l)],
+      sources: [lanes ? laneSourceId(l) : outs.id(l)],
+      targets: [lanes ? laneTargetId(l) : ins.id(l)],
     };
     const track = tracks.get(l.id);
     if (track?.size) {
@@ -490,9 +508,12 @@ export async function layoutBands(
           id: `${l.id}:track`,
           startPoint: {
             x: col(l.source) * COLUMN_HINT + (size.get(l.source)?.w ?? 0),
-            y: portY(l.source, l.sourcePort),
+            y: portY(l.source, l.sourcePort) + (l.lane?.source ?? 0),
           },
-          endPoint: { x: col(l.target) * COLUMN_HINT, y: portY(l.target, l.targetPort) },
+          endPoint: {
+            x: col(l.target) * COLUMN_HINT,
+            y: portY(l.target, l.targetPort) + (l.lane?.target ?? 0),
+          },
           bendPoints: [...track].map(([c, y]) => ({ x: sampleX(c), y })),
         },
       ];
@@ -501,7 +522,7 @@ export async function layoutBands(
   });
   const laidOut = await elk.layout({
     id: "root",
-    layoutOptions: { ...ROUTE_OPTIONS },
+    layoutOptions: { ...ROUTE_OPTIONS, ...(lanes ? LANE_ROUTE_OPTIONS : {}) },
     children,
     edges,
   });

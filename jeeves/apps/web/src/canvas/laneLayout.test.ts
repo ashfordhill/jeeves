@@ -2,7 +2,11 @@
 // layout engine and the canvas's own layout input.
 import {
   type BoardLayout,
+  bandClashes,
+  bandColumns,
+  comesBack,
   createLayoutEngine,
+  endColumns,
   GRID,
   type LayoutInput,
   type Point,
@@ -276,4 +280,83 @@ describe("stores beside their users", () => {
       ).toBe(true);
     }
   });
+});
+
+describe("wire lanes on the studies", () => {
+  /** Pairs of parallel segments on different lines, less than 8px apart and overlapping >1px. */
+  function sharedRuns(layout: BoardLayout): number {
+    const routes = Object.values(layout.routes);
+    const segments = (route: Point[]) =>
+      route.slice(0, -1).map((a, i) => [a, route[i + 1] as Point] as const);
+    let count = 0;
+    for (const [i, route] of routes.entries()) {
+      for (const other of routes.slice(i + 1)) {
+        for (const [a, b] of segments(route)) {
+          for (const [c, d] of segments(other)) {
+            const horizontal = a.y === b.y;
+            if (horizontal !== (c.y === d.y)) continue;
+            const across = (p: Point) => (horizontal ? p.y : p.x);
+            const along = (p: Point) => (horizontal ? p.x : p.y);
+            const overlap =
+              Math.min(Math.max(along(a), along(b)), Math.max(along(c), along(d))) -
+              Math.max(Math.min(along(a), along(b)), Math.min(along(c), along(d)));
+            if (Math.abs(across(a) - across(c)) < 8 && overlap > 1) count++;
+          }
+        }
+      }
+    }
+    return count;
+  }
+
+  for (const [id] of studies) {
+    it(`${id}: forward lines have routes and share no run within three seconds`, async () => {
+      const plain = laneLayoutInput(laneGraph(studioArchitectureExample(id).design));
+      const baseline = await layoutOf(plain);
+      const column = endColumns(plain, bandColumns(plain) ?? new Map<string, number>());
+      const forward = plain.lines.filter((l) => !comesBack(l, column));
+      const input: LayoutInput = { ...plain, lanes: true };
+      const started = performance.now();
+      let secondPassStarted = 0;
+      const engine = createLayoutEngine(
+        {
+          layout(graph) {
+            if (
+              !secondPassStarted &&
+              graph.children?.some((t) => t.ports?.some((p) => p.id.includes("~")))
+            ) {
+              secondPassStarted = performance.now();
+            }
+            return elk.layout(graph);
+          },
+        },
+        { debounceMs: 0 },
+      );
+      const layout = await engine.request(input);
+      const finished = performance.now();
+      const forwardLayout: BoardLayout = {
+        ...layout,
+        routes: Object.fromEntries(forward.map((l) => [l.id, layout.routes[l.id] ?? []])),
+      };
+      const shared = sharedRuns(forwardLayout);
+      console.info(
+        "WD02 study",
+        JSON.stringify({
+          id,
+          firstPassMs: secondPassStarted - started,
+          secondPassMs: finished - secondPassStarted,
+          totalMs: finished - started,
+          widthWithoutLanes: baseline.bounds.w,
+          widthWithLanes: layout.bounds.w,
+          crossingsWithoutLanes: bandClashes(baseline, plain).crossings,
+          crossingsWithLanes: bandClashes(layout, input).crossings,
+          forwardLines: forward.length,
+          sharedRuns: shared,
+        }),
+      );
+      expect(finished - started).toBeLessThanOrEqual(3000);
+      for (const line of forward)
+        expect(layout.routes[line.id]?.length, line.id).toBeGreaterThanOrEqual(2);
+      expect(shared).toBe(0);
+    });
+  }
 });

@@ -2,6 +2,7 @@
 // Layout requests to ELK: key cache, coalescing and debounce. Framework-free, so unit tests drive
 // it with a fake ELK.
 //
+// - An input with `lanes` is laid out twice: without them, then with each line on its own lane.
 // - A cache hit resolves synchronously through `get(key)`, so nothing flashes.
 // - Requests inside the debounce window replace the pending one; the replaced request rejects
 //   with `LayoutSuperseded`, so callers keep their previous layout.
@@ -21,6 +22,7 @@ import { alignLayout } from "./align.ts";
 import { layoutBands, usesBands } from "./bands.ts";
 import { buildElkGraph, graphKey, type LayoutInput, type PositionMap } from "./elkGraph.ts";
 import { type BoardLayout, emptyLayout, toBoardLayout } from "./elkLayout.ts";
+import { laneShifts } from "./lanes.ts";
 
 /** What the engine needs from ELK: the bundled build, the worker build, or a fake. */
 export type ElkLike = { layout(graph: ElkNode): Promise<ElkNode> };
@@ -70,7 +72,7 @@ export function createLayoutEngine(
     }
   }
 
-  function lay(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {
+  function layOnce(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {
     if (usesBands(input)) return layoutBands(elk, key, input, previous);
     let graph: ElkNode;
     try {
@@ -79,6 +81,23 @@ export function createLayoutEngine(
       return Promise.reject(error);
     }
     return elk.layout(graph).then((laidOut) => alignLayout(toBoardLayout(key, laidOut), input));
+  }
+
+  /** With `lanes`: today's layout first, then again with each line on the lane it earned there. */
+  function lay(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {
+    if (!input.lanes) return layOnce(key, input, previous);
+    const plain: LayoutInput = { tiles: input.tiles, lines: input.lines };
+    return layOnce(key, plain, previous).then((base) => {
+      const shifts = laneShifts(plain, base);
+      const laned: LayoutInput = {
+        tiles: input.tiles,
+        lines: input.lines.map((l) => ({
+          ...l,
+          lane: shifts.get(l.id) ?? { source: 0, target: 0 },
+        })),
+      };
+      return layOnce(key, laned, base.positions);
+    });
   }
 
   function run(key: string, input: LayoutInput, previous?: PositionMap): Promise<BoardLayout> {

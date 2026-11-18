@@ -992,3 +992,101 @@ describe("newTileHint", () => {
     });
   });
 });
+
+describe("lanes", () => {
+  /** Pairs of parallel segments on different lines, less than 8px apart and overlapping >1px. */
+  function sharedRuns(layout: BoardLayout): number {
+    const routes = Object.values(layout.routes);
+    const segments = (route: Point[]) =>
+      route.slice(0, -1).map((a, i) => [a, route[i + 1] as Point] as const);
+    let count = 0;
+    for (const [i, route] of routes.entries()) {
+      for (const other of routes.slice(i + 1)) {
+        for (const [a, b] of segments(route)) {
+          for (const [c, d] of segments(other)) {
+            const horizontal = a.y === b.y;
+            if (horizontal !== (c.y === d.y)) continue;
+            const across = (p: Point) => (horizontal ? p.y : p.x);
+            const along = (p: Point) => (horizontal ? p.x : p.y);
+            const overlap =
+              Math.min(Math.max(along(a), along(b)), Math.max(along(c), along(d))) -
+              Math.max(Math.min(along(a), along(b)), Math.min(along(c), along(d)));
+            if (Math.abs(across(a) - across(c)) < 8 && overlap > 1) count++;
+          }
+        }
+      }
+    }
+    return count;
+  }
+
+  it("gives a flat fork separate runs and starts 10px apart", async () => {
+    const input: LayoutInput = { ...board(["a", "b", "c"], ["a>b", "a>c"]), lanes: true };
+    const layout = await bandsOf(input);
+    expect(layout.routes["a-b"]?.length).toBeGreaterThanOrEqual(2);
+    expect(layout.routes["a-c"]?.length).toBeGreaterThanOrEqual(2);
+    expect(sharedRuns(layout)).toBe(0);
+    const starts = input.lines.map((l) => layout.routes[l.id]?.[0]?.y ?? Number.NaN);
+    expect(Math.abs((starts[0] as number) - (starts[1] as number))).toBe(10);
+  });
+
+  it("routes the named-port band fixture separately from edge to edge and clear of other tiles", async () => {
+    const input: LayoutInput = { ...detailed, lanes: true };
+    const layout = await bandsOf(input);
+    expect(sharedRuns(layout)).toBe(0);
+    for (const line of input.lines) {
+      const route = layout.routes[line.id] ?? [];
+      expect(route.length, line.id).toBeGreaterThanOrEqual(2);
+      const source = rect(input, layout, line.source);
+      const target = rect(input, layout, line.target);
+      expect(route[0]?.x, line.id).toBe(source.x + source.w);
+      expect(route.at(-1)?.x, line.id).toBe(target.x);
+      for (const [id, port, end] of [
+        [line.source, line.sourcePort, route[0]],
+        [line.target, line.targetPort, route.at(-1)],
+      ] as const) {
+        const tile = input.tiles.find((t) => t.id === id);
+        const distance = Math.abs(
+          (end?.y ?? Number.NaN) - (layout.positions[id]?.y ?? 0) - portOffset(tile, port),
+        );
+        expect(Number.isInteger(distance), line.id).toBe(true);
+        expect(distance, line.id).toBeLessThanOrEqual((tile?.h ?? 0) / 2);
+      }
+      for (const [i, a] of route.slice(0, -1).entries()) {
+        const b = route[i + 1] as Point;
+        for (const tile of input.tiles.filter(
+          (t) => t.id !== line.source && t.id !== line.target,
+        )) {
+          const r = rect(input, layout, tile.id);
+          const through =
+            Math.min(a.x, b.x) < r.x + r.w &&
+            Math.max(a.x, b.x) > r.x &&
+            Math.min(a.y, b.y) < r.y + r.h &&
+            Math.max(a.y, b.y) > r.y;
+          expect(through, `${line.id} through ${tile.id}`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("puts three arrivals at a default port 22px apart", async () => {
+    const input: LayoutInput = {
+      ...board(["a", "b", "c", "d"], ["a>d", "b>d", "c>d"]),
+      lanes: true,
+    };
+    const layout = await bandsOf(input);
+    const ends = input.lines
+      .map((l) => layout.routes[l.id]?.at(-1)?.y ?? Number.NaN)
+      .sort((a, b) => a - b);
+    expect((ends[1] as number) - (ends[0] as number)).toBe(22);
+    expect((ends[2] as number) - (ends[1] as number)).toBe(22);
+  });
+
+  it("leaks nothing to the same input without lanes", async () => {
+    const engine = createLayoutEngine(elk, { debounceMs: 0 });
+    const input = board(["a", "b", "c"], ["a>b", "a>c"]);
+    await engine.request({ ...input, lanes: true });
+    expect(await engine.request(input)).toEqual(
+      await createLayoutEngine(elk, { debounceMs: 0 }).request(input),
+    );
+  });
+});

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "studio-tinyurl",
+    "firstPassMs": 35.83188999999993,
+    "secondPassMs": 35.143100000000004,
+    "totalMs": 70.97498999999993,
+    "widthWithoutLanes": 1024,
+    "widthWithLanes": 1120,
+    "crossingsWithoutLanes": 0,
+    "crossingsWithLanes": 0,
+    "forwardLines": 11,
+    "sharedRuns": 0
+  },
+  {
+    "id": "studio-marketplace",
+    "firstPassMs": 34.319320999999945,
+    "secondPassMs": 32.821326,
+    "totalMs": 67.14064699999994,
+    "widthWithoutLanes": 1280,
+    "widthWithLanes": 1344,
+    "crossingsWithoutLanes": 1,
+    "crossingsWithLanes": 1,
+    "forwardLines": 23,
+    "sharedRuns": 0
+  },
+  {
+    "id": "studio-youtube",
+    "firstPassMs": 36.28328299999998,
+    "secondPassMs": 39.98722500000008,
+    "totalMs": 76.27050800000006,
+    "widthWithoutLanes": 1504,
+    "widthWithLanes": 1568,
+    "crossingsWithoutLanes": 1,
+    "crossingsWithLanes": 2,
+    "forwardLines": 20,
+    "sharedRuns": 0
+  }
+]

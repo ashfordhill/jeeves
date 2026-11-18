@@ -19443,3 +19443,28 @@ workload settings the same way.
   preserved. Own projects0; temporary E2E servers exited. No owner studio/root/original app,
   design/schema/blueprint/chat/generation/settings/template-support edit, later unit or push.
 - One explicit-path local commit follows: `WD01: board lane shifts`. Stop for coordinator review.
+
+
+## 2026-11-18 — WD02 board lanes through ELK complete for coordinator review
+
+- Implemented the exact optional two-pass layout with per-line ELK ports, lane spacing and
+  shifted endpoints/tracks. Default paths remain unchanged; the studio does not enable lanes yet.
+  Four new board tests and three study tests use real ELK; original cases/assertions/fixtures and
+  WD01 helpers/tests are unchanged. No design/schema/blueprint/chat/generation/settings/template edit.
+- Measured first/second pass ms, width without→with lanes, crossings without→with lanes:
+  TinyURL 35.83/35.14 ms, 1024→1120 px, 0→0; Marketplace 34.32/32.82 ms, 1280→1344 px, 1→1;
+  YouTube 36.28/39.99 ms, 1504→1568 px, 1→2. Forward shared runs 0/0/0; totals 70.97/67.14/76.27 ms.
+  No ELK throw, shared-forward-run or >3s stop. Return routing stays outside this unit; YouTube's
+  extra crossing is recorded without changing the prescribed design.
+- Focused 7/7 and measurement-only 3/3 pass; `pnpm check` 146 files/1367 tests, native E2E 87/87
+  (TinyURL and both mouse rebuilds) and web build pass. The extra focused run recovered timing
+  output hidden by the default reporter; required full checks ran once. Inherited lint/chunk
+  warnings remain. [Evidence and limits](plans/wires-and-deployment/evidence/wd02/progress.md).
+- Mechanical adjustments only: actual Biome import/expression wrapping and removing two now-unused
+  port-ID imports in `bands.ts`; no type/algorithm correction or moved find text. Two preliminary
+  preservation comparator format/order assumptions were corrected, with no product/test failure.
+- All 7230 other tracked byte/mode/absence states, owner/root changes, historical/original apps,
+  accepted SQL/dependencies/frozen v1, 42 container triples / 9 networks / 23 volumes / 43 images and the
+  two old E2E rows are preserved. Own projects 0; E2E servers exited, owner 4300/4310 untouched.
+  No later brief/unit, dependency, paid/live call, push or deployment. One explicit-path local
+  commit follows: `WD02: board lanes through ELK`. Stop for coordinator review.
