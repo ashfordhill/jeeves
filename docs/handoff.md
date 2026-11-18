@@ -19568,3 +19568,34 @@ workload settings the same way.
   historical evidence/schema/blueprint/chat/generation/settings/template/dependency change,
   branch/worktree/stash, unrelated cleanup, paid/live call, push or deployment.
 - One scoped local stop commit follows: `WD06: stopped, shared-run test conflicts with lanes`.
+
+
+## 2026-11-18 — WD07 stopped
+
+- Applied the exact hover CSS, one new TinyURL opacity/blueprint E2E case and one studio-docs
+  sentence. Actual React Flow wrapper/edge class names match; no class-name adjustment or type/
+  behavior correction. Biome wrapped only the new test's final assertion; initial finding retained.
+- Native browser: the unchanged TinyURL canvas case passed; the new case failed expected 12/
+  actual 0 `.board-wire` (1 pass/1 fail, 11.6s). Preserved trace DOM has 1 wrapper, 12 legacy edges/
+  arrowheads and 0 wire/fill elements; visually inspected screenshot shows TinyURL rendering.
+  Hover, opacity and after-blueprint assertions were **not reached**, so the required hover
+  behavior/browser acceptance is unperformable and no before/after blueprint pass is claimed.
+- WD06's restored activation prerequisite is absent: canvas supplies no wire data and optional
+  board artwork requires it. CSS/class-name changes cannot make TinyURL wires exist. Reenabling
+  WD06 or changing old tests would exceed this unit; no workaround, skip or later unit executed.
+- [Stopped patch](plans/wires-and-deployment/stopped/WD07.patch) preserves the 3 proposed changes
+  and 8 new evidence files (failure/format logs, DOM counts, screenshot/context and full trace).
+  It applies cleanly. Restored all 4 snapshotted starting byte/mode states; only patch+this append
+  remain. Every existing board/E2E assertion and historical evidence file is unchanged.
+- Restored-tree gates: `pnpm check` 148 files/1389 tests pass (194.41s); native E2E 87/87 pass (6.3m),
+  including TinyURL and both mouse rebuilds;
+  web build pass (1.36s). Each full gate ran once after restoration; inherited 8 lint warnings/
+  12 infos and Vite chunk warning remain. Logs: `/tmp/jeeves-wd07-restored-{check,e2e,build}.log`.
+- Final preservation: all 7265 other byte/mode/absence states and own modes match; append-only
+  handoff, owner/root patch, original apps, accepted SQL/dependencies and frozen v1 preserved.
+  Original 42 full container triples/9 networks/23 volumes/43 images and both old E2E rows match;
+  own projects 0, E2E ports free and owner 4300/4310 PIDs unchanged. Read-only RG21 audit passes
+  with process-local `core.abbrev=7`; no baseline/config edit or unrelated cleanup.
+- One explicit-path local stop commit follows: `WD07: stopped, TinyURL wires are not activated`.
+  No root/owner studio/schema/blueprint/chat/generation/settings/template/dependency edit,
+  branch/worktree/stash/delegation, paid/live call, push or deployment. Stop; no WD08.
