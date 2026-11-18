@@ -1331,7 +1331,13 @@ Nested reads cannot restore network authority inside a local atomic effect. Lost
 undecodable or uncertain POST replies stay outcome-unknown; no automatic retry occurs.
 
 Each process snapshots deployment endpoints (`JEEVES_WORKLOAD_ISSUER`, `_TOKEN_URL`, `_JWKS_URL`)
-and its secret before clients open. `JEEVES_REQUIRE_TLS` applies. One process caches at most 16
+before clients open and validates its initial credential. Optional `JEEVES_WORKLOAD_SECRET_FILE`
+is an absolute private path, read again for every new token request; replace the file contents
+to rotate at the next refresh. Without it, the existing per-client secret file remains a startup
+snapshot. Invalid initial configuration refuses startup. A later unreadable or invalid file
+fails like an issuer request without stopping the process. The issuer is the identity service
+answering the configured token and key endpoints; issuer, audience, RS256 and caller verification
+remain required. `JEEVES_REQUIRE_TLS` applies. One process caches at most 16
 fixed target audiences with a single refresh per audience. Token/JWKS waits and each fetch are
 bounded at 2 seconds; failed refresh has a one-second cooldown. Tokens expire at their verified
 `exp`, at most 300 seconds, with early refresh in the last five seconds. A valid token survives

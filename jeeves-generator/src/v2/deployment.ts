@@ -21,6 +21,7 @@ const tls = ["JEEVES_REQUIRE_TLS", "NODE_TLS_REJECT_UNAUTHORIZED"];
 const workloadEnv = [
   "JEEVES_WORKLOAD_ISSUER",
   "JEEVES_WORKLOAD_JWKS_URL",
+  "JEEVES_WORKLOAD_SECRET_FILE",
   "JEEVES_WORKLOAD_TOKEN_URL",
 ];
 
@@ -357,7 +358,14 @@ export function deploymentFiles(
       "",
     ]),
     ...(contract.identity
-      ? [`Workload identity environment names: ${list(contract.identity.env)}`, ""]
+      ? [
+          "## Workload identity",
+          "",
+          "The issuer is the identity service answering the configured token and key endpoints. Tokens must still match JEEVES_WORKLOAD_ISSUER, the compiled audience, RS256 and the allowed caller claims.",
+          "JEEVES_WORKLOAD_SECRET_FILE optionally names an absolute credential path, validated before clients open and read again for each new token request. Replace its contents to rotate at the next refresh. Without it, the existing per-client secret file is read once at startup. A later unreadable or invalid file fails like an issuer request; a still-valid cached token survives only until its existing expiry bound.",
+          `Workload identity environment names: ${list(contract.identity.env)}`,
+          "",
+        ]
       : []),
     "```mermaid",
     "flowchart LR",

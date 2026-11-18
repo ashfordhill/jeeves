@@ -254,7 +254,12 @@ function environmentOf(service: ReturnType<typeof serviceOf>) {
     ...Object.keys(service.environment ?? {}),
     ...(service.identity ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"] : []),
     ...(service.workload
-      ? ["JEEVES_WORKLOAD_ISSUER", "JEEVES_WORKLOAD_TOKEN_URL", "JEEVES_WORKLOAD_JWKS_URL"]
+      ? [
+          "JEEVES_WORKLOAD_ISSUER",
+          "JEEVES_WORKLOAD_TOKEN_URL",
+          "JEEVES_WORKLOAD_JWKS_URL",
+          "JEEVES_WORKLOAD_SECRET_FILE",
+        ]
       : []),
     ...Object.keys(localEndpoints(service)),
     ...(service.external ?? []).map(externalVariable),

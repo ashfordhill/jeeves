@@ -1,7 +1,8 @@
 import { generateKeyPairSync, sign } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire, stripTypeScriptTypes } from "node:module";
-import { posix } from "node:path";
+import { tmpdir } from "node:os";
+import { join, posix } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   applyOperations,
@@ -69,7 +70,7 @@ const settings = {
   jwksUrl: "https://issuer.example/jwks",
   secret: "unit-secret",
 };
-function loader(user = false, publicCallee = false) {
+function loader(user = false, publicCallee = false, realSecrets = false) {
   let design = workloadDesign();
   if (user)
     design = runStudioCommands(design, [
@@ -108,7 +109,9 @@ function loader(user = false, publicCallee = false) {
   const urls = new Map<string, string>();
   const overrides: Record<string, string> = {
     "src/runtime/operation.ts": operationUrl,
-    "src/runtime/local.ts": data('export const readSecret=()=>"unit-secret";'),
+    ...(!realSecrets && {
+      "src/runtime/local.ts": data('export const readSecret=()=>"unit-secret";'),
+    }),
     "src/runtime/process.ts": data(
       `import {withProcess} from ${JSON.stringify(operationUrl)};export async function runProcess(start){await withProcess({signal:new AbortController().signal,track(){},ready(){},own(){},admission(){}},()=>start({signal:new AbortController().signal,ready(){},own(){},admission(){}}));} export const ownResource=()=>{};export const processClient=()=>{};export const probeDependency=()=>{};`,
     ),
@@ -162,6 +165,143 @@ const within = async (dispatch: () => Promise<unknown>, maximumMs = 1000) => {
     running.close();
   }
 };
+
+describe("WD13 workload credential file rotation", () => {
+  const fileRuntime = () => import(loader(false, false, true).load("src/runtime/workload.ts"));
+  const configure = () => {
+    vi.stubEnv("JEEVES_WORKLOAD_ISSUER", issuer);
+    vi.stubEnv("JEEVES_WORKLOAD_TOKEN_URL", settings.tokenUrl);
+    vi.stubEnv("JEEVES_WORKLOAD_JWKS_URL", settings.jwksUrl);
+  };
+  const directories: string[] = [];
+  const secretPath = () => {
+    const directory = mkdtempSync(join(tmpdir(), "jeeves-wd13-test-"));
+    directories.push(directory);
+    return join(directory, "credential");
+  };
+  afterEach(() => {
+    for (const directory of directories.splice(0))
+      rmSync(directory, { recursive: true, force: true });
+  });
+  it("reads the rotated file on the next actual request and keeps one refresh per audience", async () => {
+    configure();
+    vi.useFakeTimers();
+    const start = Date.now();
+    const path = secretPath();
+    writeFileSync(path, "first-private-secret\n");
+    vi.stubEnv("JEEVES_WORKLOAD_SECRET_FILE", path);
+    const runtime = await fileRuntime();
+    const configured = runtime.workloadSettings(settings);
+    const credentials = runtime.createWorkload(configured, ["callee"]);
+    const secrets: string[] = [];
+    const fetch = vi.fn(async (_url: string, request: RequestInit) => {
+      const body = request.body as URLSearchParams;
+      secrets.push(body.get("client_secret") ?? "");
+      expect(body.get("client_id")).toBe(settings.client);
+      expect(body.get("audience")).toBe("jeeves-service-callee");
+      return Response.json({ access_token: token({ exp: Math.floor(Date.now() / 1000) + 10 }) });
+    });
+    vi.stubGlobal("fetch", fetch);
+    const first = await within(() => credentials.acquire("callee"));
+    writeFileSync(path, "second-private-secret\n");
+    vi.stubEnv("JEEVES_WORKLOAD_SECRET_FILE", "/unused-new-config-path");
+    expect(await within(() => credentials.acquire("callee"))).toBe(first);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    vi.setSystemTime(start + 6000);
+    const refreshed = await Promise.all(
+      Array.from({ length: 8 }, () => within(() => credentials.acquire("callee"))),
+    );
+    expect(new Set(refreshed).size).toBe(1);
+    expect(refreshed[0]).not.toBe(first);
+    expect(secrets).toEqual(["first-private-secret", "second-private-secret"]);
+  });
+  it.each(["missing", "directory", "empty", "oversized"])(
+    "treats a later %s file as a recoverable issuer failure, with unchanged cache expiry",
+    async (failure) => {
+      configure();
+      vi.useFakeTimers();
+      const start = Date.now();
+      const path = secretPath();
+      writeFileSync(path, "private-start-secret");
+      vi.stubEnv("JEEVES_WORKLOAD_SECRET_FILE", path);
+      const runtime = await fileRuntime();
+      const configured = runtime.workloadSettings(settings);
+      const credentials = runtime.createWorkload(configured, ["callee"]);
+      const empty = runtime.createWorkload(configured, ["callee"]);
+      const fetch = vi.fn(async (_url: string, _request: RequestInit) =>
+        Response.json({ access_token: token({ exp: Math.floor(Date.now() / 1000) + 10 }) }),
+      );
+      vi.stubGlobal("fetch", fetch);
+      const logs = ["log", "warn", "error"].map((name) =>
+        vi.spyOn(console, name as "log").mockImplementation(() => {}),
+      );
+      const exit = vi.spyOn(process, "exit");
+      try {
+        const first = await within(() => credentials.acquire("callee"));
+        rmSync(path);
+        if (failure === "directory") mkdirSync(path);
+        if (failure === "empty") writeFileSync(path, " \n");
+        if (failure === "oversized") writeFileSync(path, "x".repeat(4097));
+        expect(await within(() => credentials.acquire("callee"))).toBe(first);
+        vi.setSystemTime(start + 6000);
+        expect(await within(() => credentials.acquire("callee"))).toBe(first);
+        await expect(within(() => empty.acquire("callee"))).rejects.toMatchObject({
+          code: "IDENTITY_UNAVAILABLE",
+          outcome: "definite-failure",
+        });
+        await expect(within(() => empty.acquire("callee"))).rejects.toThrow(
+          /^Operation definite-failure: IDENTITY_UNAVAILABLE$/,
+        );
+        expect(fetch).toHaveBeenCalledTimes(1);
+        vi.setSystemTime(start + 11000);
+        await expect(within(() => credentials.acquire("callee"))).rejects.toThrow(
+          /^Operation definite-failure: IDENTITY_UNAVAILABLE$/,
+        );
+        expect(fetch).toHaveBeenCalledTimes(1);
+        rmSync(path, { recursive: true, force: true });
+        writeFileSync(path, "private-recovered-secret");
+        vi.setSystemTime(start + 12100);
+        await expect(within(() => credentials.acquire("callee"))).resolves.toBeTypeOf("string");
+        expect(fetch).toHaveBeenCalledTimes(2);
+        expect(fetch.mock.calls[1]?.[1].body?.toString()).toContain(
+          "client_secret=private-recovered-secret",
+        );
+        expect(exit).not.toHaveBeenCalled();
+        for (const log of logs) expect(log).not.toHaveBeenCalled();
+      } finally {
+        exit.mockRestore();
+        for (const log of logs) log.mockRestore();
+      }
+    },
+  );
+  it("validates the initial file before clients and retains the existing startup-only secret form", async () => {
+    configure();
+    const path = secretPath();
+    const runtime = await fileRuntime();
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    for (const value of ["", "relative-path", "/private\npath"]) {
+      vi.stubEnv("JEEVES_WORKLOAD_SECRET_FILE", value);
+      expect(() => runtime.workloadSettings(settings)).toThrow(
+        /^Invalid endpoint JEEVES_WORKLOAD_SECRET_FILE$/,
+      );
+    }
+    vi.stubEnv("JEEVES_WORKLOAD_SECRET_FILE", path);
+    expect(() => runtime.workloadSettings(settings)).toThrow(/^Invalid workload credential$/);
+    writeFileSync(path, " ");
+    expect(() => runtime.workloadSettings(settings)).toThrow(/^Invalid workload credential$/);
+    expect(fetch).not.toHaveBeenCalled();
+    vi.stubEnv("JEEVES_WORKLOAD_SECRET_FILE", undefined);
+    vi.stubEnv("JEEVES_SECRET_WORKLOAD_JEEVES_WORKLOAD_CALLER_FILE", path);
+    writeFileSync(path, "original-private-secret\n");
+    const configured = runtime.workloadSettings(settings);
+    writeFileSync(path, "ignored-rotation");
+    const credentials = runtime.createWorkload(configured, ["callee"]);
+    fetch.mockImplementation(async () => Response.json({ access_token: token() }));
+    await within(() => credentials.acquire("callee"));
+    expect(fetch.mock.calls[0]?.[1].body.get("client_secret")).toBe("original-private-secret");
+  });
+});
 
 describe("RG09 workload contracts and verifier", () => {
   it("mouse keeps an Auth guard's first identity choice and reaches workload after it is filled", () => {

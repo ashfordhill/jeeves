@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { createRemoteJWKSet, customFetch, jwtVerify } from "jose";
 import { readSecret } from "./local.ts";
 import { jsonBody } from "./hook-boundary.ts";
@@ -60,16 +62,34 @@ export const serviceEndpoint = (id: string) => {
   if (new URL(base).pathname !== "/") throw new Error(`Invalid endpoint ${name}`);
   return base;
 };
-/** Configuration only, before any clients or requests. Snapshot credentials once per process. */
+function checkedSecret(secret: string): string {
+  const value = secret.trim();
+  if (!value || value.length > 4096) throw new Error("Invalid workload credential");
+  return value;
+}
+/** Configuration only, before any clients or requests. Validate the initial credential too. */
 export function workloadSettings(binding: Binding) {
   if (!safeId(binding.identity) || !safeId(binding.client) || !safeId(binding.audience))
     throw new Error("Invalid workload binding");
   const issuer = endpoint("JEEVES_WORKLOAD_ISSUER");
   const tokenUrl = endpoint("JEEVES_WORKLOAD_TOKEN_URL");
   const jwksUrl = endpoint("JEEVES_WORKLOAD_JWKS_URL");
-  const secret = readSecret(`workload-${binding.client}`);
-  if (!secret || secret.length > 4096) throw new Error("Invalid workload credential");
-  return Object.freeze({ ...binding, issuer, tokenUrl, jwksUrl, secret });
+  const secretFile = process.env.JEEVES_WORKLOAD_SECRET_FILE;
+  if (
+    secretFile !== undefined &&
+    (!secretFile.startsWith("/") || /[\x00-\x1f\x7f]/.test(secretFile))
+  )
+    throw new Error("Invalid endpoint JEEVES_WORKLOAD_SECRET_FILE");
+  let secret: string;
+  if (secretFile === undefined) secret = checkedSecret(readSecret(`workload-${binding.client}`));
+  else {
+    try {
+      secret = checkedSecret(readFileSync(secretFile, "utf8"));
+    } catch {
+      throw new Error("Invalid workload credential");
+    }
+  }
+  return Object.freeze({ ...binding, issuer, tokenUrl, jwksUrl, secret, secretFile });
 }
 type Settings = ReturnType<typeof workloadSettings>;
 /** One instance per independent process. 16 fixed compiled audiences, 64 KiB response bounds,
@@ -189,6 +209,14 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
           const token = await dependency(
             { scope, maximumMs: 2000, context: undefined },
             async (signal) => {
+              let secret = settings.secret;
+              if (settings.secretFile !== undefined) {
+                try {
+                  secret = checkedSecret(await readFile(settings.secretFile, { encoding: "utf8", signal }));
+                } catch {
+                  throw unavailable();
+                }
+              }
               const response = await fetch(settings.tokenUrl, {
                 method: "POST",
                 redirect: "manual",
@@ -198,7 +226,7 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
                 body: new URLSearchParams({
                   grant_type: "client_credentials",
                   client_id: settings.client,
-                  client_secret: settings.secret,
+                  client_secret: secret,
                   audience: `jeeves-service-${target}`,
                 }),
               });

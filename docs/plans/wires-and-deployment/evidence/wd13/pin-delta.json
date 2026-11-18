@@ -1,0 +1,38 @@
+[
+  {
+    "fixture": "frozen-v2",
+    "path": ".jeeves/extensions.md",
+    "before": "2fa00a6c59796098c7defc6c51807ba13f1857ae2bb1efcf54cb3f429841efab",
+    "after": "892f75401b8e4d9440f8c0aa2ea988f3967ee3eb5d775effb04d9df8f7293724"
+  },
+  {
+    "fixture": "frozen-v2",
+    "path": ".jeeves/manifest.json",
+    "before": "59e02db650bf55f9622193471c1e62a63532e5658e31540c2f1b387aed7dc9e3",
+    "after": "f3ddfa19bd75d7be63bdecd42c6d257845abadb2dbd52c47281ae3f295f2b793"
+  },
+  {
+    "fixture": "v2-module-design",
+    "path": ".jeeves/extensions.md",
+    "before": "2fa00a6c59796098c7defc6c51807ba13f1857ae2bb1efcf54cb3f429841efab",
+    "after": "892f75401b8e4d9440f8c0aa2ea988f3967ee3eb5d775effb04d9df8f7293724"
+  },
+  {
+    "fixture": "v2-module-design",
+    "path": ".jeeves/manifest.json",
+    "before": "132e805e7d276e3f5b2a7087c38bac1f608065a95a858b7f2823a28cb9f5ea24",
+    "after": "959de3f9e3b8e7cab4cf8d04cecb49cf4d07f000e05db3de0b72cc62146403df"
+  },
+  {
+    "fixture": "stub-stack",
+    "path": ".jeeves/extensions.md",
+    "before": "2fa00a6c59796098c7defc6c51807ba13f1857ae2bb1efcf54cb3f429841efab",
+    "after": "892f75401b8e4d9440f8c0aa2ea988f3967ee3eb5d775effb04d9df8f7293724"
+  },
+  {
+    "fixture": "stub-stack",
+    "path": ".jeeves/manifest.json",
+    "before": "477af9968b386ac9c108bc4b194ef0da0febd31f9be8ac650ad4fd2103598e7b",
+    "after": "a9b73db62bf52e0f5e5c08aed419a4b8bdc6b846ff324a9cdfd1b3d86fea0e83"
+  }
+]

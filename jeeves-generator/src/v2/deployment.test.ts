@@ -33,95 +33,101 @@ const contract = JSON.parse(text("deploy/contract.json")) as typeof expectedDepl
 /** Evaluate only generated configuration readers with fake file bytes, never modules/hooks,
  * sockets, databases, broker clients or libraries. Each process gets its own environment proxy.
  * Arguments come from its emitted entry/configuration and compiled bindings, not deployment.ts.
- * Four passes reach optional TLS and credential-location branches, including dynamic names. */
+ * Eight passes reach optional TLS and credential-location branches, including dynamic names. */
 function auditEnvironment(id: string) {
   const seen = new Set<string>();
   const entry = text(`src/processes/${id}.ts`);
   const config = JSON.parse(must(entry.match(/export const config = ([\s\S]*?) as const;/)?.[1]));
   for (const secure of [false, true])
-    for (const namedSecrets of [false, true]) {
-      const env = new Proxy(
-        {},
-        {
-          get: (_object, key) => {
-            if (typeof key !== "string") throw Error("Unexpected env key");
-            seen.add(key);
-            if (key.startsWith("JEEVES_SECRET_"))
-              return namedSecrets ? "/audit/credential" : undefined;
-            if (key === "JEEVES_DB_POOL_MAX") return "3";
-            if (key === "SECRET_DIR") return "/audit";
-            if (key === "JEEVES_REQUIRE_TLS") return secure ? "true" : undefined;
-            if (key === "NODE_TLS_REJECT_UNAUTHORIZED") return secure ? "1" : undefined;
-            if (key.endsWith("_TLS")) return secure ? "verify-full" : "disable";
-            if (key.endsWith("_TLS_SERVERNAME")) return secure ? "store.example" : undefined;
-            if (key.endsWith("_CA_FILE")) return secure ? "/audit/ca" : undefined;
-            if (key.endsWith("_HOST")) return "store.example";
-            if (key.endsWith("_PORT")) return "5432";
-            if (key.includes("WORKLOAD_") || key.endsWith("_URL"))
-              return "https://identity.example/";
-            throw Error(`Unhandled actual environment read ${key}`);
+    for (const namedSecrets of [false, true])
+      for (const rotatingSecret of [false, true]) {
+        const env = new Proxy(
+          {},
+          {
+            get: (_object, key) => {
+              if (typeof key !== "string") throw Error("Unexpected env key");
+              seen.add(key);
+              if (key === "JEEVES_WORKLOAD_SECRET_FILE")
+                return rotatingSecret ? "/audit/rotating-credential" : undefined;
+              if (key.startsWith("JEEVES_SECRET_"))
+                return namedSecrets ? "/audit/credential" : undefined;
+              if (key === "JEEVES_DB_POOL_MAX") return "3";
+              if (key === "SECRET_DIR") return "/audit";
+              if (key === "JEEVES_REQUIRE_TLS") return secure ? "true" : undefined;
+              if (key === "NODE_TLS_REJECT_UNAUTHORIZED") return secure ? "1" : undefined;
+              if (key.endsWith("_TLS")) return secure ? "verify-full" : "disable";
+              if (key.endsWith("_TLS_SERVERNAME")) return secure ? "store.example" : undefined;
+              if (key.endsWith("_CA_FILE")) return secure ? "/audit/ca" : undefined;
+              if (key.endsWith("_HOST")) return "store.example";
+              if (key.endsWith("_PORT")) return "5432";
+              if (key.includes("WORKLOAD_") || key.endsWith("_URL"))
+                return "https://identity.example/";
+              throw Error(`Unhandled actual environment read ${key}`);
+            },
           },
-        },
-      );
-      const globals: Record<string, unknown> = {
-        process: { env },
-        Buffer,
-        URL,
-        console,
-        readFileSync: () => "audit-file",
-        openSync: () => {
-          throw Error("No actual file reads");
-        },
-      };
-      function load(path: string, names: string[]) {
-        const source = stripTypeScriptTypes(text(path))
-          .replace(/^import\s[\s\S]*?;\s*/gm, "")
-          .replace(/\bexport\s+(?=(?:const|let|function|async|class)\b)/g, "");
-        return runInNewContext(`(() => {${source}\n;return {${names.join(",")}};})()`, globals);
-      }
-      // This fixture's independent expectation and import-closure assertion require Postgres
-      // in each process. Never use the emitted env list to decide which readers to execute.
-      load("src/runtime/postgres.ts", ["databasePoolMaximum"]);
-      const local = load("src/runtime/local.ts", ["readSecret"]);
-      globals.readSecret = local.readSecret;
-      const clients = load("src/runtime/module-clients.ts", ["databaseEndpoint", "brokerBinding"]);
-      for (const match of entry.matchAll(/databaseEndpoint\("([^"]+)"\)/g))
-        clients.databaseEndpoint(match[1]);
-      for (const match of entry.matchAll(/readSecret\("([^"]+)"\)/g)) local.readSecret(match[1]);
-      if (entry.includes("brokerBinding()")) clients.brokerBinding();
-      if (config.workload) {
-        const workload = load("src/runtime/workload.ts", ["workloadSettings", "serviceEndpoint"]);
-        workload.workloadSettings(config.workload);
-        for (const match of entry.matchAll(/serviceEndpoint\("([^"]+)"\)/g))
-          workload.serviceEndpoint(match[1]);
-      }
-      if (entry.includes("positiveCacheBindings")) {
-        const { positiveCacheBindings } = load("src/features/positive-cache-bindings.ts", [
-          "positiveCacheBindings",
-        ]);
-        const valkey = load("src/runtime/valkey.ts", ["cacheEndpoint"]);
-        globals.cacheEndpoint = valkey.cacheEndpoint;
-        for (const template of Object.keys(config.templates)) {
-          const binding = positiveCacheBindings[template];
-          valkey.cacheEndpoint(binding.cache.resource);
-          local.readSecret(binding.cache.secret);
+        );
+        const globals: Record<string, unknown> = {
+          process: { env },
+          Buffer,
+          URL,
+          console,
+          readFileSync: () => "audit-file",
+          openSync: () => {
+            throw Error("No actual file reads");
+          },
+        };
+        function load(path: string, names: string[]) {
+          const source = stripTypeScriptTypes(text(path))
+            .replace(/^import\s[\s\S]*?;\s*/gm, "")
+            .replace(/\bexport\s+(?=(?:const|let|function|async|class)\b)/g, "");
+          return runInNewContext(`(() => {${source}\n;return {${names.join(",")}};})()`, globals);
         }
-        const { selections } = load("src/features/application-bindings.ts", ["selections"]);
-        const { localLogins } = load("src/features/local-bindings.ts", ["localLogins"]);
-        globals.selections = selections;
-        globals.localLogins = localLogins;
-        load("src/features/service-resources.ts", [
-          "validateTemplateSettings",
-        ]).validateTemplateSettings(id);
+        // This fixture's independent expectation and import-closure assertion require Postgres
+        // in each process. Never use the emitted env list to decide which readers to execute.
+        load("src/runtime/postgres.ts", ["databasePoolMaximum"]);
+        const local = load("src/runtime/local.ts", ["readSecret"]);
+        globals.readSecret = local.readSecret;
+        const clients = load("src/runtime/module-clients.ts", [
+          "databaseEndpoint",
+          "brokerBinding",
+        ]);
+        for (const match of entry.matchAll(/databaseEndpoint\("([^"]+)"\)/g))
+          clients.databaseEndpoint(match[1]);
+        for (const match of entry.matchAll(/readSecret\("([^"]+)"\)/g)) local.readSecret(match[1]);
+        if (entry.includes("brokerBinding()")) clients.brokerBinding();
+        if (config.workload) {
+          const workload = load("src/runtime/workload.ts", ["workloadSettings", "serviceEndpoint"]);
+          workload.workloadSettings(config.workload);
+          for (const match of entry.matchAll(/serviceEndpoint\("([^"]+)"\)/g))
+            workload.serviceEndpoint(match[1]);
+        }
+        if (entry.includes("positiveCacheBindings")) {
+          const { positiveCacheBindings } = load("src/features/positive-cache-bindings.ts", [
+            "positiveCacheBindings",
+          ]);
+          const valkey = load("src/runtime/valkey.ts", ["cacheEndpoint"]);
+          globals.cacheEndpoint = valkey.cacheEndpoint;
+          for (const template of Object.keys(config.templates)) {
+            const binding = positiveCacheBindings[template];
+            valkey.cacheEndpoint(binding.cache.resource);
+            local.readSecret(binding.cache.secret);
+          }
+          const { selections } = load("src/features/application-bindings.ts", ["selections"]);
+          const { localLogins } = load("src/features/local-bindings.ts", ["localLogins"]);
+          globals.selections = selections;
+          globals.localLogins = localLogins;
+          load("src/features/service-resources.ts", [
+            "validateTemplateSettings",
+          ]).validateTemplateSettings(id);
+        }
+        if (/validateLocalOperationBinding\([^;]+, \["/.test(entry)) {
+          // Allowed secret-bearing local-operation branch reads its private ring; fake bounded file
+          // access then deliberately fails. No application operation/policy is constructed/executed.
+          expect(() =>
+            load("src/runtime/settings.ts", ["privateReplayKeys"]).privateReplayKeys(),
+          ).toThrow("Invalid setting JEEVES_REPLAY_KEYS");
+        }
       }
-      if (/validateLocalOperationBinding\([^;]+, \["/.test(entry)) {
-        // Allowed secret-bearing local-operation branch reads its private ring; fake bounded file
-        // access then deliberately fails. No application operation/policy is constructed/executed.
-        expect(() =>
-          load("src/runtime/settings.ts", ["privateReplayKeys"]).privateReplayKeys(),
-        ).toThrow("Invalid setting JEEVES_REPLAY_KEYS");
-      }
-    }
   return [...seen].sort();
 }
 

@@ -459,7 +459,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
       const readme = text(target, "README.md");
       expect(rows(target).length).toBeGreaterThan(0);
       for (const row of rows(target)) {
-        // Compose's keys plus the process's JEEVES_EXTERNAL_*, which the application sets. Each
+        // Compose keys plus optional workload rotation and application-supplied JEEVES_EXTERNAL_*. Each
         // `externalTarget` call appears twice since QG31, in the configuration pass and its client.
         const external = new Set(
           [
@@ -469,7 +469,13 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
           ].map((match) => match[1]),
         );
         expect(row.environment, row.service).toEqual(
-          [...Object.keys(composed[row.service]?.environment ?? {}), ...external].sort(),
+          [
+            ...Object.keys(composed[row.service]?.environment ?? {}),
+            ...external,
+            ...(composed[row.service]?.environment?.JEEVES_WORKLOAD_ISSUER
+              ? ["JEEVES_WORKLOAD_SECRET_FILE"]
+              : []),
+          ].sort(),
         );
         // The README lists the same, per process.
         expect(readme, row.service).toContain(
@@ -495,12 +501,18 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
           "JEEVES_TILE_STATS_API_URL",
           "JEEVES_WORKLOAD_ISSUER",
           "JEEVES_WORKLOAD_JWKS_URL",
+          "JEEVES_WORKLOAD_SECRET_FILE",
           "JEEVES_WORKLOAD_TOKEN_URL",
         ],
       ],
       [
         "app-stats-api",
-        ["JEEVES_WORKLOAD_ISSUER", "JEEVES_WORKLOAD_JWKS_URL", "JEEVES_WORKLOAD_TOKEN_URL"],
+        [
+          "JEEVES_WORKLOAD_ISSUER",
+          "JEEVES_WORKLOAD_JWKS_URL",
+          "JEEVES_WORKLOAD_SECRET_FILE",
+          "JEEVES_WORKLOAD_TOKEN_URL",
+        ],
       ],
       ["app-upload-api", ["JEEVES_BROKER_HOST", "JEEVES_BROKER_PORT"]],
       [
@@ -516,7 +528,7 @@ describe("store and tile endpoints come from the environment (QG06)", () => {
     ]);
     const readme = text(stack, "README.md");
     expect(readme).toContain(
-      "\n- `app-links-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_CACHE_LINKS_CACHE_HOST`, `JEEVES_CACHE_LINKS_CACHE_PORT`, `JEEVES_CACHE_LINKS_CACHE_TLS`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`, `JEEVES_TILE_STATS_API_URL`, `JEEVES_WORKLOAD_ISSUER`, `JEEVES_WORKLOAD_JWKS_URL`, `JEEVES_WORKLOAD_TOKEN_URL`\n- `app-stats-api`: `JEEVES_WORKLOAD_ISSUER`, `JEEVES_WORKLOAD_JWKS_URL`, `JEEVES_WORKLOAD_TOKEN_URL`\n- `app-upload-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`\n- `app-visit-worker`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`\n",
+      "\n- `app-links-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_CACHE_LINKS_CACHE_HOST`, `JEEVES_CACHE_LINKS_CACHE_PORT`, `JEEVES_CACHE_LINKS_CACHE_TLS`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`, `JEEVES_TILE_STATS_API_URL`, `JEEVES_WORKLOAD_ISSUER`, `JEEVES_WORKLOAD_JWKS_URL`, `JEEVES_WORKLOAD_SECRET_FILE`, `JEEVES_WORKLOAD_TOKEN_URL`\n- `app-stats-api`: `JEEVES_WORKLOAD_ISSUER`, `JEEVES_WORKLOAD_JWKS_URL`, `JEEVES_WORKLOAD_SECRET_FILE`, `JEEVES_WORKLOAD_TOKEN_URL`\n- `app-upload-api`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`\n- `app-visit-worker`: `JEEVES_BROKER_HOST`, `JEEVES_BROKER_PORT`, `JEEVES_DATABASE_LINKS_DB_HOST`, `JEEVES_DATABASE_LINKS_DB_PORT`, `JEEVES_DATABASE_LINKS_DB_TLS`\n",
     );
     expect(readme).toContain("fails startup with `Invalid endpoint <variable>`, never its value");
     expect(text(off, "README.md")).not.toContain("Endpoints from the environment");

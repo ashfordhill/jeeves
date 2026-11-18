@@ -19759,3 +19759,27 @@ workload settings the same way.
   route/capability, dependency, root/owner/old export/evidence edit, Part A activation, later
   unit, branch/worktree/stash/delegation, paid/live call, push or deployment. One explicit-path
   local stop commit follows: `WD12: stopped, application effect oracle is unspecified`. Stop for review.
+
+## 2026-11-18 — WD13 workload secret file rotation complete for coordinator review
+
+- Added private optional `JEEVES_WORKLOAD_SECRET_FILE`: initial validation precedes clients;
+  every new token request rereads the file inside the existing bounded refresh. Rotation takes
+  effect at the next refresh. The old per-client startup snapshot remains unchanged. Later file
+  failure uses existing issuer-failure/cooldown/valid-token expiry behavior, with safe errors and
+  recovery. Audience/issuer/RS256/caller checks, one refresh per audience and RG15 authority remain.
+- Deployment identity/process inventories, independent eight-branch environment audit, emitted
+  identity/extension guidance and generator/settings docs describe this private runtime choice.
+  Public CLI scratch export: 94 files, zero findings, 87 unchanged payloads; actual API8 checker
+  and TypeScript 7.0.2 pass. Only six inspected extension-guide/manifest off pins moved.
+- Six real-file/fake-issuer cases pass; focused workload/process 67/67 plus deployment/browser
+  59/59. Initial assertion/README-inventory failures and fixes are preserved in
+  [WD13 evidence](plans/wires-and-deployment/evidence/wd13/results.md). Serial gates pass:
+  `pnpm check` 153 files / 1,430 tests (114.49s), native E2E 89/89 (5.1m, TinyURL and both mouse
+  rebuilds), web build (771ms). Existing lint information and chunk warning remain.
+- Preserved 7,388 unrelated starting byte/mode/absence states, both old E2E rows and original
+  42 full container triples / 9 networks / 23 volumes / 43 images. No task resource remains;
+  E2E ports are free. Owner 4300 PID 1124326 remains; shared-source edits automatically reloaded
+  API 4310 PID 768143→907676, without owner service control. Read-only RG21 preservation audit passes.
+- No provider, dependency, normal diagram control, application authority, protected edit, broad
+  golden refresh, later-unit work, push or deployment. WD12 remains stopped; studio wires remain
+  off. Local commit follows: `WD13: a workload secret can be rotated from a file`. Stop for review.

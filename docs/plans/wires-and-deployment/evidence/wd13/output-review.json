@@ -1,0 +1,13 @@
+{
+  "files": 94,
+  "unchanged": 87,
+  "changed": [
+    ".jeeves/extensions.md",
+    ".jeeves/manifest.json",
+    ".jeeves/report.json",
+    "README.md",
+    "deploy/README.md",
+    "deploy/contract.json",
+    "src/runtime/workload.ts"
+  ]
+}

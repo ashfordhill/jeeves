@@ -596,6 +596,10 @@ need it too. Callee route stubs may export `allowedCallers` in product code to n
 process callers; there is no audience/credential override control. An Auth guard first connects
 user identity, then workload on another Identity drag; other supported module Identity dots choose
 workload. Browser hosts cannot hold these credentials. See the emitted API8 guide.
+Deployment may privately set `JEEVES_WORKLOAD_SECRET_FILE` to an absolute credential path. The
+initial file is validated before clients open, then read for each new token request so rotation
+takes effect at the next refresh. Later file failure uses the existing issuer-failure/cache-expiry
+behavior. The existing startup-only credential form stays available; no diagram control is added.
 
 ### Distributed admission (RG12)
 

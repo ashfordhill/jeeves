@@ -1497,14 +1497,16 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
         "Selected search providers have no contributed versioned feature mapping/query implementation.",
       sourcePaths,
     });
-  // What each process reads from its environment: what its service sets (QG06) and its External
-  // APIs' URLs (QG26).
+  // What each process reads: service endpoints, External API URLs and optional workload rotation.
   const processEnvironment = application
     .filter((name) => name !== "app-edge")
     .map((name) => {
       const keys = [
         ...Object.keys((services[name]?.environment ?? {}) as Record<string, string>),
         ...(externalReads.get(name) ?? []),
+        ...(model.processes?.some((process) => `app-${process.tile}` === name && process.workload)
+          ? ["JEEVES_WORKLOAD_SECRET_FILE"]
+          : []),
       ];
       return `- \`${name}\`: ${
         keys.length
