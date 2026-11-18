@@ -19424,3 +19424,22 @@ workload settings the same way.
   handoff. Pending WD01/owner bytes and modes, protected paths and resource inventories remain
   unchanged. No WD briefs/work, executable/root edits, full app/test stack, push or deployment.
   Stop for coordinator reacceptance before the same WD01 worker resumes its required checks.
+
+
+## 2026-11-18 — WD01 board lane shifts complete for coordinator review
+
+- Added the planned pure `laneShifts` helper, six lane metrics, optional lane/input types,
+  layout export and lane cache-key marker. Nothing calls the helper yet; default keys and
+  existing behavior stay unchanged. Six new tests use hand-built layouts without ELK.
+- Required `pnpm check` passes (146 files/1360 tests), native E2E87/87 (TinyURL and both mouse
+  rebuilds), web build and focused6/6 pass. All eight original board test files are unchanged.
+- Initial combined check caught inherited RG26 receipt formatting; coordinator returned it to
+  the same RG26 worker and accepted amended parent `0ea91d3`, then this combined check passed.
+  No prior evidence was edited here. Only mechanical adjustment: supplied import wrapping/test
+  formatting with actual `tooling/biome.config.json`; no type/algorithm change or moved find text.
+- [WD01 evidence](plans/wires-and-deployment/evidence/wd01/progress.md) records checks/limits:
+  6348 protected path states, exact owner patch/root README/modes, accepted SQL/dependencies,
+  frozenv1,42 original container triples/9 networks/23 volumes/43 images and two old E2E rows
+  preserved. Own projects0; temporary E2E servers exited. No owner studio/root/original app,
+  design/schema/blueprint/chat/generation/settings/template-support edit, later unit or push.
+- One explicit-path local commit follows: `WD01: board lane shifts`. Stop for coordinator review.

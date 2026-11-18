@@ -108,3 +108,15 @@ export function newTileHint(
   if (!overlapsAny(slot, size, others)) return { at: slot, show: true };
   return { at: { x: rect.x, y: rect.y + (after ? 0.5 : -0.5) }, show: false };
 }
+
+/** Lines that run side by side in a gap or a row are this far apart (`lanes.ts`). */
+export const LANE_GAP = 11;
+/** Lanes leaving one port are this far apart. */
+export const FAN_PITCH = 10;
+/** Lanes entering a tile's default port, and a named port. */
+export const ENTRY_PITCH = 22;
+export const ENTRY_PITCH_NAMED = 16;
+/** A lane keeps this far from its tile's top and bottom. */
+export const LANE_EDGE = 6;
+/** Room ELK keeps between a column and the first upright run beside it: the fan and the gather. */
+export const LANE_APPROACH = 48;

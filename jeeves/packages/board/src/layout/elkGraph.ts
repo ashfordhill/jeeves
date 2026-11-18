@@ -47,8 +47,11 @@ export type LayoutLine = {
   band?: number;
   sourcePort?: string;
   targetPort?: string;
+  /** Its own place at each port, px below the port's height (`lanes.ts`). Set by the engine. */
+  lane?: { source: number; target: number };
 };
-export type LayoutInput = { tiles: LayoutTile[]; lines: LayoutLine[] };
+/** `lanes`: every line gets its own lane at each port and in each gap (`lanes.ts`). */
+export type LayoutInput = { tiles: LayoutTile[]; lines: LayoutLine[]; lanes?: true };
 /** Tile id → top-left: the previously displayed positions plus hints for new tiles. */
 export type PositionMap = Record<string, Point>;
 
@@ -328,16 +331,15 @@ export function buildElkGraph(input: LayoutInput, previous?: PositionMap): ElkNo
  * named ports keeps the key it had before they existed.
  */
 export function graphKey(input: LayoutInput): string {
-  return JSON.stringify([
-    input.tiles.map((t) => {
-      const key = [t.id, t.w, t.h, t.band ?? null];
-      return t.ports?.length ? [...key, t.ports.map((p) => [p.id, p.side, p.y])] : key;
-    }),
-    input.lines.map((l) => {
-      const key = [l.id, l.source, l.target, l.chip?.w ?? 0, l.chip?.h ?? 0, l.band ?? null];
-      return l.sourcePort === undefined && l.targetPort === undefined
-        ? key
-        : [...key, l.sourcePort ?? null, l.targetPort ?? null];
-    }),
-  ]);
+  const tiles = input.tiles.map((t) => {
+    const key = [t.id, t.w, t.h, t.band ?? null];
+    return t.ports?.length ? [...key, t.ports.map((p) => [p.id, p.side, p.y])] : key;
+  });
+  const lines = input.lines.map((l) => {
+    const key = [l.id, l.source, l.target, l.chip?.w ?? 0, l.chip?.h ?? 0, l.band ?? null];
+    return l.sourcePort === undefined && l.targetPort === undefined
+      ? key
+      : [...key, l.sourcePort ?? null, l.targetPort ?? null];
+  });
+  return JSON.stringify(input.lanes ? [tiles, lines, "lanes"] : [tiles, lines]);
 }
