@@ -1,3 +1,58 @@
+# Current wire UI — owner-authorized finish, 2026-11-18
+
+Studio **Simple and Detailed now draw the approved coloured, outlined wire bundles**. After
+seeing the old UI, the owner asked, “can you have an agent finish it?” This follow-up adapts
+obsolete shared-line assertions as necessary implementation work while preserving meaningful
+selection, hover and PNG coverage. This is
+one follow-up task, not another numbered WD unit. The WD06/07 stop patches and all review text
+below remain historical. WD12's backend drill remains stopped and outside this task.
+
+The [new evidence](evidence/wire-ui-finish/README.md) records the actual twelve-case browser
+matrix: TinyURL 12/12, Marketplace 24/26 and YouTube 25/26 wires in Simple/Detailed, in light and
+dark. Mouse hover, selection, context menus, Fit, browser reload/colour slots and exact saved
+**design response (including history) plus blueprint** checks pass. Each actual downloaded PNG
+was decoded and checked for every wire's light colour; the two themes produce byte-identical
+PNGs for each study/view, even across reload. These results supersede the earlier legacy-zero-wire
+matrix for current UI behavior. The six unique exported PNGs were visually inspected.
+
+WD08 findings now have these dispositions:
+
+- **Activation and regressions resolved.** Source colours/shades, dots/fans/gathers, individual
+  soft heads, async beads, selection outlines and hover ship. The chooser test clicks near the
+  actual common fan dot, asserts all four offered relationships and retains mouse choice,
+  scrolling and unchanged camera coverage. Separated Detailed CDN/module returns are each
+  clicked and right-clicked. Export checks inspect the offscreen snapshot's actual SVG curves.
+- **Actual artwork picking preserved and faster.** Picking still uses the live SVG `d` and
+  unsnapped board coordinates, with the same nearest/group/menu rules. Adaptive cubic/quadratic
+  subdivision replaces native sampling every 2px; a cache invalidates when `d` changes. The
+  native fan probe and repeated/cache-invalidation tests pass. On actual YouTube Detailed:
+  730 points, 1.10ms cold flatten-plus-nearest, 0.10ms median repeated (0–0.20ms), versus the
+  historical native-sampling median 156.9ms. Native comparison at 4,336 samples finds maximum
+  error 0.123px. These are finite observations, not a worst-case latency guarantee.
+- **Shared return trunk resolved for actual studies.** Source/target shared-run exemptions now
+  apply only to legacy routes. All six actual study/view layouts have zero parallel overlaps
+  closer than 8px and zero raw routes through other tiles, including the two Detailed YouTube
+  Transcoder writes. Optional Board defaults without lanes/wires/dots retain their legacy paths.
+- **Stable wire anchors.** Optional wires use Board-owned placed frame/default/named-port
+  coordinates rather than React Flow's asynchronously measured handles. A conflicting-handle
+  regression, default-port snapshot and module-row/header snapshot tests cover the correction.
+  Earlier PNG mismatches were confined to fans/bead rims while final observed artwork agreed,
+  consistent with a transient handle/clone race; no theme palette change was made.
+- **Geometry limits retained.** Nominal 11px lanes, 10px fans, 22/16px arrivals, 0.75 gathers and
+  head constants stay unchanged. Fans/gathers intentionally converge; their literal 8px clearance
+  does not hold throughout the approach. The nominal head-outline/frame gap is about 1.05px.
+  The synthetic ten-arrivals/128px capacity probe still collapses under clamping; the actual
+  studies need at most three arrivals per port and do not exceed capacity. No new compression
+  policy or automatic tile growth ships. The return fallback can still break clearance rules
+  on unusual crowded diagrams; this is not generic layout certification.
+
+Only generic Board rendering/layout, studio view code, relevant tests and current guidance
+changed. No design schema, blueprint/chat/generation/settings/backend/dependency change or normal
+colour metadata in design/history was introduced. Serial gates pass: `pnpm check` 155 files/1,438 tests (118.37s), native E2E 91/91 (5.6m),
+web build 879ms. The new evidence records exact protected-byte/mode and resource preservation. Historical WD14 and WD08 reviews follow unchanged.
+
+---
+
 > **Current WD14 status (2026-11-18):** final review complete for coordinator acceptance; execution
 > stops here. WD01–05/08–11/13 are accepted; WD06/07/12 remain accepted stop records. Studio
 > wires/hover and the exported failure drill are unavailable. [WD14 findings and dispositions](#wd14--final-review-of-wires-and-deployment).

@@ -372,57 +372,7 @@ test("a module row opens its module and marks only its own row and its own lines
   }
 });
 
-/** A point on the canvas (screen) where exactly `near` lines are within 2 board px. */
-async function pointNear(page: Page, near: readonly string[]) {
-  const point = await page.locator(".lane-canvas .board").evaluate((board, want) => {
-    const route = (edge: Element) =>
-      [
-        ...(edge.querySelector(".react-flow__edge-path")?.getAttribute("d") ?? "").matchAll(
-          /(-?[\d.]+) (-?[\d.]+)/g,
-        ),
-      ].map((m) => ({ x: Number(m[1]), y: Number(m[2]) }));
-    const routes = [...board.querySelectorAll<HTMLElement>(".react-flow__edge")].map((edge) => ({
-      id: edge.dataset.id ?? "",
-      points: route(edge),
-    }));
-    const distance = (p: { x: number; y: number }, points: { x: number; y: number }[]) =>
-      Math.min(
-        ...points.slice(1).map((b, i) => {
-          const a = points[i] ?? b;
-          const [dx, dy] = [b.x - a.x, b.y - a.y];
-          const t = Math.max(
-            0,
-            Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)),
-          );
-          return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy);
-        }),
-      );
-    const first = routes.find((r) => r.id === want[0])?.points ?? [];
-    const camera = new DOMMatrix(
-      getComputedStyle(board.querySelector(".react-flow__viewport") as Element).transform,
-    );
-    const pane = (board.querySelector(".react-flow") as Element).getBoundingClientRect();
-    const hits = first.slice(1).flatMap((b, i) => {
-      const a = first[i] ?? b;
-      const steps = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 4);
-      return Array.from({ length: steps + 1 }, (_, j) => ({
-        x: a.x + ((b.x - a.x) * j) / steps,
-        y: a.y + ((b.y - a.y) * j) / steps,
-      })).filter((p) => {
-        const close = routes.filter((r) => distance(p, r.points) <= 2).map((r) => r.id);
-        return close.length === want.length && want.every((id) => close.includes(id));
-      });
-    });
-    const p = hits[Math.floor(hits.length / 2)];
-    return (
-      p && { x: pane.left + camera.e + camera.a * p.x, y: pane.top + camera.f + camera.d * p.y }
-    );
-  }, near);
-  if (!point) throw new Error(`No point where only ${near.join(", ")} meet.`);
-  return point;
-}
-
-test("Choose relationship offers a relationship once, and port marks follow their lines", async ({
+test("separated Detailed routes select their canonical relationship and light its port marks", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -447,10 +397,8 @@ test("Choose relationship offers a relationship once, and port marks follow thei
         );
     await show(page, "Detailed");
 
-    // The Packager's and Thumbnailer's lines run together into Transcoded videos: one
-    // relationship, so a click there selects it without asking.
-    const both = await pointNear(page, WRITES);
-    await page.mouse.click(both.x, both.y);
+    // Distinct module lanes still select one canonical relationship and light both rows.
+    await clickLine(page, WRITES[0] as string);
     await expect(page.locator(".studio-inspector .lane-connection-label")).toHaveText(
       "Stores segments, playlists and thumbnails",
     );
@@ -459,24 +407,25 @@ test("Choose relationship offers a relationship once, and port marks follow thei
     // Their rows' port marks turn blue with them, though the Transcoder is not selected.
     expect(await lit()).toEqual({ "transcoder-packager": "out", "transcoder-thumbnails": "out" });
 
-    // Where the CDN's line joins them, the chooser lists the two relationships once each.
-    await paper.click({ position: { x: 10, y: 10 } });
-    expect(await lit()).toEqual({});
-    const three = await pointNear(page, ["cdn-transcoded", ...WRITES]);
-    await page.mouse.click(three.x, three.y);
-    await expect(chooser).toBeVisible();
-    const offered = await chooser
-      .locator("[data-line-id]")
-      .evaluateAll((buttons) => buttons.map((b) => (b as HTMLElement).dataset.lineId));
-    expect(offered).toHaveLength(2);
-    expect(offered).toContain("cdn-transcoded");
-    const write = offered.find((line) => line !== "cdn-transcoded") as string;
-    expect(WRITES).toContain(write);
-    await chooser.locator(`[data-line-id="${write}"]`).click();
-    await expect(page.locator(`.board .react-flow__edge[data-id="${write}"]`)).toHaveClass(
-      /selected/,
-    );
-    await expect.poll(() => highlighted(page)).toEqual(WRITES);
+    // The separated CDN and returning module lanes each select the intended relationship by
+    // mouse. The two module lines stay grouped; their individual selected line is preserved.
+    for (const line of ["cdn-transcoded", ...WRITES]) {
+      await paper.click({ position: { x: 10, y: 10 } });
+      expect(await lit()).toEqual({});
+      await clickLine(page, line);
+      await expect(chooser).toHaveCount(0);
+      await expect
+        .poll(() => highlighted(page))
+        .toEqual(line === "cdn-transcoded" ? [line] : WRITES);
+      const at = await linePoint(page, line);
+      await page.mouse.click(at.x, at.y, { button: "right" });
+      await expect(page.getByRole("menuitem", { name: "Remove link", exact: true })).toBeVisible();
+      // Close by mouse; checking the selected artwork also verifies the context menu's target.
+      await expect(page.locator(`.board .react-flow__edge[data-id="${line}"]`)).toHaveClass(
+        /selected/,
+      );
+      await paper.click({ position: { x: 10, y: 10 } });
+    }
 
     // The tile at the other end selected: its lines from the Transcoder's rows, and their marks.
     await paper.click({ position: { x: 10, y: 10 } });

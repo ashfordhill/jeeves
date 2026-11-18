@@ -76,35 +76,37 @@ future generator's frontend templates) which user flow each service serves.
   Search indexer and the Completion handler both get each completion event. A new channel is a
   work queue until a template derives a topic (or chat or source sets one); the mode has no
   normal form control.
-- **Lines** carry target arrowheads. **Solid** is a direct call where the caller waits: HTTP, or
-  a database, storage or cache read or write (a worker's store write after a queue included).
-  **Dashed** is a message sent through a queue or topic, where nobody waits: publisher → channel
-  and channel → consumer. Arrows point caller → target, including reads, rather than showing the
-  return of data; messaging arrows follow publisher → channel → consumer. The user's line to an
-  action and entry lines are solid. Lines carry no words or chips; select one for its label,
-  interaction and direction in the inspector. Access declarations remain in diagnostics. The
-  small legend at the lower left shows only the dashed sample, **Async**, with no help text and
-  nothing to open (contract question 12); solid is the default reading. It stays at screen size
-  and lets the pointer through to the board. Every line of the four studies follows this
-  (`studio-lanes.test.ts`). A dashed line always goes through a Queue or Topic tile; a line
-  between two services, or between a service and an external API, is always a direct call. A
-  Worker is reached only from a Queue or Topic.
-- At a crossing, a small gap separates the routes; shared stems meet at a tile's port. Where
-  several routes are equally close to a mouse click, **Choose relationship** lists their
-  endpoints and labels. Choose the intended relationship explicitly; SVG draw order does not
-  decide which one is selected.
+- **Wires** have a 3.5px colour stroke over a 6.4px dark outline and an individual soft triangle
+  arrowhead. Their colour comes from the tile they leave, with a distinct shade for each wire,
+  alternating light and deep from top to bottom. The user and actions use slate. Twelve hue
+  families repeat with intermediate hues, so larger diagrams still get new colours. A sending
+  tile keeps its colour slot while it exists, in this project's browser preferences; colours
+  never enter the design, history, blueprint, chat or generated source.
+- **Solid** is a direct call where the caller waits: HTTP, or a database, storage or cache read
+  or write (including a worker's store write). **Beads** mean asynchronous messaging:
+  publisher → Queue or Topic → consumer. Arrows point caller → target, including reads,
+  rather than showing the return of data. The user's lines and lane entries are solid. Wires
+  carry no words or chips; select one for its label, interaction and direction in the inspector.
+  Access declarations stay in diagnostics. The screen-sized legend shows only **Async** beads
+  and lets the pointer through to the board. A Worker is reached only from a Queue or Topic.
+- Wires use separate lanes 11px apart, with 10px fans leaving one dot and 22px arrivals
+  (16px at a named module/header port). Each arrival gathers towards its own arrowhead.
+  Detailed module wires leave the dot on their row, following the port mark to the frame before
+  fanning out. Crossings have no bridge or gap. Hovering a wire leaves it bright and fades the
+  others; empty paper restores them. Near a shared dot, equally close wires can still open
+  **Choose relationship**, listing each canonical relationship once for explicit mouse choice.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
   In Pointer mode the selected tile shows its tabs
-  ([Creating and connecting](#creating-and-connecting)), and its own lines (in and out) turn the
-  selection blue, drawn over the rest, so you can see which tiles it reaches where lines share a
-  bus. A selected line is drawn on top, thicker, in the same blue. A right-click on a tile or a
+  ([Creating and connecting](#creating-and-connecting)), and its own lines (in and out) take
+  selection blue on their outlines, keeping their source colours and drawing over the rest.
+  A selected line is drawn on top with an outline 2px wider. A right-click on a tile or a
   line opens its menu, in either mode ([Removing](#removing)).
   The [Detailed view](#detailed-view), the default, draws modules (components) inside their
   tiles as rows that open them and, in Connect mode, connect them. In the Simple view they are not
   drawn; they are cards on their tile's inspector page ([Inspector](#inspector)). C1 people,
   external systems and packages are not shown.
 
-To trace relationships, select: a tile's lines turn blue and its inspector lists them as
+To trace relationships, select: a tile's wire outlines turn blue and its inspector lists them as
 Connections rows, each selecting the other end ([Inspector](#inspector)), and a selected line
 shows its endpoints, saved label and interaction in the inspector. Every line stays drawn and
 every tile stays clickable. The highlight ends when the selection does, so clicking empty paper restores the
@@ -152,7 +154,7 @@ Every other tile keeps its Simple view size and face.
   turns blue while either module is open. Every other link between modules of one tile stays saved and is neither drawn nor
   authored, and decides nothing that is generated.
 - A drawn line is still its relationship. Clicking one selects that relationship: the inspector,
-  chat's selection and removal use its ID, and every line drawn for it turns the selection blue,
+  chat's selection and removal use its ID, and every wire drawn for it takes a blue outline,
   the clicked one thicker. A relationship selected elsewhere (chat, Undo)
   shows its drawn lines the same way. **Choose relationship** names the modules ("Packager
   (Transcoder) to Transcoded videos") and offers each relationship once, by its drawn line under
@@ -170,11 +172,11 @@ Every other tile keeps its Simple view size and face.
   line's other end or the open module selected it. Each row is its module, a button
   named "Open <module> in <tile>": a click selects the tile and opens the module's page in the
   inspector, as its card does. A row and a card are the same module: while one is open, from
-  either, its row is filled in the selection colour and ringed, its name bold, and only the lines
-  drawn from or into that row (and its port marks) turn blue (not the tile's other lines, nor
+  either, its row is filled in the selection colour and ringed, its name bold, and only the
+  wire outlines drawn from or into that row (and its port marks) turn blue (not the tile's other lines, nor
   another module's line of the same relationship). No other row is marked. The tile keeps its link
   tab. Back, another tile or line, or empty paper clears the marks; the Simple view keeps
-  only the tile selected, with all its lines blue. A row reached by keyboard shows a focus
+  only the tile selected, with all its wire outlines blue. A row reached by keyboard shows a focus
   outline. The marks are view only: an export never shows them.
 - Both views are laid out by the rules in [Layout](#layout-and-navigation), each from its own last
   positions: switching back finds the Simple view exactly as it was, and an edit made in Detailed
@@ -224,13 +226,16 @@ tall: the fit shows the shape, and reading the rows takes about 0.6.
 Click **Export diagram** in the top bar, beside Design and Settings, then **PNG**. Below 1100px of
 window width the button shows only its download icon. The download contains the full
 saved diagram in the current view, including offscreen tiles, their names, kind labels and icons,
-all projected routes, crossing gaps and arrowheads. A fresh YouTube study's Simple export is the
-visual reference (D2: a recorded hash, not a gate), `799a8582…59a5` (3008×2752). A Detailed export ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`; their tiles carry the containers' ports
-and their lines the relationship each drawn line belongs to. No control is drawn: a container's
-footer, where the canvas shows its `+`, is empty (YouTube's Detailed export: `bd04165a…8f7b`,
-3840×3392). It uses the same HTML faces, SVG
+all projected wire routes and arrowheads. Crossings have no gap or bridge. The current
+[wire evidence](plans/wires-and-deployment/evidence/wire-ui-finish/README.md) records the fresh
+YouTube Simple reference, `7183ab82…2bf980` (3254×2784), and Detailed reference,
+`3b3cc0f3…9d61dd` (4086×3392); these are recorded observations, not hash gates. A Detailed export
+ends its filenames in `-detailed` and its capture details say `"canvas": "detailed"` under `view`;
+its tiles carry the containers' ports and its lines the canonical relationship each drawn line
+belongs to. No control is drawn: the container footer where the canvas shows its `+` is empty.
+It uses the same HTML faces, SVG
 lines and settled layout as the canvas, on light paper at 2× scale with a 32-board-pixel margin,
-in the light tile and icon colours whatever the studio's theme. Inspector details and the legend
+in the light tile, icon and wire colours whatever the studio's theme. Inspector details and the legend
 are not part of the image; existing two-line tile names keep their canvas presentation.
 
 The image shows canonical process and resource tiles, retaining every relationship identity.
@@ -264,8 +269,9 @@ The layout is automatic and never stored: ELK layered, left to right, with autom
 options, in three bands, then put on the 32px grid. Each tile sits one column right of its furthest
 predecessor (the user's actions share the first column after it, and their entries the next),
 except a store several tiles use, which sits beside them (below); a fork is centred on its tile
-as nearly as the grid allows, and links of one lane that meet at the
-same tiles share one bus. The positions on screen are stability hints for the next layout, so
+as nearly as the grid allows. A first layout places the tiles; a second uses individual line
+ports with edge merging disabled, so wires that follow the same route stay in separate lanes.
+The positions on screen are stability hints for the next layout, so
 forks keep their rows and columns when the design changes, and changes animate for 200ms. The
 first layout already follows these rules, so the first edit moves only what it changes. The canvas
 writes no layout.
@@ -280,15 +286,11 @@ them):
   sits above every shared tile, and every shared tile above every upload tile. Each band keeps its
   own rows, so rows a band leaves empty stay empty. The user sits at the left, centred between its
   actions: Consume above its centre, Produce below.
-- A line belongs to its source's band. Lines of different bands share no run (but see
-  [Limits](#limits)): they meet only in the last 32px before a shared tile, the download line joining from above and the upload line
-  from below. Where one of them joins a bus that goes on past the tile, the meeting is drawn as a
-  crossing.
-- How: ELK lays out each band alone with the board's columns (forks and chains look as they did),
-  the bands are stacked, and one more ELK pass routes every line with the tiles fixed. A shared
-  tile gets one input port per band, so ELK never bundles two lanes into one bus, and a last step
-  moves a bus in the gap before a shared tile when two lanes' lines would otherwise run together
-  for more than 32px.
+- A line belongs to its source's band. Wires of different bands keep separate lanes, including
+  their approaches to a shared tile. The first pass lays out each band and routes with tiles fixed;
+  the second assigns individual port offsets and uses 11px edge spacing without merged edges.
+  Returns use the same individual lanes. Generic boards without the optional lane/wire settings
+  retain their original shared-route behavior.
 
 **Stores beside their users** (`endColumns` and `routeReturns` in `jeeves/packages/board`). A store (on
 the board, any tile with links in and none out) sits next to the tiles that use it, so a tile's
@@ -306,8 +308,8 @@ links to its stores are short branches, not long lines beside the pipeline it al
   grid when it can be) and into the store's left side. Its two upright runs take free slots in
   the gaps it turns in (a gap with none is widened a grid step, moving everything right of it,
   unless that would stretch where two lanes' lines meet before a shared tile). It
-  shares no run with another line, except its own tile's lines as it leaves and lines into the
-  store on the last stretch (another lane's only in the last 32px), and touches no other line. Of
+  keeps separate upright runs and approaches even when several wires use the same port.
+  Fans converge only at their own dot; crossings remain allowed. Of
   those routes it takes the one with the fewest crossings, then the shortest. YouTube: the
   Transcoder's read of Original videos and its write of Transcoded videos come back one column;
   so does the View counter's write of View counts.
@@ -528,7 +530,7 @@ onward.").
   same batch: one undo step.
 
 Every new link takes its pair's default mode from the [link table](../jeeves/CATALOG.md#lanes-and-links):
-asynchronous (a dashed line) to and from a queue, a request (a solid line) otherwise. Where the
+asynchronous (beads) to and from a queue, a request (a solid line) otherwise. Where the
 table allows both, the line inspector's Interaction field switches it. Each add or link is one
 batch and one undo step.
 
@@ -1359,13 +1361,12 @@ and all twenty components, with nothing omitted and no findings.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
   and the first tiles can leave the view; Fit brings everything back. A Connect drag's end must
   be on screen, so linking to a tile that has left the view needs Fit (or a pan) first.
-- Where two services of one lane fork to the same tiles, their lines share one bus (the
-  marketplace: the Shop service and Payments into the Catalog database). A line that comes back to
-  a store joins its other lines just before it (YouTube: the Transcoder's read joins the Upload
-  service's write of Original videos). Lines of different lanes meet only in the last 32px before
-  a shared tile. Selecting a tile colours its own lines,
-  which shows who reaches what. A click on a shared stretch opens a chooser; a right-click there
-  opens the selected line's menu when it is one of them, else that of the line drawn on top.
+- Wire lanes are checked on TinyURL, Marketplace and YouTube in both views. The short fans and
+  gathers deliberately converge, so the nominal spacing does not hold inside those approaches.
+  The prescribed arrowhead outline leaves about 1px before the tile frame. Neither trait is
+  an unintended shared trunk. A very crowded fixed-size tile can exceed the prescribed arrival
+  pitch: ten default-port arrivals on a 128px synthetic tile collapse under the current clamping.
+  The three studies do not exceed capacity; no automatic pitch compression or tile growth ships.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource
   belongs to the application it was first added next to; both are changed in the inspector. The
   action is a label only: a link from a tile that doesn't own the store still says "Reads &
@@ -1400,12 +1401,10 @@ and all twenty components, with nothing omitted and no findings.
   it.
 - A warning's mark scales with the board: at TinyURL's both-rails fit (0.56) it is about 12px
   across. The system's inspector lists every warning at full size.
-- Keeping the lanes' lines apart is checked on the three studies and the board's own test cases.
-  The last step before a shared tile moves or swaps one bus at a time, so an unusual design could
-  still leave two lanes' lines running together for more than 32px there. A line that comes back
-  takes, when no route keeps all its rules, the one that breaks the fewest, so on a crowded board
-  it can touch or run along another lane's line. A design whose links loop (only a broken stored
-  one can) is laid out without bands.
+- When no return route can keep every clearance rule, the router still takes the route breaking
+  the fewest rules. Unusual crowded diagrams can therefore leave touching/shared runs; the six
+  study/view layouts are the verified scope. A broken saved cyclic graph is laid out without bands.
+
 
 Background on the C1/C2/C3 vocabulary is in [C4 notes](c4-modeling.md).
 

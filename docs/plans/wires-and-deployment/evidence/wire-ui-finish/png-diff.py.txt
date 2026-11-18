@@ -1,0 +1,40 @@
+import struct,zlib,collections,json,sys,binascii
+
+def decode(name):
+ data=open(name,'rb').read();w,h,depth,kind=struct.unpack('>IIBB',data[16:26]); chunks=[];i=8
+ while i<len(data):
+  n=struct.unpack('>I',data[i:i+4])[0];tag=data[i+4:i+8]
+  if tag==b'IDAT':chunks.append(data[i+8:i+8+n])
+  i+=n+12
+ raw=zlib.decompress(b''.join(chunks));bpp={2:3,6:4}[kind];stride=w*bpp;last=bytearray(stride);out=[];i=0
+ for y in range(h):
+  filt=raw[i];i+=1;row=bytearray(raw[i:i+stride]);i+=stride
+  for x in range(stride):
+   a=row[x-bpp] if x>=bpp else 0;b=last[x];c=last[x-bpp] if x>=bpp else 0
+   if filt==1:v=a
+   elif filt==2:v=b
+   elif filt==3:v=(a+b)//2
+   elif filt==4:
+    p=a+b-c;ds=[abs(p-a),abs(p-b),abs(p-c)];v=[a,b,c][ds.index(min(ds))]
+   else:v=0
+   row[x]=(row[x]+v)%256
+  out.append(row);last=row
+ return w,h,bpp,out
+
+def encode(name,w,h,raw):
+ def chunk(tag,data):return struct.pack('>I',len(data))+tag+data+struct.pack('>I',binascii.crc32(tag+data)&0xffffffff)
+ open(name,'wb').write(b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw))+chunk(b'IEND',b''))
+
+l=decode(sys.argv[1]);d=decode(sys.argv[2]);r={'dimensions':{'light':l[:3],'dark':d[:3]}}
+if l[:3]==d[:3]:
+ w,h,bpp,_=l;points=[];delta=collections.Counter();raw=bytearray()
+ for y in range(h):
+  raw.append(0)
+  for x in range(w):
+   a=tuple(l[3][y][x*bpp:(x+1)*bpp]);b=tuple(d[3][y][x*bpp:(x+1)*bpp])
+   if a!=b:points.append((x,y));delta[(a,b)]+=1;raw.extend([255,0,128,255])
+   else:raw.extend([255,255,255,255])
+ r['differentPixels']=len(points);r['bbox']=[min(x for x,y in points),min(y for x,y in points),max(x for x,y in points),max(y for x,y in points)] if points else None
+ r['topChangedPairs']=delta.most_common(15)
+ encode(sys.argv[3]+'.png',w,h,bytes(raw))
+open(sys.argv[3]+'.json','w').write(json.dumps(r,indent=2)+'\n');print(json.dumps(r,indent=2))

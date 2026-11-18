@@ -26,11 +26,39 @@ const bytes = async (download: Download) => {
   return readFile(path);
 };
 export async function exportPng(page: Page) {
+  // Observe the actual offscreen export artwork. The live view may still be animating from a
+  // view switch; its intermediate d is not the snapshot geometry being rasterized.
+  const capture = await page.evaluateHandle(() => {
+    const state = {
+      artwork: {} as Record<string, { d: string; light?: string }>,
+      observer: undefined as MutationObserver | undefined,
+    };
+    state.observer = new MutationObserver(() => {
+      for (const edge of document.querySelectorAll(".diagram-capture-host .react-flow__edge")) {
+        const id = edge.getAttribute("data-id");
+        const d = edge.querySelector(".react-flow__edge-path")?.getAttribute("d");
+        if (id && d)
+          state.artwork[id] = {
+            d,
+            light: (edge.querySelector(".board-wire") as SVGElement | null)?.style.getPropertyValue(
+              "--wire-light",
+            ),
+          };
+      }
+    });
+    state.observer.observe(document.body, { subtree: true, childList: true, attributes: true });
+    return state;
+  });
   await page.getByRole("button", { name: "Export diagram", exact: true }).click();
   const pngEvent = page.waitForEvent("download");
   await page.getByRole("button", { name: "PNG", exact: true }).click();
   const pngDownload = await pngEvent;
   const png = await bytes(pngDownload);
+  const artwork = await capture.evaluate((state) => {
+    state.observer?.disconnect();
+    return state.artwork;
+  });
+  await capture.dispose();
   const jsonEvent = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download capture details" }).click();
   const jsonDownload = await jsonEvent;
@@ -42,7 +70,7 @@ export async function exportPng(page: Page) {
   // SVG wrappers and CSS variables can disappear in foreignObject rasterization despite a
   // complete DOM. Sample route ink from the actual PNG to catch that failure.
   const missing = await page.evaluate(
-    async ({ base64, details }) => {
+    async ({ base64, details, artwork }) => {
       const img = new Image();
       img.src = `data:image/png;base64,${base64}`;
       await img.decode();
@@ -52,43 +80,43 @@ export async function exportPng(page: Page) {
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("No PNG decoder");
       ctx.drawImage(img, 0, 0);
-      return Object.entries(details.layout.routes).flatMap(([id, route]) => {
-        const pairs = route.slice(1).flatMap((b, i) => {
-          const a = route[i];
-          return a ? [{ a, b }] : [];
-        });
-        const segment = pairs.sort(
-          (x, y) =>
-            Math.hypot(y.b.x - y.a.x, y.b.y - y.a.y) - Math.hypot(x.b.x - x.a.x, x.b.y - x.a.y),
-        )[0];
-        if (!segment) return [id];
-        const { a, b } = segment;
-        for (let step = 25; step <= 75; step++) {
-          const x = Math.round(
-            (a.x + ((b.x - a.x) * step) / 100 - details.image.bounds.x) * details.image.scale,
-          );
-          const y = Math.round(
-            (a.y + ((b.y - a.y) * step) / 100 - details.image.bounds.y) * details.image.scale,
-          );
+      return Object.keys(details.layout.routes).flatMap((id) => {
+        const art = artwork[id];
+        if (!art?.d) return [id];
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", art.d);
+        const length = path.getTotalLength();
+        // Native SVG geometry includes cubic fans, quadratic corners and gathers. Wire colour
+        // is checked in the decoded PNG, so invisible/black/theme-dark wire bodies fail too.
+        const colour = art.light?.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+        const expected = colour?.slice(1).map((hex) => Number.parseInt(hex, 16));
+        for (let step = 5; step <= 95; step++) {
+          const at = path.getPointAtLength((length * step) / 100);
+          const x = Math.round((at.x - details.image.bounds.x) * details.image.scale);
+          const y = Math.round((at.y - details.image.bounds.y) * details.image.scale);
           const pixels = ctx.getImageData(x - 2, y - 2, 5, 5).data;
-          for (let i = 0; i < pixels.length; i += 4)
+          for (let i = 0; i < pixels.length; i += 4) {
             if (
-              (pixels[i] ?? 255) < 80 &&
-              (pixels[i + 1] ?? 255) < 110 &&
-              (pixels[i + 2] ?? 255) < 130
+              expected
+                ? expected.every((channel, j) => Math.abs((pixels[i + j] ?? 255) - channel) < 15)
+                : (pixels[i] ?? 255) < 80 &&
+                  (pixels[i + 1] ?? 255) < 110 &&
+                  (pixels[i + 2] ?? 255) < 130
             )
               return [];
+          }
         }
         return [id];
       });
     },
-    { base64: png.toString("base64"), details },
+    { base64: png.toString("base64"), details, artwork },
   );
-  expect(missing, "Every exported route contains visible ink").toEqual([]);
+  expect(missing, "Every exported route contains its light wire colour").toEqual([]);
   await page.getByRole("button", { name: "Close export diagram" }).click();
   await expect(page.locator(".diagram-capture-host")).toHaveCount(0);
   return {
     png,
+    artwork,
     details,
     filenames: [pngDownload.suggestedFilename(), jsonDownload.suggestedFilename()],
   };

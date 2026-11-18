@@ -25,7 +25,7 @@ test("shows the TinyURL study on the lane canvas", async ({ page, tinyurl }) => 
   await expect(lines(page)).toHaveCount(12);
   await expect(dashedLines(page)).toHaveCount(2);
   await expect(page.locator(".board-line-arrow")).toHaveCount(12);
-  // The legend shows only the dashed sample, Async, with no help text to open (question 12).
+  // The legend shows only the beaded sample, Async, with no help text to open (question 12).
   const guide = page.getByRole("note", { name: "Line guide" });
   await expect(guide).toHaveText("Async");
   await expect(guide.locator("svg [stroke-dasharray]")).toHaveCount(1);
@@ -184,7 +184,7 @@ test("New project offers the YouTube study", async ({ page }) => {
     await page.getByRole("button", { name: "Undo", exact: true }).click();
     await expect(read).toHaveCount(1);
     await clickLine(page, "jobs-transcoder");
-    await expect(inspector).toContainText("Asynchronous (dashed)");
+    await expect(inspector).toContainText("Asynchronous (beads)");
     await expect(inspector).toContainText("Channel → consumer");
     await clickLine(page, "counter-write");
     await expect(inspector).toContainText("Request / response (solid)");

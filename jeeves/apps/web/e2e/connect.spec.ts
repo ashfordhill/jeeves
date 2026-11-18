@@ -185,7 +185,7 @@ test("removes a line from its menu in Connect mode, then Undo; the user's lines 
   await page.mouse.move(at.x, at.y, { steps: 4 });
   // The hovered line takes the selection colour, drawn over the rest.
   await expect(
-    page.locator('.board .react-flow__edge[data-id="redirect-db"] .react-flow__edge-path'),
+    page.locator('.board .react-flow__edge[data-id="redirect-db"] .board-wire-edge'),
   ).toHaveAttribute("style", /--board-select/);
   // A right-click opens its menu, titled with its two ends.
   await page.mouse.click(at.x, at.y, { button: "right" });

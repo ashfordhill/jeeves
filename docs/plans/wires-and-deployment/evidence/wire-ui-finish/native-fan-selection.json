@@ -1,0 +1,8 @@
+{
+  "calls": [["click", "upper"], ["menu", "upper"], ["click", "upper"]],
+  "at": {
+    "x": 144.2144,
+    "y": 56.96
+  },
+  "scope": "isolated generic Board rendered in native Chromium; exact point on emitted cubic fan"
+}

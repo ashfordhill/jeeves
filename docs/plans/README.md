@@ -11,11 +11,13 @@ Earlier plans and evidence remain preserved below.
   RG26 `0ea91d3`. The [owner handback](reliable-generation/owner-handback.md) records its shipped
   capabilities, finite proof, migration costs and gaps. It creates no extra implementation units.
 - [Wires and deployment](wires-and-deployment/units.md), approved by owner commit `95d60ac`:
-  WD01–05/08–11/13 accepted; WD06/07/12 have accepted stop records with implementation restored.
-  **WD14 final review is complete for coordinator acceptance; execution stops here.** The
-  [current review](wires-and-deployment/review.md#wd14--final-review-of-wires-and-deployment) records
-  shipped work, unmet acceptance, finite evidence and owner decisions. Studio wires/hover and
-  exported failure drill/check/workflow remain unavailable. No further unit or plan is started.
+  WD01–05/08–11/13 and WD14 review are accepted; WD06/07/12 keep their historical stop records.
+  The owner subsequently asked, “can you have an agent finish it?” The **Finish studio wire
+  rendering and interaction** follow-up adapts obsolete shared-line test assumptions as necessary
+  implementation work. Studio wires and hover now ship in both
+  views; [follow-up evidence](wires-and-deployment/evidence/wire-ui-finish/README.md) and the
+  [current review](wires-and-deployment/review.md) separate that result from the historical stops.
+  WD12's exported failure drill/check/workflow remains unavailable. This follow-up starts no new unit.
 
 ## Preserved earlier work
 

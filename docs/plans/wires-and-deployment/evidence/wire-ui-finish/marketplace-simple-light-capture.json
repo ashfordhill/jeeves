@@ -1,0 +1,1104 @@
+{
+  "details": {
+    "format": "jeeves-diagram-capture-v1",
+    "capturedAt": "2026-11-18T15:24:15.722Z",
+    "project": {
+      "id": "3820ada7-b5a5-40fe-adb9-cc96d6464228",
+      "name": "E2E Wire finish marketplace",
+      "revision": 1
+    },
+    "source": {
+      "designSha256": "33c0ab8e89c3219edad8c1bd6454ca9f6a1af04f4291a75ef3b01c4231205851",
+      "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+      "schemaVersion": 2
+    },
+    "renderer": {
+      "appVersion": "0.1.0",
+      "commit": "ff4a1ecc13c0a2ad7ec23542702d24715bf53b3b",
+      "trackedTreeDirtyAtBuild": true,
+      "mode": "development",
+      "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+      "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36"
+    },
+    "image": {
+      "filename": "E2E-Wire-finish-marketplace-r1.png",
+      "sha256": "6e778262d33890bf9a8b8bcf04ab1a70134a1e72b22f792b552783e957b65a1b",
+      "width": 2752,
+      "height": 3264,
+      "scale": 2,
+      "margin": 32,
+      "background": "#e8f4fa",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1376,
+        "h": 1632
+      },
+      "font": "Nunito Variable",
+      "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+    },
+    "view": {
+      "relationships": "all projected relationships",
+      "selection": "omitted",
+      "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+      "ownerExpansion": "canonical process tiles",
+      "owners": []
+    },
+    "layout": {
+      "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"storefront\",128,128,0],[\"orders\",128,128,0],[\"image-cdn\",128,128,0],[\"search-index\",128,128,1],[\"orders-db\",128,128,1],[\"product-images\",128,128,1],[\"shop\",128,128,2],[\"identity\",128,128,2],[\"payments\",128,128,2],[\"cart\",128,128,2],[\"catalog-db\",128,128,2],[\"listing-events\",128,128,2],[\"order-events\",128,128,2],[\"payments-db\",128,128,2],[\"stripe\",128,128,2],[\"cart-store\",128,128,2],[\"search-indexer\",128,128,2],[\"order-recorder\",128,128,2]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"download-storefront\",\"@download\",\"storefront\",0,0,0],[\"download-orders\",\"@download\",\"orders\",0,0,0],[\"download-image-cdn\",\"@download\",\"image-cdn\",0,0,0],[\"upload-shop\",\"@upload\",\"shop\",0,0,2],[\"upload-identity\",\"@upload\",\"identity\",0,0,2],[\"upload-payments\",\"@upload\",\"payments\",0,0,2],[\"upload-cart\",\"@upload\",\"cart\",0,0,2],[\"storefront-search\",\"storefront\",\"search-index\",0,0,0],[\"orders-read\",\"orders\",\"orders-db\",0,0,0],[\"cdn-images\",\"image-cdn\",\"product-images\",0,0,0],[\"shop-catalog\",\"shop\",\"catalog-db\",0,0,2],[\"shop-images\",\"shop\",\"product-images\",0,0,2],[\"shop-listings\",\"shop\",\"listing-events\",0,0,2],[\"payments-prices\",\"payments\",\"catalog-db\",0,0,2],[\"payments-paid\",\"payments\",\"order-events\",0,0,2],[\"payments-write\",\"payments\",\"payments-db\",0,0,2],[\"payments-stripe\",\"payments\",\"stripe\",0,0,2],[\"cart-write\",\"cart\",\"cart-store\",0,0,2],[\"listings-indexer\",\"listing-events\",\"search-indexer\",0,0,2],[\"paid-recorder\",\"order-events\",\"order-recorder\",0,0,2],[\"indexer-write\",\"search-indexer\",\"search-index\",0,0,2],[\"recorder-write\",\"order-recorder\",\"orders-db\",0,0,2]],\"lanes\"]",
+      "positions": {
+        "@actor": {
+          "x": 32,
+          "y": 592
+        },
+        "@download": {
+          "x": 256,
+          "y": 192
+        },
+        "@upload": {
+          "x": 256,
+          "y": 992
+        },
+        "storefront": {
+          "x": 480,
+          "y": 32
+        },
+        "orders": {
+          "x": 480,
+          "y": 192
+        },
+        "image-cdn": {
+          "x": 480,
+          "y": 352
+        },
+        "search-index": {
+          "x": 960,
+          "y": 512
+        },
+        "orders-db": {
+          "x": 1216,
+          "y": 512
+        },
+        "product-images": {
+          "x": 736,
+          "y": 512
+        },
+        "shop": {
+          "x": 480,
+          "y": 736
+        },
+        "identity": {
+          "x": 480,
+          "y": 896
+        },
+        "payments": {
+          "x": 480,
+          "y": 1088
+        },
+        "cart": {
+          "x": 480,
+          "y": 1472
+        },
+        "catalog-db": {
+          "x": 736,
+          "y": 832
+        },
+        "listing-events": {
+          "x": 736,
+          "y": 672
+        },
+        "order-events": {
+          "x": 736,
+          "y": 992
+        },
+        "payments-db": {
+          "x": 736,
+          "y": 1152
+        },
+        "stripe": {
+          "x": 736,
+          "y": 1312
+        },
+        "cart-store": {
+          "x": 736,
+          "y": 1472
+        },
+        "search-indexer": {
+          "x": 960,
+          "y": 672
+        },
+        "order-recorder": {
+          "x": 960,
+          "y": 992
+        }
+      },
+      "routes": {
+        "@actor-download": [
+          {
+            "x": 160,
+            "y": 667
+          },
+          {
+            "x": 208,
+            "y": 667
+          },
+          {
+            "x": 208,
+            "y": 256
+          },
+          {
+            "x": 256,
+            "y": 256
+          }
+        ],
+        "@actor-upload": [
+          {
+            "x": 160,
+            "y": 677
+          },
+          {
+            "x": 208,
+            "y": 677
+          },
+          {
+            "x": 208,
+            "y": 1056
+          },
+          {
+            "x": 256,
+            "y": 1056
+          }
+        ],
+        "download-storefront": [
+          {
+            "x": 384,
+            "y": 246
+          },
+          {
+            "x": 432,
+            "y": 246
+          },
+          {
+            "x": 432,
+            "y": 96
+          },
+          {
+            "x": 480,
+            "y": 96
+          }
+        ],
+        "download-orders": [
+          {
+            "x": 384,
+            "y": 256
+          },
+          {
+            "x": 480,
+            "y": 256
+          }
+        ],
+        "download-image-cdn": [
+          {
+            "x": 384,
+            "y": 266
+          },
+          {
+            "x": 432,
+            "y": 266
+          },
+          {
+            "x": 432,
+            "y": 416
+          },
+          {
+            "x": 480,
+            "y": 416
+          }
+        ],
+        "upload-shop": [
+          {
+            "x": 384,
+            "y": 1041
+          },
+          {
+            "x": 432,
+            "y": 1041
+          },
+          {
+            "x": 432,
+            "y": 800
+          },
+          {
+            "x": 480,
+            "y": 800
+          }
+        ],
+        "upload-identity": [
+          {
+            "x": 384,
+            "y": 1051
+          },
+          {
+            "x": 443,
+            "y": 1051
+          },
+          {
+            "x": 443,
+            "y": 960
+          },
+          {
+            "x": 480,
+            "y": 960
+          }
+        ],
+        "upload-payments": [
+          {
+            "x": 384,
+            "y": 1061
+          },
+          {
+            "x": 443,
+            "y": 1061
+          },
+          {
+            "x": 443,
+            "y": 1152
+          },
+          {
+            "x": 480,
+            "y": 1152
+          }
+        ],
+        "upload-cart": [
+          {
+            "x": 384,
+            "y": 1071
+          },
+          {
+            "x": 432,
+            "y": 1071
+          },
+          {
+            "x": 432,
+            "y": 1536
+          },
+          {
+            "x": 480,
+            "y": 1536
+          }
+        ],
+        "storefront-search": [
+          {
+            "x": 608,
+            "y": 96
+          },
+          {
+            "x": 902,
+            "y": 96
+          },
+          {
+            "x": 902,
+            "y": 565
+          },
+          {
+            "x": 960,
+            "y": 565
+          }
+        ],
+        "orders-read": [
+          {
+            "x": 608,
+            "y": 256
+          },
+          {
+            "x": 1158,
+            "y": 256
+          },
+          {
+            "x": 1158,
+            "y": 565
+          },
+          {
+            "x": 1216,
+            "y": 565
+          }
+        ],
+        "cdn-images": [
+          {
+            "x": 608,
+            "y": 416
+          },
+          {
+            "x": 667,
+            "y": 416
+          },
+          {
+            "x": 667,
+            "y": 565
+          },
+          {
+            "x": 736,
+            "y": 565
+          }
+        ],
+        "shop-catalog": [
+          {
+            "x": 608,
+            "y": 810
+          },
+          {
+            "x": 667,
+            "y": 810
+          },
+          {
+            "x": 667,
+            "y": 885
+          },
+          {
+            "x": 736,
+            "y": 885
+          }
+        ],
+        "shop-images": [
+          {
+            "x": 608,
+            "y": 790
+          },
+          {
+            "x": 667,
+            "y": 790
+          },
+          {
+            "x": 667,
+            "y": 587
+          },
+          {
+            "x": 736,
+            "y": 587
+          }
+        ],
+        "shop-listings": [
+          {
+            "x": 608,
+            "y": 800
+          },
+          {
+            "x": 678,
+            "y": 800
+          },
+          {
+            "x": 678,
+            "y": 736
+          },
+          {
+            "x": 736,
+            "y": 736
+          }
+        ],
+        "payments-prices": [
+          {
+            "x": 608,
+            "y": 1137
+          },
+          {
+            "x": 667,
+            "y": 1137
+          },
+          {
+            "x": 667,
+            "y": 907
+          },
+          {
+            "x": 736,
+            "y": 907
+          }
+        ],
+        "payments-paid": [
+          {
+            "x": 608,
+            "y": 1147
+          },
+          {
+            "x": 678,
+            "y": 1147
+          },
+          {
+            "x": 678,
+            "y": 1056
+          },
+          {
+            "x": 736,
+            "y": 1056
+          }
+        ],
+        "payments-write": [
+          {
+            "x": 608,
+            "y": 1157
+          },
+          {
+            "x": 678,
+            "y": 1157
+          },
+          {
+            "x": 678,
+            "y": 1216
+          },
+          {
+            "x": 736,
+            "y": 1216
+          }
+        ],
+        "payments-stripe": [
+          {
+            "x": 608,
+            "y": 1167
+          },
+          {
+            "x": 667,
+            "y": 1167
+          },
+          {
+            "x": 667,
+            "y": 1376
+          },
+          {
+            "x": 736,
+            "y": 1376
+          }
+        ],
+        "cart-write": [
+          {
+            "x": 608,
+            "y": 1536
+          },
+          {
+            "x": 736,
+            "y": 1536
+          }
+        ],
+        "listings-indexer": [
+          {
+            "x": 864,
+            "y": 736
+          },
+          {
+            "x": 960,
+            "y": 736
+          }
+        ],
+        "paid-recorder": [
+          {
+            "x": 864,
+            "y": 1056
+          },
+          {
+            "x": 960,
+            "y": 1056
+          }
+        ],
+        "recorder-write": [
+          {
+            "x": 1088,
+            "y": 1056
+          },
+          {
+            "x": 1158,
+            "y": 1056
+          },
+          {
+            "x": 1158,
+            "y": 587
+          },
+          {
+            "x": 1216,
+            "y": 587
+          }
+        ],
+        "indexer-write": [
+          {
+            "x": 1088,
+            "y": 736
+          },
+          {
+            "x": 1136,
+            "y": 736
+          },
+          {
+            "x": 1136,
+            "y": 656
+          },
+          {
+            "x": 912,
+            "y": 656
+          },
+          {
+            "x": 912,
+            "y": 587
+          },
+          {
+            "x": 960,
+            "y": 587
+          }
+        ]
+      },
+      "chips": {},
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1376,
+        "h": 1632
+      }
+    },
+    "tiles": [
+      {
+        "id": "@actor",
+        "w": 128,
+        "h": 160,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "User"
+      },
+      {
+        "id": "@download",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Browse"
+      },
+      {
+        "id": "@upload",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Buy & sell"
+      },
+      {
+        "id": "storefront",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#e35e52",
+          "dark": "#fd8679"
+        },
+        "shape": "rect",
+        "label": "Storefront API"
+      },
+      {
+        "id": "orders",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#18a96a",
+          "dark": "#43ca86"
+        },
+        "shape": "rect",
+        "label": "Orders service"
+      },
+      {
+        "id": "image-cdn",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#cc61b5",
+          "dark": "#e986d2"
+        },
+        "shape": "rect",
+        "label": "Image CDN"
+      },
+      {
+        "id": "search-index",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Search index"
+      },
+      {
+        "id": "orders-db",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Orders database"
+      },
+      {
+        "id": "product-images",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Product images"
+      },
+      {
+        "id": "shop",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#9b9306",
+          "dark": "#bcb31e"
+        },
+        "shape": "rect",
+        "label": "Shop service"
+      },
+      {
+        "id": "identity",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "rect",
+        "label": "Identity"
+      },
+      {
+        "id": "payments",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#867cf0",
+          "dark": "#a5a2fd"
+        },
+        "shape": "rect",
+        "label": "Payments"
+      },
+      {
+        "id": "cart",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#d86e07",
+          "dark": "#f79045"
+        },
+        "shape": "rect",
+        "label": "Cart service"
+      },
+      {
+        "id": "catalog-db",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "pill",
+        "label": "Catalog database"
+      },
+      {
+        "id": "listing-events",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#18a596",
+          "dark": "#1bc8b6"
+        },
+        "shape": "pill",
+        "label": "Listing events"
+      },
+      {
+        "id": "order-events",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#de5b87",
+          "dark": "#fb81a6"
+        },
+        "shape": "pill",
+        "label": "Order events"
+      },
+      {
+        "id": "payments-db",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "pill",
+        "label": "Payments database"
+      },
+      {
+        "id": "stripe",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "rect",
+        "label": "Stripe API"
+      },
+      {
+        "id": "cart-store",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "pill",
+        "label": "Cart store"
+      },
+      {
+        "id": "search-indexer",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#68a31d",
+          "dark": "#8ac153"
+        },
+        "shape": "rect",
+        "label": "Search indexer"
+      },
+      {
+        "id": "order-recorder",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#af6dda",
+          "dark": "#cc90f5"
+        },
+        "shape": "rect",
+        "label": "Order recorder"
+      }
+    ],
+    "lines": [
+      {
+        "id": "@actor-download",
+        "source": "@actor",
+        "target": "@download",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Browse"
+      },
+      {
+        "id": "@actor-upload",
+        "source": "@actor",
+        "target": "@upload",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Buy & sell"
+      },
+      {
+        "id": "download-storefront",
+        "source": "@download",
+        "target": "storefront",
+        "dashed": false,
+        "directed": true,
+        "label": "Browse to Storefront API",
+        "band": 0
+      },
+      {
+        "id": "download-orders",
+        "source": "@download",
+        "target": "orders",
+        "dashed": false,
+        "directed": true,
+        "label": "Browse to Orders service",
+        "band": 0
+      },
+      {
+        "id": "download-image-cdn",
+        "source": "@download",
+        "target": "image-cdn",
+        "dashed": false,
+        "directed": true,
+        "label": "Browse to Image CDN",
+        "band": 0
+      },
+      {
+        "id": "upload-shop",
+        "source": "@upload",
+        "target": "shop",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Shop service",
+        "band": 2
+      },
+      {
+        "id": "upload-identity",
+        "source": "@upload",
+        "target": "identity",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Identity",
+        "band": 2
+      },
+      {
+        "id": "upload-payments",
+        "source": "@upload",
+        "target": "payments",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Payments",
+        "band": 2
+      },
+      {
+        "id": "upload-cart",
+        "source": "@upload",
+        "target": "cart",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Cart service",
+        "band": 2
+      },
+      {
+        "id": "storefront-search",
+        "source": "storefront",
+        "target": "search-index",
+        "dashed": false,
+        "directed": true,
+        "label": "Storefront API to Search index",
+        "detail": "Searches listings",
+        "band": 0
+      },
+      {
+        "id": "orders-read",
+        "source": "orders",
+        "target": "orders-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Orders service to Orders database",
+        "detail": "Reads orders",
+        "band": 0
+      },
+      {
+        "id": "cdn-images",
+        "source": "image-cdn",
+        "target": "product-images",
+        "dashed": false,
+        "directed": true,
+        "label": "Image CDN to Product images",
+        "detail": "Reads original photos",
+        "band": 0
+      },
+      {
+        "id": "shop-catalog",
+        "source": "shop",
+        "target": "catalog-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Shop service to Catalog database",
+        "detail": "Writes shops and listings",
+        "band": 2
+      },
+      {
+        "id": "shop-images",
+        "source": "shop",
+        "target": "product-images",
+        "dashed": false,
+        "directed": true,
+        "label": "Shop service to Product images",
+        "detail": "Stores original photos",
+        "band": 2
+      },
+      {
+        "id": "shop-listings",
+        "source": "shop",
+        "target": "listing-events",
+        "dashed": true,
+        "directed": true,
+        "label": "Shop service to Listing events",
+        "detail": "Publishes listing changes",
+        "band": 2
+      },
+      {
+        "id": "payments-prices",
+        "source": "payments",
+        "target": "catalog-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Payments to Catalog database",
+        "detail": "Reads prices and shops",
+        "band": 2
+      },
+      {
+        "id": "payments-paid",
+        "source": "payments",
+        "target": "order-events",
+        "dashed": true,
+        "directed": true,
+        "label": "Payments to Order events",
+        "detail": "Publishes paid orders",
+        "band": 2
+      },
+      {
+        "id": "payments-write",
+        "source": "payments",
+        "target": "payments-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Payments to Payments database",
+        "detail": "Writes payments and payout accounts",
+        "band": 2
+      },
+      {
+        "id": "payments-stripe",
+        "source": "payments",
+        "target": "stripe",
+        "dashed": false,
+        "directed": true,
+        "label": "Payments to Stripe API",
+        "detail": "Opens checkouts and pays sellers",
+        "band": 2
+      },
+      {
+        "id": "cart-write",
+        "source": "cart",
+        "target": "cart-store",
+        "dashed": false,
+        "directed": true,
+        "label": "Cart service to Cart store",
+        "detail": "Reads & writes carts",
+        "band": 2
+      },
+      {
+        "id": "listings-indexer",
+        "source": "listing-events",
+        "target": "search-indexer",
+        "dashed": true,
+        "directed": true,
+        "label": "Listing events to Search indexer",
+        "detail": "Delivers listing changes",
+        "band": 2
+      },
+      {
+        "id": "paid-recorder",
+        "source": "order-events",
+        "target": "order-recorder",
+        "dashed": true,
+        "directed": true,
+        "label": "Order events to Order recorder",
+        "detail": "Delivers paid orders",
+        "band": 2
+      },
+      {
+        "id": "indexer-write",
+        "source": "search-indexer",
+        "target": "search-index",
+        "dashed": false,
+        "directed": true,
+        "label": "Search indexer to Search index",
+        "detail": "Indexes listings",
+        "band": 2
+      },
+      {
+        "id": "recorder-write",
+        "source": "order-recorder",
+        "target": "orders-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Order recorder to Orders database",
+        "detail": "Writes paid orders",
+        "band": 2
+      }
+    ]
+  },
+  "artwork": {
+    "shop-listings": {
+      "d": "M 608 800 L 643 800 L 669 800 Q 678 800 678 791 L 678 745 Q 678 736 687 736 L 707 736 L 718 736 L 727 736",
+      "light": "#71730a"
+    },
+    "payments-paid": {
+      "d": "M 608 1152 C 627.3 1152 623.8 1147 643 1147 L 669 1147 Q 678 1147 678 1138 L 678 1065 Q 678 1056 687 1056 L 707 1056 L 718 1056 L 727 1056",
+      "light": "#7e6fdc"
+    },
+    "listings-indexer": {
+      "d": "M 864 736 L 900 736 L 914 736 L 942 736 L 951 736",
+      "light": "#18a596"
+    },
+    "paid-recorder": {
+      "d": "M 864 1056 L 900 1056 L 914 1056 L 942 1056 L 951 1056",
+      "light": "#de5b87"
+    },
+    "@actor-download": {
+      "d": "M 160 672 C 173.2 672 170.8 667 184 667 L 199 667 Q 208 667 208 658 L 208 265 Q 208 256 217 256 L 232 256 L 238 256 L 247 256",
+      "light": "#99acbd"
+    },
+    "@actor-upload": {
+      "d": "M 160 672 C 173.2 672 170.8 677 184 677 L 199 677 Q 208 677 208 686 L 208 1047 Q 208 1056 217 1056 L 232 1056 L 238 1056 L 247 1056",
+      "light": "#677888"
+    },
+    "download-storefront": {
+      "d": "M 384 256 C 397.2 256 394.8 246 408 246 L 423 246 Q 432 246 432 237 L 432 105 Q 432 96 441 96 L 456 96 L 462 96 L 471 96",
+      "light": "#a2b5c5"
+    },
+    "download-orders": {
+      "d": "M 384 256 L 420 256 L 434 256 L 462 256 L 471 256",
+      "light": "#5f707e"
+    },
+    "download-image-cdn": {
+      "d": "M 384 256 C 397.2 256 394.8 266 408 266 L 423 266 Q 432 266 432 275 L 432 407 Q 432 416 441 416 L 456 416 L 462 416 L 471 416",
+      "light": "#7e92a3"
+    },
+    "upload-shop": {
+      "d": "M 384 1056 C 397.2 1056 394.8 1041 408 1041 L 423 1041 Q 432 1041 432 1032 L 432 809 Q 432 800 441 800 L 456 800 L 462 800 L 471 800",
+      "light": "#a7b9c9"
+    },
+    "upload-identity": {
+      "d": "M 384 1056 C 400.2 1056 397.3 1051 413.5 1051 L 434 1051 Q 443 1051 443 1042 L 443 969 Q 443 960 452 960 L 461.5 960 L 462 960 L 471 960",
+      "light": "#728595"
+    },
+    "upload-payments": {
+      "d": "M 384 1056 C 400.2 1056 397.3 1061 413.5 1061 L 434 1061 Q 443 1061 443 1070 L 443 1143 Q 443 1152 452 1152 L 461.5 1152 L 462 1152 L 471 1152",
+      "light": "#8b9fb0"
+    },
+    "upload-cart": {
+      "d": "M 384 1056 C 397.2 1056 394.8 1071 408 1071 L 423 1071 Q 432 1071 432 1080 L 432 1527 Q 432 1536 441 1536 L 456 1536 L 462 1536 L 471 1536",
+      "light": "#5c6c7a"
+    },
+    "storefront-search": {
+      "d": "M 608 96 L 644 96 L 893 96 Q 902 96 902 105 L 902 556 Q 902 565 911 565 L 931 565 C 936.5 565 936.5 567.8 942 567.8 L 951 567.8",
+      "light": "#e35e52"
+    },
+    "orders-read": {
+      "d": "M 608 256 L 644 256 L 1149 256 Q 1158 256 1158 265 L 1158 556 Q 1158 565 1167 565 L 1187 565 C 1192.5 565 1192.5 567.8 1198 567.8 L 1207 567.8",
+      "light": "#18a96a"
+    },
+    "cdn-images": {
+      "d": "M 608 416 L 637.5 416 L 658 416 Q 667 416 667 425 L 667 556 Q 667 565 676 565 L 701.5 565 C 709.8 565 709.8 567.8 718 567.8 L 727 567.8",
+      "light": "#cc61b5"
+    },
+    "shop-catalog": {
+      "d": "M 608 800 C 624.2 800 621.3 810 637.5 810 L 658 810 Q 667 810 667 819 L 667 876 Q 667 885 676 885 L 701.5 885 C 709.8 885 709.8 887.8 718 887.8 L 727 887.8",
+      "light": "#9b9306"
+    },
+    "shop-images": {
+      "d": "M 608 800 C 624.2 800 621.3 790 637.5 790 L 658 790 Q 667 790 667 781 L 667 596 Q 667 587 676 587 L 701.5 587 C 709.8 587 709.8 584.3 718 584.3 L 727 584.3",
+      "light": "#c9b323"
+    },
+    "payments-prices": {
+      "d": "M 608 1152 C 624.2 1152 621.3 1137 637.5 1137 L 658 1137 Q 667 1137 667 1128 L 667 916 Q 667 907 676 907 L 701.5 907 C 709.8 907 709.8 904.3 718 904.3 L 727 904.3",
+      "light": "#a7affd"
+    },
+    "payments-write": {
+      "d": "M 608 1152 C 627.3 1152 623.8 1157 643 1157 L 669 1157 Q 678 1157 678 1166 L 678 1207 Q 678 1216 687 1216 L 707 1216 L 718 1216 L 727 1216",
+      "light": "#8f8cfd"
+    },
+    "payments-stripe": {
+      "d": "M 608 1152 C 624.2 1152 621.3 1167 637.5 1167 L 658 1167 Q 667 1167 667 1176 L 667 1367 Q 667 1376 676 1376 L 701.5 1376 L 718 1376 L 727 1376",
+      "light": "#6b57b5"
+    },
+    "cart-write": {
+      "d": "M 608 1536 L 644 1536 L 690 1536 L 718 1536 L 727 1536",
+      "light": "#d86e07"
+    },
+    "indexer-write": {
+      "d": "M 1088 736 L 1112 736 L 1127 736 Q 1136 736 1136 727 L 1136 665 Q 1136 656 1127 656 L 921 656 Q 912 656 912 647 L 912 596 Q 912 587 921 587 L 936 587 C 939 587 939 584.3 942 584.3 L 951 584.3",
+      "light": "#68a31d"
+    },
+    "recorder-write": {
+      "d": "M 1088 1056 L 1123 1056 L 1149 1056 Q 1158 1056 1158 1047 L 1158 596 Q 1158 587 1167 587 L 1187 587 C 1192.5 587 1192.5 584.3 1198 584.3 L 1207 584.3",
+      "light": "#af6dda"
+    }
+  }
+}

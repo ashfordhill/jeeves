@@ -1,0 +1,715 @@
+{
+  "details": {
+    "format": "jeeves-diagram-capture-v1",
+    "capturedAt": "2026-11-18T15:24:00.325Z",
+    "project": {
+      "id": "8f377192-fab9-4fc9-9481-8b922212f1b6",
+      "name": "E2E Wire finish tinyurl",
+      "revision": 1
+    },
+    "source": {
+      "designSha256": "d04cc636acbdd2d7143df4f33b222e37ba832ed105a8d73e85f8a6aabf4c3bf7",
+      "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+      "schemaVersion": 2
+    },
+    "renderer": {
+      "appVersion": "0.1.0",
+      "commit": "ff4a1ecc13c0a2ad7ec23542702d24715bf53b3b",
+      "trackedTreeDirtyAtBuild": true,
+      "mode": "development",
+      "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+      "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36"
+    },
+    "image": {
+      "filename": "E2E-Wire-finish-tinyurl-r1-detailed.png",
+      "sha256": "b59f77a83cb67f8417011ad48480694704f1e06fef8fd7500b373d02a0f41272",
+      "width": 2784,
+      "height": 1792,
+      "scale": 2,
+      "margin": 32,
+      "background": "#e8f4fa",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1392,
+        "h": 896
+      },
+      "font": "Nunito Variable",
+      "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+    },
+    "view": {
+      "canvas": "detailed",
+      "modules": "module hosts as containers; module links from and into their rows",
+      "relationships": "all projected relationships",
+      "selection": "omitted",
+      "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+      "ownerExpansion": "canonical process tiles",
+      "owners": []
+    },
+    "layout": {
+      "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"stats-api\",256,128,0,[[\"header-in\",\"in\",32],[\"stats-data:out\",\"out\",64]]],[\"redirect\",256,224,0,[[\"header-in\",\"in\",32],[\"redirect-cache-reader:out\",\"out\",64],[\"redirect-data:out\",\"out\",96],[\"redirect-click-publisher:out\",\"out\",160]]],[\"analytics-store\",128,128,0],[\"click-events\",128,128,0],[\"url-cache\",128,128,0],[\"url-db\",128,128,1],[\"analytics\",256,192,0,[[\"analytics-click-consumer:in\",\"in\",64],[\"analytics-data:out\",\"out\",128]]],[\"shorten\",256,128,2,[[\"header-in\",\"in\",32],[\"shorten-data:out\",\"out\",64]]]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"download-stats-api\",\"@download\",\"stats-api\",0,0,0,null,\"header-in\"],[\"download-redirect\",\"@download\",\"redirect\",0,0,0,null,\"header-in\"],[\"upload-shorten\",\"@upload\",\"shorten\",0,0,2,null,\"header-in\"],[\"stats-read/stats-data\",\"stats-api\",\"analytics-store\",0,0,0,\"stats-data:out\",null],[\"redirect-clicks/redirect-click-publisher\",\"redirect\",\"click-events\",0,0,0,\"redirect-click-publisher:out\",null],[\"redirect-cache/redirect-cache-reader\",\"redirect\",\"url-cache\",0,0,0,\"redirect-cache-reader:out\",null],[\"redirect-db/redirect-data\",\"redirect\",\"url-db\",0,0,0,\"redirect-data:out\",null],[\"click-events-analytics/analytics-click-consumer\",\"click-events\",\"analytics\",0,0,0,null,\"analytics-click-consumer:in\"],[\"analytics-write/analytics-data\",\"analytics\",\"analytics-store\",0,0,0,\"analytics-data:out\",null],[\"shorten-db/shorten-data\",\"shorten\",\"url-db\",0,0,2,\"shorten-data:out\",null]],\"lanes\"]",
+      "positions": {
+        "@actor": {
+          "x": 32,
+          "y": 400
+        },
+        "@download": {
+          "x": 256,
+          "y": 96
+        },
+        "@upload": {
+          "x": 256,
+          "y": 704
+        },
+        "stats-api": {
+          "x": 480,
+          "y": 32
+        },
+        "redirect": {
+          "x": 480,
+          "y": 192
+        },
+        "analytics-store": {
+          "x": 1056,
+          "y": 32
+        },
+        "click-events": {
+          "x": 832,
+          "y": 320
+        },
+        "url-cache": {
+          "x": 832,
+          "y": 160
+        },
+        "url-db": {
+          "x": 832,
+          "y": 544
+        },
+        "analytics": {
+          "x": 1056,
+          "y": 320
+        },
+        "shorten": {
+          "x": 480,
+          "y": 736
+        }
+      },
+      "routes": {
+        "@actor-download": [
+          {
+            "x": 160,
+            "y": 475
+          },
+          {
+            "x": 208,
+            "y": 475
+          },
+          {
+            "x": 208,
+            "y": 160
+          },
+          {
+            "x": 256,
+            "y": 160
+          }
+        ],
+        "@actor-upload": [
+          {
+            "x": 160,
+            "y": 485
+          },
+          {
+            "x": 208,
+            "y": 485
+          },
+          {
+            "x": 208,
+            "y": 768
+          },
+          {
+            "x": 256,
+            "y": 768
+          }
+        ],
+        "download-stats-api": [
+          {
+            "x": 384,
+            "y": 155
+          },
+          {
+            "x": 432,
+            "y": 155
+          },
+          {
+            "x": 432,
+            "y": 64
+          },
+          {
+            "x": 480,
+            "y": 64
+          }
+        ],
+        "download-redirect": [
+          {
+            "x": 384,
+            "y": 165
+          },
+          {
+            "x": 432,
+            "y": 165
+          },
+          {
+            "x": 432,
+            "y": 224
+          },
+          {
+            "x": 480,
+            "y": 224
+          }
+        ],
+        "upload-shorten": [
+          {
+            "x": 384,
+            "y": 768
+          },
+          {
+            "x": 480,
+            "y": 768
+          }
+        ],
+        "stats-read/stats-data": [
+          {
+            "x": 736,
+            "y": 96
+          },
+          {
+            "x": 1019,
+            "y": 96
+          },
+          {
+            "x": 1019,
+            "y": 85
+          },
+          {
+            "x": 1056,
+            "y": 85
+          }
+        ],
+        "redirect-clicks/redirect-click-publisher": [
+          {
+            "x": 736,
+            "y": 352
+          },
+          {
+            "x": 784,
+            "y": 352
+          },
+          {
+            "x": 784,
+            "y": 384
+          },
+          {
+            "x": 832,
+            "y": 384
+          }
+        ],
+        "redirect-cache/redirect-cache-reader": [
+          {
+            "x": 736,
+            "y": 256
+          },
+          {
+            "x": 784,
+            "y": 256
+          },
+          {
+            "x": 784,
+            "y": 224
+          },
+          {
+            "x": 832,
+            "y": 224
+          }
+        ],
+        "redirect-db/redirect-data": [
+          {
+            "x": 736,
+            "y": 288
+          },
+          {
+            "x": 795,
+            "y": 288
+          },
+          {
+            "x": 795,
+            "y": 597
+          },
+          {
+            "x": 832,
+            "y": 597
+          }
+        ],
+        "click-events-analytics/analytics-click-consumer": [
+          {
+            "x": 960,
+            "y": 384
+          },
+          {
+            "x": 1056,
+            "y": 384
+          }
+        ],
+        "shorten-db/shorten-data": [
+          {
+            "x": 736,
+            "y": 800
+          },
+          {
+            "x": 784,
+            "y": 800
+          },
+          {
+            "x": 784,
+            "y": 619
+          },
+          {
+            "x": 832,
+            "y": 619
+          }
+        ],
+        "analytics-write/analytics-data": [
+          {
+            "x": 1312,
+            "y": 448
+          },
+          {
+            "x": 1360,
+            "y": 448
+          },
+          {
+            "x": 1360,
+            "y": 176
+          },
+          {
+            "x": 1008,
+            "y": 176
+          },
+          {
+            "x": 1008,
+            "y": 107
+          },
+          {
+            "x": 1056,
+            "y": 107
+          }
+        ]
+      },
+      "chips": {},
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1392,
+        "h": 896
+      }
+    },
+    "tiles": [
+      {
+        "id": "@actor",
+        "w": 128,
+        "h": 160,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "User"
+      },
+      {
+        "id": "@download",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Open link"
+      },
+      {
+        "id": "@upload",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Shorten"
+      },
+      {
+        "id": "stats-api",
+        "w": 256,
+        "h": 128,
+        "band": 0,
+        "shape": "rect",
+        "label": "Stats API",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "stats-data:out",
+            "side": "out",
+            "y": 64
+          }
+        ]
+      },
+      {
+        "id": "redirect",
+        "w": 256,
+        "h": 224,
+        "band": 0,
+        "shape": "rect",
+        "label": "Redirect service",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "redirect-cache-reader:out",
+            "side": "out",
+            "y": 64
+          },
+          {
+            "id": "redirect-data:out",
+            "side": "out",
+            "y": 96
+          },
+          {
+            "id": "redirect-click-publisher:out",
+            "side": "out",
+            "y": 160
+          }
+        ]
+      },
+      {
+        "id": "analytics-store",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "shape": "pill",
+        "label": "Analytics store"
+      },
+      {
+        "id": "click-events",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#cc61b5",
+          "dark": "#e986d2"
+        },
+        "shape": "pill",
+        "label": "Click events"
+      },
+      {
+        "id": "url-cache",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "shape": "pill",
+        "label": "URL cache"
+      },
+      {
+        "id": "url-db",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "URL database"
+      },
+      {
+        "id": "analytics",
+        "w": 256,
+        "h": 192,
+        "band": 0,
+        "shape": "rect",
+        "label": "Analytics worker",
+        "ports": [
+          {
+            "id": "analytics-click-consumer:in",
+            "side": "in",
+            "y": 64
+          },
+          {
+            "id": "analytics-data:out",
+            "side": "out",
+            "y": 128
+          }
+        ]
+      },
+      {
+        "id": "shorten",
+        "w": 256,
+        "h": 128,
+        "band": 2,
+        "shape": "rect",
+        "label": "Shorten service",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "shorten-data:out",
+            "side": "out",
+            "y": 64
+          }
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "id": "@actor-download",
+        "source": "@actor",
+        "target": "@download",
+        "connection": "@actor-download",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Open link",
+        "removable": false,
+        "group": "@actor-download"
+      },
+      {
+        "id": "@actor-upload",
+        "source": "@actor",
+        "target": "@upload",
+        "connection": "@actor-upload",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Shorten",
+        "removable": false,
+        "group": "@actor-upload"
+      },
+      {
+        "id": "download-stats-api",
+        "source": "@download",
+        "target": "stats-api",
+        "connection": "download-stats-api",
+        "dashed": false,
+        "directed": true,
+        "label": "Open link to Stats API",
+        "band": 0,
+        "targetPort": "header-in",
+        "group": "download-stats-api"
+      },
+      {
+        "id": "download-redirect",
+        "source": "@download",
+        "target": "redirect",
+        "connection": "download-redirect",
+        "dashed": false,
+        "directed": true,
+        "label": "Open link to Redirect service",
+        "band": 0,
+        "targetPort": "header-in",
+        "group": "download-redirect"
+      },
+      {
+        "id": "upload-shorten",
+        "source": "@upload",
+        "target": "shorten",
+        "connection": "upload-shorten",
+        "dashed": false,
+        "directed": true,
+        "label": "Shorten to Shorten service",
+        "band": 2,
+        "targetPort": "header-in",
+        "group": "upload-shorten"
+      },
+      {
+        "id": "stats-read/stats-data",
+        "source": "stats-api",
+        "target": "analytics-store",
+        "connection": "stats-read",
+        "dashed": false,
+        "directed": true,
+        "label": "Stats reader (Stats API) to Analytics store",
+        "band": 0,
+        "sourcePort": "stats-data:out",
+        "sourceModule": "stats-data",
+        "disconnect": {
+          "link": "stats-data-reads",
+          "label": "Disconnect Stats reader from Analytics store"
+        },
+        "group": "stats-read",
+        "detail": "Reads click counts"
+      },
+      {
+        "id": "redirect-clicks/redirect-click-publisher",
+        "source": "redirect",
+        "target": "click-events",
+        "connection": "redirect-clicks",
+        "dashed": true,
+        "directed": true,
+        "label": "Click publisher (Redirect service) to Click events",
+        "band": 0,
+        "sourcePort": "redirect-click-publisher:out",
+        "sourceModule": "redirect-click-publisher",
+        "disconnect": {
+          "link": "click-publisher-queue",
+          "label": "Disconnect Click publisher from Click events"
+        },
+        "group": "redirect-clicks",
+        "detail": "Publishes clicks"
+      },
+      {
+        "id": "redirect-cache/redirect-cache-reader",
+        "source": "redirect",
+        "target": "url-cache",
+        "connection": "redirect-cache",
+        "dashed": false,
+        "directed": true,
+        "label": "Cache reader (Redirect service) to URL cache",
+        "band": 0,
+        "sourcePort": "redirect-cache-reader:out",
+        "sourceModule": "redirect-cache-reader",
+        "disconnect": {
+          "link": "cache-reader-redis",
+          "label": "Disconnect Cache reader from URL cache"
+        },
+        "group": "redirect-cache",
+        "detail": "Reads hot links, fills on miss"
+      },
+      {
+        "id": "redirect-db/redirect-data",
+        "source": "redirect",
+        "target": "url-db",
+        "connection": "redirect-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Link reader (Redirect service) to URL database",
+        "band": 0,
+        "sourcePort": "redirect-data:out",
+        "sourceModule": "redirect-data",
+        "disconnect": {
+          "link": "redirect-data-reads",
+          "label": "Disconnect Link reader from URL database"
+        },
+        "group": "redirect-db",
+        "detail": "Reads links on a cache miss"
+      },
+      {
+        "id": "click-events-analytics/analytics-click-consumer",
+        "source": "click-events",
+        "target": "analytics",
+        "connection": "click-events-analytics",
+        "dashed": true,
+        "directed": true,
+        "label": "Click events to Click consumer (Analytics worker)",
+        "band": 0,
+        "targetPort": "analytics-click-consumer:in",
+        "targetModule": "analytics-click-consumer",
+        "disconnect": {
+          "link": "click-consumer-queue",
+          "label": "Disconnect Click consumer from Click events"
+        },
+        "group": "click-events-analytics",
+        "detail": "Delivers clicks"
+      },
+      {
+        "id": "analytics-write/analytics-data",
+        "source": "analytics",
+        "target": "analytics-store",
+        "connection": "analytics-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Aggregate writer (Analytics worker) to Analytics store",
+        "band": 0,
+        "sourcePort": "analytics-data:out",
+        "sourceModule": "analytics-data",
+        "disconnect": {
+          "link": "analytics-data-writes",
+          "label": "Disconnect Aggregate writer from Analytics store"
+        },
+        "group": "analytics-write",
+        "detail": "Writes aggregates"
+      },
+      {
+        "id": "shorten-db/shorten-data",
+        "source": "shorten",
+        "target": "url-db",
+        "connection": "shorten-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Link writer (Shorten service) to URL database",
+        "band": 2,
+        "sourcePort": "shorten-data:out",
+        "sourceModule": "shorten-data",
+        "disconnect": {
+          "link": "shorten-data-writes",
+          "label": "Disconnect Link writer from URL database"
+        },
+        "group": "shorten-db",
+        "detail": "Writes links"
+      }
+    ]
+  },
+  "artwork": {
+    "redirect-clicks/redirect-click-publisher": {
+      "d": "M 736 352 L 760 352 L 775 352 Q 784 352 784 361 L 784 375 Q 784 384 793 384 L 808 384 L 814 384 L 823 384",
+      "light": "#18a96a"
+    },
+    "click-events-analytics/analytics-click-consumer": {
+      "d": "M 960 384 L 996 384 L 1010 384 L 1038 384 L 1047 384",
+      "light": "#cc61b5"
+    },
+    "@actor-download": {
+      "d": "M 160 480 C 173.2 480 170.8 475 184 475 L 199 475 Q 208 475 208 466 L 208 169 Q 208 160 217 160 L 232 160 L 238 160 L 247 160",
+      "light": "#99acbd"
+    },
+    "@actor-upload": {
+      "d": "M 160 480 C 173.2 480 170.8 485 184 485 L 199 485 Q 208 485 208 494 L 208 759 Q 208 768 217 768 L 232 768 L 238 768 L 247 768",
+      "light": "#677888"
+    },
+    "download-stats-api": {
+      "d": "M 384 160 C 397.2 160 394.8 155 408 155 L 423 155 Q 432 155 432 146 L 432 73 Q 432 64 441 64 L 456 64 L 462 64 L 471 64",
+      "light": "#99acbd"
+    },
+    "download-redirect": {
+      "d": "M 384 160 C 397.2 160 394.8 165 408 165 L 423 165 Q 432 165 432 174 L 432 215 Q 432 224 441 224 L 456 224 L 462 224 L 471 224",
+      "light": "#677888"
+    },
+    "upload-shorten": {
+      "d": "M 384 768 L 420 768 L 434 768 L 462 768 L 471 768",
+      "light": "#7e92a3"
+    },
+    "stats-read/stats-data": {
+      "d": "M 736 96 L 772 96 L 1013.5 96 Q 1019 96 1019 90.5 L 1019 90.5 Q 1019 85 1024.5 85 L 1037.5 85 C 1037.8 85 1037.8 87.8 1038 87.8 L 1047 87.8",
+      "light": "#e35e52"
+    },
+    "redirect-cache/redirect-cache-reader": {
+      "d": "M 736 256 L 760 256 L 775 256 Q 784 256 784 247 L 784 233 Q 784 224 793 224 L 808 224 L 814 224 L 823 224",
+      "light": "#5ccd81"
+    },
+    "redirect-db/redirect-data": {
+      "d": "M 736 288 L 765.5 288 L 786 288 Q 795 288 795 297 L 795 588 Q 795 597 804 597 L 813.5 597 C 813.8 597 813.8 599.8 814 599.8 L 823 599.8",
+      "light": "#098259"
+    },
+    "analytics-write/analytics-data": {
+      "d": "M 1312 448 L 1336 448 L 1351 448 Q 1360 448 1360 439 L 1360 185 Q 1360 176 1351 176 L 1017 176 Q 1008 176 1008 167 L 1008 116 Q 1008 107 1017 107 L 1032 107 C 1035 107 1035 104.3 1038 104.3 L 1047 104.3",
+      "light": "#9b9306"
+    },
+    "shorten-db/shorten-data": {
+      "d": "M 736 800 L 760 800 L 775 800 Q 784 800 784 791 L 784 628 Q 784 619 793 619 L 808 619 C 811 619 811 616.3 814 616.3 L 823 616.3",
+      "light": "#867cf0"
+    }
+  }
+}

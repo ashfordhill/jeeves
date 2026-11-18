@@ -90,6 +90,7 @@ import {
 import { dialogOpen, historyKey, inField } from "./shortcuts.ts";
 import { ConnectionList, hasLines, LaneNodeIcon, TileInspector } from "./TileInspector.tsx";
 import { WarningList } from "./Warnings.tsx";
+import { assignWireSlots } from "./wireColours.ts";
 
 type Loaded = NonNullable<ReturnType<typeof useProject.getState>["loaded"]>;
 
@@ -120,6 +121,19 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
   const [preferences, setPreferences] = useStudioPreferences(projectId);
   const [mode, setMode] = useState<BoardMode>("select");
   const graph = useMemo(() => laneGraph(loaded.design), [loaded.design]);
+  // Each sending tile's colour slot, kept for life in this browser's preferences.
+  const wireSlots = useMemo(() => {
+    const tiles = new Set(graph.nodes.map((node) => node.id));
+    const senders = graph.nodes
+      .filter((node) => node.id !== LANE_ACTOR && !node.action)
+      .filter((node) => graph.edges.some((edge) => edge.source === node.id))
+      .map((node) => node.id);
+    return assignWireSlots(preferences.wires, senders, tiles);
+  }, [graph, preferences.wires]);
+  useEffect(() => {
+    if (JSON.stringify(wireSlots) === JSON.stringify(preferences.wires)) return;
+    setPreferences((current) => ({ ...current, wires: wireSlots }));
+  }, [wireSlots, preferences.wires, setPreferences]);
   const [pick, setPick] = useState<WorkspaceSelection>(() => startsSelected(graph));
   // The tiles the Connections rows left, oldest first: view state, never in the design or chat.
   const [kept, setTrail] = useState<readonly string[]>([]);
@@ -489,6 +503,7 @@ function ProjectWorkspace({ loaded }: { loaded: Loaded }) {
           ref={board}
           design={loaded.design}
           graph={graph}
+          wires={wireSlots}
           view={view}
           selected={selection}
           mode={mode}
@@ -760,7 +775,7 @@ function Inspector({
         <p className="lane-connection-label">{connection?.planned.label}</p>
         <dl className="lane-facts" aria-label="Relationship">
           <dt>Interaction</dt>
-          <dd>{edge.async ? "Asynchronous (dashed)" : "Request / response (solid)"}</dd>
+          <dd>{edge.async ? "Asynchronous (beads)" : "Request / response (solid)"}</dd>
           <dt>Arrow</dt>
           <dd>
             {channelUse === "publish"

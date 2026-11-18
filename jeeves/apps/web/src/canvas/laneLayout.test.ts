@@ -20,6 +20,7 @@ import {
 } from "@jeeves/spec";
 import ELK from "elkjs/lib/elk.bundled.js";
 import { describe, expect, it } from "vitest";
+import { detailedView } from "./detailedView.ts";
 import { laneLayoutInput } from "./laneLayout.ts";
 
 const elk = new ELK();
@@ -306,6 +307,34 @@ describe("wire lanes on the studies", () => {
       }
     }
     return count;
+  }
+
+  for (const [id] of studies) {
+    it(`${id}: Detailed wires have individual lanes, including return trunks`, async () => {
+      const design = studioArchitectureExample(id).design;
+      const projection = detailedView(design, laneGraph(design), (id) => id);
+      const started = performance.now();
+      const layout = await layoutOf({ ...projection, lanes: true });
+      expect(performance.now() - started).toBeLessThanOrEqual(3000);
+      expect(sharedRuns(layout)).toBe(0);
+      for (const line of projection.lines) {
+        const route = layout.routes[line.id] ?? [];
+        expect(route.length, line.id).toBeGreaterThanOrEqual(2);
+        for (const tile of projection.tiles.filter(
+          (t) => t.id !== line.source && t.id !== line.target,
+        )) {
+          const r = box(projection, layout, tile.id);
+          for (const [a, b] of runs(layout, line.id)) {
+            const through =
+              Math.min(a.x, b.x) < r.x + r.w &&
+              Math.max(a.x, b.x) > r.x &&
+              Math.min(a.y, b.y) < r.y + r.h &&
+              Math.max(a.y, b.y) > r.y;
+            expect(through, `${line.id} through ${tile.id}`).toBe(false);
+          }
+        }
+      }
+    });
   }
 
   for (const [id] of studies) {

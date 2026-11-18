@@ -110,14 +110,15 @@ test("selection traces YouTube relationships, ends when cleared and leaves the d
   }
 });
 
-test("a shared stem asks which relationship the mouse intends", async ({ page }) => {
+test("a shared dot asks which nearby relationship the mouse intends", async ({ page }) => {
   const id = await createStudy(page, "E2E YouTube overlap", "YouTube · studio study", "Simple");
   try {
-    // Watch's first 32px belong to several routes. SVG stacking must not pick one silently.
+    // Four wires fan from Watch API's dot. Near the dot several remain equally close at
+    // screen size: the chooser must offer each once, independent of SVG paint order.
     const path = page.locator('.react-flow__edge[data-id="watch-cache"] .react-flow__edge-path');
     const point = await path.evaluate((el) => {
       const p = el as SVGPathElement;
-      const at = p.getPointAtLength(16);
+      const at = p.getPointAtLength(8);
       const m = p.getScreenCTM();
       if (!m) throw new Error("No route");
       const screen = new DOMPoint(at.x, at.y).matrixTransform(m);
@@ -128,6 +129,13 @@ test("a shared stem asks which relationship the mouse intends", async ({ page })
     await expect(chooser).toBeVisible();
     await expect(chooser.locator('[data-line-id="watch-cache"]')).toBeVisible();
     await expect(chooser.locator('[data-line-id="watch-metadata"]')).toBeVisible();
+    expect(
+      await chooser
+        .locator("[data-line-id]")
+        .evaluateAll((buttons) =>
+          buttons.map((button) => button.getAttribute("data-line-id")).sort(),
+        ),
+    ).toEqual(["watch-cache", "watch-counts-read", "watch-metadata", "watch-views-publish"]);
     const viewport = page.locator(".react-flow__viewport");
     const camera = await viewport.getAttribute("style");
     const box = await chooser.boundingBox();

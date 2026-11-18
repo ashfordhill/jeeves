@@ -218,8 +218,10 @@ function judge(
           if (to < from) continue;
           // Shared or touching runs: only lines from its source port where they leave it, and lines
           // into its target port on the last stretch (another band's only next to the port).
-          if (fromSource && i <= 1) continue;
+          // Individual lanes never share these trunks: only their drawn fans meet at the dot.
+          if (!line.lane && fromSource && i <= 1) continue;
           if (
+            !line.lane &&
             intoTarget &&
             i >= last - 1 &&
             (sameBand || (i === last && from >= port - JUNCTION_PX))
@@ -240,8 +242,8 @@ function judge(
           continue;
         }
         // A touch: an end or bend of one on the other.
-        if (fromSource && i <= 1) continue;
-        if (intoTarget && i >= last - 1) continue;
+        if (!line.lane && fromSource && i <= 1) continue;
+        if (!line.lane && intoTarget && i >= last - 1) continue;
         if (strict) return undefined;
         crossings += BROKEN;
       }

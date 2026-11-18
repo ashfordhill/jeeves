@@ -1,0 +1,1480 @@
+{
+  "details": {
+    "format": "jeeves-diagram-capture-v1",
+    "capturedAt": "2026-11-18T15:24:58.212Z",
+    "project": {
+      "id": "c5fc2aec-2762-4f40-8591-3219cf9eadcb",
+      "name": "E2E Wire finish youtube",
+      "revision": 1
+    },
+    "source": {
+      "designSha256": "8eefb48e6cbb547befcfecca45149746f983b2005777facce734619a6bdad3f8",
+      "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+      "schemaVersion": 2
+    },
+    "renderer": {
+      "appVersion": "0.1.0",
+      "commit": "ff4a1ecc13c0a2ad7ec23542702d24715bf53b3b",
+      "trackedTreeDirtyAtBuild": true,
+      "mode": "development",
+      "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+      "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36"
+    },
+    "image": {
+      "filename": "E2E-Wire-finish-youtube-r1-detailed.png",
+      "sha256": "3b3cc0f3f45e0bb84f1d7455d66aad8c73b8304af099ef6f4817c096579d61dd",
+      "width": 4086,
+      "height": 3392,
+      "scale": 2,
+      "margin": 32,
+      "background": "#e8f4fa",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2043,
+        "h": 1696
+      },
+      "font": "Nunito Variable",
+      "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+    },
+    "view": {
+      "canvas": "detailed",
+      "modules": "module hosts as containers; module links from and into their rows",
+      "relationships": "all projected relationships",
+      "selection": "omitted",
+      "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+      "ownerExpansion": "canonical process tiles",
+      "owners": []
+    },
+    "layout": {
+      "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"watch\",256,224,0,[[\"header-in\",\"in\",32],[\"watch-cache-reader:out\",\"out\",64],[\"watch-details:out\",\"out\",96],[\"watch-counts:out\",\"out\",128],[\"watch-views:out\",\"out\",160]]],[\"search\",256,128,0,[[\"header-in\",\"in\",32],[\"search-query:out\",\"out\",64]]],[\"video-cdn\",128,128,0],[\"metadata-cache\",128,128,0],[\"metadata-db\",128,128,1],[\"view-counts\",128,128,0],[\"view-events\",128,128,0],[\"search-index\",128,128,1],[\"transcoded\",128,128,1],[\"view-counter\",256,192,0,[[\"counter-consumer:in\",\"in\",64],[\"counter-writer:out\",\"out\",128]]],[\"identity\",128,128,2],[\"upload\",256,192,2,[[\"header-in\",\"in\",32],[\"upload-multipart:out\",\"out\",96],[\"upload-jobs:out\",\"out\",128]]],[\"upload-queue\",128,128,2],[\"originals\",128,128,2],[\"transcoder\",256,256,2,[[\"transcoder-consumer:in\",\"in\",64],[\"transcoder-encoder:out\",\"out\",96],[\"transcoder-packager:out\",\"out\",128],[\"transcoder-thumbnails:out\",\"out\",160],[\"transcoder-done:out\",\"out\",192]]],[\"completion-events\",128,128,2],[\"completion-handler\",256,160,2,[[\"handler-consumer:in\",\"in\",64],[\"handler-writer:out\",\"out\",96]]],[\"search-indexer\",256,160,2,[[\"indexer-consumer:in\",\"in\",64],[\"indexer-writer:out\",\"out\",96]]]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"download-watch\",\"@download\",\"watch\",0,0,0,null,\"header-in\"],[\"download-search\",\"@download\",\"search\",0,0,0,null,\"header-in\"],[\"download-video-cdn\",\"@download\",\"video-cdn\",0,0,0],[\"upload-identity\",\"@upload\",\"identity\",0,0,2],[\"upload-service\",\"@upload\",\"upload\",0,0,2,null,\"header-in\"],[\"watch-cache/watch-cache-reader\",\"watch\",\"metadata-cache\",0,0,0,\"watch-cache-reader:out\",null],[\"watch-metadata/watch-details\",\"watch\",\"metadata-db\",0,0,0,\"watch-details:out\",null],[\"watch-counts-read/watch-counts\",\"watch\",\"view-counts\",0,0,0,\"watch-counts:out\",null],[\"watch-views-publish/watch-views\",\"watch\",\"view-events\",0,0,0,\"watch-views:out\",null],[\"search-read/search-query\",\"search\",\"search-index\",0,0,0,\"search-query:out\",null],[\"cdn-transcoded\",\"video-cdn\",\"transcoded\",0,0,0],[\"views-counter/counter-consumer\",\"view-events\",\"view-counter\",0,0,0,null,\"counter-consumer:in\"],[\"counter-write/counter-writer\",\"view-counter\",\"view-counts\",0,0,0,\"counter-writer:out\",null],[\"upload-publish/upload-jobs\",\"upload\",\"upload-queue\",0,0,2,\"upload-jobs:out\",null],[\"upload-originals/upload-multipart\",\"upload\",\"originals\",0,0,2,\"upload-multipart:out\",null],[\"jobs-transcoder/transcoder-consumer\",\"upload-queue\",\"transcoder\",0,0,2,null,\"transcoder-consumer:in\"],[\"transcoder-read/transcoder-encoder\",\"transcoder\",\"originals\",0,0,2,\"transcoder-encoder:out\",null],[\"transcoder-write/transcoder-packager\",\"transcoder\",\"transcoded\",0,0,2,\"transcoder-packager:out\",null],[\"transcoder-write/transcoder-thumbnails\",\"transcoder\",\"transcoded\",0,0,2,\"transcoder-thumbnails:out\",null],[\"transcoder-publish/transcoder-done\",\"transcoder\",\"completion-events\",0,0,2,\"transcoder-done:out\",null],[\"completions-handler/handler-consumer\",\"completion-events\",\"completion-handler\",0,0,2,null,\"handler-consumer:in\"],[\"completions-indexer/indexer-consumer\",\"completion-events\",\"search-indexer\",0,0,2,null,\"indexer-consumer:in\"],[\"handler-metadata/handler-writer\",\"completion-handler\",\"metadata-db\",0,0,2,\"handler-writer:out\",null],[\"indexer-write/indexer-writer\",\"search-indexer\",\"search-index\",0,0,2,\"indexer-writer:out\",null]],\"lanes\"]",
+      "positions": {
+        "@actor": {
+          "x": 32,
+          "y": 752
+        },
+        "@download": {
+          "x": 256,
+          "y": 480
+        },
+        "@upload": {
+          "x": 256,
+          "y": 1056
+        },
+        "watch": {
+          "x": 480,
+          "y": 96
+        },
+        "search": {
+          "x": 480,
+          "y": 512
+        },
+        "video-cdn": {
+          "x": 544,
+          "y": 672
+        },
+        "metadata-cache": {
+          "x": 864,
+          "y": 32
+        },
+        "metadata-db": {
+          "x": 1440,
+          "y": 832
+        },
+        "view-counts": {
+          "x": 864,
+          "y": 192
+        },
+        "view-events": {
+          "x": 864,
+          "y": 352
+        },
+        "search-index": {
+          "x": 1696,
+          "y": 832
+        },
+        "transcoded": {
+          "x": 864,
+          "y": 832
+        },
+        "view-counter": {
+          "x": 1056,
+          "y": 352
+        },
+        "identity": {
+          "x": 480,
+          "y": 992
+        },
+        "upload": {
+          "x": 480,
+          "y": 1152
+        },
+        "upload-queue": {
+          "x": 864,
+          "y": 1280
+        },
+        "originals": {
+          "x": 864,
+          "y": 1120
+        },
+        "transcoder": {
+          "x": 1056,
+          "y": 1280
+        },
+        "completion-events": {
+          "x": 1440,
+          "y": 1408
+        },
+        "completion-handler": {
+          "x": 1696,
+          "y": 1312
+        },
+        "search-indexer": {
+          "x": 1696,
+          "y": 1504
+        }
+      },
+      "routes": {
+        "@actor-download": [
+          {
+            "x": 160,
+            "y": 827
+          },
+          {
+            "x": 208,
+            "y": 827
+          },
+          {
+            "x": 208,
+            "y": 544
+          },
+          {
+            "x": 256,
+            "y": 544
+          }
+        ],
+        "@actor-upload": [
+          {
+            "x": 160,
+            "y": 837
+          },
+          {
+            "x": 208,
+            "y": 837
+          },
+          {
+            "x": 208,
+            "y": 1120
+          },
+          {
+            "x": 256,
+            "y": 1120
+          }
+        ],
+        "download-watch": [
+          {
+            "x": 384,
+            "y": 534
+          },
+          {
+            "x": 432,
+            "y": 534
+          },
+          {
+            "x": 432,
+            "y": 128
+          },
+          {
+            "x": 480,
+            "y": 128
+          }
+        ],
+        "download-search": [
+          {
+            "x": 384,
+            "y": 544
+          },
+          {
+            "x": 480,
+            "y": 544
+          }
+        ],
+        "download-video-cdn": [
+          {
+            "x": 384,
+            "y": 554
+          },
+          {
+            "x": 432,
+            "y": 554
+          },
+          {
+            "x": 432,
+            "y": 736
+          },
+          {
+            "x": 544,
+            "y": 736
+          }
+        ],
+        "upload-identity": [
+          {
+            "x": 384,
+            "y": 1115
+          },
+          {
+            "x": 432,
+            "y": 1115
+          },
+          {
+            "x": 432,
+            "y": 1056
+          },
+          {
+            "x": 480,
+            "y": 1056
+          }
+        ],
+        "upload-service": [
+          {
+            "x": 384,
+            "y": 1125
+          },
+          {
+            "x": 432,
+            "y": 1125
+          },
+          {
+            "x": 432,
+            "y": 1184
+          },
+          {
+            "x": 480,
+            "y": 1184
+          }
+        ],
+        "watch-cache/watch-cache-reader": [
+          {
+            "x": 736,
+            "y": 160
+          },
+          {
+            "x": 784,
+            "y": 160
+          },
+          {
+            "x": 784,
+            "y": 96
+          },
+          {
+            "x": 864,
+            "y": 96
+          }
+        ],
+        "watch-metadata/watch-details": [
+          {
+            "x": 736,
+            "y": 192
+          },
+          {
+            "x": 784,
+            "y": 192
+          },
+          {
+            "x": 784,
+            "y": 176
+          },
+          {
+            "x": 1392,
+            "y": 176
+          },
+          {
+            "x": 1392,
+            "y": 885
+          },
+          {
+            "x": 1440,
+            "y": 885
+          }
+        ],
+        "watch-counts-read/watch-counts": [
+          {
+            "x": 736,
+            "y": 224
+          },
+          {
+            "x": 784,
+            "y": 224
+          },
+          {
+            "x": 784,
+            "y": 245
+          },
+          {
+            "x": 864,
+            "y": 245
+          }
+        ],
+        "watch-views-publish/watch-views": [
+          {
+            "x": 736,
+            "y": 256
+          },
+          {
+            "x": 784,
+            "y": 256
+          },
+          {
+            "x": 784,
+            "y": 416
+          },
+          {
+            "x": 864,
+            "y": 416
+          }
+        ],
+        "search-read/search-query": [
+          {
+            "x": 736,
+            "y": 576
+          },
+          {
+            "x": 1616,
+            "y": 576
+          },
+          {
+            "x": 1616,
+            "y": 885
+          },
+          {
+            "x": 1696,
+            "y": 885
+          }
+        ],
+        "cdn-transcoded": [
+          {
+            "x": 672,
+            "y": 736
+          },
+          {
+            "x": 784,
+            "y": 736
+          },
+          {
+            "x": 784,
+            "y": 874
+          },
+          {
+            "x": 864,
+            "y": 874
+          }
+        ],
+        "views-counter/counter-consumer": [
+          {
+            "x": 992,
+            "y": 416
+          },
+          {
+            "x": 1056,
+            "y": 416
+          }
+        ],
+        "upload-publish/upload-jobs": [
+          {
+            "x": 736,
+            "y": 1280
+          },
+          {
+            "x": 784,
+            "y": 1280
+          },
+          {
+            "x": 784,
+            "y": 1344
+          },
+          {
+            "x": 864,
+            "y": 1344
+          }
+        ],
+        "upload-originals/upload-multipart": [
+          {
+            "x": 736,
+            "y": 1248
+          },
+          {
+            "x": 784,
+            "y": 1248
+          },
+          {
+            "x": 784,
+            "y": 1173
+          },
+          {
+            "x": 864,
+            "y": 1173
+          }
+        ],
+        "jobs-transcoder/transcoder-consumer": [
+          {
+            "x": 992,
+            "y": 1344
+          },
+          {
+            "x": 1056,
+            "y": 1344
+          }
+        ],
+        "transcoder-publish/transcoder-done": [
+          {
+            "x": 1312,
+            "y": 1472
+          },
+          {
+            "x": 1440,
+            "y": 1472
+          }
+        ],
+        "completions-handler/handler-consumer": [
+          {
+            "x": 1568,
+            "y": 1467
+          },
+          {
+            "x": 1616,
+            "y": 1467
+          },
+          {
+            "x": 1616,
+            "y": 1376
+          },
+          {
+            "x": 1696,
+            "y": 1376
+          }
+        ],
+        "completions-indexer/indexer-consumer": [
+          {
+            "x": 1568,
+            "y": 1477
+          },
+          {
+            "x": 1616,
+            "y": 1477
+          },
+          {
+            "x": 1616,
+            "y": 1568
+          },
+          {
+            "x": 1696,
+            "y": 1568
+          }
+        ],
+        "counter-write/counter-writer": [
+          {
+            "x": 1312,
+            "y": 480
+          },
+          {
+            "x": 1360,
+            "y": 480
+          },
+          {
+            "x": 1360,
+            "y": 336
+          },
+          {
+            "x": 816,
+            "y": 336
+          },
+          {
+            "x": 816,
+            "y": 267
+          },
+          {
+            "x": 864,
+            "y": 267
+          }
+        ],
+        "transcoder-read/transcoder-encoder": [
+          {
+            "x": 1312,
+            "y": 1376
+          },
+          {
+            "x": 1360,
+            "y": 1376
+          },
+          {
+            "x": 1360,
+            "y": 1264
+          },
+          {
+            "x": 816,
+            "y": 1264
+          },
+          {
+            "x": 816,
+            "y": 1195
+          },
+          {
+            "x": 864,
+            "y": 1195
+          }
+        ],
+        "transcoder-write/transcoder-packager": [
+          {
+            "x": 1312,
+            "y": 1408
+          },
+          {
+            "x": 1371,
+            "y": 1408
+          },
+          {
+            "x": 1371,
+            "y": 979
+          },
+          {
+            "x": 816,
+            "y": 979
+          },
+          {
+            "x": 816,
+            "y": 896
+          },
+          {
+            "x": 864,
+            "y": 896
+          }
+        ],
+        "transcoder-write/transcoder-thumbnails": [
+          {
+            "x": 1312,
+            "y": 1440
+          },
+          {
+            "x": 1382,
+            "y": 1440
+          },
+          {
+            "x": 1382,
+            "y": 990
+          },
+          {
+            "x": 805,
+            "y": 990
+          },
+          {
+            "x": 805,
+            "y": 918
+          },
+          {
+            "x": 864,
+            "y": 918
+          }
+        ],
+        "handler-metadata/handler-writer": [
+          {
+            "x": 1952,
+            "y": 1408
+          },
+          {
+            "x": 2000,
+            "y": 1408
+          },
+          {
+            "x": 2000,
+            "y": 979
+          },
+          {
+            "x": 1392,
+            "y": 979
+          },
+          {
+            "x": 1392,
+            "y": 907
+          },
+          {
+            "x": 1440,
+            "y": 907
+          }
+        ],
+        "indexer-write/indexer-writer": [
+          {
+            "x": 1952,
+            "y": 1600
+          },
+          {
+            "x": 2011,
+            "y": 1600
+          },
+          {
+            "x": 2011,
+            "y": 816
+          },
+          {
+            "x": 1648,
+            "y": 816
+          },
+          {
+            "x": 1648,
+            "y": 907
+          },
+          {
+            "x": 1696,
+            "y": 907
+          }
+        ]
+      },
+      "chips": {},
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 2043,
+        "h": 1696
+      }
+    },
+    "tiles": [
+      {
+        "id": "@actor",
+        "w": 128,
+        "h": 160,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "User"
+      },
+      {
+        "id": "@download",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Watch"
+      },
+      {
+        "id": "@upload",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Publish"
+      },
+      {
+        "id": "watch",
+        "w": 256,
+        "h": 224,
+        "band": 0,
+        "shape": "rect",
+        "label": "Watch API",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "watch-cache-reader:out",
+            "side": "out",
+            "y": 64
+          },
+          {
+            "id": "watch-details:out",
+            "side": "out",
+            "y": 96
+          },
+          {
+            "id": "watch-counts:out",
+            "side": "out",
+            "y": 128
+          },
+          {
+            "id": "watch-views:out",
+            "side": "out",
+            "y": 160
+          }
+        ]
+      },
+      {
+        "id": "search",
+        "w": 256,
+        "h": 128,
+        "band": 0,
+        "shape": "rect",
+        "label": "Search API",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "search-query:out",
+            "side": "out",
+            "y": 64
+          }
+        ]
+      },
+      {
+        "id": "video-cdn",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#cc61b5",
+          "dark": "#e986d2"
+        },
+        "shape": "rect",
+        "label": "Video delivery"
+      },
+      {
+        "id": "metadata-cache",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "shape": "pill",
+        "label": "Hot metadata"
+      },
+      {
+        "id": "metadata-db",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Metadata"
+      },
+      {
+        "id": "view-counts",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "shape": "pill",
+        "label": "View counts"
+      },
+      {
+        "id": "view-events",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#9b9306",
+          "dark": "#bcb31e"
+        },
+        "shape": "pill",
+        "label": "View events"
+      },
+      {
+        "id": "search-index",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Videos"
+      },
+      {
+        "id": "transcoded",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Transcoded videos"
+      },
+      {
+        "id": "view-counter",
+        "w": 256,
+        "h": 192,
+        "band": 0,
+        "shape": "rect",
+        "label": "View counter",
+        "ports": [
+          {
+            "id": "counter-consumer:in",
+            "side": "in",
+            "y": 64
+          },
+          {
+            "id": "counter-writer:out",
+            "side": "out",
+            "y": 128
+          }
+        ]
+      },
+      {
+        "id": "identity",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "rect",
+        "label": "Identity"
+      },
+      {
+        "id": "upload",
+        "w": 256,
+        "h": 192,
+        "band": 2,
+        "shape": "rect",
+        "label": "Upload service",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "upload-multipart:out",
+            "side": "out",
+            "y": 96
+          },
+          {
+            "id": "upload-jobs:out",
+            "side": "out",
+            "y": 128
+          }
+        ]
+      },
+      {
+        "id": "upload-queue",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#18a596",
+          "dark": "#1bc8b6"
+        },
+        "shape": "pill",
+        "label": "Upload jobs"
+      },
+      {
+        "id": "originals",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "pill",
+        "label": "Original videos"
+      },
+      {
+        "id": "transcoder",
+        "w": 256,
+        "h": 256,
+        "band": 2,
+        "shape": "rect",
+        "label": "Transcoder",
+        "ports": [
+          {
+            "id": "transcoder-consumer:in",
+            "side": "in",
+            "y": 64
+          },
+          {
+            "id": "transcoder-encoder:out",
+            "side": "out",
+            "y": 96
+          },
+          {
+            "id": "transcoder-packager:out",
+            "side": "out",
+            "y": 128
+          },
+          {
+            "id": "transcoder-thumbnails:out",
+            "side": "out",
+            "y": 160
+          },
+          {
+            "id": "transcoder-done:out",
+            "side": "out",
+            "y": 192
+          }
+        ]
+      },
+      {
+        "id": "completion-events",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#68a31d",
+          "dark": "#8ac153"
+        },
+        "shape": "pill",
+        "label": "Completion events"
+      },
+      {
+        "id": "completion-handler",
+        "w": 256,
+        "h": 160,
+        "band": 2,
+        "shape": "rect",
+        "label": "Completion handler",
+        "ports": [
+          {
+            "id": "handler-consumer:in",
+            "side": "in",
+            "y": 64
+          },
+          {
+            "id": "handler-writer:out",
+            "side": "out",
+            "y": 96
+          }
+        ]
+      },
+      {
+        "id": "search-indexer",
+        "w": 256,
+        "h": 160,
+        "band": 2,
+        "shape": "rect",
+        "label": "Search indexer",
+        "ports": [
+          {
+            "id": "indexer-consumer:in",
+            "side": "in",
+            "y": 64
+          },
+          {
+            "id": "indexer-writer:out",
+            "side": "out",
+            "y": 96
+          }
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "id": "@actor-download",
+        "source": "@actor",
+        "target": "@download",
+        "connection": "@actor-download",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Watch",
+        "removable": false,
+        "group": "@actor-download"
+      },
+      {
+        "id": "@actor-upload",
+        "source": "@actor",
+        "target": "@upload",
+        "connection": "@actor-upload",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Publish",
+        "removable": false,
+        "group": "@actor-upload"
+      },
+      {
+        "id": "download-watch",
+        "source": "@download",
+        "target": "watch",
+        "connection": "download-watch",
+        "dashed": false,
+        "directed": true,
+        "label": "Watch to Watch API",
+        "band": 0,
+        "targetPort": "header-in",
+        "group": "download-watch"
+      },
+      {
+        "id": "download-search",
+        "source": "@download",
+        "target": "search",
+        "connection": "download-search",
+        "dashed": false,
+        "directed": true,
+        "label": "Watch to Search API",
+        "band": 0,
+        "targetPort": "header-in",
+        "group": "download-search"
+      },
+      {
+        "id": "download-video-cdn",
+        "source": "@download",
+        "target": "video-cdn",
+        "connection": "download-video-cdn",
+        "dashed": false,
+        "directed": true,
+        "label": "Watch to Video delivery",
+        "band": 0,
+        "group": "download-video-cdn"
+      },
+      {
+        "id": "upload-identity",
+        "source": "@upload",
+        "target": "identity",
+        "connection": "upload-identity",
+        "dashed": false,
+        "directed": true,
+        "label": "Publish to Identity",
+        "band": 2,
+        "group": "upload-identity"
+      },
+      {
+        "id": "upload-service",
+        "source": "@upload",
+        "target": "upload",
+        "connection": "upload-service",
+        "dashed": false,
+        "directed": true,
+        "label": "Publish to Upload service",
+        "band": 2,
+        "targetPort": "header-in",
+        "group": "upload-service"
+      },
+      {
+        "id": "watch-cache/watch-cache-reader",
+        "source": "watch",
+        "target": "metadata-cache",
+        "connection": "watch-cache",
+        "dashed": false,
+        "directed": true,
+        "label": "Details cache (Watch API) to Hot metadata",
+        "band": 0,
+        "sourcePort": "watch-cache-reader:out",
+        "sourceModule": "watch-cache-reader",
+        "disconnect": {
+          "link": "details-cache-redis",
+          "label": "Disconnect Details cache from Hot metadata"
+        },
+        "group": "watch-cache",
+        "detail": "Reads video details, fills on miss"
+      },
+      {
+        "id": "watch-metadata/watch-details",
+        "source": "watch",
+        "target": "metadata-db",
+        "connection": "watch-metadata",
+        "dashed": false,
+        "directed": true,
+        "label": "Details reader (Watch API) to Metadata",
+        "band": 0,
+        "sourcePort": "watch-details:out",
+        "sourceModule": "watch-details",
+        "disconnect": {
+          "link": "details-reader-db",
+          "label": "Disconnect Details reader from Metadata"
+        },
+        "group": "watch-metadata",
+        "detail": "Reads video details on a miss"
+      },
+      {
+        "id": "watch-counts-read/watch-counts",
+        "source": "watch",
+        "target": "view-counts",
+        "connection": "watch-counts-read",
+        "dashed": false,
+        "directed": true,
+        "label": "View count reader (Watch API) to View counts",
+        "band": 0,
+        "sourcePort": "watch-counts:out",
+        "sourceModule": "watch-counts",
+        "disconnect": {
+          "link": "count-reader-db",
+          "label": "Disconnect View count reader from View counts"
+        },
+        "group": "watch-counts-read",
+        "detail": "Reads view counts"
+      },
+      {
+        "id": "watch-views-publish/watch-views",
+        "source": "watch",
+        "target": "view-events",
+        "connection": "watch-views-publish",
+        "dashed": true,
+        "directed": true,
+        "label": "View publisher (Watch API) to View events",
+        "band": 0,
+        "sourcePort": "watch-views:out",
+        "sourceModule": "watch-views",
+        "disconnect": {
+          "link": "view-publisher-events",
+          "label": "Disconnect View publisher from View events"
+        },
+        "group": "watch-views-publish",
+        "detail": "Publishes views"
+      },
+      {
+        "id": "search-read/search-query",
+        "source": "search",
+        "target": "search-index",
+        "connection": "search-read",
+        "dashed": false,
+        "directed": true,
+        "label": "Video search (Search API) to Videos",
+        "band": 0,
+        "sourcePort": "search-query:out",
+        "sourceModule": "search-query",
+        "disconnect": {
+          "link": "video-search-index",
+          "label": "Disconnect Video search from Videos"
+        },
+        "group": "search-read",
+        "detail": "Searches videos"
+      },
+      {
+        "id": "cdn-transcoded",
+        "source": "video-cdn",
+        "target": "transcoded",
+        "connection": "cdn-transcoded",
+        "dashed": false,
+        "directed": true,
+        "label": "Video delivery to Transcoded videos",
+        "band": 0,
+        "group": "cdn-transcoded",
+        "detail": "Reads segments and thumbnails"
+      },
+      {
+        "id": "views-counter/counter-consumer",
+        "source": "view-events",
+        "target": "view-counter",
+        "connection": "views-counter",
+        "dashed": true,
+        "directed": true,
+        "label": "View events to View consumer (View counter)",
+        "band": 0,
+        "targetPort": "counter-consumer:in",
+        "targetModule": "counter-consumer",
+        "disconnect": {
+          "link": "view-consumer-events",
+          "label": "Disconnect View consumer from View events"
+        },
+        "group": "views-counter",
+        "detail": "Delivers views"
+      },
+      {
+        "id": "counter-write/counter-writer",
+        "source": "view-counter",
+        "target": "view-counts",
+        "connection": "counter-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Count writer (View counter) to View counts",
+        "band": 0,
+        "sourcePort": "counter-writer:out",
+        "sourceModule": "counter-writer",
+        "disconnect": {
+          "link": "count-writer-db",
+          "label": "Disconnect Count writer from View counts"
+        },
+        "group": "counter-write",
+        "detail": "Adds summed views"
+      },
+      {
+        "id": "upload-publish/upload-jobs",
+        "source": "upload",
+        "target": "upload-queue",
+        "connection": "upload-publish",
+        "dashed": true,
+        "directed": true,
+        "label": "Job publisher (Upload service) to Upload jobs",
+        "band": 2,
+        "sourcePort": "upload-jobs:out",
+        "sourceModule": "upload-jobs",
+        "disconnect": {
+          "link": "job-publisher-queue",
+          "label": "Disconnect Job publisher from Upload jobs"
+        },
+        "group": "upload-publish",
+        "detail": "Publishes upload jobs"
+      },
+      {
+        "id": "upload-originals/upload-multipart",
+        "source": "upload",
+        "target": "originals",
+        "connection": "upload-originals",
+        "dashed": false,
+        "directed": true,
+        "label": "Multipart uploads (Upload service) to Original videos",
+        "band": 2,
+        "sourcePort": "upload-multipart:out",
+        "sourceModule": "upload-multipart",
+        "disconnect": {
+          "link": "multipart-originals",
+          "label": "Disconnect Multipart uploads from Original videos"
+        },
+        "group": "upload-originals",
+        "detail": "Starts, signs and completes uploads"
+      },
+      {
+        "id": "jobs-transcoder/transcoder-consumer",
+        "source": "upload-queue",
+        "target": "transcoder",
+        "connection": "jobs-transcoder",
+        "dashed": true,
+        "directed": true,
+        "label": "Upload jobs to Job consumer (Transcoder)",
+        "band": 2,
+        "targetPort": "transcoder-consumer:in",
+        "targetModule": "transcoder-consumer",
+        "disconnect": {
+          "link": "job-consumer-queue",
+          "label": "Disconnect Job consumer from Upload jobs"
+        },
+        "group": "jobs-transcoder",
+        "detail": "Delivers upload jobs"
+      },
+      {
+        "id": "transcoder-read/transcoder-encoder",
+        "source": "transcoder",
+        "target": "originals",
+        "connection": "transcoder-read",
+        "dashed": false,
+        "directed": true,
+        "label": "Segmenter and encoder (Transcoder) to Original videos",
+        "band": 2,
+        "sourcePort": "transcoder-encoder:out",
+        "sourceModule": "transcoder-encoder",
+        "disconnect": {
+          "link": "encoder-originals",
+          "label": "Disconnect Segmenter and encoder from Original videos"
+        },
+        "group": "transcoder-read",
+        "detail": "Reads originals"
+      },
+      {
+        "id": "transcoder-write/transcoder-packager",
+        "source": "transcoder",
+        "target": "transcoded",
+        "connection": "transcoder-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Packager (Transcoder) to Transcoded videos",
+        "band": 2,
+        "sourcePort": "transcoder-packager:out",
+        "sourceModule": "transcoder-packager",
+        "disconnect": {
+          "link": "packager-transcoded",
+          "label": "Disconnect Packager from Transcoded videos"
+        },
+        "group": "transcoder-write",
+        "detail": "Stores segments, playlists and thumbnails"
+      },
+      {
+        "id": "transcoder-write/transcoder-thumbnails",
+        "source": "transcoder",
+        "target": "transcoded",
+        "connection": "transcoder-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Thumbnailer (Transcoder) to Transcoded videos",
+        "band": 2,
+        "sourcePort": "transcoder-thumbnails:out",
+        "sourceModule": "transcoder-thumbnails",
+        "disconnect": {
+          "link": "thumbnails-transcoded",
+          "label": "Disconnect Thumbnailer from Transcoded videos"
+        },
+        "group": "transcoder-write",
+        "detail": "Stores segments, playlists and thumbnails"
+      },
+      {
+        "id": "transcoder-publish/transcoder-done",
+        "source": "transcoder",
+        "target": "completion-events",
+        "connection": "transcoder-publish",
+        "dashed": true,
+        "directed": true,
+        "label": "Completion publisher (Transcoder) to Completion events",
+        "band": 2,
+        "sourcePort": "transcoder-done:out",
+        "sourceModule": "transcoder-done",
+        "disconnect": {
+          "link": "done-events",
+          "label": "Disconnect Completion publisher from Completion events"
+        },
+        "group": "transcoder-publish",
+        "detail": "Publishes completed videos"
+      },
+      {
+        "id": "completions-handler/handler-consumer",
+        "source": "completion-events",
+        "target": "completion-handler",
+        "connection": "completions-handler",
+        "dashed": true,
+        "directed": true,
+        "label": "Completion events to Completion consumer (Completion handler)",
+        "band": 2,
+        "targetPort": "handler-consumer:in",
+        "targetModule": "handler-consumer",
+        "disconnect": {
+          "link": "handler-consumer-events",
+          "label": "Disconnect Completion consumer from Completion events"
+        },
+        "group": "completions-handler",
+        "detail": "Delivers completed videos"
+      },
+      {
+        "id": "completions-indexer/indexer-consumer",
+        "source": "completion-events",
+        "target": "search-indexer",
+        "connection": "completions-indexer",
+        "dashed": true,
+        "directed": true,
+        "label": "Completion events to Completion consumer (Search indexer)",
+        "band": 2,
+        "targetPort": "indexer-consumer:in",
+        "targetModule": "indexer-consumer",
+        "disconnect": {
+          "link": "indexer-consumer-events",
+          "label": "Disconnect Completion consumer from Completion events"
+        },
+        "group": "completions-indexer",
+        "detail": "Delivers completed videos"
+      },
+      {
+        "id": "handler-metadata/handler-writer",
+        "source": "completion-handler",
+        "target": "metadata-db",
+        "connection": "handler-metadata",
+        "dashed": false,
+        "directed": true,
+        "label": "Video writer (Completion handler) to Metadata",
+        "band": 2,
+        "sourcePort": "handler-writer:out",
+        "sourceModule": "handler-writer",
+        "disconnect": {
+          "link": "video-writer-db",
+          "label": "Disconnect Video writer from Metadata"
+        },
+        "group": "handler-metadata",
+        "detail": "Records playable videos"
+      },
+      {
+        "id": "indexer-write/indexer-writer",
+        "source": "search-indexer",
+        "target": "search-index",
+        "connection": "indexer-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Index writer (Search indexer) to Videos",
+        "band": 2,
+        "sourcePort": "indexer-writer:out",
+        "sourceModule": "indexer-writer",
+        "disconnect": {
+          "link": "index-writer-search",
+          "label": "Disconnect Index writer from Videos"
+        },
+        "group": "indexer-write",
+        "detail": "Indexes playable videos"
+      }
+    ]
+  },
+  "artwork": {
+    "watch-views-publish/watch-views": {
+      "d": "M 736 256 L 760 256 L 775 256 Q 784 256 784 265 L 784 407 Q 784 416 793 416 L 824 416 L 846 416 L 855 416",
+      "light": "#ad432b"
+    },
+    "views-counter/counter-consumer": {
+      "d": "M 992 416 L 1024 416 L 1024 416 L 1038 416 L 1047 416",
+      "light": "#9b9306"
+    },
+    "upload-publish/upload-jobs": {
+      "d": "M 736 1280 L 760 1280 L 775 1280 Q 784 1280 784 1289 L 784 1335 Q 784 1344 793 1344 L 824 1344 L 846 1344 L 855 1344",
+      "light": "#af5e03"
+    },
+    "jobs-transcoder/transcoder-consumer": {
+      "d": "M 992 1344 L 1024 1344 L 1024 1344 L 1038 1344 L 1047 1344",
+      "light": "#18a596"
+    },
+    "transcoder-publish/transcoder-done": {
+      "d": "M 1312 1472 L 1348 1472 L 1394 1472 L 1422 1472 L 1431 1472",
+      "light": "#ab3e59"
+    },
+    "completions-handler/handler-consumer": {
+      "d": "M 1568 1472 C 1581.2 1472 1578.8 1467 1592 1467 L 1607 1467 Q 1616 1467 1616 1458 L 1616 1385 Q 1616 1376 1625 1376 L 1656 1376 L 1678 1376 L 1687 1376",
+      "light": "#8ebb43"
+    },
+    "completions-indexer/indexer-consumer": {
+      "d": "M 1568 1472 C 1581.2 1472 1578.8 1477 1592 1477 L 1607 1477 Q 1616 1477 1616 1486 L 1616 1559 Q 1616 1568 1625 1568 L 1656 1568 L 1678 1568 L 1687 1568",
+      "light": "#4a891c"
+    },
+    "@actor-download": {
+      "d": "M 160 832 C 173.2 832 170.8 827 184 827 L 199 827 Q 208 827 208 818 L 208 553 Q 208 544 217 544 L 232 544 L 238 544 L 247 544",
+      "light": "#99acbd"
+    },
+    "@actor-upload": {
+      "d": "M 160 832 C 173.2 832 170.8 837 184 837 L 199 837 Q 208 837 208 846 L 208 1111 Q 208 1120 217 1120 L 232 1120 L 238 1120 L 247 1120",
+      "light": "#677888"
+    },
+    "download-watch": {
+      "d": "M 384 544 C 397.2 544 394.8 534 408 534 L 423 534 Q 432 534 432 525 L 432 137 Q 432 128 441 128 L 456 128 L 462 128 L 471 128",
+      "light": "#a2b5c5"
+    },
+    "download-search": {
+      "d": "M 384 544 L 420 544 L 434 544 L 462 544 L 471 544",
+      "light": "#5f707e"
+    },
+    "download-video-cdn": {
+      "d": "M 384 544 C 397.2 544 394.8 554 408 554 L 423 554 Q 432 554 432 563 L 432 727 Q 432 736 441 736 L 498 736 L 526 736 L 535 736",
+      "light": "#7e92a3"
+    },
+    "upload-identity": {
+      "d": "M 384 1120 C 397.2 1120 394.8 1115 408 1115 L 423 1115 Q 432 1115 432 1106 L 432 1065 Q 432 1056 441 1056 L 456 1056 L 462 1056 L 471 1056",
+      "light": "#99acbd"
+    },
+    "upload-service": {
+      "d": "M 384 1120 C 397.2 1120 394.8 1125 408 1125 L 423 1125 Q 432 1125 432 1134 L 432 1175 Q 432 1184 441 1184 L 456 1184 L 462 1184 L 471 1184",
+      "light": "#677888"
+    },
+    "watch-cache/watch-cache-reader": {
+      "d": "M 736 160 L 760 160 L 775 160 Q 784 160 784 151 L 784 105 Q 784 96 793 96 L 824 96 L 846 96 L 855 96",
+      "light": "#fd9592"
+    },
+    "watch-metadata/watch-details": {
+      "d": "M 736 192 L 760 192 L 776 192 Q 784 192 784 184 L 784 184 Q 784 176 792 176 L 1383 176 Q 1392 176 1392 185 L 1392 876 Q 1392 885 1401 885 L 1416 885 C 1419 885 1419 887.8 1422 887.8 L 1431 887.8",
+      "light": "#d15545"
+    },
+    "watch-counts-read/watch-counts": {
+      "d": "M 736 224 L 760 224 L 775 224 Q 784 224 784 233 L 784 236 Q 784 245 793 245 L 824 245 C 835 245 835 247.8 846 247.8 L 855 247.8",
+      "light": "#f16d65"
+    },
+    "search-read/search-query": {
+      "d": "M 736 576 L 772 576 L 1607 576 Q 1616 576 1616 585 L 1616 876 Q 1616 885 1625 885 L 1656 885 C 1667 885 1667 887.8 1678 887.8 L 1687 887.8",
+      "light": "#18a96a"
+    },
+    "cdn-transcoded": {
+      "d": "M 672 736 L 708 736 L 775 736 Q 784 736 784 745 L 784 865 Q 784 874 793 874 L 824 874 C 835 874 835 879.5 846 879.5 L 855 879.5",
+      "light": "#cc61b5"
+    },
+    "counter-write/counter-writer": {
+      "d": "M 1312 480 L 1336 480 L 1351 480 Q 1360 480 1360 471 L 1360 345 Q 1360 336 1351 336 L 825 336 Q 816 336 816 327 L 816 276 Q 816 267 825 267 L 840 267 C 843 267 843 264.3 846 264.3 L 855 264.3",
+      "light": "#867cf0"
+    },
+    "upload-originals/upload-multipart": {
+      "d": "M 736 1248 L 760 1248 L 775 1248 Q 784 1248 784 1239 L 784 1182 Q 784 1173 793 1173 L 824 1173 C 835 1173 835 1175.8 846 1175.8 L 855 1175.8",
+      "light": "#f58845"
+    },
+    "transcoder-read/transcoder-encoder": {
+      "d": "M 1312 1376 L 1336 1376 L 1351 1376 Q 1360 1376 1360 1367 L 1360 1273 Q 1360 1264 1351 1264 L 825 1264 Q 816 1264 816 1255 L 816 1204 Q 816 1195 825 1195 L 840 1195 C 843 1195 843 1192.3 846 1192.3 L 855 1192.3",
+      "light": "#fd8eb9"
+    },
+    "transcoder-write/transcoder-packager": {
+      "d": "M 1312 1408 L 1341.5 1408 L 1362 1408 Q 1371 1408 1371 1399 L 1371 988 Q 1371 979 1362 979 L 825 979 Q 816 979 816 970 L 816 905 Q 816 896 825 896 L 840 896 L 846 896 L 855 896",
+      "light": "#cd5177"
+    },
+    "transcoder-write/transcoder-thumbnails": {
+      "d": "M 1312 1440 L 1347 1440 L 1373 1440 Q 1382 1440 1382 1431 L 1382 999 Q 1382 990 1373 990 L 814 990 Q 805 990 805 981 L 805 927 Q 805 918 814 918 L 834.5 918 C 840.3 918 840.3 912.5 846 912.5 L 855 912.5",
+      "light": "#ea6b98"
+    },
+    "handler-metadata/handler-writer": {
+      "d": "M 1952 1408 L 1976 1408 L 1991 1408 Q 2000 1408 2000 1399 L 2000 988 Q 2000 979 1991 979 L 1401 979 Q 1392 979 1392 970 L 1392 916 Q 1392 907 1401 907 L 1416 907 C 1419 907 1419 904.3 1422 904.3 L 1431 904.3",
+      "light": "#af6dda"
+    },
+    "indexer-write/indexer-writer": {
+      "d": "M 1952 1600 L 1981.5 1600 L 2002 1600 Q 2011 1600 2011 1591 L 2011 825 Q 2011 816 2002 816 L 1657 816 Q 1648 816 1648 825 L 1648 898 Q 1648 907 1657 907 L 1672 907 C 1675 907 1675 904.3 1678 904.3 L 1687 904.3",
+      "light": "#b9840e"
+    }
+  }
+}

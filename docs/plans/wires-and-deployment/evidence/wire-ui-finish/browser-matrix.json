@@ -1,0 +1,1769 @@
+{
+  "results": [
+    {
+      "study": "tinyurl",
+      "view": "Simple",
+      "theme": "light",
+      "edges": 12,
+      "wires": 12,
+      "heads": 12,
+      "fans": 9,
+      "corners": 10,
+      "moduleDots": 0,
+      "tileDots": 8,
+      "beads": 2,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "redirect-clicks",
+          "label": "Redirect service to Click events",
+          "colour": "rgb(92, 205, 129)",
+          "light": "#5ccd81"
+        },
+        {
+          "id": "click-events-analytics",
+          "label": "Click events to Analytics worker",
+          "colour": "rgb(204, 97, 181)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Open link",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Shorten",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-stats-api",
+          "label": "Open link to Stats API",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "download-redirect",
+          "label": "Open link to Redirect service",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "upload-shorten",
+          "label": "Shorten to Shorten service",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "stats-read",
+          "label": "Stats API to Analytics store",
+          "colour": "rgb(227, 94, 82)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "redirect-cache",
+          "label": "Redirect service to URL cache",
+          "colour": "rgb(9, 130, 89)",
+          "light": "#098259"
+        },
+        {
+          "id": "redirect-db",
+          "label": "Redirect service to URL database",
+          "colour": "rgb(24, 169, 106)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "analytics-write",
+          "label": "Analytics worker to Analytics store",
+          "colour": "rgb(155, 147, 6)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "shorten-db",
+          "label": "Shorten service to URL database",
+          "colour": "rgb(134, 124, 240)",
+          "light": "#867cf0"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "a0e4b57fc7e93bcaf5a86ca688ec741e844ac7f010a413b735aff54fa055d01a",
+      "lightExportAcrossThemes": "light reference"
+    },
+    {
+      "study": "tinyurl",
+      "view": "Simple",
+      "theme": "dark",
+      "edges": 12,
+      "wires": 12,
+      "heads": 12,
+      "fans": 9,
+      "corners": 10,
+      "moduleDots": 0,
+      "tileDots": 8,
+      "beads": 2,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "redirect-clicks",
+          "label": "Redirect service to Click events",
+          "colour": "rgb(134, 231, 162)",
+          "light": "#5ccd81"
+        },
+        {
+          "id": "click-events-analytics",
+          "label": "Click events to Analytics worker",
+          "colour": "rgb(233, 134, 210)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Open link",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Shorten",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-stats-api",
+          "label": "Open link to Stats API",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "download-redirect",
+          "label": "Open link to Redirect service",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "upload-shorten",
+          "label": "Shorten to Shorten service",
+          "colour": "rgb(158, 177, 193)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "stats-read",
+          "label": "Stats API to Analytics store",
+          "colour": "rgb(253, 134, 121)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "redirect-cache",
+          "label": "Redirect service to URL cache",
+          "colour": "rgb(22, 168, 118)",
+          "light": "#098259"
+        },
+        {
+          "id": "redirect-db",
+          "label": "Redirect service to URL database",
+          "colour": "rgb(67, 202, 134)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "analytics-write",
+          "label": "Analytics worker to Analytics store",
+          "colour": "rgb(188, 179, 30)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "shorten-db",
+          "label": "Shorten service to URL database",
+          "colour": "rgb(165, 162, 253)",
+          "light": "#867cf0"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "a0e4b57fc7e93bcaf5a86ca688ec741e844ac7f010a413b735aff54fa055d01a",
+      "lightExportAcrossThemes": true
+    },
+    {
+      "study": "tinyurl",
+      "view": "Detailed",
+      "theme": "light",
+      "edges": 12,
+      "wires": 12,
+      "heads": 12,
+      "fans": 8,
+      "corners": 10,
+      "moduleDots": 7,
+      "tileDots": 4,
+      "beads": 2,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "redirect-clicks/redirect-click-publisher",
+          "label": "Click publisher (Redirect service) to Click events",
+          "colour": "rgb(24, 169, 106)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "click-events-analytics/analytics-click-consumer",
+          "label": "Click events to Click consumer (Analytics worker)",
+          "colour": "rgb(204, 97, 181)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Open link",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Shorten",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-stats-api",
+          "label": "Open link to Stats API",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "download-redirect",
+          "label": "Open link to Redirect service",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "upload-shorten",
+          "label": "Shorten to Shorten service",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "stats-read/stats-data",
+          "label": "Stats reader (Stats API) to Analytics store",
+          "colour": "rgb(227, 94, 82)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "redirect-cache/redirect-cache-reader",
+          "label": "Cache reader (Redirect service) to URL cache",
+          "colour": "rgb(92, 205, 129)",
+          "light": "#5ccd81"
+        },
+        {
+          "id": "redirect-db/redirect-data",
+          "label": "Link reader (Redirect service) to URL database",
+          "colour": "rgb(9, 130, 89)",
+          "light": "#098259"
+        },
+        {
+          "id": "analytics-write/analytics-data",
+          "label": "Aggregate writer (Analytics worker) to Analytics store",
+          "colour": "rgb(155, 147, 6)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "shorten-db/shorten-data",
+          "label": "Link writer (Shorten service) to URL database",
+          "colour": "rgb(134, 124, 240)",
+          "light": "#867cf0"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "b59f77a83cb67f8417011ad48480694704f1e06fef8fd7500b373d02a0f41272",
+      "lightExportAcrossThemes": "light reference"
+    },
+    {
+      "study": "tinyurl",
+      "view": "Detailed",
+      "theme": "dark",
+      "edges": 12,
+      "wires": 12,
+      "heads": 12,
+      "fans": 8,
+      "corners": 10,
+      "moduleDots": 7,
+      "tileDots": 4,
+      "beads": 2,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "redirect-clicks/redirect-click-publisher",
+          "label": "Click publisher (Redirect service) to Click events",
+          "colour": "rgb(67, 202, 134)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "click-events-analytics/analytics-click-consumer",
+          "label": "Click events to Click consumer (Analytics worker)",
+          "colour": "rgb(233, 134, 210)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Open link",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Shorten",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-stats-api",
+          "label": "Open link to Stats API",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "download-redirect",
+          "label": "Open link to Redirect service",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "upload-shorten",
+          "label": "Shorten to Shorten service",
+          "colour": "rgb(158, 177, 193)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "stats-read/stats-data",
+          "label": "Stats reader (Stats API) to Analytics store",
+          "colour": "rgb(253, 134, 121)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "redirect-cache/redirect-cache-reader",
+          "label": "Cache reader (Redirect service) to URL cache",
+          "colour": "rgb(134, 231, 162)",
+          "light": "#5ccd81"
+        },
+        {
+          "id": "redirect-db/redirect-data",
+          "label": "Link reader (Redirect service) to URL database",
+          "colour": "rgb(22, 168, 118)",
+          "light": "#098259"
+        },
+        {
+          "id": "analytics-write/analytics-data",
+          "label": "Aggregate writer (Analytics worker) to Analytics store",
+          "colour": "rgb(188, 179, 30)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "shorten-db/shorten-data",
+          "label": "Link writer (Shorten service) to URL database",
+          "colour": "rgb(165, 162, 253)",
+          "light": "#867cf0"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "b59f77a83cb67f8417011ad48480694704f1e06fef8fd7500b373d02a0f41272",
+      "lightExportAcrossThemes": true
+    },
+    {
+      "study": "marketplace",
+      "view": "Simple",
+      "theme": "light",
+      "edges": 24,
+      "wires": 24,
+      "heads": 24,
+      "fans": 19,
+      "corners": 20,
+      "moduleDots": 0,
+      "tileDots": 13,
+      "beads": 4,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "shop-listings",
+          "label": "Shop service to Listing events",
+          "colour": "rgb(113, 115, 10)",
+          "light": "#71730a"
+        },
+        {
+          "id": "payments-paid",
+          "label": "Payments to Order events",
+          "colour": "rgb(126, 111, 220)",
+          "light": "#7e6fdc"
+        },
+        {
+          "id": "listings-indexer",
+          "label": "Listing events to Search indexer",
+          "colour": "rgb(24, 165, 150)",
+          "light": "#18a596"
+        },
+        {
+          "id": "paid-recorder",
+          "label": "Order events to Order recorder",
+          "colour": "rgb(222, 91, 135)",
+          "light": "#de5b87"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Browse",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Buy & sell",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-storefront",
+          "label": "Browse to Storefront API",
+          "colour": "rgb(162, 181, 197)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-orders",
+          "label": "Browse to Orders service",
+          "colour": "rgb(95, 112, 126)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-image-cdn",
+          "label": "Browse to Image CDN",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-shop",
+          "label": "Buy & sell to Shop service",
+          "colour": "rgb(167, 185, 201)",
+          "light": "#a7b9c9"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Buy & sell to Identity",
+          "colour": "rgb(114, 133, 149)",
+          "light": "#728595"
+        },
+        {
+          "id": "upload-payments",
+          "label": "Buy & sell to Payments",
+          "colour": "rgb(139, 159, 176)",
+          "light": "#8b9fb0"
+        },
+        {
+          "id": "upload-cart",
+          "label": "Buy & sell to Cart service",
+          "colour": "rgb(92, 108, 122)",
+          "light": "#5c6c7a"
+        },
+        {
+          "id": "storefront-search",
+          "label": "Storefront API to Search index",
+          "colour": "rgb(227, 94, 82)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "orders-read",
+          "label": "Orders service to Orders database",
+          "colour": "rgb(24, 169, 106)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-images",
+          "label": "Image CDN to Product images",
+          "colour": "rgb(204, 97, 181)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "shop-catalog",
+          "label": "Shop service to Catalog database",
+          "colour": "rgb(155, 147, 6)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "shop-images",
+          "label": "Shop service to Product images",
+          "colour": "rgb(201, 179, 35)",
+          "light": "#c9b323"
+        },
+        {
+          "id": "payments-prices",
+          "label": "Payments to Catalog database",
+          "colour": "rgb(167, 175, 253)",
+          "light": "#a7affd"
+        },
+        {
+          "id": "payments-write",
+          "label": "Payments to Payments database",
+          "colour": "rgb(143, 140, 253)",
+          "light": "#8f8cfd"
+        },
+        {
+          "id": "payments-stripe",
+          "label": "Payments to Stripe API",
+          "colour": "rgb(107, 87, 181)",
+          "light": "#6b57b5"
+        },
+        {
+          "id": "cart-write",
+          "label": "Cart service to Cart store",
+          "colour": "rgb(216, 110, 7)",
+          "light": "#d86e07"
+        },
+        {
+          "id": "indexer-write",
+          "label": "Search indexer to Search index",
+          "colour": "rgb(104, 163, 29)",
+          "light": "#68a31d"
+        },
+        {
+          "id": "recorder-write",
+          "label": "Order recorder to Orders database",
+          "colour": "rgb(175, 109, 218)",
+          "light": "#af6dda"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "6e778262d33890bf9a8b8bcf04ab1a70134a1e72b22f792b552783e957b65a1b",
+      "lightExportAcrossThemes": "light reference"
+    },
+    {
+      "study": "marketplace",
+      "view": "Simple",
+      "theme": "dark",
+      "edges": 24,
+      "wires": 24,
+      "heads": 24,
+      "fans": 19,
+      "corners": 20,
+      "moduleDots": 0,
+      "tileDots": 13,
+      "beads": 4,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "shop-listings",
+          "label": "Shop service to Listing events",
+          "colour": "rgb(148, 150, 0)",
+          "light": "#71730a"
+        },
+        {
+          "id": "payments-paid",
+          "label": "Payments to Order events",
+          "colour": "rgb(156, 145, 253)",
+          "light": "#7e6fdc"
+        },
+        {
+          "id": "listings-indexer",
+          "label": "Listing events to Search indexer",
+          "colour": "rgb(27, 200, 182)",
+          "light": "#18a596"
+        },
+        {
+          "id": "paid-recorder",
+          "label": "Order events to Order recorder",
+          "colour": "rgb(251, 129, 166)",
+          "light": "#de5b87"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Browse",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Buy & sell",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-storefront",
+          "label": "Browse to Storefront API",
+          "colour": "rgb(191, 208, 223)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-orders",
+          "label": "Browse to Orders service",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-image-cdn",
+          "label": "Browse to Image CDN",
+          "colour": "rgb(158, 177, 193)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-shop",
+          "label": "Buy & sell to Shop service",
+          "colour": "rgb(196, 212, 227)",
+          "light": "#a7b9c9"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Buy & sell to Identity",
+          "colour": "rgb(146, 165, 182)",
+          "light": "#728595"
+        },
+        {
+          "id": "upload-payments",
+          "label": "Buy & sell to Payments",
+          "colour": "rgb(170, 188, 204)",
+          "light": "#8b9fb0"
+        },
+        {
+          "id": "upload-cart",
+          "label": "Buy & sell to Cart service",
+          "colour": "rgb(123, 142, 159)",
+          "light": "#5c6c7a"
+        },
+        {
+          "id": "storefront-search",
+          "label": "Storefront API to Search index",
+          "colour": "rgb(253, 134, 121)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "orders-read",
+          "label": "Orders service to Orders database",
+          "colour": "rgb(67, 202, 134)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-images",
+          "label": "Image CDN to Product images",
+          "colour": "rgb(233, 134, 210)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "shop-catalog",
+          "label": "Shop service to Catalog database",
+          "colour": "rgb(188, 179, 30)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "shop-images",
+          "label": "Shop service to Product images",
+          "colour": "rgb(226, 208, 95)",
+          "light": "#c9b323"
+        },
+        {
+          "id": "payments-prices",
+          "label": "Payments to Catalog database",
+          "colour": "rgb(199, 206, 255)",
+          "light": "#a7affd"
+        },
+        {
+          "id": "payments-write",
+          "label": "Payments to Payments database",
+          "colour": "rgb(175, 177, 254)",
+          "light": "#8f8cfd"
+        },
+        {
+          "id": "payments-stripe",
+          "label": "Payments to Stripe API",
+          "colour": "rgb(141, 117, 231)",
+          "light": "#6b57b5"
+        },
+        {
+          "id": "cart-write",
+          "label": "Cart service to Cart store",
+          "colour": "rgb(247, 144, 69)",
+          "light": "#d86e07"
+        },
+        {
+          "id": "indexer-write",
+          "label": "Search indexer to Search index",
+          "colour": "rgb(138, 193, 83)",
+          "light": "#68a31d"
+        },
+        {
+          "id": "recorder-write",
+          "label": "Order recorder to Orders database",
+          "colour": "rgb(204, 144, 245)",
+          "light": "#af6dda"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "6e778262d33890bf9a8b8bcf04ab1a70134a1e72b22f792b552783e957b65a1b",
+      "lightExportAcrossThemes": true
+    },
+    {
+      "study": "marketplace",
+      "view": "Detailed",
+      "theme": "light",
+      "edges": 26,
+      "wires": 26,
+      "heads": 26,
+      "fans": 21,
+      "corners": 21,
+      "moduleDots": 13,
+      "tileDots": 6,
+      "beads": 4,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "shop-listings/shop-publisher",
+          "label": "Listing publisher (Shop service) to Listing events",
+          "colour": "rgb(108, 111, 8)",
+          "light": "#6c6f08"
+        },
+        {
+          "id": "payments-paid/payments-publisher",
+          "label": "Order publisher (Payments) to Order events",
+          "colour": "rgb(134, 124, 240)",
+          "light": "#867cf0"
+        },
+        {
+          "id": "listings-indexer/indexer-consumer",
+          "label": "Listing events to Listing consumer (Search indexer)",
+          "colour": "rgb(24, 165, 150)",
+          "light": "#18a596"
+        },
+        {
+          "id": "paid-recorder/recorder-consumer",
+          "label": "Order events to Paid-order consumer (Order recorder)",
+          "colour": "rgb(222, 91, 135)",
+          "light": "#de5b87"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Browse",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Buy & sell",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-storefront",
+          "label": "Browse to Storefront API",
+          "colour": "rgb(162, 181, 197)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-orders",
+          "label": "Browse to Orders service",
+          "colour": "rgb(95, 112, 126)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-image-cdn",
+          "label": "Browse to Image CDN",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-shop",
+          "label": "Buy & sell to Shop service",
+          "colour": "rgb(167, 185, 201)",
+          "light": "#a7b9c9"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Buy & sell to Identity",
+          "colour": "rgb(114, 133, 149)",
+          "light": "#728595"
+        },
+        {
+          "id": "upload-payments",
+          "label": "Buy & sell to Payments",
+          "colour": "rgb(139, 159, 176)",
+          "light": "#8b9fb0"
+        },
+        {
+          "id": "upload-cart",
+          "label": "Buy & sell to Cart service",
+          "colour": "rgb(92, 108, 122)",
+          "light": "#5c6c7a"
+        },
+        {
+          "id": "storefront-search/storefront-query",
+          "label": "Listing search (Storefront API) to Search index",
+          "colour": "rgb(227, 94, 82)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "orders-read/orders-reader",
+          "label": "Order reader (Orders service) to Orders database",
+          "colour": "rgb(24, 169, 106)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-images",
+          "label": "Image CDN to Product images",
+          "colour": "rgb(204, 97, 181)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "shop-catalog/shop-writer",
+          "label": "Listing writer (Shop service) to Catalog database",
+          "colour": "rgb(206, 184, 48)",
+          "light": "#ceb830"
+        },
+        {
+          "id": "shop-catalog/shop-publisher",
+          "label": "Listing publisher (Shop service) to Catalog database",
+          "colour": "rgb(172, 159, 5)",
+          "light": "#ac9f05"
+        },
+        {
+          "id": "shop-images/shop-photos",
+          "label": "Photo uploader (Shop service) to Product images",
+          "colour": "rgb(139, 135, 1)",
+          "light": "#8b8701"
+        },
+        {
+          "id": "payments-prices/payments-pricing",
+          "label": "Cart pricer (Payments) to Catalog database",
+          "colour": "rgb(120, 104, 208)",
+          "light": "#7868d0"
+        },
+        {
+          "id": "payments-write/payments-records",
+          "label": "Payment records (Payments) to Payments database",
+          "colour": "rgb(150, 151, 253)",
+          "light": "#9697fd"
+        },
+        {
+          "id": "payments-write/payments-publisher",
+          "label": "Order publisher (Payments) to Payments database",
+          "colour": "rgb(105, 84, 177)",
+          "light": "#6954b1"
+        },
+        {
+          "id": "payments-stripe",
+          "label": "Payments to Stripe API",
+          "colour": "rgb(170, 179, 252)",
+          "light": "#aab3fc"
+        },
+        {
+          "id": "cart-write/cart-repository",
+          "label": "Cart store client (Cart service) to Cart store",
+          "colour": "rgb(216, 110, 7)",
+          "light": "#d86e07"
+        },
+        {
+          "id": "indexer-write/indexer-writer",
+          "label": "Index writer (Search indexer) to Search index",
+          "colour": "rgb(104, 163, 29)",
+          "light": "#68a31d"
+        },
+        {
+          "id": "recorder-write/recorder-writer",
+          "label": "Order writer (Order recorder) to Orders database",
+          "colour": "rgb(175, 109, 218)",
+          "light": "#af6dda"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "7c179ba5edaa302e896478c1a5bd09f8b5488ef6560e1fa82f729879971767d1",
+      "lightExportAcrossThemes": "light reference"
+    },
+    {
+      "study": "marketplace",
+      "view": "Detailed",
+      "theme": "dark",
+      "edges": 26,
+      "wires": 26,
+      "heads": 26,
+      "fans": 21,
+      "corners": 21,
+      "moduleDots": 13,
+      "tileDots": 6,
+      "beads": 4,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "shop-listings/shop-publisher",
+          "label": "Listing publisher (Shop service) to Listing events",
+          "colour": "rgb(143, 147, 0)",
+          "light": "#6c6f08"
+        },
+        {
+          "id": "payments-paid/payments-publisher",
+          "label": "Order publisher (Payments) to Order events",
+          "colour": "rgb(165, 162, 253)",
+          "light": "#867cf0"
+        },
+        {
+          "id": "listings-indexer/indexer-consumer",
+          "label": "Listing events to Listing consumer (Search indexer)",
+          "colour": "rgb(27, 200, 182)",
+          "light": "#18a596"
+        },
+        {
+          "id": "paid-recorder/recorder-consumer",
+          "label": "Order events to Paid-order consumer (Order recorder)",
+          "colour": "rgb(251, 129, 166)",
+          "light": "#de5b87"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Browse",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Buy & sell",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-storefront",
+          "label": "Browse to Storefront API",
+          "colour": "rgb(191, 208, 223)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-orders",
+          "label": "Browse to Orders service",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-image-cdn",
+          "label": "Browse to Image CDN",
+          "colour": "rgb(158, 177, 193)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-shop",
+          "label": "Buy & sell to Shop service",
+          "colour": "rgb(196, 212, 227)",
+          "light": "#a7b9c9"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Buy & sell to Identity",
+          "colour": "rgb(146, 165, 182)",
+          "light": "#728595"
+        },
+        {
+          "id": "upload-payments",
+          "label": "Buy & sell to Payments",
+          "colour": "rgb(170, 188, 204)",
+          "light": "#8b9fb0"
+        },
+        {
+          "id": "upload-cart",
+          "label": "Buy & sell to Cart service",
+          "colour": "rgb(123, 142, 159)",
+          "light": "#5c6c7a"
+        },
+        {
+          "id": "storefront-search/storefront-query",
+          "label": "Listing search (Storefront API) to Search index",
+          "colour": "rgb(253, 134, 121)",
+          "light": "#e35e52"
+        },
+        {
+          "id": "orders-read/orders-reader",
+          "label": "Order reader (Orders service) to Orders database",
+          "colour": "rgb(67, 202, 134)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-images",
+          "label": "Image CDN to Product images",
+          "colour": "rgb(233, 134, 210)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "shop-catalog/shop-writer",
+          "label": "Listing writer (Shop service) to Catalog database",
+          "colour": "rgb(231, 211, 102)",
+          "light": "#ceb830"
+        },
+        {
+          "id": "shop-catalog/shop-publisher",
+          "label": "Listing publisher (Shop service) to Catalog database",
+          "colour": "rgb(202, 189, 59)",
+          "light": "#ac9f05"
+        },
+        {
+          "id": "shop-images/shop-photos",
+          "label": "Photo uploader (Shop service) to Product images",
+          "colour": "rgb(173, 168, 25)",
+          "light": "#8b8701"
+        },
+        {
+          "id": "payments-prices/payments-pricing",
+          "label": "Cart pricer (Payments) to Catalog database",
+          "colour": "rgb(152, 135, 250)",
+          "light": "#7868d0"
+        },
+        {
+          "id": "payments-write/payments-records",
+          "label": "Payment records (Payments) to Payments database",
+          "colour": "rgb(182, 186, 253)",
+          "light": "#9697fd"
+        },
+        {
+          "id": "payments-write/payments-publisher",
+          "label": "Order publisher (Payments) to Payments database",
+          "colour": "rgb(140, 115, 227)",
+          "light": "#6954b1"
+        },
+        {
+          "id": "payments-stripe",
+          "label": "Payments to Stripe API",
+          "colour": "rgb(202, 209, 254)",
+          "light": "#aab3fc"
+        },
+        {
+          "id": "cart-write/cart-repository",
+          "label": "Cart store client (Cart service) to Cart store",
+          "colour": "rgb(247, 144, 69)",
+          "light": "#d86e07"
+        },
+        {
+          "id": "indexer-write/indexer-writer",
+          "label": "Index writer (Search indexer) to Search index",
+          "colour": "rgb(138, 193, 83)",
+          "light": "#68a31d"
+        },
+        {
+          "id": "recorder-write/recorder-writer",
+          "label": "Order writer (Order recorder) to Orders database",
+          "colour": "rgb(204, 144, 245)",
+          "light": "#af6dda"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "7c179ba5edaa302e896478c1a5bd09f8b5488ef6560e1fa82f729879971767d1",
+      "lightExportAcrossThemes": true
+    },
+    {
+      "study": "youtube",
+      "view": "Simple",
+      "theme": "light",
+      "edges": 25,
+      "wires": 25,
+      "heads": 25,
+      "fans": 21,
+      "corners": 21,
+      "moduleDots": 0,
+      "tileDots": 14,
+      "beads": 7,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "watch-views-publish",
+          "label": "Watch API to View events",
+          "colour": "rgb(241, 109, 101)",
+          "light": "#f16d65"
+        },
+        {
+          "id": "views-counter",
+          "label": "View events to View counter",
+          "colour": "rgb(155, 147, 6)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "upload-publish",
+          "label": "Upload service to Upload jobs",
+          "colour": "rgb(245, 136, 69)",
+          "light": "#f58845"
+        },
+        {
+          "id": "jobs-transcoder",
+          "label": "Upload jobs to Transcoder",
+          "colour": "rgb(24, 165, 150)",
+          "light": "#18a596"
+        },
+        {
+          "id": "transcoder-publish",
+          "label": "Transcoder to Completion events",
+          "colour": "rgb(176, 65, 94)",
+          "light": "#b0415e"
+        },
+        {
+          "id": "completions-handler",
+          "label": "Completion events to Completion handler",
+          "colour": "rgb(142, 187, 67)",
+          "light": "#8ebb43"
+        },
+        {
+          "id": "completions-indexer",
+          "label": "Completion events to Search indexer",
+          "colour": "rgb(74, 137, 28)",
+          "light": "#4a891c"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Watch",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Publish",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-watch",
+          "label": "Watch to Watch API",
+          "colour": "rgb(162, 181, 197)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-search",
+          "label": "Watch to Search API",
+          "colour": "rgb(95, 112, 126)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-video-cdn",
+          "label": "Watch to Video delivery",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Publish to Identity",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "upload-service",
+          "label": "Publish to Upload service",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "watch-cache",
+          "label": "Watch API to Hot metadata",
+          "colour": "rgb(253, 149, 146)",
+          "light": "#fd9592"
+        },
+        {
+          "id": "watch-metadata",
+          "label": "Watch API to Metadata",
+          "colour": "rgb(173, 67, 43)",
+          "light": "#ad432b"
+        },
+        {
+          "id": "watch-counts-read",
+          "label": "Watch API to View counts",
+          "colour": "rgb(209, 85, 69)",
+          "light": "#d15545"
+        },
+        {
+          "id": "search-read",
+          "label": "Search API to Videos",
+          "colour": "rgb(24, 169, 106)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-transcoded",
+          "label": "Video delivery to Transcoded videos",
+          "colour": "rgb(204, 97, 181)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "counter-write",
+          "label": "View counter to View counts",
+          "colour": "rgb(134, 124, 240)",
+          "light": "#867cf0"
+        },
+        {
+          "id": "upload-originals",
+          "label": "Upload service to Original videos",
+          "colour": "rgb(175, 94, 3)",
+          "light": "#af5e03"
+        },
+        {
+          "id": "transcoder-read",
+          "label": "Transcoder to Original videos",
+          "colour": "rgb(222, 91, 135)",
+          "light": "#de5b87"
+        },
+        {
+          "id": "transcoder-write",
+          "label": "Transcoder to Transcoded videos",
+          "colour": "rgb(252, 134, 180)",
+          "light": "#fc86b4"
+        },
+        {
+          "id": "handler-metadata",
+          "label": "Completion handler to Metadata",
+          "colour": "rgb(175, 109, 218)",
+          "light": "#af6dda"
+        },
+        {
+          "id": "indexer-write",
+          "label": "Search indexer to Videos",
+          "colour": "rgb(185, 132, 14)",
+          "light": "#b9840e"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "7183ab8291563aae975f3abee908bb0d6530a023a7d518eca7ab3c05442bf980",
+      "lightExportAcrossThemes": "light reference"
+    },
+    {
+      "study": "youtube",
+      "view": "Simple",
+      "theme": "dark",
+      "edges": 25,
+      "wires": 25,
+      "heads": 25,
+      "fans": 21,
+      "corners": 21,
+      "moduleDots": 0,
+      "tileDots": 14,
+      "beads": 7,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "watch-views-publish",
+          "label": "Watch API to View events",
+          "colour": "rgb(253, 155, 146)",
+          "light": "#f16d65"
+        },
+        {
+          "id": "views-counter",
+          "label": "View events to View counter",
+          "colour": "rgb(188, 179, 30)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "upload-publish",
+          "label": "Upload service to Upload jobs",
+          "colour": "rgb(253, 178, 136)",
+          "light": "#f58845"
+        },
+        {
+          "id": "jobs-transcoder",
+          "label": "Upload jobs to Transcoder",
+          "colour": "rgb(27, 200, 182)",
+          "light": "#18a596"
+        },
+        {
+          "id": "transcoder-publish",
+          "label": "Transcoder to Completion events",
+          "colour": "rgb(224, 91, 124)",
+          "light": "#b0415e"
+        },
+        {
+          "id": "completions-handler",
+          "label": "Completion events to Completion handler",
+          "colour": "rgb(173, 214, 112)",
+          "light": "#8ebb43"
+        },
+        {
+          "id": "completions-indexer",
+          "label": "Completion events to Search indexer",
+          "colour": "rgb(101, 173, 54)",
+          "light": "#4a891c"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Watch",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Publish",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-watch",
+          "label": "Watch to Watch API",
+          "colour": "rgb(191, 208, 223)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-search",
+          "label": "Watch to Search API",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-video-cdn",
+          "label": "Watch to Video delivery",
+          "colour": "rgb(158, 177, 193)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Publish to Identity",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "upload-service",
+          "label": "Publish to Upload service",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "watch-cache",
+          "label": "Watch API to Hot metadata",
+          "colour": "rgb(254, 192, 189)",
+          "light": "#fd9592"
+        },
+        {
+          "id": "watch-metadata",
+          "label": "Watch API to Metadata",
+          "colour": "rgb(221, 94, 66)",
+          "light": "#ad432b"
+        },
+        {
+          "id": "watch-counts-read",
+          "label": "Watch API to View counts",
+          "colour": "rgb(246, 118, 100)",
+          "light": "#d15545"
+        },
+        {
+          "id": "search-read",
+          "label": "Search API to Videos",
+          "colour": "rgb(67, 202, 134)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-transcoded",
+          "label": "Video delivery to Transcoded videos",
+          "colour": "rgb(233, 134, 210)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "counter-write",
+          "label": "View counter to View counts",
+          "colour": "rgb(165, 162, 253)",
+          "light": "#867cf0"
+        },
+        {
+          "id": "upload-originals",
+          "label": "Upload service to Original videos",
+          "colour": "rgb(222, 121, 6)",
+          "light": "#af5e03"
+        },
+        {
+          "id": "transcoder-read",
+          "label": "Transcoder to Original videos",
+          "colour": "rgb(251, 129, 166)",
+          "light": "#de5b87"
+        },
+        {
+          "id": "transcoder-write",
+          "label": "Transcoder to Transcoded videos",
+          "colour": "rgb(254, 182, 207)",
+          "light": "#fc86b4"
+        },
+        {
+          "id": "handler-metadata",
+          "label": "Completion handler to Metadata",
+          "colour": "rgb(204, 144, 245)",
+          "light": "#af6dda"
+        },
+        {
+          "id": "indexer-write",
+          "label": "Search indexer to Videos",
+          "colour": "rgb(224, 161, 15)",
+          "light": "#b9840e"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "7183ab8291563aae975f3abee908bb0d6530a023a7d518eca7ab3c05442bf980",
+      "lightExportAcrossThemes": true
+    },
+    {
+      "study": "youtube",
+      "view": "Detailed",
+      "theme": "light",
+      "edges": 26,
+      "wires": 26,
+      "heads": 26,
+      "fans": 18,
+      "corners": 22,
+      "moduleDots": 18,
+      "tileDots": 7,
+      "beads": 7,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "watch-views-publish/watch-views",
+          "label": "View publisher (Watch API) to View events",
+          "colour": "rgb(173, 67, 43)",
+          "light": "#ad432b"
+        },
+        {
+          "id": "views-counter/counter-consumer",
+          "label": "View events to View consumer (View counter)",
+          "colour": "rgb(155, 147, 6)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "upload-publish/upload-jobs",
+          "label": "Job publisher (Upload service) to Upload jobs",
+          "colour": "rgb(175, 94, 3)",
+          "light": "#af5e03"
+        },
+        {
+          "id": "jobs-transcoder/transcoder-consumer",
+          "label": "Upload jobs to Job consumer (Transcoder)",
+          "colour": "rgb(24, 165, 150)",
+          "light": "#18a596"
+        },
+        {
+          "id": "transcoder-publish/transcoder-done",
+          "label": "Completion publisher (Transcoder) to Completion events",
+          "colour": "rgb(171, 62, 89)",
+          "light": "#ab3e59"
+        },
+        {
+          "id": "completions-handler/handler-consumer",
+          "label": "Completion events to Completion consumer (Completion handler)",
+          "colour": "rgb(142, 187, 67)",
+          "light": "#8ebb43"
+        },
+        {
+          "id": "completions-indexer/indexer-consumer",
+          "label": "Completion events to Completion consumer (Search indexer)",
+          "colour": "rgb(74, 137, 28)",
+          "light": "#4a891c"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Watch",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Publish",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-watch",
+          "label": "Watch to Watch API",
+          "colour": "rgb(162, 181, 197)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-search",
+          "label": "Watch to Search API",
+          "colour": "rgb(95, 112, 126)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-video-cdn",
+          "label": "Watch to Video delivery",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Publish to Identity",
+          "colour": "rgb(153, 172, 189)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "upload-service",
+          "label": "Publish to Upload service",
+          "colour": "rgb(103, 120, 136)",
+          "light": "#677888"
+        },
+        {
+          "id": "watch-cache/watch-cache-reader",
+          "label": "Details cache (Watch API) to Hot metadata",
+          "colour": "rgb(253, 149, 146)",
+          "light": "#fd9592"
+        },
+        {
+          "id": "watch-metadata/watch-details",
+          "label": "Details reader (Watch API) to Metadata",
+          "colour": "rgb(209, 85, 69)",
+          "light": "#d15545"
+        },
+        {
+          "id": "watch-counts-read/watch-counts",
+          "label": "View count reader (Watch API) to View counts",
+          "colour": "rgb(241, 109, 101)",
+          "light": "#f16d65"
+        },
+        {
+          "id": "search-read/search-query",
+          "label": "Video search (Search API) to Videos",
+          "colour": "rgb(24, 169, 106)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-transcoded",
+          "label": "Video delivery to Transcoded videos",
+          "colour": "rgb(204, 97, 181)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "counter-write/counter-writer",
+          "label": "Count writer (View counter) to View counts",
+          "colour": "rgb(134, 124, 240)",
+          "light": "#867cf0"
+        },
+        {
+          "id": "upload-originals/upload-multipart",
+          "label": "Multipart uploads (Upload service) to Original videos",
+          "colour": "rgb(245, 136, 69)",
+          "light": "#f58845"
+        },
+        {
+          "id": "transcoder-read/transcoder-encoder",
+          "label": "Segmenter and encoder (Transcoder) to Original videos",
+          "colour": "rgb(253, 142, 185)",
+          "light": "#fd8eb9"
+        },
+        {
+          "id": "transcoder-write/transcoder-packager",
+          "label": "Packager (Transcoder) to Transcoded videos",
+          "colour": "rgb(205, 81, 119)",
+          "light": "#cd5177"
+        },
+        {
+          "id": "transcoder-write/transcoder-thumbnails",
+          "label": "Thumbnailer (Transcoder) to Transcoded videos",
+          "colour": "rgb(234, 107, 152)",
+          "light": "#ea6b98"
+        },
+        {
+          "id": "handler-metadata/handler-writer",
+          "label": "Video writer (Completion handler) to Metadata",
+          "colour": "rgb(175, 109, 218)",
+          "light": "#af6dda"
+        },
+        {
+          "id": "indexer-write/indexer-writer",
+          "label": "Index writer (Search indexer) to Videos",
+          "colour": "rgb(185, 132, 14)",
+          "light": "#b9840e"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "3b3cc0f3f45e0bb84f1d7455d66aad8c73b8304af099ef6f4817c096579d61dd",
+      "lightExportAcrossThemes": "light reference"
+    },
+    {
+      "study": "youtube",
+      "view": "Detailed",
+      "theme": "dark",
+      "edges": 26,
+      "wires": 26,
+      "heads": 26,
+      "fans": 18,
+      "corners": 22,
+      "moduleDots": 18,
+      "tileDots": 7,
+      "beads": 7,
+      "bridges": 0,
+      "colours": [
+        {
+          "id": "watch-views-publish/watch-views",
+          "label": "View publisher (Watch API) to View events",
+          "colour": "rgb(221, 94, 66)",
+          "light": "#ad432b"
+        },
+        {
+          "id": "views-counter/counter-consumer",
+          "label": "View events to View consumer (View counter)",
+          "colour": "rgb(188, 179, 30)",
+          "light": "#9b9306"
+        },
+        {
+          "id": "upload-publish/upload-jobs",
+          "label": "Job publisher (Upload service) to Upload jobs",
+          "colour": "rgb(222, 121, 6)",
+          "light": "#af5e03"
+        },
+        {
+          "id": "jobs-transcoder/transcoder-consumer",
+          "label": "Upload jobs to Job consumer (Transcoder)",
+          "colour": "rgb(27, 200, 182)",
+          "light": "#18a596"
+        },
+        {
+          "id": "transcoder-publish/transcoder-done",
+          "label": "Completion publisher (Transcoder) to Completion events",
+          "colour": "rgb(219, 88, 120)",
+          "light": "#ab3e59"
+        },
+        {
+          "id": "completions-handler/handler-consumer",
+          "label": "Completion events to Completion consumer (Completion handler)",
+          "colour": "rgb(173, 214, 112)",
+          "light": "#8ebb43"
+        },
+        {
+          "id": "completions-indexer/indexer-consumer",
+          "label": "Completion events to Completion consumer (Search indexer)",
+          "colour": "rgb(101, 173, 54)",
+          "light": "#4a891c"
+        },
+        {
+          "id": "@actor-download",
+          "label": "User to Watch",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "@actor-upload",
+          "label": "User to Publish",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "download-watch",
+          "label": "Watch to Watch API",
+          "colour": "rgb(191, 208, 223)",
+          "light": "#a2b5c5"
+        },
+        {
+          "id": "download-search",
+          "label": "Watch to Search API",
+          "colour": "rgb(126, 146, 163)",
+          "light": "#5f707e"
+        },
+        {
+          "id": "download-video-cdn",
+          "label": "Watch to Video delivery",
+          "colour": "rgb(158, 177, 193)",
+          "light": "#7e92a3"
+        },
+        {
+          "id": "upload-identity",
+          "label": "Publish to Identity",
+          "colour": "rgb(183, 200, 215)",
+          "light": "#99acbd"
+        },
+        {
+          "id": "upload-service",
+          "label": "Publish to Upload service",
+          "colour": "rgb(134, 153, 171)",
+          "light": "#677888"
+        },
+        {
+          "id": "watch-cache/watch-cache-reader",
+          "label": "Details cache (Watch API) to Hot metadata",
+          "colour": "rgb(254, 192, 189)",
+          "light": "#fd9592"
+        },
+        {
+          "id": "watch-metadata/watch-details",
+          "label": "Details reader (Watch API) to Metadata",
+          "colour": "rgb(246, 118, 100)",
+          "light": "#d15545"
+        },
+        {
+          "id": "watch-counts-read/watch-counts",
+          "label": "View count reader (Watch API) to View counts",
+          "colour": "rgb(253, 155, 146)",
+          "light": "#f16d65"
+        },
+        {
+          "id": "search-read/search-query",
+          "label": "Video search (Search API) to Videos",
+          "colour": "rgb(67, 202, 134)",
+          "light": "#18a96a"
+        },
+        {
+          "id": "cdn-transcoded",
+          "label": "Video delivery to Transcoded videos",
+          "colour": "rgb(233, 134, 210)",
+          "light": "#cc61b5"
+        },
+        {
+          "id": "counter-write/counter-writer",
+          "label": "Count writer (View counter) to View counts",
+          "colour": "rgb(165, 162, 253)",
+          "light": "#867cf0"
+        },
+        {
+          "id": "upload-originals/upload-multipart",
+          "label": "Multipart uploads (Upload service) to Original videos",
+          "colour": "rgb(253, 178, 136)",
+          "light": "#f58845"
+        },
+        {
+          "id": "transcoder-read/transcoder-encoder",
+          "label": "Segmenter and encoder (Transcoder) to Original videos",
+          "colour": "rgb(254, 188, 211)",
+          "light": "#fd8eb9"
+        },
+        {
+          "id": "transcoder-write/transcoder-packager",
+          "label": "Packager (Transcoder) to Transcoded videos",
+          "colour": "rgb(242, 114, 150)",
+          "light": "#cd5177"
+        },
+        {
+          "id": "transcoder-write/transcoder-thumbnails",
+          "label": "Thumbnailer (Transcoder) to Transcoded videos",
+          "colour": "rgb(253, 149, 182)",
+          "light": "#ea6b98"
+        },
+        {
+          "id": "handler-metadata/handler-writer",
+          "label": "Video writer (Completion handler) to Metadata",
+          "colour": "rgb(204, 144, 245)",
+          "light": "#af6dda"
+        },
+        {
+          "id": "indexer-write/indexer-writer",
+          "label": "Index writer (Search indexer) to Videos",
+          "colour": "rgb(224, 161, 15)",
+          "light": "#b9840e"
+        }
+      ],
+      "mouseHoverSelectionContextMenuFit": true,
+      "selectedOutlineWidth": 8.4,
+      "reloadSlotsStable": true,
+      "savedStateAndHistoryUnchanged": true,
+      "exportHash": "3b3cc0f3f45e0bb84f1d7455d66aad8c73b8304af099ef6f4817c096579d61dd",
+      "lightExportAcrossThemes": true
+    }
+  ],
+  "errors": []
+}

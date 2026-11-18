@@ -1,0 +1,100 @@
+import { writeFile } from 'node:fs/promises';
+import { createStudy, showView, tile, clickLine, linePoint, paperPoint, lines, expect, test } from '/home/ash/github/jeeves/jeeves/apps/web/e2e/studio.ts';
+import { exportPng } from '/home/ash/github/jeeves/jeeves/apps/web/e2e/export.ts';
+const evidence='/home/ash/github/jeeves/docs/plans/wires-and-deployment/evidence/wire-ui-finish';
+
+test('actual wire study matrix: mouse, light exports, slots and unchanged saved state', async({page})=>{
+ const results:object[]=[];const errors:string[]=[];page.on('pageerror',e=>errors.push(String(e)));
+ for(const [study,label,baseLine,tileName] of [
+ ['tinyurl','TinyURL · extended study (design only)','redirect-db','Redirect service'],
+ ['marketplace','Marketplace · studio study','shop-catalog','Shop service'],
+ ['youtube','YouTube · studio study','cdn-transcoded','Transcoder'],
+ ]){
+  const id=await createStudy(page,`E2E Wire finish ${study}`,label);
+  try{
+   const state=async()=>({designState:await(await page.request.get(`/api/projects/${id}/design`)).json(),blueprint:await(await page.request.get(`/api/projects/${id}/blueprint`)).json()});
+   const before=await state();let slots:unknown;
+   for(const view of ['Simple','Detailed'] as const){
+    await showView(page,view);let lightHash='';
+    for(const theme of ['light','dark']){
+     const dark=page.getByRole('button',{name:'Dark mode',exact:true});
+     if((await dark.getAttribute('aria-pressed')==='true')!==(theme==='dark'))await dark.click();
+     await page.getByRole('button',{name:'Fit',exact:true}).click();
+     const paper=await paperPoint(page);await page.mouse.click(paper.x,paper.y);
+     const stats=await page.locator('.lane-canvas .board').evaluate((board,theme)=>{
+      const hexRgb=(hex:string)=>`rgb(${[1,3,5].map(i=>Number.parseInt(hex.slice(i,i+2),16)).join(', ')})`;
+      const edges=[...board.querySelectorAll('.react-flow__edge')];
+      const colours=edges.map(edge=>{
+       const wire=edge.querySelector<SVGElement>('.board-wire')!;const fill=edge.querySelector('.board-wire-fill')!;
+       const css=getComputedStyle(fill);const expected=wire.style.getPropertyValue(theme==='dark'?'--wire-dark':'--wire-light');
+       if(css.stroke!==hexRgb(expected))throw new Error(`Theme wire mismatch ${edge.getAttribute('data-id')}: ${css.stroke}/${expected}`);
+       if(css.strokeWidth!=='3.5px')throw new Error('Wrong colour width');
+       if(getComputedStyle(edge.querySelector('.board-wire-edge')!).strokeWidth!=='6.4px')throw new Error('Wrong outline width');
+       return {id:edge.getAttribute('data-id'),label:edge.getAttribute('aria-label'),colour:css.stroke,light:wire.style.getPropertyValue('--wire-light')};
+      });
+      return {edges:edges.length,wires:board.querySelectorAll('.board-wire').length,heads:board.querySelectorAll('.board-wire-head').length,
+       fans:board.querySelectorAll('.board-wire-fill[d*=" C "]').length,corners:board.querySelectorAll('.board-wire-fill[d*=" Q "]').length,
+       moduleDots:board.querySelectorAll('.lane-container-row-dot[data-connected]').length,tileDots:board.querySelectorAll('.board-tile-dot').length,
+       beads:[...board.querySelectorAll('.board-wire-fill')].filter(p=>getComputedStyle(p).strokeDasharray==='0.01px, 12px').length,
+       bridges:board.querySelectorAll('.board-line-crossing').length,colours};
+     },theme);
+     expect(stats.wires).toBe(stats.edges);expect(stats.heads).toBe(stats.edges);expect(stats.fans).toBeGreaterThan(0);expect(stats.beads).toBeGreaterThan(0);expect(stats.bridges).toBe(0);
+     expect(new Set(stats.colours.map(c=>c.colour)).size).toBeGreaterThan(5);
+     if(view==='Detailed')expect(stats.moduleDots).toBeGreaterThan(0);else expect(stats.tileDots).toBeGreaterThan(0);
+     // Real mouse hover fades the other wires, then clears on empty paper.
+     const matching=stats.colours.filter(c=>c.id===baseLine||c.id?.startsWith(baseLine+'/'));const line=matching[0]?.id!;
+     const at=await linePoint(page,line);await page.mouse.move(at.x,at.y);
+     await expect(page.locator(`.react-flow__edge[data-id="${line}"] .board-wire`)).toHaveCSS('opacity','1');
+     await expect.poll(()=>page.locator('.board-wire').evaluateAll(wires=>wires.filter(w=>getComputedStyle(w).opacity==='0.13').length)).toBeGreaterThan(0);
+     await page.mouse.move(paper.x,paper.y);await expect(page.locator('.board-wire').first()).toHaveCSS('opacity','1');
+     await tile(page,tileName).click();expect(await page.locator('.board-wire-edge[style*="--board-select"]').count()).toBeGreaterThan(0);
+     await page.mouse.click(paper.x,paper.y);await clickLine(page,line);
+     await expect(page.locator(`.react-flow__edge[data-id="${line}"] .board-wire-edge`)).toHaveCSS('stroke-width','8.4px');
+     const menuAt=await linePoint(page,line);await page.mouse.click(menuAt.x,menuAt.y,{button:'right'});
+     await expect(page.getByRole('menuitem',{name:'Remove link',exact:true})).toBeVisible();await page.mouse.click(paper.x,paper.y);
+     if(study==='youtube'&&view==='Detailed'){
+      for(const write of ['transcoder-write/transcoder-packager','transcoder-write/transcoder-thumbnails']){
+       await clickLine(page,write);const point=await linePoint(page,write);await page.mouse.click(point.x,point.y,{button:'right'});
+       await expect(page.getByRole('menu')).toContainText('Transcoder → Transcoded videos');await page.mouse.click(paper.x,paper.y);
+      }
+     }
+     const stem=`${study}-${view.toLowerCase()}-${theme}`;await page.screenshot({path:`${evidence}/${stem}.png`});
+     const exported=await exportPng(page);
+     await writeFile(`${evidence}/${stem}-export.png`,exported.png);
+     await writeFile(`${evidence}/${stem}-capture.json`,JSON.stringify({details:exported.details,artwork:exported.artwork},null,2)+'\n');
+     if(theme==='light')lightHash=exported.details.image.sha256;else expect(exported.details.image.sha256).toBe(lightHash);
+     // Preferences stay outside design/history. Both response objects (including history) match.
+     expect(await state()).toEqual(before);
+     const key=`jeeves.studio.ui.v1:${id}`;const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)??'{}').wires,key);
+     if(slots)expect(saved).toEqual(slots);else slots=saved;
+     await page.reload();await showView(page,view);
+     expect(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)??'{}').wires,key)).toEqual(slots);
+     const reloaded=await lines(page).evaluateAll(edges=>edges.map(edge=>({id:edge.getAttribute('data-id'),light:(edge.querySelector('.board-wire') as SVGElement).style.getPropertyValue('--wire-light')})));
+     expect(reloaded.sort((a,b)=>a.id!.localeCompare(b.id!))).toEqual(stats.colours.map(({id,light})=>({id,light})).sort((a,b)=>a.id!.localeCompare(b.id!)));
+     expect(await state()).toEqual(before);
+     results.push({study,view,theme,...stats,mouseHoverSelectionContextMenuFit:true,selectedOutlineWidth:8.4,reloadSlotsStable:true,savedStateAndHistoryUnchanged:true,exportHash:exported.details.image.sha256,lightExportAcrossThemes:theme==='dark'?true:'light reference'});
+     await writeFile(`${evidence}/browser-matrix.json`,JSON.stringify({results,errors},null,2)+'\n');
+     console.log(`Wire matrix ${study}/${view}/${theme}: ${stats.wires} wires, mouse/slots/light PNG/state pass`);
+    }
+    if(study==='youtube'&&view==='Detailed'){
+     const metrics=await page.locator('.lane-canvas .board').evaluate(async board=>{
+      const {wirePolyline}=await import('/@fs/home/ash/github/jeeves/jeeves/packages/board/src/react/wireGeometry.ts');
+      const {nearestLines,distanceToRoute}=await import('/@fs/home/ash/github/jeeves/jeeves/packages/board/src/react/lineGeometry.ts');
+      const paths=[...board.querySelectorAll<SVGPathElement>('.board-wire-fill')];const cache=new WeakMap();const timings=[];let routes={};
+      const first=paths[0]!.getPointAtLength(30);let maxError=0,nativeSamples=0;
+      for(let trial=0;trial<9;trial++){
+       const start=performance.now();routes={};
+       for(const path of paths){const id=path.closest('.react-flow__edge')!.getAttribute('data-id')!;const d=path.getAttribute('d')!;let c=cache.get(path);if(c?.d!==d){c={d,points:wirePolyline(d)};cache.set(path,c);}routes[id]=c.points;}
+       nearestLines(first,routes,3,22);timings.push(performance.now()-start);
+      }
+      for(const path of paths){const id=path.closest('.react-flow__edge')!.getAttribute('data-id')!;const length=path.getTotalLength();for(let at=0;at<=length;at+=3){maxError=Math.max(maxError,distanceToRoute(path.getPointAtLength(at),routes[id]));nativeSamples++;}}
+      return {wires:paths.length,flattenedPoints:Object.values(routes).reduce((n,p)=>n+p.length,0),nativeComparisonSamples:nativeSamples,maxCurveError:maxError,coldAndRepeatedMs:timings};
+     });
+     expect(metrics.maxCurveError).toBeLessThanOrEqual(.26);
+     await writeFile(`${evidence}/youtube-detailed-picking.json`,JSON.stringify(metrics,null,2)+'\n');
+    }
+   }
+  }finally{await page.request.delete(`/api/projects/${id}`);}
+ }
+ expect(errors).toEqual([]);
+});

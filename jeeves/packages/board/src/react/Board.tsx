@@ -76,7 +76,7 @@ import {
   useState,
 } from "react";
 import { ANIMATE_MS } from "../layout/animate.ts";
-import type { LayoutInput, TilePort } from "../layout/elkGraph.ts";
+import { type LayoutInput, portOffset, type TilePort } from "../layout/elkGraph.ts";
 import type { BoardLayout } from "../layout/elkLayout.ts";
 import type { LayoutEngine } from "../layout/engine.ts";
 import {
@@ -124,6 +124,7 @@ import { crossingBridges, nearestLines, oneLinePerGroup } from "./lineGeometry.t
 import { type TabSpec, TileChrome } from "./TileChrome.tsx";
 import { prefersReducedMotion, useAnimatedLayout } from "./useAnimatedLayout.ts";
 import { useBoardLayout } from "./useBoardLayout.ts";
+import { wirePolyline } from "./wireGeometry.ts";
 
 export type TileShape = "rect" | "pill";
 
@@ -426,6 +427,7 @@ function fitZoom(pane: Pane, shown: BoardLayout | null, sizes: Record<string, Si
 function lineEdges(
   lines: readonly LineSpec[],
   layout: BoardLayout,
+  tiles: readonly TileSpec[],
   selected: BoardSelection = {},
   placed: (id: string) => Point | undefined = (id) => layout.positions[id],
   highlighted?: ReadonlySet<string>,
@@ -456,6 +458,18 @@ function lineEdges(
     );
     for (const [rank, l] of sorted.entries()) rankOf.set(l.id, { rank, of: sorted.length });
   }
+  const anchors = new Map<string, { source: Point; target: Point }>();
+  for (const line of lines.filter((line) => line.wire)) {
+    const source = tiles.find((tile) => tile.id === line.source);
+    const target = tiles.find((tile) => tile.id === line.target);
+    const s = placed(line.source),
+      t = placed(line.target);
+    if (source && target && s && t)
+      anchors.set(line.id, {
+        source: { x: s.x + source.w, y: s.y + portOffset(source, line.sourcePort) },
+        target: { x: t.x, y: t.y + portOffset(target, line.targetPort) },
+      });
+  }
   return ordered.map((l, i) => ({
     id: l.id,
     source: l.source,
@@ -472,6 +486,7 @@ function lineEdges(
       ...(linked(l) || hovered === l.id ? { linked: true } : {}),
       ...(l.label ? { label: l.label } : {}),
       ...(l.chip ? { chip: l.chip.content } : {}),
+      ...(anchors.has(l.id) ? { anchors: anchors.get(l.id) } : {}),
       ...(l.wire ? { wire: l.wire(rankOf.get(l.id)?.rank ?? 0, rankOf.get(l.id)?.of ?? 1) } : {}),
       bridges: l.wire
         ? []
@@ -891,28 +906,38 @@ function Inner({
   });
 
   const routes = shown?.routes ?? {};
+  const wireMeasurements = useRef(new WeakMap<SVGPathElement, { d: string; points: Point[] }>());
   function selectionRoutes() {
     if (!drawn.lines.some((line) => line.wire)) return routes;
     const measured = { ...routes };
-    // Wire fans, gathers and rounded corners differ from the layout's polylines. Measure the
-    // same live path as the pointer band, so clicks and menus identify the visible wire.
+    // Read the actual artwork, including fans, gathers and corners, rather than raw layout lanes.
+    // Cache by element and shape: selection/theme/zoom do not change board-space geometry.
     for (const path of hostRef.current?.querySelectorAll<SVGPathElement>(".board-wire-fill") ??
       []) {
       const id = path.closest(".react-flow__edge")?.getAttribute("data-id");
-      if (!id || typeof path.getTotalLength !== "function") continue;
-      const length = path.getTotalLength();
-      if (!Number.isFinite(length) || length <= 0) continue;
-      const steps = Math.ceil(length / 2);
-      measured[id] = Array.from({ length: steps + 1 }, (_, i) => {
-        const point = path.getPointAtLength((i / steps) * length);
-        return { x: point.x, y: point.y };
-      });
+      const d = path.getAttribute("d");
+      if (!id || !d) continue;
+      let cached = wireMeasurements.current.get(path);
+      if (cached?.d !== d) {
+        cached = { d, points: wirePolyline(d) };
+        wireMeasurements.current.set(path, cached);
+      }
+      measured[id] = cached.points;
     }
     return measured;
   }
   const highlight = useMemo(() => new Set(highlighted), [highlighted]);
   const edges = shown
-    ? lineEdges(drawn.lines, shown, selected, placed, highlight, selectedTileLines, hovered)
+    ? lineEdges(
+        drawn.lines,
+        shown,
+        drawn.tiles,
+        selected,
+        placed,
+        highlight,
+        selectedTileLines,
+        hovered,
+      )
     : [];
 
   const context = useMemo(
@@ -1144,7 +1169,7 @@ export function BoardSnapshotView({ snapshot, bounds }: { snapshot: BoardSnapsho
         <BoardContext.Provider value={{ layout, selectLine: () => {} }}>
           <ReactFlow<TileNode, BoardLineEdge>
             nodes={nodes}
-            edges={lineEdges(lines, layout)}
+            edges={lineEdges(lines, layout, tiles)}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             defaultViewport={{ x: -bounds.x, y: -bounds.y, zoom: 1 }}

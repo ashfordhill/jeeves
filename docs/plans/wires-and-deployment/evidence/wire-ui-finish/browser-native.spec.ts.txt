@@ -1,0 +1,25 @@
+import { writeFile } from 'node:fs/promises';
+import { expect, test } from '/home/ash/github/jeeves/jeeves/apps/web/e2e/studio.ts';
+const evidence='/home/ash/github/jeeves/docs/plans/wires-and-deployment/evidence/wire-ui-finish';
+test('native click and context menu follow the visible fan instead of raw lanes',async({page})=>{
+ await page.goto('/');
+ await page.evaluate(async()=>{
+  const React=(await import('/node_modules/.vite/deps/react.js')).default;
+  const {createRoot}=(await import('/node_modules/.vite/deps/react-dom_client.js')).default;
+  const {Board}=await import('/@fs/home/ash/github/jeeves/jeeves/packages/board/src/react/Board.tsx');
+  const host=document.createElement('div');host.id='wire-fan-proof';host.style.cssText='position:fixed;inset:0;z-index:99999;background:#e8f4fa';document.body.append(host);
+  const layout={key:'fan',positions:{source:{x:0,y:0},target:{x:400,y:0}},routes:{upper:[{x:128,y:44},{x:400,y:44}],middle:[{x:128,y:64},{x:400,y:64}]},chips:{},bounds:{x:0,y:0,w:528,h:128}};
+  (window as any).wireCalls=[];
+  createRoot(host).render(React.createElement(Board,{tiles:['source','target'].map(id=>({id,w:128,h:128,shape:'rect',label:id,content:id})),lines:['upper','middle'].map(id=>({id,source:'source',target:'target',dashed:false,directed:true,wire:()=>({light:'#cc5500',dark:'#ee9955'})})),engine:{keyFor:()=>layout.key,get:()=>layout,request:async()=>layout},selected:{line:'middle'},mode:'select',onSelectTile:()=>{},onSelectLine:id=>(window as any).wireCalls.push(['click',id]),onLineMenu:id=>(window as any).wireCalls.push(['menu',id]),onClear:()=>{}}));
+ });
+ await expect(page.locator('#wire-fan-proof .board[data-board="ready"]')).toBeVisible();
+ const at=await page.locator('#wire-fan-proof .react-flow__edge[data-id="upper"] .board-wire-fill').evaluate((path:SVGPathElement)=>{
+  const matrix=path.getScreenCTM();if(!matrix)throw Error('No matrix');
+  const p=new DOMPoint(144.2144,56.96).matrixTransform(matrix);return{x:p.x,y:p.y};
+ });
+ await page.mouse.click(at.x,at.y);await page.mouse.click(at.x,at.y,{button:'right'});await page.mouse.click(at.x,at.y);
+ const calls=await page.evaluate(()=>(window as any).wireCalls);
+ expect(calls).toEqual([['click','upper'],['menu','upper'],['click','upper']]);
+ await page.screenshot({path:`${evidence}/native-fan-selection.png`});
+ await writeFile(`${evidence}/native-fan-selection.json`,JSON.stringify({calls,at,scope:'isolated generic Board rendered in native Chromium; exact point on emitted cubic fan'},null,2)+'\n');
+});

@@ -1922,3 +1922,12 @@ The original overly generous drain evaluation stays historical; corrected curren
 a final10-second stop bound. See the [contract](plans/reliable-generation/contract.md),
 [final review](plans/reliable-generation/evidence/rg25/review.md) and
 [handback](plans/reliable-generation/owner-handback.md) for observations and limits.
+
+
+## 2026-11-18: traceable wire bundles
+
+A stem that several lines share cannot be traced. Give each line its own lane and arrowhead,
+and let colour say which tile it left. Keep module dots on their rows, fan at the frame, and
+highlight the visible curve when selecting it. Hit testing must follow cubic fans and rounded
+corners; treating curve control points as vertices picks the wrong relationship. Check decoded
+PNG colours against the actual export artwork, since an animating live view has different geometry.

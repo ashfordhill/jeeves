@@ -29,12 +29,22 @@
   --board-remove-ink: var(--off-ink);
 }
 
+/* Wires take their dark shade in the dark theme. A diagram export stays light. */
+.lane-container {
+  --wire: var(--wire-light);
+}
+:root[data-theme="dark"]
+  .board:not(.board-snapshot)
+  :is(.board-wire, .board-tile-dot, .lane-container) {
+  --wire: var(--wire-dark);
+}
+
 .lane-canvas {
   position: absolute;
   inset: 0;
 }
 
-/* Screen-sized notation: only the dashed Async sample, as wide as it is. It only informs, so the
+/* Screen-sized notation: only the beaded Async sample, as wide as it is. It only informs, so the
    pointer passes through to the board. */
 .lane-line-legend {
   position: absolute;
@@ -238,6 +248,11 @@
 .lane-container-row[data-ports~="out"]::after {
   right: calc(-1 * (var(--row-inset) + var(--row-border)));
 }
+/* A row's out mark carries its tile's wire colour from the dot to the frame. */
+.lane-container-row[data-ports~="out"]::after {
+  background: var(--wire, var(--board-line));
+}
+
 /* A port mark is blue while a line at that port is: its container, its relationship, the tile
    at the line's other end or its open module selected it. */
 .lane-container-row[data-lit~="in"]::before,
@@ -322,7 +337,7 @@
 }
 
 .lane-container-row-dot[data-connected] {
-  background: var(--board-line);
+  background: var(--wire, var(--board-line));
 }
 
 .lane-container-row[data-lit~="out"] .lane-container-row-dot {

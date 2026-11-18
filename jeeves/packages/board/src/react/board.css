@@ -561,3 +561,16 @@
   background: var(--wire);
   pointer-events: none;
 }
+
+/* Hovering a wire picks it out: the rest fade. */
+.board-wire {
+  transition: opacity 120ms;
+}
+.board .react-flow__edges:has(.react-flow__edge:hover) .react-flow__edge:not(:hover) .board-wire {
+  opacity: 0.13;
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-wire {
+    transition: none;
+  }
+}

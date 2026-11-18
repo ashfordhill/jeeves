@@ -238,3 +238,11 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Resolution update (2026-11-17):** the preview's third version (same link) redraws all of QRWTY from its diagram file next to `.docs/readme/v0/qrwty/qrwty-diagram.png`. It asks for the arrowhead shape, whether a busy tile's shades alternate or run in order, and whether a line that comes back may enter a tile's right side; it also states the colour rule (twelve hues, a tile keeps its colour, later tiles take in-between hues, a shade per wire).
 - **Decision update (2026-11-17, after the third preview):** soft-triangle arrowheads, a busy tile's shades alternate light and deep, a line that comes back loops round as today, and the colour rule stands. Showing what hand-written code reaches outside the diagram is to be a separate, later plan.
 - **Resolution update (2026-11-17):** the build plan is [wires and deployment](plans/wires-and-deployment/units.md): WD01–WD08 draw the wires and are exact; WD09–WD14 (deployment contract, front-door stamp, pooler-safe database client, failure drill, a rotatable workload secret, final review) are written as goal, work and acceptance, like the reliable-generation units, so the whole plan can run unattended after RG26. Not started. One change from the preview: a tile's colour slot is kept in the project's browser preferences, not in the design.
+
+- **Decision update (2026-11-18):** after seeing the old UI, the owner asked, “can you have an
+  agent finish it?” This authorizes finishing the approved visible wire UI.
+- **Implementation scope:** the follow-up adapts obsolete shared-line test assumptions as needed,
+  preserving meaningful selection, hover and PNG coverage.
+- **Resolution update (2026-11-18):** `Finish studio wire rendering and interaction` activates
+  coloured outlined wires and hover in Simple and Detailed, separates the YouTube Detailed return
+  trunks, and retains browser-only slots and light PNGs. [Evidence and remaining geometry limits](plans/wires-and-deployment/evidence/wire-ui-finish/README.md).

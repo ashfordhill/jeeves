@@ -1,5 +1,12 @@
 # Wires and deployment: lines as wire bundles, then what an export says about running it
 
+> **2026-11-18 owner follow-up:** after reviewing the old UI, the owner authorized finishing
+> studio wires (“can you have an agent finish it?”). This follow-up adapts obsolete shared-line
+> assertions as necessary implementation work, preserving selection, hover and PNG coverage.
+> It is separate from the numbered WD units. Studio wires
+> now ship; see [current review](review.md) and [evidence](evidence/wire-ui-finish/README.md).
+> The original brief and stop rules below are historical; WD12 remains stopped.
+
 **Status:** planned 2026-11-17 from owner feedback and a signed-off preview. Not started. All
 fourteen units can run, in order, once the reliable-generation plan's last unit (RG26) has
 landed. Part A (WD01–WD08) gives exact edits. Part B (WD09–WD14) is written as that plan's units

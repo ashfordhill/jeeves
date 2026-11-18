@@ -28,6 +28,7 @@
 // canvas in Pointer mode (`BoardModuleAdding`) a small blue `+` sits centred in it, inside the
 // frame: it toggles the tile's module menu (`ModuleAddButton`), selected or not. An export and
 // Connect mode show none, and the footer stays empty.
+import type { WireTone } from "@jeeves/board";
 import { type StudioKind, studioComponentVisuals, studioDefinitions } from "@jeeves/spec";
 import { type CSSProperties, createContext, useContext } from "react";
 import { StudioIcon } from "../../studio/StudioIcon.tsx";
@@ -71,6 +72,7 @@ export function ContainerTile({
   loaders = [],
   addable = false,
   warnings,
+  wire,
 }: {
   /** The tile's ID, which its `+` adds modules to. */
   id?: string;
@@ -88,6 +90,8 @@ export function ContainerTile({
   addable?: boolean;
   /** Its design warnings, shown as a mark in the header's corner. */
   warnings?: readonly string[];
+  /** Its wires’ colour (`wireTone` at 0.5), for its rows’ port marks and dots. */
+  wire?: WireTone;
 }) {
   const live = useContext(ModuleRows);
   const adding = useContext(BoardModuleAdding);
@@ -104,7 +108,12 @@ export function ContainerTile({
     <div
       className="lane-container"
       data-family={visual?.color ?? "generic"}
-      style={gutter ? ({ "--row-inset-left": `${gutter}px` } as CSSProperties) : undefined}
+      style={
+        {
+          ...(gutter ? { "--row-inset-left": `${gutter}px` } : {}),
+          ...(wire ? { "--wire-light": wire.light, "--wire-dark": wire.dark } : {}),
+        } as CSSProperties
+      }
     >
       <div
         className="lane-container-header"

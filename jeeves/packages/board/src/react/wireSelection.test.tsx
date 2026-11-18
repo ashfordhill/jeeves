@@ -84,8 +84,8 @@ for (const action of ["click", "contextMenu"] as const) {
     expect(edge?.querySelector(".board-wire-fill")?.getAttribute("d")).toMatch(
       /^M 128 64 C 147\.8 64 144\.2 44 164 44/,
     );
-    // jsdom has no SVG path measurement. Supply points on the exact emitted cubic fan;
-    // the browser supplies these native methods. The fixture's middle wire stays at y64.
+    // The pointer is on the exact emitted cubic fan, where the raw middle lane would be
+    // nearer. Picking must follow the actual d, including its cubic controls.
     const upperFan = (t: number) => ({
       x:
         (1 - t) ** 3 * 128 +
@@ -94,13 +94,6 @@ for (const action of ["click", "contextMenu"] as const) {
         t ** 3 * 164,
       y: (1 - t) ** 3 * 64 + 3 * (1 - t) ** 2 * t * 64 + 3 * (1 - t) * t * t * 44 + t ** 3 * 44,
     });
-    for (const path of container.querySelectorAll(".board-wire-fill")) {
-      const upper = path.closest(".react-flow__edge")?.getAttribute("data-id") === "upper";
-      Object.assign(path, {
-        getTotalLength: () => 40,
-        getPointAtLength: (at: number) => (upper ? upperFan(at / 40) : { x: 128 + at, y: 64 }),
-      });
-    }
     const point = upperFan(0.4); // Raw middle lane is 7.04px away; raw upper is 12.96px away.
     const camera = container.querySelector<HTMLElement>(".react-flow__viewport")?.style.transform;
     const [tx = 0, ty = 0, zoom = 1] = camera?.match(/-?[\d.]+/g)?.map(Number) ?? [];
@@ -111,6 +104,18 @@ for (const action of ["click", "contextMenu"] as const) {
     if (action === "click") expect(onSelectLine).toHaveBeenCalledWith("upper");
     else
       expect(onLineMenu).toHaveBeenCalledWith("upper", { x: pointer.clientX, y: pointer.clientY });
+    // Repeated picking reuses the same shape. A layout/animation change updates d on the same
+    // element: the next pick must use that new artwork, not the cached former fan.
+    fireEvent[action](hit, pointer);
+    const upperPath = edge?.querySelector(".board-wire-fill");
+    upperPath?.setAttribute("d", "M 128 200 L 400 200");
+    fireEvent[action](hit, pointer);
+    if (action === "click") expect(onSelectLine).toHaveBeenLastCalledWith("middle");
+    else
+      expect(onLineMenu).toHaveBeenLastCalledWith("middle", {
+        x: pointer.clientX,
+        y: pointer.clientY,
+      });
     expect(container.querySelector(".board-line-chooser")).toBeNull();
   });
 }

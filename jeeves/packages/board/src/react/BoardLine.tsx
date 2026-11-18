@@ -47,6 +47,8 @@ export type BoardLineData = {
   chip?: ReactNode;
   bridges?: Point[][];
   wire?: { light: string; dark: string };
+  /** Board-owned frame/port coordinates; independent of React Flow's DOM handle measurement. */
+  anchors?: { source: Point; target: Point };
 };
 
 export type BoardLineEdge = Edge<BoardLineData, "line">;
@@ -103,8 +105,8 @@ export function BoardLine({
   if (data?.wire) {
     const art = wireArt(
       points,
-      { x: sourceX, y: sourceY },
-      { x: targetX, y: targetY },
+      data.anchors?.source ?? { x: sourceX, y: sourceY },
+      data.anchors?.target ?? { x: targetX, y: targetY },
       Boolean(data.directed),
     );
     const edge = selected || data.linked ? "var(--board-select)" : "var(--board-wire-ink)";

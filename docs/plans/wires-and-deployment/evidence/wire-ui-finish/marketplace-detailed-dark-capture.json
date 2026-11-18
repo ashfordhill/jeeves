@@ -1,0 +1,1393 @@
+{
+  "details": {
+    "format": "jeeves-diagram-capture-v1",
+    "capturedAt": "2026-11-18T15:24:32.981Z",
+    "project": {
+      "id": "3820ada7-b5a5-40fe-adb9-cc96d6464228",
+      "name": "E2E Wire finish marketplace",
+      "revision": 1
+    },
+    "source": {
+      "designSha256": "33c0ab8e89c3219edad8c1bd6454ca9f6a1af04f4291a75ef3b01c4231205851",
+      "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+      "schemaVersion": 2
+    },
+    "renderer": {
+      "appVersion": "0.1.0",
+      "commit": "ff4a1ecc13c0a2ad7ec23542702d24715bf53b3b",
+      "trackedTreeDirtyAtBuild": true,
+      "mode": "development",
+      "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+      "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36"
+    },
+    "image": {
+      "filename": "E2E-Wire-finish-marketplace-r1-detailed.png",
+      "sha256": "7c179ba5edaa302e896478c1a5bd09f8b5488ef6560e1fa82f729879971767d1",
+      "width": 3328,
+      "height": 3328,
+      "scale": 2,
+      "margin": 32,
+      "background": "#e8f4fa",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1664,
+        "h": 1664
+      },
+      "font": "Nunito Variable",
+      "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+    },
+    "view": {
+      "canvas": "detailed",
+      "modules": "module hosts as containers; module links from and into their rows",
+      "relationships": "all projected relationships",
+      "selection": "omitted",
+      "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+      "ownerExpansion": "canonical process tiles",
+      "owners": []
+    },
+    "layout": {
+      "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"storefront\",256,128,0,[[\"header-in\",\"in\",32],[\"storefront-query:out\",\"out\",64]]],[\"orders\",256,128,0,[[\"header-in\",\"in\",32],[\"orders-reader:out\",\"out\",64]]],[\"image-cdn\",128,128,0],[\"search-index\",128,128,1],[\"orders-db\",128,128,1],[\"product-images\",128,128,1],[\"shop\",256,192,2,[[\"header-in\",\"in\",32],[\"shop-writer:out\",\"out\",64],[\"shop-photos:out\",\"out\",96],[\"shop-publisher:out\",\"out\",128]]],[\"identity\",128,128,2],[\"payments\",256,288,2,[[\"header-in\",\"in\",32],[\"header-out\",\"out\",32],[\"payments-pricing:out\",\"out\",64],[\"payments-records:out\",\"out\",192],[\"payments-publisher:out\",\"out\",224]]],[\"cart\",256,128,2,[[\"header-in\",\"in\",32],[\"cart-repository:out\",\"out\",64]]],[\"catalog-db\",128,128,2],[\"listing-events\",128,128,2],[\"order-events\",128,128,2],[\"payments-db\",128,128,2],[\"stripe\",128,128,2],[\"cart-store\",128,128,2],[\"search-indexer\",256,160,2,[[\"indexer-consumer:in\",\"in\",64],[\"indexer-writer:out\",\"out\",96]]],[\"order-recorder\",256,160,2,[[\"recorder-consumer:in\",\"in\",64],[\"recorder-writer:out\",\"out\",96]]]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"download-storefront\",\"@download\",\"storefront\",0,0,0,null,\"header-in\"],[\"download-orders\",\"@download\",\"orders\",0,0,0,null,\"header-in\"],[\"download-image-cdn\",\"@download\",\"image-cdn\",0,0,0],[\"upload-shop\",\"@upload\",\"shop\",0,0,2,null,\"header-in\"],[\"upload-identity\",\"@upload\",\"identity\",0,0,2],[\"upload-payments\",\"@upload\",\"payments\",0,0,2,null,\"header-in\"],[\"upload-cart\",\"@upload\",\"cart\",0,0,2,null,\"header-in\"],[\"storefront-search/storefront-query\",\"storefront\",\"search-index\",0,0,0,\"storefront-query:out\",null],[\"orders-read/orders-reader\",\"orders\",\"orders-db\",0,0,0,\"orders-reader:out\",null],[\"cdn-images\",\"image-cdn\",\"product-images\",0,0,0],[\"shop-catalog/shop-writer\",\"shop\",\"catalog-db\",0,0,2,\"shop-writer:out\",null],[\"shop-catalog/shop-publisher\",\"shop\",\"catalog-db\",0,0,2,\"shop-publisher:out\",null],[\"shop-images/shop-photos\",\"shop\",\"product-images\",0,0,2,\"shop-photos:out\",null],[\"shop-listings/shop-publisher\",\"shop\",\"listing-events\",0,0,2,\"shop-publisher:out\",null],[\"payments-prices/payments-pricing\",\"payments\",\"catalog-db\",0,0,2,\"payments-pricing:out\",null],[\"payments-paid/payments-publisher\",\"payments\",\"order-events\",0,0,2,\"payments-publisher:out\",null],[\"payments-write/payments-records\",\"payments\",\"payments-db\",0,0,2,\"payments-records:out\",null],[\"payments-write/payments-publisher\",\"payments\",\"payments-db\",0,0,2,\"payments-publisher:out\",null],[\"payments-stripe\",\"payments\",\"stripe\",0,0,2,\"header-out\",null],[\"cart-write/cart-repository\",\"cart\",\"cart-store\",0,0,2,\"cart-repository:out\",null],[\"listings-indexer/indexer-consumer\",\"listing-events\",\"search-indexer\",0,0,2,null,\"indexer-consumer:in\"],[\"paid-recorder/recorder-consumer\",\"order-events\",\"order-recorder\",0,0,2,null,\"recorder-consumer:in\"],[\"indexer-write/indexer-writer\",\"search-indexer\",\"search-index\",0,0,2,\"indexer-writer:out\",null],[\"recorder-write/recorder-writer\",\"order-recorder\",\"orders-db\",0,0,2,\"recorder-writer:out\",null]],\"lanes\"]",
+      "positions": {
+        "@actor": {
+          "x": 32,
+          "y": 528
+        },
+        "@download": {
+          "x": 256,
+          "y": 160
+        },
+        "@upload": {
+          "x": 256,
+          "y": 928
+        },
+        "storefront": {
+          "x": 480,
+          "y": 32
+        },
+        "orders": {
+          "x": 480,
+          "y": 192
+        },
+        "image-cdn": {
+          "x": 544,
+          "y": 352
+        },
+        "search-index": {
+          "x": 1120,
+          "y": 512
+        },
+        "orders-db": {
+          "x": 1504,
+          "y": 512
+        },
+        "product-images": {
+          "x": 896,
+          "y": 512
+        },
+        "shop": {
+          "x": 480,
+          "y": 672
+        },
+        "identity": {
+          "x": 480,
+          "y": 896
+        },
+        "payments": {
+          "x": 480,
+          "y": 1056
+        },
+        "cart": {
+          "x": 480,
+          "y": 1504
+        },
+        "catalog-db": {
+          "x": 896,
+          "y": 672
+        },
+        "listing-events": {
+          "x": 896,
+          "y": 832
+        },
+        "order-events": {
+          "x": 896,
+          "y": 1344
+        },
+        "payments-db": {
+          "x": 896,
+          "y": 1184
+        },
+        "stripe": {
+          "x": 896,
+          "y": 1024
+        },
+        "cart-store": {
+          "x": 896,
+          "y": 1504
+        },
+        "search-indexer": {
+          "x": 1120,
+          "y": 832
+        },
+        "order-recorder": {
+          "x": 1120,
+          "y": 1344
+        }
+      },
+      "routes": {
+        "@actor-download": [
+          {
+            "x": 160,
+            "y": 603
+          },
+          {
+            "x": 208,
+            "y": 603
+          },
+          {
+            "x": 208,
+            "y": 224
+          },
+          {
+            "x": 256,
+            "y": 224
+          }
+        ],
+        "@actor-upload": [
+          {
+            "x": 160,
+            "y": 613
+          },
+          {
+            "x": 208,
+            "y": 613
+          },
+          {
+            "x": 208,
+            "y": 992
+          },
+          {
+            "x": 256,
+            "y": 992
+          }
+        ],
+        "download-storefront": [
+          {
+            "x": 384,
+            "y": 214
+          },
+          {
+            "x": 432,
+            "y": 214
+          },
+          {
+            "x": 432,
+            "y": 64
+          },
+          {
+            "x": 480,
+            "y": 64
+          }
+        ],
+        "download-orders": [
+          {
+            "x": 384,
+            "y": 224
+          },
+          {
+            "x": 480,
+            "y": 224
+          }
+        ],
+        "download-image-cdn": [
+          {
+            "x": 384,
+            "y": 234
+          },
+          {
+            "x": 432,
+            "y": 234
+          },
+          {
+            "x": 432,
+            "y": 416
+          },
+          {
+            "x": 544,
+            "y": 416
+          }
+        ],
+        "upload-shop": [
+          {
+            "x": 384,
+            "y": 977
+          },
+          {
+            "x": 432,
+            "y": 977
+          },
+          {
+            "x": 432,
+            "y": 704
+          },
+          {
+            "x": 480,
+            "y": 704
+          }
+        ],
+        "upload-identity": [
+          {
+            "x": 384,
+            "y": 987
+          },
+          {
+            "x": 443,
+            "y": 987
+          },
+          {
+            "x": 443,
+            "y": 960
+          },
+          {
+            "x": 480,
+            "y": 960
+          }
+        ],
+        "upload-payments": [
+          {
+            "x": 384,
+            "y": 997
+          },
+          {
+            "x": 443,
+            "y": 997
+          },
+          {
+            "x": 443,
+            "y": 1088
+          },
+          {
+            "x": 480,
+            "y": 1088
+          }
+        ],
+        "upload-cart": [
+          {
+            "x": 384,
+            "y": 1007
+          },
+          {
+            "x": 432,
+            "y": 1007
+          },
+          {
+            "x": 432,
+            "y": 1536
+          },
+          {
+            "x": 480,
+            "y": 1536
+          }
+        ],
+        "storefront-search/storefront-query": [
+          {
+            "x": 736,
+            "y": 96
+          },
+          {
+            "x": 1063,
+            "y": 96
+          },
+          {
+            "x": 1063,
+            "y": 565
+          },
+          {
+            "x": 1120,
+            "y": 565
+          }
+        ],
+        "orders-read/orders-reader": [
+          {
+            "x": 736,
+            "y": 256
+          },
+          {
+            "x": 1447,
+            "y": 256
+          },
+          {
+            "x": 1447,
+            "y": 565
+          },
+          {
+            "x": 1504,
+            "y": 565
+          }
+        ],
+        "cdn-images": [
+          {
+            "x": 672,
+            "y": 416
+          },
+          {
+            "x": 795,
+            "y": 416
+          },
+          {
+            "x": 795,
+            "y": 565
+          },
+          {
+            "x": 896,
+            "y": 565
+          }
+        ],
+        "shop-catalog/shop-writer": [
+          {
+            "x": 736,
+            "y": 736
+          },
+          {
+            "x": 795,
+            "y": 736
+          },
+          {
+            "x": 795,
+            "y": 714
+          },
+          {
+            "x": 896,
+            "y": 714
+          }
+        ],
+        "shop-catalog/shop-publisher": [
+          {
+            "x": 736,
+            "y": 795
+          },
+          {
+            "x": 817,
+            "y": 795
+          },
+          {
+            "x": 817,
+            "y": 736
+          },
+          {
+            "x": 896,
+            "y": 736
+          }
+        ],
+        "shop-images/shop-photos": [
+          {
+            "x": 736,
+            "y": 768
+          },
+          {
+            "x": 806,
+            "y": 768
+          },
+          {
+            "x": 806,
+            "y": 587
+          },
+          {
+            "x": 896,
+            "y": 587
+          }
+        ],
+        "shop-listings/shop-publisher": [
+          {
+            "x": 736,
+            "y": 805
+          },
+          {
+            "x": 839,
+            "y": 805
+          },
+          {
+            "x": 839,
+            "y": 896
+          },
+          {
+            "x": 896,
+            "y": 896
+          }
+        ],
+        "payments-prices/payments-pricing": [
+          {
+            "x": 736,
+            "y": 1120
+          },
+          {
+            "x": 828,
+            "y": 1120
+          },
+          {
+            "x": 828,
+            "y": 758
+          },
+          {
+            "x": 896,
+            "y": 758
+          }
+        ],
+        "payments-paid/payments-publisher": [
+          {
+            "x": 736,
+            "y": 1285
+          },
+          {
+            "x": 795,
+            "y": 1285
+          },
+          {
+            "x": 795,
+            "y": 1408
+          },
+          {
+            "x": 896,
+            "y": 1408
+          }
+        ],
+        "payments-write/payments-records": [
+          {
+            "x": 736,
+            "y": 1248
+          },
+          {
+            "x": 795,
+            "y": 1248
+          },
+          {
+            "x": 795,
+            "y": 1237
+          },
+          {
+            "x": 896,
+            "y": 1237
+          }
+        ],
+        "payments-write/payments-publisher": [
+          {
+            "x": 736,
+            "y": 1275
+          },
+          {
+            "x": 795,
+            "y": 1275
+          },
+          {
+            "x": 795,
+            "y": 1259
+          },
+          {
+            "x": 896,
+            "y": 1259
+          }
+        ],
+        "payments-stripe": [
+          {
+            "x": 736,
+            "y": 1088
+          },
+          {
+            "x": 896,
+            "y": 1088
+          }
+        ],
+        "cart-write/cart-repository": [
+          {
+            "x": 736,
+            "y": 1568
+          },
+          {
+            "x": 896,
+            "y": 1568
+          }
+        ],
+        "listings-indexer/indexer-consumer": [
+          {
+            "x": 1024,
+            "y": 896
+          },
+          {
+            "x": 1120,
+            "y": 896
+          }
+        ],
+        "paid-recorder/recorder-consumer": [
+          {
+            "x": 1024,
+            "y": 1408
+          },
+          {
+            "x": 1120,
+            "y": 1408
+          }
+        ],
+        "recorder-write/recorder-writer": [
+          {
+            "x": 1376,
+            "y": 1440
+          },
+          {
+            "x": 1447,
+            "y": 1440
+          },
+          {
+            "x": 1447,
+            "y": 587
+          },
+          {
+            "x": 1504,
+            "y": 587
+          }
+        ],
+        "indexer-write/indexer-writer": [
+          {
+            "x": 1376,
+            "y": 928
+          },
+          {
+            "x": 1424,
+            "y": 928
+          },
+          {
+            "x": 1424,
+            "y": 660
+          },
+          {
+            "x": 1072,
+            "y": 660
+          },
+          {
+            "x": 1072,
+            "y": 587
+          },
+          {
+            "x": 1120,
+            "y": 587
+          }
+        ]
+      },
+      "chips": {},
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1664,
+        "h": 1664
+      }
+    },
+    "tiles": [
+      {
+        "id": "@actor",
+        "w": 128,
+        "h": 160,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "User"
+      },
+      {
+        "id": "@download",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Browse"
+      },
+      {
+        "id": "@upload",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Buy & sell"
+      },
+      {
+        "id": "storefront",
+        "w": 256,
+        "h": 128,
+        "band": 0,
+        "shape": "rect",
+        "label": "Storefront API",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "storefront-query:out",
+            "side": "out",
+            "y": 64
+          }
+        ]
+      },
+      {
+        "id": "orders",
+        "w": 256,
+        "h": 128,
+        "band": 0,
+        "shape": "rect",
+        "label": "Orders service",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "orders-reader:out",
+            "side": "out",
+            "y": 64
+          }
+        ]
+      },
+      {
+        "id": "image-cdn",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#cc61b5",
+          "dark": "#e986d2"
+        },
+        "shape": "rect",
+        "label": "Image CDN"
+      },
+      {
+        "id": "search-index",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Search index"
+      },
+      {
+        "id": "orders-db",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Orders database"
+      },
+      {
+        "id": "product-images",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "Product images"
+      },
+      {
+        "id": "shop",
+        "w": 256,
+        "h": 192,
+        "band": 2,
+        "shape": "rect",
+        "label": "Shop service",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "shop-writer:out",
+            "side": "out",
+            "y": 64
+          },
+          {
+            "id": "shop-photos:out",
+            "side": "out",
+            "y": 96
+          },
+          {
+            "id": "shop-publisher:out",
+            "side": "out",
+            "y": 128
+          }
+        ]
+      },
+      {
+        "id": "identity",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "rect",
+        "label": "Identity"
+      },
+      {
+        "id": "payments",
+        "w": 256,
+        "h": 288,
+        "band": 2,
+        "shape": "rect",
+        "label": "Payments",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "header-out",
+            "side": "out",
+            "y": 32
+          },
+          {
+            "id": "payments-pricing:out",
+            "side": "out",
+            "y": 64
+          },
+          {
+            "id": "payments-records:out",
+            "side": "out",
+            "y": 192
+          },
+          {
+            "id": "payments-publisher:out",
+            "side": "out",
+            "y": 224
+          }
+        ]
+      },
+      {
+        "id": "cart",
+        "w": 256,
+        "h": 128,
+        "band": 2,
+        "shape": "rect",
+        "label": "Cart service",
+        "ports": [
+          {
+            "id": "header-in",
+            "side": "in",
+            "y": 32
+          },
+          {
+            "id": "cart-repository:out",
+            "side": "out",
+            "y": 64
+          }
+        ]
+      },
+      {
+        "id": "catalog-db",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "pill",
+        "label": "Catalog database"
+      },
+      {
+        "id": "listing-events",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#18a596",
+          "dark": "#1bc8b6"
+        },
+        "shape": "pill",
+        "label": "Listing events"
+      },
+      {
+        "id": "order-events",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#de5b87",
+          "dark": "#fb81a6"
+        },
+        "shape": "pill",
+        "label": "Order events"
+      },
+      {
+        "id": "payments-db",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "pill",
+        "label": "Payments database"
+      },
+      {
+        "id": "stripe",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "rect",
+        "label": "Stripe API"
+      },
+      {
+        "id": "cart-store",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "shape": "pill",
+        "label": "Cart store"
+      },
+      {
+        "id": "search-indexer",
+        "w": 256,
+        "h": 160,
+        "band": 2,
+        "shape": "rect",
+        "label": "Search indexer",
+        "ports": [
+          {
+            "id": "indexer-consumer:in",
+            "side": "in",
+            "y": 64
+          },
+          {
+            "id": "indexer-writer:out",
+            "side": "out",
+            "y": 96
+          }
+        ]
+      },
+      {
+        "id": "order-recorder",
+        "w": 256,
+        "h": 160,
+        "band": 2,
+        "shape": "rect",
+        "label": "Order recorder",
+        "ports": [
+          {
+            "id": "recorder-consumer:in",
+            "side": "in",
+            "y": 64
+          },
+          {
+            "id": "recorder-writer:out",
+            "side": "out",
+            "y": 96
+          }
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "id": "@actor-download",
+        "source": "@actor",
+        "target": "@download",
+        "connection": "@actor-download",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Browse",
+        "removable": false,
+        "group": "@actor-download"
+      },
+      {
+        "id": "@actor-upload",
+        "source": "@actor",
+        "target": "@upload",
+        "connection": "@actor-upload",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Buy & sell",
+        "removable": false,
+        "group": "@actor-upload"
+      },
+      {
+        "id": "download-storefront",
+        "source": "@download",
+        "target": "storefront",
+        "connection": "download-storefront",
+        "dashed": false,
+        "directed": true,
+        "label": "Browse to Storefront API",
+        "band": 0,
+        "targetPort": "header-in",
+        "group": "download-storefront"
+      },
+      {
+        "id": "download-orders",
+        "source": "@download",
+        "target": "orders",
+        "connection": "download-orders",
+        "dashed": false,
+        "directed": true,
+        "label": "Browse to Orders service",
+        "band": 0,
+        "targetPort": "header-in",
+        "group": "download-orders"
+      },
+      {
+        "id": "download-image-cdn",
+        "source": "@download",
+        "target": "image-cdn",
+        "connection": "download-image-cdn",
+        "dashed": false,
+        "directed": true,
+        "label": "Browse to Image CDN",
+        "band": 0,
+        "group": "download-image-cdn"
+      },
+      {
+        "id": "upload-shop",
+        "source": "@upload",
+        "target": "shop",
+        "connection": "upload-shop",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Shop service",
+        "band": 2,
+        "targetPort": "header-in",
+        "group": "upload-shop"
+      },
+      {
+        "id": "upload-identity",
+        "source": "@upload",
+        "target": "identity",
+        "connection": "upload-identity",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Identity",
+        "band": 2,
+        "group": "upload-identity"
+      },
+      {
+        "id": "upload-payments",
+        "source": "@upload",
+        "target": "payments",
+        "connection": "upload-payments",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Payments",
+        "band": 2,
+        "targetPort": "header-in",
+        "group": "upload-payments"
+      },
+      {
+        "id": "upload-cart",
+        "source": "@upload",
+        "target": "cart",
+        "connection": "upload-cart",
+        "dashed": false,
+        "directed": true,
+        "label": "Buy & sell to Cart service",
+        "band": 2,
+        "targetPort": "header-in",
+        "group": "upload-cart"
+      },
+      {
+        "id": "storefront-search/storefront-query",
+        "source": "storefront",
+        "target": "search-index",
+        "connection": "storefront-search",
+        "dashed": false,
+        "directed": true,
+        "label": "Listing search (Storefront API) to Search index",
+        "band": 0,
+        "sourcePort": "storefront-query:out",
+        "sourceModule": "storefront-query",
+        "disconnect": {
+          "link": "listing-search-index",
+          "label": "Disconnect Listing search from Search index"
+        },
+        "group": "storefront-search",
+        "detail": "Searches listings"
+      },
+      {
+        "id": "orders-read/orders-reader",
+        "source": "orders",
+        "target": "orders-db",
+        "connection": "orders-read",
+        "dashed": false,
+        "directed": true,
+        "label": "Order reader (Orders service) to Orders database",
+        "band": 0,
+        "sourcePort": "orders-reader:out",
+        "sourceModule": "orders-reader",
+        "disconnect": {
+          "link": "order-reader-db",
+          "label": "Disconnect Order reader from Orders database"
+        },
+        "group": "orders-read",
+        "detail": "Reads orders"
+      },
+      {
+        "id": "cdn-images",
+        "source": "image-cdn",
+        "target": "product-images",
+        "connection": "cdn-images",
+        "dashed": false,
+        "directed": true,
+        "label": "Image CDN to Product images",
+        "band": 0,
+        "group": "cdn-images",
+        "detail": "Reads original photos"
+      },
+      {
+        "id": "shop-catalog/shop-writer",
+        "source": "shop",
+        "target": "catalog-db",
+        "connection": "shop-catalog",
+        "dashed": false,
+        "directed": true,
+        "label": "Listing writer (Shop service) to Catalog database",
+        "band": 2,
+        "sourcePort": "shop-writer:out",
+        "sourceModule": "shop-writer",
+        "disconnect": {
+          "link": "listing-writer-db",
+          "label": "Disconnect Listing writer from Catalog database"
+        },
+        "group": "shop-catalog",
+        "detail": "Writes shops and listings"
+      },
+      {
+        "id": "shop-catalog/shop-publisher",
+        "source": "shop",
+        "target": "catalog-db",
+        "connection": "shop-catalog",
+        "dashed": false,
+        "directed": true,
+        "label": "Listing publisher (Shop service) to Catalog database",
+        "band": 2,
+        "sourcePort": "shop-publisher:out",
+        "sourceModule": "shop-publisher",
+        "disconnect": {
+          "link": "listing-publisher-outbox",
+          "label": "Disconnect Listing publisher from Catalog database"
+        },
+        "group": "shop-catalog",
+        "detail": "Writes shops and listings"
+      },
+      {
+        "id": "shop-images/shop-photos",
+        "source": "shop",
+        "target": "product-images",
+        "connection": "shop-images",
+        "dashed": false,
+        "directed": true,
+        "label": "Photo uploader (Shop service) to Product images",
+        "band": 2,
+        "sourcePort": "shop-photos:out",
+        "sourceModule": "shop-photos",
+        "disconnect": {
+          "link": "photo-uploader-images",
+          "label": "Disconnect Photo uploader from Product images"
+        },
+        "group": "shop-images",
+        "detail": "Stores original photos"
+      },
+      {
+        "id": "shop-listings/shop-publisher",
+        "source": "shop",
+        "target": "listing-events",
+        "connection": "shop-listings",
+        "dashed": true,
+        "directed": true,
+        "label": "Listing publisher (Shop service) to Listing events",
+        "band": 2,
+        "sourcePort": "shop-publisher:out",
+        "sourceModule": "shop-publisher",
+        "disconnect": {
+          "link": "listing-publisher-events",
+          "label": "Disconnect Listing publisher from Listing events"
+        },
+        "group": "shop-listings",
+        "detail": "Publishes listing changes"
+      },
+      {
+        "id": "payments-prices/payments-pricing",
+        "source": "payments",
+        "target": "catalog-db",
+        "connection": "payments-prices",
+        "dashed": false,
+        "directed": true,
+        "label": "Cart pricer (Payments) to Catalog database",
+        "band": 2,
+        "sourcePort": "payments-pricing:out",
+        "sourceModule": "payments-pricing",
+        "disconnect": {
+          "link": "pricing-catalog-db",
+          "label": "Disconnect Cart pricer from Catalog database"
+        },
+        "group": "payments-prices",
+        "detail": "Reads prices and shops"
+      },
+      {
+        "id": "payments-paid/payments-publisher",
+        "source": "payments",
+        "target": "order-events",
+        "connection": "payments-paid",
+        "dashed": true,
+        "directed": true,
+        "label": "Order publisher (Payments) to Order events",
+        "band": 2,
+        "sourcePort": "payments-publisher:out",
+        "sourceModule": "payments-publisher",
+        "disconnect": {
+          "link": "order-publisher-events",
+          "label": "Disconnect Order publisher from Order events"
+        },
+        "group": "payments-paid",
+        "detail": "Publishes paid orders"
+      },
+      {
+        "id": "payments-write/payments-records",
+        "source": "payments",
+        "target": "payments-db",
+        "connection": "payments-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Payment records (Payments) to Payments database",
+        "band": 2,
+        "sourcePort": "payments-records:out",
+        "sourceModule": "payments-records",
+        "disconnect": {
+          "link": "records-payments-db",
+          "label": "Disconnect Payment records from Payments database"
+        },
+        "group": "payments-write",
+        "detail": "Writes payments and payout accounts"
+      },
+      {
+        "id": "payments-write/payments-publisher",
+        "source": "payments",
+        "target": "payments-db",
+        "connection": "payments-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Order publisher (Payments) to Payments database",
+        "band": 2,
+        "sourcePort": "payments-publisher:out",
+        "sourceModule": "payments-publisher",
+        "disconnect": {
+          "link": "order-publisher-outbox",
+          "label": "Disconnect Order publisher from Payments database"
+        },
+        "group": "payments-write",
+        "detail": "Writes payments and payout accounts"
+      },
+      {
+        "id": "payments-stripe",
+        "source": "payments",
+        "target": "stripe",
+        "connection": "payments-stripe",
+        "dashed": false,
+        "directed": true,
+        "label": "Payments to Stripe API",
+        "band": 2,
+        "sourcePort": "header-out",
+        "group": "payments-stripe",
+        "detail": "Opens checkouts and pays sellers"
+      },
+      {
+        "id": "cart-write/cart-repository",
+        "source": "cart",
+        "target": "cart-store",
+        "connection": "cart-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Cart store client (Cart service) to Cart store",
+        "band": 2,
+        "sourcePort": "cart-repository:out",
+        "sourceModule": "cart-repository",
+        "disconnect": {
+          "link": "cart-client-store",
+          "label": "Disconnect Cart store client from Cart store"
+        },
+        "group": "cart-write",
+        "detail": "Reads & writes carts"
+      },
+      {
+        "id": "listings-indexer/indexer-consumer",
+        "source": "listing-events",
+        "target": "search-indexer",
+        "connection": "listings-indexer",
+        "dashed": true,
+        "directed": true,
+        "label": "Listing events to Listing consumer (Search indexer)",
+        "band": 2,
+        "targetPort": "indexer-consumer:in",
+        "targetModule": "indexer-consumer",
+        "disconnect": {
+          "link": "listing-consumer-events",
+          "label": "Disconnect Listing consumer from Listing events"
+        },
+        "group": "listings-indexer",
+        "detail": "Delivers listing changes"
+      },
+      {
+        "id": "paid-recorder/recorder-consumer",
+        "source": "order-events",
+        "target": "order-recorder",
+        "connection": "paid-recorder",
+        "dashed": true,
+        "directed": true,
+        "label": "Order events to Paid-order consumer (Order recorder)",
+        "band": 2,
+        "targetPort": "recorder-consumer:in",
+        "targetModule": "recorder-consumer",
+        "disconnect": {
+          "link": "paid-consumer-events",
+          "label": "Disconnect Paid-order consumer from Order events"
+        },
+        "group": "paid-recorder",
+        "detail": "Delivers paid orders"
+      },
+      {
+        "id": "indexer-write/indexer-writer",
+        "source": "search-indexer",
+        "target": "search-index",
+        "connection": "indexer-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Index writer (Search indexer) to Search index",
+        "band": 2,
+        "sourcePort": "indexer-writer:out",
+        "sourceModule": "indexer-writer",
+        "disconnect": {
+          "link": "index-writer-search",
+          "label": "Disconnect Index writer from Search index"
+        },
+        "group": "indexer-write",
+        "detail": "Indexes listings"
+      },
+      {
+        "id": "recorder-write/recorder-writer",
+        "source": "order-recorder",
+        "target": "orders-db",
+        "connection": "recorder-write",
+        "dashed": false,
+        "directed": true,
+        "label": "Order writer (Order recorder) to Orders database",
+        "band": 2,
+        "sourcePort": "recorder-writer:out",
+        "sourceModule": "recorder-writer",
+        "disconnect": {
+          "link": "order-writer-db",
+          "label": "Disconnect Order writer from Orders database"
+        },
+        "group": "recorder-write",
+        "detail": "Writes paid orders"
+      }
+    ]
+  },
+  "artwork": {
+    "shop-listings/shop-publisher": {
+      "d": "M 736 800 C 755.8 800 752.2 805 772 805 L 830 805 Q 839 805 839 814 L 839 887 Q 839 896 848 896 L 867.5 896 L 878 896 L 887 896",
+      "light": "#6c6f08"
+    },
+    "payments-paid/payments-publisher": {
+      "d": "M 736 1280 C 752.2 1280 749.3 1285 765.5 1285 L 786 1285 Q 795 1285 795 1294 L 795 1399 Q 795 1408 804 1408 L 850 1408 L 878 1408 L 887 1408",
+      "light": "#867cf0"
+    },
+    "listings-indexer/indexer-consumer": {
+      "d": "M 1024 896 L 1060 896 L 1074 896 L 1102 896 L 1111 896",
+      "light": "#18a596"
+    },
+    "paid-recorder/recorder-consumer": {
+      "d": "M 1024 1408 L 1060 1408 L 1074 1408 L 1102 1408 L 1111 1408",
+      "light": "#de5b87"
+    },
+    "@actor-download": {
+      "d": "M 160 608 C 173.2 608 170.8 603 184 603 L 199 603 Q 208 603 208 594 L 208 233 Q 208 224 217 224 L 232 224 L 238 224 L 247 224",
+      "light": "#99acbd"
+    },
+    "@actor-upload": {
+      "d": "M 160 608 C 173.2 608 170.8 613 184 613 L 199 613 Q 208 613 208 622 L 208 983 Q 208 992 217 992 L 232 992 L 238 992 L 247 992",
+      "light": "#677888"
+    },
+    "download-storefront": {
+      "d": "M 384 224 C 397.2 224 394.8 214 408 214 L 423 214 Q 432 214 432 205 L 432 73 Q 432 64 441 64 L 456 64 L 462 64 L 471 64",
+      "light": "#a2b5c5"
+    },
+    "download-orders": {
+      "d": "M 384 224 L 420 224 L 434 224 L 462 224 L 471 224",
+      "light": "#5f707e"
+    },
+    "download-image-cdn": {
+      "d": "M 384 224 C 397.2 224 394.8 234 408 234 L 423 234 Q 432 234 432 243 L 432 407 Q 432 416 441 416 L 498 416 L 526 416 L 535 416",
+      "light": "#7e92a3"
+    },
+    "upload-shop": {
+      "d": "M 384 992 C 397.2 992 394.8 977 408 977 L 423 977 Q 432 977 432 968 L 432 713 Q 432 704 441 704 L 456 704 L 462 704 L 471 704",
+      "light": "#a7b9c9"
+    },
+    "upload-identity": {
+      "d": "M 384 992 C 400.2 992 397.3 987 413.5 987 L 434 987 Q 443 987 443 978 L 443 969 Q 443 960 452 960 L 461.5 960 L 462 960 L 471 960",
+      "light": "#728595"
+    },
+    "upload-payments": {
+      "d": "M 384 992 C 400.2 992 397.3 997 413.5 997 L 434 997 Q 443 997 443 1006 L 443 1079 Q 443 1088 452 1088 L 461.5 1088 L 462 1088 L 471 1088",
+      "light": "#8b9fb0"
+    },
+    "upload-cart": {
+      "d": "M 384 992 C 397.2 992 394.8 1007 408 1007 L 423 1007 Q 432 1007 432 1016 L 432 1527 Q 432 1536 441 1536 L 456 1536 L 462 1536 L 471 1536",
+      "light": "#5c6c7a"
+    },
+    "storefront-search/storefront-query": {
+      "d": "M 736 96 L 772 96 L 1054 96 Q 1063 96 1063 105 L 1063 556 Q 1063 565 1072 565 L 1091.5 565 C 1096.8 565 1096.8 567.8 1102 567.8 L 1111 567.8",
+      "light": "#e35e52"
+    },
+    "orders-read/orders-reader": {
+      "d": "M 736 256 L 772 256 L 1438 256 Q 1447 256 1447 265 L 1447 556 Q 1447 565 1456 565 L 1475.5 565 C 1480.8 565 1480.8 567.8 1486 567.8 L 1495 567.8",
+      "light": "#18a96a"
+    },
+    "cdn-images": {
+      "d": "M 672 416 L 708 416 L 786 416 Q 795 416 795 425 L 795 556 Q 795 565 804 565 L 850 565 C 864 565 864 567.8 878 567.8 L 887 567.8",
+      "light": "#cc61b5"
+    },
+    "shop-catalog/shop-writer": {
+      "d": "M 736 736 L 765.5 736 L 786 736 Q 795 736 795 727 L 795 723 Q 795 714 804 714 L 850 714 C 864 714 864 719.5 878 719.5 L 887 719.5",
+      "light": "#ceb830"
+    },
+    "shop-catalog/shop-publisher": {
+      "d": "M 736 800 C 755.8 800 752.2 795 772 795 L 808 795 Q 817 795 817 786 L 817 745 Q 817 736 826 736 L 856.5 736 L 878 736 L 887 736",
+      "light": "#ac9f05"
+    },
+    "shop-images/shop-photos": {
+      "d": "M 736 768 L 771 768 L 797 768 Q 806 768 806 759 L 806 596 Q 806 587 815 587 L 851 587 C 864.5 587 864.5 584.3 878 584.3 L 887 584.3",
+      "light": "#8b8701"
+    },
+    "payments-prices/payments-pricing": {
+      "d": "M 736 1120 L 772 1120 L 819 1120 Q 828 1120 828 1111 L 828 767 Q 828 758 837 758 L 862 758 C 870 758 870 752.5 878 752.5 L 887 752.5",
+      "light": "#7868d0"
+    },
+    "payments-write/payments-records": {
+      "d": "M 736 1248 L 765.5 1248 L 789.5 1248 Q 795 1248 795 1242.5 L 795 1242.5 Q 795 1237 800.5 1237 L 850 1237 C 864 1237 864 1239.8 878 1239.8 L 887 1239.8",
+      "light": "#9697fd"
+    },
+    "payments-write/payments-publisher": {
+      "d": "M 736 1280 C 752.2 1280 749.3 1275 765.5 1275 L 787 1275 Q 795 1275 795 1267 L 795 1267 Q 795 1259 803 1259 L 850 1259 C 864 1259 864 1256.3 878 1256.3 L 887 1256.3",
+      "light": "#6954b1"
+    },
+    "payments-stripe": {
+      "d": "M 736 1088 L 772 1088 L 850 1088 L 878 1088 L 887 1088",
+      "light": "#aab3fc"
+    },
+    "cart-write/cart-repository": {
+      "d": "M 736 1568 L 772 1568 L 850 1568 L 878 1568 L 887 1568",
+      "light": "#d86e07"
+    },
+    "indexer-write/indexer-writer": {
+      "d": "M 1376 928 L 1400 928 L 1415 928 Q 1424 928 1424 919 L 1424 669 Q 1424 660 1415 660 L 1081 660 Q 1072 660 1072 651 L 1072 596 Q 1072 587 1081 587 L 1096 587 C 1099 587 1099 584.3 1102 584.3 L 1111 584.3",
+      "light": "#68a31d"
+    },
+    "recorder-write/recorder-writer": {
+      "d": "M 1376 1440 L 1411.5 1440 L 1438 1440 Q 1447 1440 1447 1431 L 1447 596 Q 1447 587 1456 587 L 1475.5 587 C 1480.8 587 1480.8 584.3 1486 584.3 L 1495 584.3",
+      "light": "#af6dda"
+    }
+  }
+}

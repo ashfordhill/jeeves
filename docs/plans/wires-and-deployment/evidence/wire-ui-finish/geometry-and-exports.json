@@ -1,0 +1,71 @@
+{
+  "scope": "actual exported capture metadata, six study/view cases; fans/gathers intentionally converge and are native-compared separately",
+  "cases": [
+    {
+      "study": "tinyurl",
+      "view": "simple",
+      "lines": 12,
+      "parallelRunsBelow8px": [],
+      "rawRoutesThroughOtherTiles": [],
+      "minimumMultipleArrivalLaneGap": 22,
+      "maximumArrivalCountAtOnePort": 2,
+      "lightDarkPngByteEqualAcrossReload": true,
+      "sha256": "a0e4b57fc7e93bcaf5a86ca688ec741e844ac7f010a413b735aff54fa055d01a"
+    },
+    {
+      "study": "tinyurl",
+      "view": "detailed",
+      "lines": 12,
+      "parallelRunsBelow8px": [],
+      "rawRoutesThroughOtherTiles": [],
+      "minimumMultipleArrivalLaneGap": 22,
+      "maximumArrivalCountAtOnePort": 2,
+      "lightDarkPngByteEqualAcrossReload": true,
+      "sha256": "b59f77a83cb67f8417011ad48480694704f1e06fef8fd7500b373d02a0f41272"
+    },
+    {
+      "study": "marketplace",
+      "view": "simple",
+      "lines": 24,
+      "parallelRunsBelow8px": [],
+      "rawRoutesThroughOtherTiles": [],
+      "minimumMultipleArrivalLaneGap": 22,
+      "maximumArrivalCountAtOnePort": 2,
+      "lightDarkPngByteEqualAcrossReload": true,
+      "sha256": "6e778262d33890bf9a8b8bcf04ab1a70134a1e72b22f792b552783e957b65a1b"
+    },
+    {
+      "study": "marketplace",
+      "view": "detailed",
+      "lines": 26,
+      "parallelRunsBelow8px": [],
+      "rawRoutesThroughOtherTiles": [],
+      "minimumMultipleArrivalLaneGap": 22,
+      "maximumArrivalCountAtOnePort": 3,
+      "lightDarkPngByteEqualAcrossReload": true,
+      "sha256": "7c179ba5edaa302e896478c1a5bd09f8b5488ef6560e1fa82f729879971767d1"
+    },
+    {
+      "study": "youtube",
+      "view": "simple",
+      "lines": 25,
+      "parallelRunsBelow8px": [],
+      "rawRoutesThroughOtherTiles": [],
+      "minimumMultipleArrivalLaneGap": 22,
+      "maximumArrivalCountAtOnePort": 2,
+      "lightDarkPngByteEqualAcrossReload": true,
+      "sha256": "7183ab8291563aae975f3abee908bb0d6530a023a7d518eca7ab3c05442bf980"
+    },
+    {
+      "study": "youtube",
+      "view": "detailed",
+      "lines": 26,
+      "parallelRunsBelow8px": [],
+      "rawRoutesThroughOtherTiles": [],
+      "minimumMultipleArrivalLaneGap": 22,
+      "maximumArrivalCountAtOnePort": 3,
+      "lightDarkPngByteEqualAcrossReload": true,
+      "sha256": "3b3cc0f3f45e0bb84f1d7455d66aad8c73b8304af099ef6f4817c096579d61dd"
+    }
+  ]
+}

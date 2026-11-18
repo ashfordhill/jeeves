@@ -1,6 +1,6 @@
 // The lane canvas: the design's lane graph (`laneGraph`) on the board. The actor, its actions and
 // every tile become board tiles; the user's lines to its actions, the entries and connections
-// become directed lines, dashed only when that relationship is asynchronous. Lines carry no words;
+// become directed wires, beaded only when that relationship is asynchronous. Lines carry no words;
 // their accessible names say what they join. The selected tile's tabs come from `creation`, the
 // removal's confirmation from `removal`, and connect mode's rules and new links from `connect`. A
 // right-click on a tile or a line goes to `onTileMenu` or `onLineMenu`, which open the
@@ -63,6 +63,7 @@ import { ActionTile } from "./tiles/ActionTile.tsx";
 import { ACTOR_NAME, ActorTile } from "./tiles/ActorTile.tsx";
 import { ContainerTile, ModuleRows } from "./tiles/ContainerTile.tsx";
 import { Tile, tileShape } from "./tiles/Tile.tsx";
+import { wireStep, wireTone } from "./wireColours.ts";
 import "./canvas.css";
 
 /** A tile's, action's or the user's name on the canvas. */
@@ -76,6 +77,7 @@ export function laneNodeName(design: DesignDocument, graph: LaneGraph, id: strin
 export function LaneCanvas({
   design,
   graph,
+  wires,
   view,
   selected,
   mode,
@@ -95,6 +97,8 @@ export function LaneCanvas({
   design: DesignDocument;
   /** `laneGraph(design)`. */
   graph: LaneGraph;
+  /** Colour slot per sending tile (`assignWireSlots`). */
+  wires: Readonly<Record<string, number>>;
   view: CanvasView;
   /**
    * A tile (with its open module, if any), or a canonical relationship (never a Detailed view's
@@ -126,8 +130,17 @@ export function LaneCanvas({
   adding?: ModuleAdding;
   ref?: Ref<BoardHandle>;
 }) {
-  const { tiles, lines, warnings, kindLabel } = useMemo(() => {
+  const { tiles, lines, warnings, kindLabel, wire, slot } = useMemo(() => {
     const name = (id: string) => laneNodeName(design, graph, id);
+    // A tile's colour slot; the user and the actions have none and are slate.
+    const laneNodes = new Set(
+      graph.nodes.filter((node) => node.id === LANE_ACTOR || node.action).map((node) => node.id),
+    );
+    const slot = (tile: string) => (laneNodes.has(tile) ? undefined : (wires[tile] ?? 0));
+    const sends = new Set(graph.edges.map((edge) => edge.source));
+    const wire = (tile: string) => (rank: number, of: number) =>
+      wireTone(slot(tile), (wireStep(rank, of) + 0.5) / of);
+    const dot = (tile: string) => (sends.has(tile) ? { dot: wireTone(slot(tile), 0.5) } : {});
     const settings = new Map(
       design.architecture?.studio?.elements.map((row) => [row.element, row.settings]),
     );
@@ -146,11 +159,19 @@ export function LaneCanvas({
     };
     const tiles: TileSpec[] = graph.nodes.map((node, i) =>
       node.id === LANE_ACTOR
-        ? { id: node.id, ...box(i), shape: "rect", label: ACTOR_NAME, content: <ActorTile /> }
+        ? {
+            id: node.id,
+            ...box(i),
+            ...dot(node.id),
+            shape: "rect",
+            label: ACTOR_NAME,
+            content: <ActorTile />,
+          }
         : node.action
           ? {
               id: node.id,
               ...box(i),
+              ...dot(node.id),
               shape: "rect",
               label: name(node.id),
               content: (
@@ -164,6 +185,7 @@ export function LaneCanvas({
           : {
               id: node.id,
               ...box(i),
+              ...dot(node.id),
               shape: tileShape(node.kind),
               label: name(node.id),
               content: (
@@ -181,6 +203,7 @@ export function LaneCanvas({
     const lines: LineSpec[] = graph.edges.map((edge, i) => ({
       id: edge.id,
       source: edge.source,
+      wire: wire(edge.source),
       target: edge.target,
       dashed: edge.dashed,
       directed: true,
@@ -188,8 +211,8 @@ export function LaneCanvas({
       detail: design.connections.find((item) => item.id === edge.id)?.planned.label,
       ...(input.lines[i]?.band !== undefined && { band: input.lines[i]?.band }),
     }));
-    return { tiles, lines, warnings, kindLabel };
-  }, [design, graph]);
+    return { tiles, lines, warnings, kindLabel, wire, slot };
+  }, [design, graph, wires]);
 
   // The Detailed view: containers in place of module hosts, and the projection's lines.
   const detailed = useMemo(() => {
@@ -200,8 +223,9 @@ export function LaneCanvas({
       const box = projection.tiles[i];
       const container = projection.containers.get(tile.id);
       if (!box || !container) return tile;
+      const { dot: _dot, ...plain } = tile;
       return {
-        ...tile,
+        ...plain,
         w: box.w,
         h: box.h,
         ...(box.ports && { ports: box.ports }),
@@ -209,6 +233,7 @@ export function LaneCanvas({
         content: (
           <ContainerTile
             id={tile.id}
+            wire={wireTone(slot(tile.id), 0.5)}
             kind={graph.nodes[i]?.kind}
             name={tile.label}
             label={kindLabel(tile.id)}
@@ -223,11 +248,12 @@ export function LaneCanvas({
     // A relationship drawn as several lines is one entry in Choose relationship (`group`).
     const detailedLines: LineSpec[] = projection.lines.map((line) => ({
       ...line,
+      wire: wire(line.source),
       group: line.connection,
       detail: design.connections.find((item) => item.id === line.connection)?.planned.label,
     }));
     return { projection, tiles: detailedTiles, lines: detailedLines };
-  }, [view, design, graph, tiles, warnings, kindLabel]);
+  }, [view, design, graph, tiles, warnings, kindLabel, wire, slot]);
 
   // The drawn line last clicked, so it (not its first sibling) shows as the selected line.
   const [clicked, setClicked] = useState<string>();
@@ -258,6 +284,7 @@ export function LaneCanvas({
       <BoardModuleAdding value={boardAdding}>
         <ModuleRows value={rows}>
           <Board
+            lanes
             ref={ref}
             tiles={detailed?.tiles ?? tiles}
             lines={detailed?.lines ?? lines}

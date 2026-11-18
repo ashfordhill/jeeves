@@ -1,0 +1,2 @@
+import original from '/home/ash/github/jeeves/jeeves/playwright.config.ts';
+export default { ...original, testDir: '/tmp/jeeves-wire-ui-finish/browser', outputDir: '/tmp/jeeves-wire-ui-finish/browser/results', workers: 1, timeout: 240000, webServer: original.webServer.map(server => ({...server,cwd:'/home/ash/github/jeeves'})) };

@@ -19817,3 +19817,40 @@ workload settings the same way.
 - One explicit-path local commit follows: `WD14: final review of wires and deployment`. Execution
   stops here for coordinator acceptance; no later unit/plan, QRWTY work, new benchmark, push or
   deployment. WD06/07/12 stop records and owner decisions remain outstanding as listed in review.
+
+
+## 2026-11-18 — Studio wire UI finished, owner follow-up
+
+- After seeing the old UI, the owner asked, “can you have an agent finish it?” This follow-up
+  adapts obsolete shared-line assertions as necessary implementation work, preserving selection,
+  hover and PNG coverage. This is
+  one follow-up, not a numbered WD unit; WD12's backend drill stays stopped. Old stop patches,
+  evidence and prior handoffs remain intact.
+- Simple and Detailed now draw the approved source colours/shades, outlined bundles, module
+  dots/fans/gathers, individual soft heads, async beads, blue selection outlines and hover.
+  Slots persist in browser preferences across views/reload; exact design responses (including
+  history) and blueprints stay unchanged. No design/schema/chat/generation/settings/backend or
+  dependency change. Generic Board defaults retain their original paths and pointer behavior.
+- Split Detailed YouTube's shared return trunk. Picking still follows live SVG curves with
+  unsnapped coordinates; adaptive subdivision/cache keeps nearest/group/menu behavior and
+  invalidates changed paths. Board-owned default/row/header anchors remove measured-handle
+  dependence from wire geometry and PNGs. Native YouTube Detailed: 1.10ms cold / 0.10ms median
+  repeated geometry-plus-nearest, maximum curve error 0.123px at 4,336 native samples.
+- Serial gates pass: `pnpm check` 155 files/1,438 tests (118.37s), native E2E 91/91 (5.6m,
+  TinyURL and both mouse rebuilds), web build 879ms. Browser 2/2 covers actual all-12 study/view/
+  theme cases and native fan selection/menu. Six unique PNGs visually inspected; both themes'
+  actual exports are byte-identical across reload. [Evidence](plans/wires-and-deployment/evidence/wire-ui-finish/README.md)
+  preserves initial fixture/helper/hover timing/PNG race failures and corrected results. Existing
+  eight lint warnings/twelve infos and chunk warning remain.
+- All six actual layouts have zero <8px parallel raw overlaps and zero routes through other
+  tiles. Approved pitches/head constants stay fixed: converging fans/gathers and the nominal
+  1.05px head gap remain. The synthetic ten-arrivals/128px clamp limit and least-bad crowded
+  return fallback remain documented; no compression/growth policy or universal geometry/
+  latency guarantee is claimed.
+- Preserved 7,433 unrelated starting byte/mode/absence states and all starting modes across 7,457 paths;
+  original 42 full container triples / 9 networks / 23 volumes / 43 images, Postgres port and
+  both old E2E rows match. Own projects zero, test ports free; owner web/API PIDs 1124326/927362
+  unchanged, no owner request/control. Read-only RG21 audit passes. Root/owner files, mode-only
+  changes, old apps/exports/evidence/frozen v1 stay untouched. No branch/worktree/stash/delegation,
+  live/paid call, push or deployment. One explicit-path local commit follows:
+  `Finish studio wire rendering and interaction`. Stop for coordinator acceptance.

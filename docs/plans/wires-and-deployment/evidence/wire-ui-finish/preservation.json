@@ -1,0 +1,103 @@
+{
+  "startingHead": "ff4a1ecc13c0a2ad7ec23542702d24715bf53b3b",
+  "startingPaths": 7457,
+  "unrelatedStartingStatesPreserved": 7433,
+  "allowedExistingPaths": [
+    "docs/HUMAN_FEEDBACK.md",
+    "docs/design-playbook.md",
+    "docs/handoff.md",
+    "docs/plans/README.md",
+    "docs/plans/wires-and-deployment/review.md",
+    "docs/plans/wires-and-deployment/units.md",
+    "docs/studio.md",
+    "jeeves/apps/web/e2e/canvas.spec.ts",
+    "jeeves/apps/web/e2e/connect.spec.ts",
+    "jeeves/apps/web/e2e/detailed-view.spec.ts",
+    "jeeves/apps/web/e2e/export.ts",
+    "jeeves/apps/web/e2e/relationship-tracing.spec.ts",
+    "jeeves/apps/web/src/canvas/LaneCanvas.tsx",
+    "jeeves/apps/web/src/canvas/LineLegend.test.tsx",
+    "jeeves/apps/web/src/canvas/LineLegend.tsx",
+    "jeeves/apps/web/src/canvas/Workspace.tsx",
+    "jeeves/apps/web/src/canvas/canvas.css",
+    "jeeves/apps/web/src/canvas/laneLayout.test.ts",
+    "jeeves/apps/web/src/canvas/tiles/ContainerTile.tsx",
+    "jeeves/packages/board/src/layout/returns.ts",
+    "jeeves/packages/board/src/react/Board.tsx",
+    "jeeves/packages/board/src/react/BoardLine.tsx",
+    "jeeves/packages/board/src/react/board.css",
+    "jeeves/packages/board/src/react/wireSelection.test.tsx"
+  ],
+  "allStartingModesPreserved": true,
+  "startingHandoffBytes": 1482550,
+  "startingHandoffSha256": "c0f82a32d8be1b5f05b3af8124ff560bc67a0f3aa719d4a22ed9254d35563a7d",
+  "handoffPrefixPreserved": true,
+  "resources": {
+    "containers": {
+      "count": 42,
+      "exactMatch": true,
+      "startingSha256": "6b96c8b917ff4b2d4ecf4096592bc625b54894b503931b72a6adc974b8f67aa0",
+      "finalSha256": "6b96c8b917ff4b2d4ecf4096592bc625b54894b503931b72a6adc974b8f67aa0",
+      "comparisonBasis": "Complete rows sorted lexicographically, joined by newline with final newline; raw ordering is not significant.",
+      "startingSortedRowsSha256": "71c38e9e90fff2b513a7feeb73b1fff40d68d8f0b91c580d03ea8f5dcaa59bcf",
+      "finalSortedRowsSha256": "71c38e9e90fff2b513a7feeb73b1fff40d68d8f0b91c580d03ea8f5dcaa59bcf"
+    },
+    "networks": {
+      "count": 9,
+      "exactMatch": true,
+      "startingSha256": "dc3f5c857729142b05ec0d758428630477cf24c7098d27886ef9c57e2ca1614d",
+      "finalSha256": "dc3f5c857729142b05ec0d758428630477cf24c7098d27886ef9c57e2ca1614d",
+      "comparisonBasis": "Complete rows sorted lexicographically, joined by newline with final newline; raw ordering is not significant.",
+      "startingSortedRowsSha256": "e882d16b0ef5e4e6ae48d022a3c4453abdb497a166cfc8799b8943a41c71121e",
+      "finalSortedRowsSha256": "e882d16b0ef5e4e6ae48d022a3c4453abdb497a166cfc8799b8943a41c71121e"
+    },
+    "volumes": {
+      "count": 23,
+      "exactMatch": true,
+      "startingSha256": "3be5b67311dbd13ebb5ecd132e03cf582772d49c957f9c85f6e6143cfc25482c",
+      "finalSha256": "3be5b67311dbd13ebb5ecd132e03cf582772d49c957f9c85f6e6143cfc25482c",
+      "comparisonBasis": "Complete rows sorted lexicographically, joined by newline with final newline; raw ordering is not significant.",
+      "startingSortedRowsSha256": "0ac7e2e98f5d379c56c9874ebae0509a9d8625876fffb2adda0e39251a89901d",
+      "finalSortedRowsSha256": "0ac7e2e98f5d379c56c9874ebae0509a9d8625876fffb2adda0e39251a89901d"
+    },
+    "images": {
+      "count": 43,
+      "exactMatch": true,
+      "startingSha256": "f9c2222d855521a4906e3b474d2248f3d65017201f83212085230a6a21caaecb",
+      "finalSha256": "4bf8e4f60c1dca0b0d0b16eb24e7c773b78fb36befa5d93d297cb1075289e9d7",
+      "comparisonBasis": "Complete rows sorted lexicographically, joined by newline with final newline; raw ordering is not significant.",
+      "startingSortedRowsSha256": "1353d0e1c4aebba1e7981598a3007c7ebf3c51f44bf857a8a8d8c34e1f1951cb",
+      "finalSortedRowsSha256": "1353d0e1c4aebba1e7981598a3007c7ebf3c51f44bf857a8a8d8c34e1f1951cb"
+    },
+    "postgres-port": {
+      "count": 1,
+      "exactMatch": true,
+      "startingSha256": "768ae6b6753c888d415ecba989fb5d3b7846f96000fe861f4933c0e877e31853",
+      "finalSha256": "768ae6b6753c888d415ecba989fb5d3b7846f96000fe861f4933c0e877e31853",
+      "comparisonBasis": "Complete rows sorted lexicographically, joined by newline with final newline; raw ordering is not significant.",
+      "startingSortedRowsSha256": "768ae6b6753c888d415ecba989fb5d3b7846f96000fe861f4933c0e877e31853",
+      "finalSortedRowsSha256": "768ae6b6753c888d415ecba989fb5d3b7846f96000fe861f4933c0e877e31853"
+    },
+    "e2e-rows": {
+      "count": 2,
+      "exactMatch": true,
+      "startingSha256": "860445b1e5e3516b3acd262a2dc6db33985dc7ad9a217528508d392fa4620055",
+      "finalSha256": "860445b1e5e3516b3acd262a2dc6db33985dc7ad9a217528508d392fa4620055",
+      "comparisonBasis": "Complete rows sorted lexicographically, joined by newline with final newline; raw ordering is not significant.",
+      "startingSortedRowsSha256": "860445b1e5e3516b3acd262a2dc6db33985dc7ad9a217528508d392fa4620055",
+      "finalSortedRowsSha256": "860445b1e5e3516b3acd262a2dc6db33985dc7ad9a217528508d392fa4620055"
+    }
+  },
+  "testPortsFree": true,
+  "ownerListeners": {
+    "4300": 1124326,
+    "4310": 927362,
+    "unchangedFromAcceptedHandoff": true,
+    "actions": "read-only listener check; no owner-port request or process control"
+  },
+  "ownProjectsRemaining": 0,
+  "taskDockerResourcesCreated": 0,
+  "rg21Audit": "passes; process-local core.abbrev=7; scripts/baselines/config unchanged",
+  "startingPresentFileModes": 7435,
+  "startingAbsentPaths": 22
+}

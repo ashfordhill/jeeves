@@ -1,0 +1,600 @@
+{
+  "details": {
+    "format": "jeeves-diagram-capture-v1",
+    "capturedAt": "2026-11-18T15:23:55.072Z",
+    "project": {
+      "id": "8f377192-fab9-4fc9-9481-8b922212f1b6",
+      "name": "E2E Wire finish tinyurl",
+      "revision": 1
+    },
+    "source": {
+      "designSha256": "d04cc636acbdd2d7143df4f33b222e37ba832ed105a8d73e85f8a6aabf4c3bf7",
+      "hashEncoding": "UTF-8 JSON with recursively sorted object keys; array order preserved",
+      "schemaVersion": 2
+    },
+    "renderer": {
+      "appVersion": "0.1.0",
+      "commit": "ff4a1ecc13c0a2ad7ec23542702d24715bf53b3b",
+      "trackedTreeDirtyAtBuild": true,
+      "mode": "development",
+      "treeVerification": "Development server: verify Git identity/tree at capture; HMR can change source after startup.",
+      "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36"
+    },
+    "image": {
+      "filename": "E2E-Wire-finish-tinyurl-r1.png",
+      "sha256": "a0e4b57fc7e93bcaf5a86ca688ec741e844ac7f010a413b735aff54fa055d01a",
+      "width": 2272,
+      "height": 1664,
+      "scale": 2,
+      "margin": 32,
+      "background": "#e8f4fa",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1136,
+        "h": 832
+      },
+      "font": "Nunito Variable",
+      "embeddedFontCssSha256": "f8eec7af9098771a705fa759c8df6faa7031d2a4f58c2d15f6eb793bbf79709d"
+    },
+    "view": {
+      "relationships": "all projected relationships",
+      "selection": "omitted",
+      "camera": "full bounds at 1 board pixel per CSS pixel; interactive camera ignored",
+      "ownerExpansion": "canonical process tiles",
+      "owners": []
+    },
+    "layout": {
+      "key": "[[[\"@actor\",128,160,null],[\"@download\",128,128,0],[\"@upload\",128,128,2],[\"stats-api\",128,128,0],[\"redirect\",128,128,0],[\"analytics-store\",128,128,0],[\"click-events\",128,128,0],[\"url-cache\",128,128,0],[\"url-db\",128,128,1],[\"analytics\",128,128,0],[\"shorten\",128,128,2]],[[\"@actor-download\",\"@actor\",\"@download\",0,0,null],[\"@actor-upload\",\"@actor\",\"@upload\",0,0,null],[\"download-stats-api\",\"@download\",\"stats-api\",0,0,0],[\"download-redirect\",\"@download\",\"redirect\",0,0,0],[\"upload-shorten\",\"@upload\",\"shorten\",0,0,2],[\"stats-read\",\"stats-api\",\"analytics-store\",0,0,0],[\"redirect-clicks\",\"redirect\",\"click-events\",0,0,0],[\"redirect-cache\",\"redirect\",\"url-cache\",0,0,0],[\"redirect-db\",\"redirect\",\"url-db\",0,0,0],[\"click-events-analytics\",\"click-events\",\"analytics\",0,0,0],[\"analytics-write\",\"analytics\",\"analytics-store\",0,0,0],[\"shorten-db\",\"shorten\",\"url-db\",0,0,2]],\"lanes\"]",
+      "positions": {
+        "@actor": {
+          "x": 32,
+          "y": 432
+        },
+        "@download": {
+          "x": 256,
+          "y": 192
+        },
+        "@upload": {
+          "x": 256,
+          "y": 672
+        },
+        "stats-api": {
+          "x": 480,
+          "y": 32
+        },
+        "redirect": {
+          "x": 480,
+          "y": 288
+        },
+        "analytics-store": {
+          "x": 928,
+          "y": 32
+        },
+        "click-events": {
+          "x": 704,
+          "y": 192
+        },
+        "url-cache": {
+          "x": 704,
+          "y": 352
+        },
+        "url-db": {
+          "x": 704,
+          "y": 512
+        },
+        "analytics": {
+          "x": 928,
+          "y": 192
+        },
+        "shorten": {
+          "x": 480,
+          "y": 672
+        }
+      },
+      "routes": {
+        "@actor-download": [
+          {
+            "x": 160,
+            "y": 507
+          },
+          {
+            "x": 208,
+            "y": 507
+          },
+          {
+            "x": 208,
+            "y": 256
+          },
+          {
+            "x": 256,
+            "y": 256
+          }
+        ],
+        "@actor-upload": [
+          {
+            "x": 160,
+            "y": 517
+          },
+          {
+            "x": 208,
+            "y": 517
+          },
+          {
+            "x": 208,
+            "y": 736
+          },
+          {
+            "x": 256,
+            "y": 736
+          }
+        ],
+        "download-stats-api": [
+          {
+            "x": 384,
+            "y": 251
+          },
+          {
+            "x": 432,
+            "y": 251
+          },
+          {
+            "x": 432,
+            "y": 96
+          },
+          {
+            "x": 480,
+            "y": 96
+          }
+        ],
+        "download-redirect": [
+          {
+            "x": 384,
+            "y": 261
+          },
+          {
+            "x": 432,
+            "y": 261
+          },
+          {
+            "x": 432,
+            "y": 352
+          },
+          {
+            "x": 480,
+            "y": 352
+          }
+        ],
+        "upload-shorten": [
+          {
+            "x": 384,
+            "y": 736
+          },
+          {
+            "x": 480,
+            "y": 736
+          }
+        ],
+        "stats-read": [
+          {
+            "x": 608,
+            "y": 96
+          },
+          {
+            "x": 891,
+            "y": 96
+          },
+          {
+            "x": 891,
+            "y": 85
+          },
+          {
+            "x": 928,
+            "y": 85
+          }
+        ],
+        "redirect-clicks": [
+          {
+            "x": 608,
+            "y": 342
+          },
+          {
+            "x": 656,
+            "y": 342
+          },
+          {
+            "x": 656,
+            "y": 256
+          },
+          {
+            "x": 704,
+            "y": 256
+          }
+        ],
+        "redirect-cache": [
+          {
+            "x": 608,
+            "y": 352
+          },
+          {
+            "x": 667,
+            "y": 352
+          },
+          {
+            "x": 667,
+            "y": 416
+          },
+          {
+            "x": 704,
+            "y": 416
+          }
+        ],
+        "redirect-db": [
+          {
+            "x": 608,
+            "y": 362
+          },
+          {
+            "x": 656,
+            "y": 362
+          },
+          {
+            "x": 656,
+            "y": 565
+          },
+          {
+            "x": 704,
+            "y": 565
+          }
+        ],
+        "click-events-analytics": [
+          {
+            "x": 832,
+            "y": 256
+          },
+          {
+            "x": 928,
+            "y": 256
+          }
+        ],
+        "shorten-db": [
+          {
+            "x": 608,
+            "y": 736
+          },
+          {
+            "x": 656,
+            "y": 736
+          },
+          {
+            "x": 656,
+            "y": 587
+          },
+          {
+            "x": 704,
+            "y": 587
+          }
+        ],
+        "analytics-write": [
+          {
+            "x": 1056,
+            "y": 256
+          },
+          {
+            "x": 1104,
+            "y": 256
+          },
+          {
+            "x": 1104,
+            "y": 176
+          },
+          {
+            "x": 880,
+            "y": 176
+          },
+          {
+            "x": 880,
+            "y": 107
+          },
+          {
+            "x": 928,
+            "y": 107
+          }
+        ]
+      },
+      "chips": {},
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "w": 1136,
+        "h": 832
+      }
+    },
+    "tiles": [
+      {
+        "id": "@actor",
+        "w": 128,
+        "h": 160,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "User"
+      },
+      {
+        "id": "@download",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Open link"
+      },
+      {
+        "id": "@upload",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#7e92a3",
+          "dark": "#9eb1c1"
+        },
+        "shape": "rect",
+        "label": "Shorten"
+      },
+      {
+        "id": "stats-api",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#e35e52",
+          "dark": "#fd8679"
+        },
+        "shape": "rect",
+        "label": "Stats API"
+      },
+      {
+        "id": "redirect",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#18a96a",
+          "dark": "#43ca86"
+        },
+        "shape": "rect",
+        "label": "Redirect service"
+      },
+      {
+        "id": "analytics-store",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "shape": "pill",
+        "label": "Analytics store"
+      },
+      {
+        "id": "click-events",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#cc61b5",
+          "dark": "#e986d2"
+        },
+        "shape": "pill",
+        "label": "Click events"
+      },
+      {
+        "id": "url-cache",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "shape": "pill",
+        "label": "URL cache"
+      },
+      {
+        "id": "url-db",
+        "w": 128,
+        "h": 128,
+        "band": 1,
+        "shape": "pill",
+        "label": "URL database"
+      },
+      {
+        "id": "analytics",
+        "w": 128,
+        "h": 128,
+        "band": 0,
+        "dot": {
+          "light": "#9b9306",
+          "dark": "#bcb31e"
+        },
+        "shape": "rect",
+        "label": "Analytics worker"
+      },
+      {
+        "id": "shorten",
+        "w": 128,
+        "h": 128,
+        "band": 2,
+        "dot": {
+          "light": "#867cf0",
+          "dark": "#a5a2fd"
+        },
+        "shape": "rect",
+        "label": "Shorten service"
+      }
+    ],
+    "lines": [
+      {
+        "id": "@actor-download",
+        "source": "@actor",
+        "target": "@download",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Open link"
+      },
+      {
+        "id": "@actor-upload",
+        "source": "@actor",
+        "target": "@upload",
+        "dashed": false,
+        "directed": true,
+        "label": "User to Shorten"
+      },
+      {
+        "id": "download-stats-api",
+        "source": "@download",
+        "target": "stats-api",
+        "dashed": false,
+        "directed": true,
+        "label": "Open link to Stats API",
+        "band": 0
+      },
+      {
+        "id": "download-redirect",
+        "source": "@download",
+        "target": "redirect",
+        "dashed": false,
+        "directed": true,
+        "label": "Open link to Redirect service",
+        "band": 0
+      },
+      {
+        "id": "upload-shorten",
+        "source": "@upload",
+        "target": "shorten",
+        "dashed": false,
+        "directed": true,
+        "label": "Shorten to Shorten service",
+        "band": 2
+      },
+      {
+        "id": "stats-read",
+        "source": "stats-api",
+        "target": "analytics-store",
+        "dashed": false,
+        "directed": true,
+        "label": "Stats API to Analytics store",
+        "detail": "Reads click counts",
+        "band": 0
+      },
+      {
+        "id": "redirect-clicks",
+        "source": "redirect",
+        "target": "click-events",
+        "dashed": true,
+        "directed": true,
+        "label": "Redirect service to Click events",
+        "detail": "Publishes clicks",
+        "band": 0
+      },
+      {
+        "id": "redirect-cache",
+        "source": "redirect",
+        "target": "url-cache",
+        "dashed": false,
+        "directed": true,
+        "label": "Redirect service to URL cache",
+        "detail": "Reads hot links, fills on miss",
+        "band": 0
+      },
+      {
+        "id": "redirect-db",
+        "source": "redirect",
+        "target": "url-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Redirect service to URL database",
+        "detail": "Reads links on a cache miss",
+        "band": 0
+      },
+      {
+        "id": "click-events-analytics",
+        "source": "click-events",
+        "target": "analytics",
+        "dashed": true,
+        "directed": true,
+        "label": "Click events to Analytics worker",
+        "detail": "Delivers clicks",
+        "band": 0
+      },
+      {
+        "id": "analytics-write",
+        "source": "analytics",
+        "target": "analytics-store",
+        "dashed": false,
+        "directed": true,
+        "label": "Analytics worker to Analytics store",
+        "detail": "Writes aggregates",
+        "band": 0
+      },
+      {
+        "id": "shorten-db",
+        "source": "shorten",
+        "target": "url-db",
+        "dashed": false,
+        "directed": true,
+        "label": "Shorten service to URL database",
+        "detail": "Writes links",
+        "band": 2
+      }
+    ]
+  },
+  "artwork": {
+    "redirect-clicks": {
+      "d": "M 608 352 C 621.2 352 618.8 342 632 342 L 647 342 Q 656 342 656 333 L 656 265 Q 656 256 665 256 L 680 256 L 686 256 L 695 256",
+      "light": "#5ccd81"
+    },
+    "click-events-analytics": {
+      "d": "M 832 256 L 868 256 L 882 256 L 910 256 L 919 256",
+      "light": "#cc61b5"
+    },
+    "@actor-download": {
+      "d": "M 160 512 C 173.2 512 170.8 507 184 507 L 199 507 Q 208 507 208 498 L 208 265 Q 208 256 217 256 L 232 256 L 238 256 L 247 256",
+      "light": "#99acbd"
+    },
+    "@actor-upload": {
+      "d": "M 160 512 C 173.2 512 170.8 517 184 517 L 199 517 Q 208 517 208 526 L 208 727 Q 208 736 217 736 L 232 736 L 238 736 L 247 736",
+      "light": "#677888"
+    },
+    "download-stats-api": {
+      "d": "M 384 256 C 397.2 256 394.8 251 408 251 L 423 251 Q 432 251 432 242 L 432 105 Q 432 96 441 96 L 456 96 L 462 96 L 471 96",
+      "light": "#99acbd"
+    },
+    "download-redirect": {
+      "d": "M 384 256 C 397.2 256 394.8 261 408 261 L 423 261 Q 432 261 432 270 L 432 343 Q 432 352 441 352 L 456 352 L 462 352 L 471 352",
+      "light": "#677888"
+    },
+    "upload-shorten": {
+      "d": "M 384 736 L 420 736 L 434 736 L 462 736 L 471 736",
+      "light": "#7e92a3"
+    },
+    "stats-read": {
+      "d": "M 608 96 L 644 96 L 885.5 96 Q 891 96 891 90.5 L 891 90.5 Q 891 85 896.5 85 L 909.5 85 C 909.8 85 909.8 87.8 910 87.8 L 919 87.8",
+      "light": "#e35e52"
+    },
+    "redirect-cache": {
+      "d": "M 608 352 L 637.5 352 L 658 352 Q 667 352 667 361 L 667 407 Q 667 416 676 416 L 685.5 416 L 686 416 L 695 416",
+      "light": "#098259"
+    },
+    "redirect-db": {
+      "d": "M 608 352 C 621.2 352 618.8 362 632 362 L 647 362 Q 656 362 656 371 L 656 556 Q 656 565 665 565 L 680 565 C 683 565 683 567.8 686 567.8 L 695 567.8",
+      "light": "#18a96a"
+    },
+    "analytics-write": {
+      "d": "M 1056 256 L 1080 256 L 1095 256 Q 1104 256 1104 247 L 1104 185 Q 1104 176 1095 176 L 889 176 Q 880 176 880 167 L 880 116 Q 880 107 889 107 L 904 107 C 907 107 907 104.3 910 104.3 L 919 104.3",
+      "light": "#9b9306"
+    },
+    "shorten-db": {
+      "d": "M 608 736 L 632 736 L 647 736 Q 656 736 656 727 L 656 596 Q 656 587 665 587 L 680 587 C 683 587 683 584.3 686 584.3 L 695 584.3",
+      "light": "#867cf0"
+    }
+  }
+}
