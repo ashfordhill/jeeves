@@ -331,3 +331,5 @@ retention to the counter. Event consumer has an optional writable owned `state` 
 standalone consumer remains an application stub; exporting `receiptConsumer = defineReceiptConsumer`
 opts its existing delivery loop into generated receipt/scoped-product processing. Blueprint state
 connections and precise product declarations remain authoritative. This adds no public admin route.
+
+The `browser-session` binding names the lead's selected Identity and writable owned state. Version3 retains the normal signIn/idleSeconds/absoluteSeconds/guestContext/offlineAccess settings and stable host/module/owner identities; normalization traces these into the compiled policy, precise protected054 grants and process routes. Private issuer endpoints, client secret, ring material, session IDs and tokens never enter blueprint or source. Export reports the selected Identity's HTTPS/client-registration integration gap. Unsupported bearer-guard/JWT-only-template combinations and session forwarding refuse.

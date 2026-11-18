@@ -1,0 +1,25 @@
+PASS actual pinned library valid RS256/code/PKCE/state/nonce/audience/offline flow
+PASS state mismatch refuses before token POST
+PASS nonce mismatch/refusal via actual library and bounded subject policy
+PASS pkce mismatch/refusal via actual library and bounded subject policy
+PASS signature mismatch/refusal via actual library and bounded subject policy
+PASS issuer mismatch/refusal via actual library and bounded subject policy
+PASS audience mismatch/refusal via actual library and bounded subject policy
+PASS expiry mismatch/refusal via actual library and bounded subject policy
+PASS subject mismatch/refusal via actual library and bounded subject policy
+PASS workload mismatch/refusal via actual library and bounded subject policy
+PASS startup issuer outage safely refuses readiness setup
+PASS issuer streaming byte limit refuses oversized metadata
+file:///tmp/jeeves-rg19-compile-ncBjhi/app/dist/runtime/operation.js:113
+        throw new OperationError("refused", "CONTEXT_EXPIRED");
+              ^
+
+OperationError: Operation refused: CONTEXT_EXPIRED
+    at assertOperation (file:///tmp/jeeves-rg19-compile-ncBjhi/app/dist/runtime/operation.js:113:15)
+    at withOperation (file:///tmp/jeeves-rg19-compile-ncBjhi/app/dist/runtime/operation.js:58:5)
+    at file:///home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg19/protocol.mjs:44:160 {
+  outcome: 'refused',
+  code: 'CONTEXT_EXPIRED'
+}
+
+Node.js v24.21.0

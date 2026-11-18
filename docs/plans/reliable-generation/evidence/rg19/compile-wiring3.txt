@@ -1,0 +1,18 @@
+node:internal/fs/promises:1564
+  return await PromisePrototypeThen(
+         ^
+
+Error: EEXIST: file already exists, mkdir '/tmp/jeeves-rg19-compile-7SWOnd'
+    at async mkdir (node:internal/fs/promises:1564:10)
+    at async exportNewDirectory (/home/ash/github/jeeves/jeeves-generator/src/export.ts:21:3)
+    at async <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg19/compile.ts:12:1) {
+  errno: -17,
+  code: 'EEXIST',
+  syscall: 'mkdir',
+  path: '/tmp/jeeves-rg19-compile-7SWOnd'
+}
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves/apps/server

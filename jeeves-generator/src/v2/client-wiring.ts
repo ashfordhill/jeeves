@@ -18,7 +18,6 @@ import {
   pascal,
   service,
   text,
-  tileGuard,
   tileProcess,
 } from "./http-wiring.ts";
 import {
@@ -340,7 +339,7 @@ export function stubClients(
         name: "validateLocalOperationBinding",
       });
       localChecks.push(
-        `validateLocalOperationBinding((${pascal(id)}Module as { localOperation?: unknown }).localOperation, ${JSON.stringify(databases)}, { workload: ${!!process.workloadCallers?.length}, requiredUser: ${selections.some((s) => s.host === process.tile && s.binding.kind === "verified-identity" && s.inputs["guard.signIn"] === "required")} });`,
+        `validateLocalOperationBinding((${pascal(id)}Module as { localOperation?: unknown }).localOperation, ${JSON.stringify(databases)}, { workload: ${!!process.workloadCallers?.length}, requiredUser: ${selections.some((s) => s.host === process.tile && ((s.binding.kind === "verified-identity" && s.inputs["guard.signIn"] === "required") || (s.binding.kind === "browser-session" && s.inputs["session.signIn"] === "required")))} });`,
       );
     } else
       localChecks.push(
@@ -569,7 +568,7 @@ export function stubClients(
   if (sections.has("broker")) secrets.add("broker-password");
   for (const secret of [...secrets].sort(v2Compare))
     checks.set(`readSecret(${text(secret)})`, { name: "readSecret", from: localPath });
-  if (tileGuard(process, selections))
+  if (selections.some((s) => s.host === process.tile && s.binding.kind === "verified-identity"))
     checks.set("signInSettings()", { name: "signInSettings", from: guardPath });
   // Last, each stub's declared settings (QL05), in the order its dependencies are built.
   for (const read of settingReads)

@@ -3,3 +3,7 @@
 # skip one it isn't told about. protobufjs's script only prints a version warning.
 allowBuilds:
   protobufjs: false
+# Match the already reviewed generated JOSE version; avoid a new transitive latest release.
+overrides:
+  openid-client>jose: 6.2.13
+  openid-client>oauth4webapi: 3.8.8

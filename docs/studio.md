@@ -1663,3 +1663,5 @@ maintenance reports heartbeat, durable progress, unknown broker backlog and boun
 backlog separately. Generated internal operations inspect counter state and explicitly requeue a
 selected quarantined delivery after reconciliation; ambiguous effects refuse blind requeue.
 [Receipt lifecycle and migration details](plans/reliable-generation/evidence/rg18/protocol.md).
+
+Browser session is a Service module lead with Identity and owned PostgreSQL state. It generates OIDC code+PKCE sign-in, explicit bootstrap routes, secure cookie sessions and CSRF, and exposes expiry/guest/offline-request decisions through the same mouse/chat controls. Product routes receive immutable caller facts only. Supplied bad/expired cookies refuse even on Optional routes. Incompatible JWT-only templates and session service forwarding refuse; refresh remains unavailable. HTTPS/selected Keycloak client registration is reported as required integration work. See [the browser contract](plans/reliable-generation/evidence/rg19/protocol.md).

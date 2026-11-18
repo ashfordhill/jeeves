@@ -356,6 +356,68 @@ function capability(
   };
 }
 export const generationCapabilities = freezeRecord({
+  "browser-session": capability(
+    "browser-session",
+    "api",
+    ["service"],
+    [{ ...store("state", "database", "read-write"), pool: "fixed" }],
+    [
+      ...http,
+      rule(
+        "session.signIn",
+        "component",
+        "signIn",
+        choice("required", "optional"),
+        "browser-session.signIn",
+        {
+          component: "browser-session",
+          required: true,
+          userNeed: "Choose whether browser routes require sign-in.",
+        },
+      ),
+      rule(
+        "session.idleSeconds",
+        "component",
+        "idleSeconds",
+        integer(60, 86400),
+        "browser-session.idle",
+        { component: "browser-session", required: true, userNeed: "Bound session inactivity." },
+      ),
+      rule(
+        "session.absoluteSeconds",
+        "component",
+        "absoluteSeconds",
+        integer(60, 604800),
+        "browser-session.absolute",
+        { component: "browser-session", required: true, userNeed: "Bound total session lifetime." },
+      ),
+      rule(
+        "session.guestContext",
+        "component",
+        "guestContext",
+        choice("disabled", "enabled"),
+        "browser-session.guest",
+        {
+          component: "browser-session",
+          required: true,
+          userNeed: "Protect a stateful guest cookie context with CSRF.",
+        },
+      ),
+      rule(
+        "session.offlineAccess",
+        "component",
+        "offlineAccess",
+        choice("disabled", "enabled"),
+        "browser-session.offline",
+        {
+          component: "browser-session",
+          required: true,
+          userNeed: "Request issuer offline access for this integration.",
+        },
+      ),
+    ],
+    ["browser-session"],
+  ),
   "owned-multipart": capability(
     "owned-multipart",
     "api",

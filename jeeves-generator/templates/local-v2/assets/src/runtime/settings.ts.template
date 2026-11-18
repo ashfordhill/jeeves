@@ -285,3 +285,19 @@ export function privateWebhookVerifier(module: string) {
     return createWebhookVerifier(keyRing().parse(raw), module);
   } catch { throw new Error(`Invalid setting ${name}`); }
 }
+
+/** Private browser credentials: no material or handles enter product settings. */
+export function privateBrowserCredentials(module:string) {
+  if(!/^[a-z][a-z0-9-]{0,63}$/.test(module))throw new Error("Invalid browser module");
+  const prefix=`JEEVES_BROWSER_${module.toUpperCase().replaceAll("-","_")}`;
+  const read=(suffix:string,ring=false)=>{
+    const name=`${prefix}_${suffix}`;
+    try {const raw=readFile(name,true);if(!raw||raw.length>65536)throw new Error();return raw;}
+    catch {throw new Error(`Invalid setting ${name}`);}
+  };
+  let ring:KeyRing;
+  try {ring=keyRing().parse(read("KEYS",true));} catch {throw new Error(`Invalid setting ${prefix}_KEYS`);}
+  const clientSecret=read("CLIENT_SECRET").toString("utf8");
+  if(!clientSecret.length||clientSecret.length>4096||/[\r\n\x00]/.test(clientSecret))throw new Error(`Invalid setting ${prefix}_CLIENT_SECRET`);
+  return {clientSecret,keys:{seal:createSealingKeys(ring,"jeeves.browser.tokens.v1"),sign:createSigningKeys(ring,"jeeves.browser.csrf.v1")}};
+}

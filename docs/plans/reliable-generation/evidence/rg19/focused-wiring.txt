@@ -1,0 +1,94 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/browser-session.test.ts (19 tests | 1 failed) 9648ms
+   ❯ RG19 browser sessions (19)
+     × authors and exports the finite lead, declared state/grants and explicit bootstrap routes 74ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/browser-session.test.ts > RG19 browser sessions > authors and exports the finite lead, declared state/grants and explicit bootstrap routes
+AssertionError: expected [ …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "code": "CONFIG_REQUIRED",
++     "message": "Provide the authoritative session.signIn setting.",
++     "severity": "error",
++     "target": {
++       "path": [
++         "generation",
++         "selections",
++         0,
++       ],
++     },
++   },
++   {
++     "code": "CONFIG_REQUIRED",
++     "message": "Provide the authoritative session.idleSeconds setting.",
++     "severity": "error",
++     "target": {
++       "path": [
++         "generation",
++         "selections",
++         0,
++       ],
++     },
++   },
++   {
++     "code": "CONFIG_REQUIRED",
++     "message": "Provide the authoritative session.absoluteSeconds setting.",
++     "severity": "error",
++     "target": {
++       "path": [
++         "generation",
++         "selections",
++         0,
++       ],
++     },
++   },
++   {
++     "code": "CONFIG_REQUIRED",
++     "message": "Provide the authoritative session.guestContext setting.",
++     "severity": "error",
++     "target": {
++       "path": [
++         "generation",
++         "selections",
++         0,
++       ],
++     },
++   },
++   {
++     "code": "CONFIG_REQUIRED",
++     "message": "Provide the authoritative session.offlineAccess setting.",
++     "severity": "error",
++     "target": {
++       "path": [
++         "generation",
++         "selections",
++         0,
++       ],
++     },
++   },
++ ]
+
+ ❯ src/v2/browser-session.test.ts:49:122
+     47|  it("authors and exports the finite lead, declared state/grants and ex…
+     48|   const d=browserSessionDesign(),registry=loadLocalV2Registry();
+     49|   const resolved=resolveGeneration(d,registry.installed);expect(resolv…
+       |                                                                                                                          ^
+     50|   const selection=resolved.normalized?.selections.find(x=>x.binding.ki…
+     51|   const fields=normalGenerationControls(d, registry.installed).filter(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  20:24:21
+   Duration  10.58s (tests 92%, transform 5%, import 3%)

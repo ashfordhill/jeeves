@@ -13,7 +13,7 @@ const groups: readonly ModuleGroup[] = [
   {
     label: "Requests",
     family: "api",
-    kinds: ["auth-guard", "rate-limiter", "redirect-responder", "external-call"],
+    kinds: ["auth-guard", "browser-session", "rate-limiter", "redirect-responder", "external-call"],
   },
   {
     label: "Data",

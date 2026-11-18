@@ -9,6 +9,7 @@ import {
   studioArchitectureExample,
 } from "@jeeves/spec";
 import { describe, expect, it } from "vitest";
+import { browserSessionDesign } from "../../../../../field-projects/generator-system/fixtures/rg-browser-session/design.ts";
 import { Workspace } from "./tools.ts";
 
 const registry = loadLocalV2Registry();
@@ -138,5 +139,53 @@ describe("installed feature authoring", () => {
     const renamed = apply(legacy, { type: "edit", element: "upload", name: "Preserved upload" });
     expect(renamed.architecture?.studio).toEqual(legacy.architecture?.studio);
     expect(renamed.connections).toEqual(legacy.connections);
+  });
+});
+
+describe("RG19 browser session chat parity", () => {
+  it("shares finite controls, emission and incompatible identity refusals with mouse commands", () => {
+    const design = browserSessionDesign();
+    const chat = new Workspace(design);
+    const settings = {
+      kind: "browser-session" as const,
+      signIn: "required" as const,
+      idleSeconds: 3600,
+      absoluteSeconds: 86400,
+      guestContext: "enabled" as const,
+      offlineAccess: "enabled" as const,
+    };
+    const edit = { type: "editComponent" as const, component: "sign-in", settings };
+    const changed = apply(design, edit);
+    expect(run(chat, [edit]).ok).toBe(true);
+    expect(chat.working).toEqual(changed);
+    expect(
+      normalSettingFields(changed, registry.installed, { component: "sign-in" }).map(
+        (c) => c.input,
+      ),
+    ).toEqual([
+      "session.signIn",
+      "session.idleSeconds",
+      "session.absoluteSeconds",
+      "session.guestContext",
+      "session.offlineAccess",
+    ]);
+    const bundle = assembleV2({ designJson: JSON.stringify(changed) }, registry);
+    const source = new TextDecoder().decode(
+      bundle.files.find((f) => f.path === "src/processes/browser-api.ts")?.bytes,
+    );
+    expect(source).toContain('"idleSeconds":3600');
+    expect(source).toContain('"guestContext":"enabled"');
+    expect(
+      run(chat, [{ type: "addModule", host: "browser-api", kind: "auth-guard" }]),
+    ).toMatchObject({ ok: false, error: expect.stringContaining("Browser session") });
+    expect(() =>
+      apply(changed, { ...edit, settings: { ...settings, idleSeconds: 90000 } }),
+    ).toThrow();
+    expect(() =>
+      apply(changed, {
+        ...edit,
+        settings: { ...settings, idleSeconds: 5000, absoluteSeconds: 3600 },
+      }),
+    ).toThrow();
   });
 });

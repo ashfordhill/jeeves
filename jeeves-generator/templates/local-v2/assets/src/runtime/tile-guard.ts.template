@@ -8,7 +8,7 @@ import type { HttpRoutes } from "./http.ts";
 import type { VerifiedPrincipal } from "./identity.ts";
 
 /** Who called: a verified account, or anonymous. */
-export type Caller = { signedIn: true; principal: VerifiedPrincipal } | { signedIn: false };
+export type Caller = { signedIn: true; principal: VerifiedPrincipal } | { signedIn: false; guest?: Readonly<{id:string}> };
 export type SignIn = "required" | "optional";
 export interface TileGuard {
   /** The caller, verified once per request: anonymous without an Authorization header; a token

@@ -245,6 +245,7 @@ describe("module catalog records", () => {
       "event-counter": ["event-counter"],
       "search-projection": ["index-writer"],
       "search-query": ["search-query"],
+      "browser-session": ["browser-session"],
       "verified-identity": ["auth-guard"],
       favorites: ["favorites"],
       "rate-limiter": ["rate-limiter"],
@@ -253,7 +254,7 @@ describe("module catalog records", () => {
       "youtube-upload": ["custom"],
       "youtube-watch": ["custom"],
       "youtube-search": ["custom"],
-      "module-stub": 21,
+      "module-stub": 22,
     });
     expect(generationCapabilities["module-stub"].role).toBeUndefined();
     expect(generationCapabilities["module-stub"].resources).toEqual([]);

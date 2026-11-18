@@ -34,7 +34,7 @@ describe("modules", () => {
   it("are offered only on applications and get free names and IDs per host", () => {
     const design = tinyurl();
     // A service takes the ten generic kinds plus Multipart uploads, Search query and Favorites.
-    expect(moduleKinds(design, "shorten")).toHaveLength(15);
+    expect(moduleKinds(design, "shorten")).toHaveLength(16);
     expect(moduleKinds(design, "shorten")).toEqual(
       expect.arrayContaining(["multipart-uploads", "search-query", "favorites"]),
     );

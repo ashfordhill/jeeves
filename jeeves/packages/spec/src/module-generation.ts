@@ -78,6 +78,7 @@ const templateWords: Record<StudioModuleTemplate, string> = {
   "search-query": "search query",
   favorites: "favorites",
   "rate-limiter": "rate limiting",
+  "browser-session": "browser sign-in",
   "scheduled-task": "scheduled reconciliation",
   "webhook-receiver": "authenticated webhook ingestion",
 };
@@ -270,6 +271,35 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
   };
   const isIdentity = (link: ModuleLink) => !!link.tile && view.kindOf(link.tile) === "identity";
   switch (plan.template) {
+    case "browser-session": {
+      if (
+        view
+          .inHost(lead.host)
+          .some((c) =>
+            [
+              "auth-guard",
+              "webhook-receiver",
+              "favorites",
+              "rate-limiter",
+              "multipart-uploads",
+            ].includes(c.settings.kind),
+          )
+      )
+        refuse(
+          "Browser session cannot share a Service with bearer Auth guard, webhook ingress or JWT-only Required-user templates (Favorites, Rate limiter, Multipart uploads). Use a separate Service; session forwarding is unavailable.",
+        );
+      const state = dependency(view.linksOf(lead, "state")[0]);
+      const identity = view.linksOf(lead, "identity").find(isIdentity);
+      if (!state) needs.push("a writable database connected to its state slot");
+      if (!identity?.tile) needs.push(connected("identity"));
+      if (state && identity?.tile)
+        plan.binding = {
+          kind: "browser-session",
+          state,
+          identity: { element: identity.tile, guard: lead.id },
+        };
+      break;
+    }
     case "scheduled-task":
     case "webhook-receiver": {
       if (

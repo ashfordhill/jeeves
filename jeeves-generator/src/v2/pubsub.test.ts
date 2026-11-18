@@ -471,7 +471,13 @@ describe("Installs, the metadata lookup and the reconnect bound (QG09)", () => {
         text(bundle, "pnpm-workspace.yaml")
           .split("\n")
           .filter((line) => line !== "" && !line.startsWith("#")),
-      ).toEqual(["allowBuilds:", "  protobufjs: false"]);
+      ).toEqual([
+        "allowBuilds:",
+        "  protobufjs: false",
+        "overrides:",
+        "  openid-client>jose: 6.2.13",
+        "  openid-client>oauth4webapi: 3.8.8",
+      ]);
       const readme = text(bundle, "README.md");
       expect(readme).toContain("Run `pnpm install --frozen-lockfile` then `pnpm build`.");
       expect(readme).toContain(
@@ -480,7 +486,7 @@ describe("Installs, the metadata lookup and the reconnect bound (QG09)", () => {
       expect(readme).not.toContain("pnpm install --frozen-lockfile --ignore-scripts");
       // The image still installs exactly the lock, running no install script.
       expect(text(bundle, "Dockerfile")).toContain(
-        "COPY package.json pnpm-lock.yaml ./\nRUN pnpm install --frozen-lockfile --ignore-scripts\n",
+        "COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./\nRUN pnpm install --frozen-lockfile --ignore-scripts\n",
       );
     }
   });

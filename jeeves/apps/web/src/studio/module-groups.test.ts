@@ -26,6 +26,7 @@ describe("moduleGroups", () => {
         studioComponentKinds.filter((kind) => group.kinds.includes(kind)),
       );
     expect(moduleGroups[0]?.kinds).toEqual([
+      "browser-session",
       "rate-limiter",
       "redirect-responder",
       "auth-guard",

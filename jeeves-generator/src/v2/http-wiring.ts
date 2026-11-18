@@ -5,6 +5,7 @@ import {
   studioComponentDefinitions,
 } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
+import { browserSessionMount } from "./browser-session.ts";
 import { type OutboxTable, outboxSchema } from "./durability.ts";
 import { favoritesBounds, favoritesSchema } from "./favorites.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
@@ -467,7 +468,9 @@ export function tileGuard(
   selections: readonly NormalizedGenerationSelection[],
 ) {
   const guard = selections.find(
-    (item) => item.host === process.tile && item.binding.kind === "verified-identity",
+    (item) =>
+      item.host === process.tile &&
+      ["verified-identity", "browser-session"].includes(item.binding.kind),
   );
   return guard ? camel(guard.id) : undefined;
 }
@@ -1124,6 +1127,7 @@ const templates: Record<
   ) => ProcessMount
 > = {
   "verified-identity": verifiedIdentity,
+  "browser-session": browserSessionMount,
   "owned-multipart": ownedMultipart,
   "positive-cache-read": positiveCacheRead,
   "search-query": searchQuery,

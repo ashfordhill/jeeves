@@ -6,7 +6,7 @@ import type { OperationContext } from "../runtime/operation.ts";
  * Always anonymous in a tile with no Auth guard. */
 export type Caller =
   | { signedIn: true; principal: { subject: string; claims: Record<string, unknown> } }
-  | { signedIn: false };
+  | { signedIn: false; guest?: Readonly<{id:string}> };
 
 /** One HTTP request to /modules/<module id> or a path below it. */
 export type ModuleRequest = {

@@ -629,3 +629,9 @@ Retention, cleanup batches, heartbeat and ACK controls are generated internals, 
 fields. A standalone Event consumer can connect optional writable owned **state** and declare a
 scoped `receiptConsumer` in its application module; its retention must cover its delivery horizon.
 See [the emitted extension contract](plans/reliable-generation/evidence/rg18/protocol.md).
+
+### Browser session (RG19)
+
+Service-only **Browser session** requires an **identity** connection and writable owned **state**, with Runnable processes. Normal controls are **Sign-in** (`required`/`optional`, default optional), **Idle expiry** (60–86400s, default86400), **Absolute expiry** (60–604800s, default604800; idle must not exceed absolute), **Guest cookie context** and **Request offline access** (both disabled/enabled, default disabled). Every choice has schema, form, chat, blueprint and emitted consumers. Invalid supplied cookies always401 and clear; cookieless Optional operations stay anonymous. Offline access only requests/stores sealed refresh material; refresh and session forwarding remain unavailable.
+
+Bearer Auth guards, webhook ingress and JWT-only Required-user template combinations (Favorites, Rate limiter, Multipart uploads) refuse on that Service. The selected Keycloak Identity needs trusted HTTPS and exact compiled confidential-client/callback registration; export reports this required integration work, without a production insecure bypass. Secrets/issuer endpoints are private deployment configuration, outside inspector controls. [Protocol and configuration](plans/reliable-generation/evidence/rg19/protocol.md).

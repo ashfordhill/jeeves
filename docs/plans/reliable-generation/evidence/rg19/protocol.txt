@@ -1,0 +1,15 @@
+PASS actual pinned library valid RS256/code/PKCE/state/nonce/audience/offline flow
+PASS state mismatch refuses before token POST
+PASS nonce mismatch/refusal via actual library and bounded subject policy
+PASS pkce mismatch/refusal via actual library and bounded subject policy
+PASS signature mismatch/refusal via actual library and bounded subject policy
+PASS issuer mismatch/refusal via actual library and bounded subject policy
+PASS audience mismatch/refusal via actual library and bounded subject policy
+PASS expiry mismatch/refusal via actual library and bounded subject policy
+PASS subject mismatch/refusal via actual library and bounded subject policy
+PASS workload mismatch/refusal via actual library and bounded subject policy
+PASS startup issuer outage safely refuses readiness setup
+PASS issuer streaming byte limit refuses oversized metadata
+PASS forty pre-dispatch cancelled requests release their reservations
+PASS token POST timeout remains unknown;32 actual pending grants retain capacity until settled; no retry
+PROTOCOL PASSED: actual export and pinned dependencies; HTTPS protocol stand-ins only; metadata requests 1

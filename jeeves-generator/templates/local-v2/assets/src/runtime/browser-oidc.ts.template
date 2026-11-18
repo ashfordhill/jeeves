@@ -1,0 +1,95 @@
+// Private OIDC adapter. Protocol checks belong to maintained openid-client, never product hooks.
+import { AsyncLocalStorage } from "node:async_hooks";
+import * as oidc from "openid-client";
+import { HttpError } from "./admission.ts";
+import { currentProcess, dependency, OperationError } from "./operation.ts";
+import { probeDependency } from "./process.ts";
+import { browserSubject, type BrowserConfiguration } from "./browser-session.ts";
+
+export function createBrowserIssuer(settings: BrowserConfiguration) {
+  const scope = currentProcess();
+  const health = {};
+  let config: oidc.Configuration | undefined;
+  let pending = 0;
+  const transport = new AsyncLocalStorage<AbortSignal>();
+  const unavailable = () => { scope?.dependencyReady?.(health, false); return new OperationError("definite-failure", "IDENTITY_UNAVAILABLE"); };
+  // A timed-out caller cannot open another slot while the real SDK request is still pending.
+  const bounded = <T>(effect: () => Promise<T>, mutation=false) => {
+    if (pending >= 32) throw new OperationError("refused", "IDENTITY_SATURATED");
+    pending++;
+    let dispatched=false;
+    return dependency({scope, maximumMs:3000, mutation, definite:()=>!mutation, preserveDefinite:true}, (signal) => {
+      dispatched=true;
+      let actual: Promise<T>;
+      try { actual = transport.run(signal,effect); } catch (error) { actual = Promise.reject(error); }
+      return actual.finally(() => { pending--; });
+    }).catch(error=>{if(!dispatched)pending--;throw error;});
+  };
+  const customFetch: oidc.CustomFetch = async (url, options) => {
+    const target = new URL(String(url));
+    if (target.protocol !== "https:" || target.username || target.password) throw unavailable();
+    const signal=AbortSignal.any([options?.signal ?? AbortSignal.timeout(3000), ...(transport.getStore() ? [transport.getStore()!] : []), ...(scope ? [scope.signal] : [])]);
+    const response=await fetch(url, {...options, body:options.body as BodyInit, redirect:"error", signal});
+    const maximum=262144;
+    const length=response.headers.get("content-length");
+    if(length && (!/^[0-9]+$/.test(length)||Number(length)>maximum)) {void response.body?.cancel().catch(()=>{});throw new Error("Issuer response exceeds bound");}
+    const reader=response.body?.getReader();
+    const chunks:Uint8Array[]=[];let bytes=0;
+    try {
+      while(reader){const next=await reader.read();if(next.done)break;bytes+=next.value.byteLength;if(bytes>maximum)throw new Error("Issuer response exceeds bound");chunks.push(next.value);}
+      return new Response(Buffer.concat(chunks),{status:response.status,statusText:response.statusText,headers:response.headers});
+    } catch(error){void reader?.cancel().catch(()=>{});throw error;} finally {reader?.releaseLock();}
+  };
+  const discover = async () => {
+    const next = await oidc.discovery(new URL(settings.issuer), settings.clientId,
+      {client_secret:settings.clientSecret, id_token_signed_response_alg:"RS256"}, undefined,
+      {timeout:3, [oidc.customFetch]:customFetch, execute:[oidc.enableNonRepudiationChecks]});
+    config = next;
+    scope?.dependencyReady?.(health,true);
+    return next;
+  };
+  probeDependency(scope, health, async () => { await bounded(discover); });
+  const required = () => { if (!config) throw unavailable(); return config; };
+  return {
+    async start() { try { await bounded(discover); } catch { throw unavailable(); } },
+    async authorize(input: {state:string;nonce:string;verifier:string}) {
+      const parameters: Record<string,string> = {redirect_uri:settings.callback, response_type:"code", scope:settings.offlineAccess ? "openid profile email offline_access" : "openid profile email", state:input.state, nonce:input.nonce,
+        code_challenge:await oidc.calculatePKCECodeChallenge(input.verifier), code_challenge_method:"S256"};
+      if (settings.audience) parameters.audience = settings.audience;
+      return oidc.buildAuthorizationUrl(required(), parameters).href;
+    },
+    async exchange(url: URL, input:{state:string;nonce:string;verifier:string}) {
+      try {
+        const tokens = await bounded(async () => {
+          try {return await oidc.authorizationCodeGrant(required(), url,
+            {expectedState:input.state,expectedNonce:input.nonce,pkceCodeVerifier:input.verifier,idTokenExpected:true});}
+          catch(error) {
+            // Positive, pinned SDK authentication failures only. Invalid provider documents,
+            // unfamiliar codes, transport errors,429 and5xx remain dependency/unknown failures.
+            const cause=error instanceof Error ? error.cause as {cause?:unknown}|undefined : undefined;
+            const detail=cause?.cause as {parameters?:unknown;signature?:unknown;key?:unknown}|undefined;
+            const knownInvalid=error instanceof oidc.ClientError && error.code==="OAUTH_INVALID_RESPONSE" &&
+              (detail?.parameters instanceof URLSearchParams || (detail?.signature instanceof Uint8Array && detail?.key instanceof CryptoKey));
+            if((error instanceof oidc.AuthorizationResponseError && ["access_denied","login_required","interaction_required","consent_required"].includes(error.error)) ||
+              (error instanceof oidc.ResponseBodyError && [400,401,403].includes(error.status) && error.error==="invalid_grant") ||
+              (error instanceof oidc.ClientError && ["OAUTH_JWT_CLAIM_COMPARISON_FAILED","OAUTH_JWT_TIMESTAMP_CHECK_FAILED"].includes(error.code??"")) || knownInvalid)
+              throw Object.assign(new HttpError(401,"SIGN_IN_REQUIRED","Sign in to continue."),{outcome:"refused"});
+            throw error;
+          }
+        }, true);
+        const claims = tokens.claims();
+        if (!claims || !browserSubject(claims.sub) || "jeeves_workload" in claims)
+          throw Object.assign(new HttpError(401,"SIGN_IN_REQUIRED","Sign in to continue."),{outcome:"refused"});
+        const profile = (value:unknown) => typeof value === "string" ? value.slice(0,320) : null;
+        return {subject:claims.sub, email:profile(claims.email), name:profile(claims.name),
+          access:tokens.access_token, refresh:tokens.refresh_token ?? null, id:tokens.id_token ?? null,
+          expiresIn:tokens.expires_in ?? null};
+      } catch (error) {
+        if(error instanceof HttpError)throw error;
+        if (error instanceof OperationError) {scope?.dependencyReady?.(health,false);throw error;}
+        throw unavailable();
+      }
+    },
+  };
+}
+export type BrowserIssuer = ReturnType<typeof createBrowserIssuer>;

@@ -1,0 +1,18 @@
+/home/ash/github/jeeves/jeeves-generator/src/json.ts:17
+  throw new GeneratorRefusal(code, path, message);
+        ^
+
+GeneratorRefusal: INVALID_SOURCE_PATH at /architecture/studio/components/0/settings/credential: The source path does not exist.
+    at refuse (/home/ash/github/jeeves/jeeves-generator/src/json.ts:17:9)
+    at atPointer (/home/ash/github/jeeves/jeeves-generator/src/json.ts:43:7)
+    at checkSources (/home/ash/github/jeeves/jeeves-generator/src/v2/assemble.ts:44:7)
+    at assembleV2 (/home/ash/github/jeeves/jeeves-generator/src/v2/assemble.ts:133:22)
+    at <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg19/compile.ts:11:14) {
+  code: 'INVALID_SOURCE_PATH',
+  path: '/architecture/studio/components/0/settings/credential'
+}
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves/apps/server

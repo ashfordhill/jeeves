@@ -1,0 +1,21 @@
+// Finite private deployment configuration. No arbitrary authorization URL parameter map.
+import { privateBrowserCredentials } from "./settings.ts";
+import type { BrowserConfiguration } from "./browser-session.ts";
+export function browserSettings(module:string, identity:{realm:string;client:string}, policy:{signIn:string;idleSeconds:number;absoluteSeconds:number;guestContext:string;offlineAccess:string}):BrowserConfiguration {
+  const prefix=`JEEVES_BROWSER_${module.toUpperCase().replaceAll("-","_")}`;
+  const read=(suffix:string,maximum=1024)=>{const value=process.env[`${prefix}_${suffix}`];if(!value||value.length>maximum||/[\s\p{Cc}]/u.test(value))throw new Error(`Invalid setting ${prefix}_${suffix}`);return value;};
+  const secure=(suffix:string)=>{const value=read(suffix);const url=URL.parse(value);if(!url||url.protocol!=="https:"||url.username||url.password||url.hash||url.search)throw new Error(`Invalid setting ${prefix}_${suffix}`);return url;};
+  const issuerName=`JEEVES_BROWSER_IDENTITY_${identity.realm.toUpperCase().replaceAll("-","_")}_ISSUER`;
+  const rawIssuer=process.env[issuerName];
+  const issuer=rawIssuer && rawIssuer.length<=1024 && !/[\s\p{Cc}]/u.test(rawIssuer) ? URL.parse(rawIssuer) : null;
+  if(!issuer||issuer.protocol!=="https:"||issuer.username||issuer.password||issuer.search||issuer.hash||issuer.pathname!==`/realms/${identity.realm}`)throw new Error(`Invalid setting ${issuerName}`);
+  const callback=secure("CALLBACK");
+  if(!callback.pathname.endsWith(`/modules/${module}/callback`))throw new Error(`Invalid setting ${prefix}_CALLBACK`);
+  const clientId=identity.client;
+  const audience=process.env[`${prefix}_AUDIENCE`];
+  if(audience!==undefined&&(!audience||audience.length>255||/[\s\p{Cc}]/u.test(audience)))throw new Error(`Invalid setting ${prefix}_AUDIENCE`);
+  if(process.env.NODE_TLS_REJECT_UNAUTHORIZED!==undefined&&process.env.NODE_TLS_REJECT_UNAUTHORIZED!=="1")throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
+  if(!["required","optional"].includes(policy.signIn)||!["enabled","disabled"].includes(policy.guestContext)||!["enabled","disabled"].includes(policy.offlineAccess)||!Number.isInteger(policy.idleSeconds)||policy.idleSeconds<60||policy.idleSeconds>86400||!Number.isInteger(policy.absoluteSeconds)||policy.absoluteSeconds<policy.idleSeconds||policy.absoluteSeconds>604800)throw new Error("Invalid browser policy");
+  return {...privateBrowserCredentials(module),issuer:issuer.href,callback:callback.href,origin:callback.origin,clientId,...(audience?{audience}:{}),
+    signIn:policy.signIn as "required"|"optional",idleSeconds:policy.idleSeconds,absoluteSeconds:policy.absoluteSeconds,guestContext:policy.guestContext==="enabled",offlineAccess:policy.offlineAccess==="enabled"};
+}

@@ -264,7 +264,7 @@ describe("standalone local foundation", () => {
       for (const path of ["tsconfig.json", "Dockerfile", "scripts/local.mjs", "compose.yaml"])
         expect(ownership(bundle, path)).toBe("generated-scaffold");
       expect(text(bundle, "Dockerfile")).toContain(
-        "COPY package.json pnpm-lock.yaml ./\nRUN pnpm install --frozen-lockfile --ignore-scripts\n",
+        "COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./\nRUN pnpm install --frozen-lockfile --ignore-scripts\n",
       );
     }
   });

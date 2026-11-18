@@ -72,6 +72,7 @@ const moduleLinks = async (page: Page, id: string) =>
  * media, Custom): [name, word].
  */
 const SERVICE = [
+  ["Browser session", "Generated"],
   ["Rate limiter", "Generated"],
   ["Redirect responder", "You write it"],
   ["Auth guard", "Generated"],
@@ -191,9 +192,11 @@ test("adds compatible module kinds to a Service and Worker and refuses a Require
 
     // Compatible kinds open as unconnected stubs. The already-added Required guard refuses
     // webhook composition; the isolated receiver's successful addition is covered by RG17.
-    const compatibleService = SERVICE.filter(([kind]) => kind !== "Webhook receiver");
+    const compatibleService = SERVICE.filter(
+      ([kind]) => !["Webhook receiver", "Browser session"].includes(kind ?? ""),
+    );
     let serviceCount = 0;
-    for (const [kind] of SERVICE) {
+    for (const [kind] of SERVICE.filter(([kind]) => kind !== "Browser session")) {
       if (kind === "Webhook receiver") {
         await addModuleFrom(page, tile(page, "Microservice"), kind);
         await expect(page.getByRole("alert")).toContainText("Required user Auth guard");

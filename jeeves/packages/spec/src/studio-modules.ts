@@ -20,6 +20,7 @@ import type { StudioKind } from "./studio-model.ts";
 export const studioComponentVisuals: Readonly<
   Record<StudioComponentKind, Readonly<Pick<StudioVisual, "icon" | "color">>>
 > = {
+  "browser-session": { icon: "shield", color: "generic" },
   "webhook-receiver": { icon: "inbox", color: "messaging" },
   "scheduled-task": { icon: "gear", color: "worker" },
   "rate-limiter": { icon: "gauge", color: "generic" },

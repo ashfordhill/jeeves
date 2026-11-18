@@ -1,0 +1,30 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/browser-session.test.ts (19 tests | 1 failed) 10242ms
+   ❯ RG19 browser sessions (19)
+     × authors and exports the finite lead, declared state/grants and explicit bootstrap routes 98ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/browser-session.test.ts > RG19 browser sessions > authors and exports the finite lead, declared state/grants and explicit bootstrap routes
+GeneratorRefusal: INVALID_SOURCE_PATH at /architecture/studio/components/0/settings/credential: The source path does not exist.
+ ❯ refuse src/json.ts:17:9
+     15| }
+     16| export function refuse(code: string, path: string, message: string): n…
+     17|   throw new GeneratorRefusal(code, path, message);
+       |         ^
+     18| }
+     19| export const sha256 = (bytes: string | Uint8Array) =>
+ ❯ atPointer src/json.ts:43:7
+ ❯ checkSources src/v2/assemble.ts:44:7
+ ❯ assembleV2 src/v2/assemble.ts:133:22
+ ❯ src/v2/browser-session.test.ts:53:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  20:24:47
+   Duration  11.30s (tests 91%, transform 6%, import 3%)

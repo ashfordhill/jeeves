@@ -1,0 +1,29 @@
+frozen-v2 80 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'Dockerfile',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'src/runtime/http.ts'
+]
+v2-module-design 87 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'Dockerfile',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'src/runtime/http.ts',
+  'src/runtime/settings.ts'
+]
+stub-stack 60 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'Dockerfile',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'src/runtime/settings.ts'
+]
+Reviewed pins written; only new generated dependency pins/Docker copy, private browser credential reader, security header and extension guide.

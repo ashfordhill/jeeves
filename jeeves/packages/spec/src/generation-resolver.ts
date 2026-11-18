@@ -84,7 +84,7 @@ export type NormalizedGenerationSelection = {
     element: string;
     guard: string;
     provider: "keycloak";
-    credential: "jwt";
+    credential: "jwt" | "session";
     sourcePaths: Path[];
   };
   inputs: Record<string, GenerationValue>;
@@ -690,6 +690,26 @@ export function resolveGeneration(
         .map((policy) => structuredClone(policy)),
     };
     normalized.push(row);
+    if (selection.binding.kind === "browser-session") {
+      if (
+        studio?.components?.some(
+          (c) =>
+            c.host === host &&
+            [
+              "auth-guard",
+              "webhook-receiver",
+              "favorites",
+              "rate-limiter",
+              "multipart-uploads",
+            ].includes(c.settings.kind),
+        )
+      )
+        report(
+          "CONFIG_INVALID",
+          [...base, "target"],
+          "Browser session cannot share a Service with bearer Auth guard, webhook ingress or JWT-only Required-user templates. Session forwarding is unavailable.",
+        );
+    }
     if (
       selection.binding.kind === "webhook-receiver" &&
       studio?.components?.some(
@@ -703,7 +723,7 @@ export function resolveGeneration(
         "Webhook HMAC ingress is incompatible with a Required user Auth guard; use a separate Service.",
       );
     if (
-      ["scheduled-task", "webhook-receiver"].includes(selection.binding.kind) &&
+      ["browser-session", "scheduled-task", "webhook-receiver"].includes(selection.binding.kind) &&
       !generation.processes
     )
       report(
@@ -1081,10 +1101,12 @@ export function resolveGeneration(
     // own sign-in selection, which checks it; tile-level multipart (frozen v2) checks it here.
     const verifies =
       selection.binding.kind === "verified-identity" ||
+      selection.binding.kind === "browser-session" ||
       (selection.binding.kind === "owned-multipart" &&
         !ownSelection.has(selection.binding.identity.guard));
     if (
       selection.binding.kind === "owned-multipart" ||
+      selection.binding.kind === "browser-session" ||
       selection.binding.kind === "verified-identity"
     ) {
       const identity = selection.binding.identity;
@@ -1102,8 +1124,8 @@ export function resolveGeneration(
         );
       const identityBinding = element(identity.element);
       if (
-        guard?.settings.kind === "auth-guard" &&
-        guard.settings.credential === "jwt" &&
+        ((guard?.settings.kind === "auth-guard" && guard.settings.credential === "jwt") ||
+          guard?.settings.kind === "browser-session") &&
         identityBinding?.settings.kind === "identity" &&
         identityBinding.settings.provider === "oidc"
       )
@@ -1111,10 +1133,13 @@ export function resolveGeneration(
           element: identity.element,
           guard: guard.id,
           provider: "keycloak",
-          credential: "jwt",
+          credential: guard.settings.kind === "browser-session" ? "session" : "jwt",
           sourcePaths: [
             [...base, "binding", "identity"],
-            [...componentPath(guard.id), "credential"],
+            [
+              ...componentPath(guard.id),
+              guard.settings.kind === "browser-session" ? "kind" : "credential",
+            ],
             [...elementPath(identity.element), "provider"],
           ],
         };
@@ -1377,6 +1402,18 @@ export function resolveGeneration(
                   "NEEDS_TEMPLATE",
                   link.sourcePath,
                   `Service call ${target.element} requires an HTTP process with a route stub; no installed cross-process adapter exists for its other operations.`,
+                );
+              if (
+                normalized.some(
+                  (s) =>
+                    [process.tile, target.element].includes(s.host) &&
+                    s.binding.kind === "browser-session",
+                )
+              )
+                report(
+                  "NEEDS_TEMPLATE",
+                  link.sourcePath,
+                  "Browser session service forwarding is unavailable; keep browser operations in their owning Service.",
                 );
               const userGuard = normalized.find(
                 (s) => s.host === target.element && s.binding.kind === "verified-identity",

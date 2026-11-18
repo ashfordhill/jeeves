@@ -1,0 +1,156 @@
+Actual emitted paths 67 [
+  '.dockerignore',
+  '.gitignore',
+  '.jeeves/extensions.md',
+  '.jeeves/inputs/design.json',
+  '.jeeves/manifest.json',
+  '.jeeves/normalized.json',
+  '.jeeves/report.json',
+  'Dockerfile',
+  'README.md',
+  'compose.yaml',
+  'diagnostics/generation.json',
+  'ffmpeg-os.lock',
+  'infra/edge/nginx.conf',
+  'infra/local.json',
+  'infra/postgres/identity/000-foundation.sql',
+  'infra/postgres/sessions/000-foundation.sql',
+  'infra/postgres/sessions/054-jeeves-browser-session.sql',
+  'infra/postgres/sessions/products.json',
+  'infra/postgres/sessions/products/commands/example.sql',
+  'infra/postgres/sessions/products/migrations/m_sign_in/0001-initial.sql',
+  'infra/postgres/sessions/products/queries/example.sql',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'scripts/bootstrap.mjs',
+  'scripts/broker-init.mjs',
+  'scripts/check-extensions.mjs',
+  'scripts/common.mjs',
+  'scripts/local.mjs',
+  'scripts/migrate.mjs',
+  'scripts/products.mjs',
+  'scripts/setup.mjs',
+  'scripts/status.mjs',
+  'scripts/storage-config.mjs',
+  'src/contracts/index.ts',
+  'src/extension-api/index.ts',
+  'src/features/application-bindings.ts',
+  'src/features/local-bindings.ts',
+  'src/features/service-resources.ts',
+  'src/http-errors.hooks.ts',
+  'src/modules/browser-api/account.slots.ts',
+  'src/modules/browser-api/account.ts',
+  'src/modules/dependencies.ts',
+  'src/modules/entry.ts',
+  'src/operations/browser-api-sign-in-revoke-subject.ts',
+  'src/processes/browser-api.ts',
+  'src/runtime/admission.ts',
+  'src/runtime/browser-oidc.ts',
+  'src/runtime/browser-session.ts',
+  'src/runtime/browser-settings.ts',
+  'src/runtime/hook-boundary.ts',
+  'src/runtime/http.ts',
+  'src/runtime/identity.ts',
+  'src/runtime/keys.ts',
+  'src/runtime/local.ts',
+  'src/runtime/module-clients.ts',
+  'src/runtime/operation.ts',
+  'src/runtime/postgres.ts',
+  'src/runtime/process.ts',
+  'src/runtime/product-contract.ts',
+  'src/runtime/product-operations.ts',
+  'src/runtime/settings.ts',
+  'src/runtime/tile-guard.ts',
+  'src/runtime/tile-http.ts',
+  'src/runtime/tile-process.ts',
+  'src/runtime/transaction.ts',
+  'tsconfig.json'
+]
+Exact dependencies {
+  dependencies: {
+    '@aws-sdk/client-s3': '3.1156.0',
+    '@aws-sdk/s3-request-presigner': '3.1156.0',
+    '@google-cloud/pubsub': '6.3.2',
+    '@opensearch-project/opensearch': '3.9.0',
+    amqplib: '2.2.0',
+    fastify: '5.12.7',
+    'hls.js': '1.7.3',
+    jose: '6.2.13',
+    pg: '8.23.1',
+    redis: '6.3.0',
+    zod: '4.5.4',
+    'openid-client': '6.8.9'
+  },
+  devDependencies: {
+    '@types/node': '24.19.2',
+    '@types/pg': '8.23.1',
+    typescript: '7.0.2'
+  },
+  engines: { node: '24.21.0' },
+  name: 'generated-local-v2',
+  packageManager: 'pnpm@12.16.1',
+  private: true,
+  scripts: {
+    build: 'pnpm check:extensions && tsc -p tsconfig.json',
+    'first-run': 'node scripts/local.mjs first-run',
+    start: 'node scripts/local.mjs start',
+    stop: 'node scripts/local.mjs stop',
+    'check:extensions': 'node scripts/check-extensions.mjs'
+  },
+  type: 'module',
+  version: '0.0.0-experimental.2'
+}
+Error: ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
+
+  × installing dependencies
+  ╰─▶ Cannot proceed with the frozen installation. The current "overrides"
+      configuration doesn't match the value found in the lockfile
+  help: Update your lockfile using "pnpm install --no-frozen-lockfile"
+
+node:internal/errors:986
+  const err = new Error(message);
+              ^
+
+Error: Command failed: pnpm install --offline --frozen-lockfile
+Error: ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
+
+  × installing dependencies
+  ╰─▶ Cannot proceed with the frozen installation. The current "overrides"
+      configuration doesn't match the value found in the lockfile
+  help: Update your lockfile using "pnpm install --no-frozen-lockfile"
+
+
+    at genericNodeError (node:internal/errors:986:15)
+    at wrappedFn (node:internal/errors:540:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg19/compile.ts:16:13) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '',
+    'Error: ERR_PNPM_LOCKFILE_CONFIG_MISMATCH\n' +
+      '\n' +
+      '  × installing dependencies\n' +
+      '  ╰─▶ Cannot proceed with the frozen installation. The current "overrides"\n' +
+      "      configuration doesn't match the value found in the lockfile\n" +
+      '  help: Update your lockfile using "pnpm install --no-frozen-lockfile"\n' +
+      '\n'
+  ],
+  pid: 3855973,
+  stdout: '',
+  stderr: 'Error: ERR_PNPM_LOCKFILE_CONFIG_MISMATCH\n' +
+    '\n' +
+    '  × installing dependencies\n' +
+    '  ╰─▶ Cannot proceed with the frozen installation. The current "overrides"\n' +
+    "      configuration doesn't match the value found in the lockfile\n" +
+    '  help: Update your lockfile using "pnpm install --no-frozen-lockfile"\n' +
+    '\n'
+}
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves/apps/server

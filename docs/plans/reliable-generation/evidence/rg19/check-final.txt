@@ -1,0 +1,216 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+docs/plans/reliable-generation/evidence/rg19/pins.ts:45:13 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    43 │ if (process.argv.includes("--write")) {
+    44 │   await writeFile(
+  > 45 │     new URL("../../../../../" + path, import.meta.url),
+       │             ^^^^^^^^^^^^^^^^^^^^^^^^
+    46 │     JSON.stringify(next, null, 2) + "\n",
+    47 │   );
+
+  i Unsafe fix: Use a template literal.
+
+    43 43 │   if (process.argv.includes("--write")) {
+    44 44 │     await writeFile(
+    45    │ - ····new·URL("../../../../../"·+·path,·import.meta.url),
+       45 │ + ····new·URL(`../../../../../${path}`,·import.meta.url),
+    46 46 │       JSON.stringify(next, null, 2) + "\n",
+    47 47 │     );
+
+
+docs/plans/reliable-generation/evidence/rg19/pins.ts:46:5 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    44 │   await writeFile(
+    45 │     new URL("../../../../../" + path, import.meta.url),
+  > 46 │     JSON.stringify(next, null, 2) + "\n",
+       │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    47 │   );
+    48 │   console.log(
+
+  i Unsafe fix: Use a template literal.
+
+    44 44 │     await writeFile(
+    45 45 │       new URL("../../../../../" + path, import.meta.url),
+    46    │ - ····JSON.stringify(next,·null,·2)·+·"\n",
+       46 │ + ····`${JSON.stringify(next,·null,·2)}\n`,
+    47 47 │     );
+    48 48 │     console.log(
+
+
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+jeeves-generator/src/v2/browser-session.test.ts:112:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    110 │     settings: { requestTimeoutMs: 1000, concurrencyLimit: 10 },
+    111 │     formatError: () => ({ success: true }),
+  > 112 │     configure(open: any) {
+        │                     ^^^
+    113 │       session.mount(open);
+    114 │       const routes = session.routes(open);
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:119:30 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    117 │           method,
+    118 │           url: "/product",
+  > 119 │           handler: (request: any) => session.caller(request),
+        │                              ^^^
+    120 │         });
+    121 │     },
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:128:23 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    126 │   return { ...f, session, app, settings, exchangeCalls, authorizing: () => authorizing };
+    127 │ }
+  > 128 │ const oneCookie = (r: any, suffix: string) => {
+        │                       ^^^
+    129 │   const c = r.cookies.find((c: any) => c.name.endsWith(suffix) && c.value);
+    130 │   return c ? `${c.name}=${c.value}` : "";
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:129:32 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    127 │ }
+    128 │ const oneCookie = (r: any, suffix: string) => {
+  > 129 │   const c = r.cookies.find((c: any) => c.name.endsWith(suffix) && c.value);
+        │                                ^^^
+    130 │   return c ? `${c.name}=${c.value}` : "";
+    131 │ };
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:135:37 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    133 │   const start = await f.app.inject({ url: "/modules/sign-in/login?returnTo=%2Faccount" });
+    134 │   expect(start.statusCode).toBe(302);
+  > 135 │   const state = (f.authorizing() as any).state;
+        │                                     ^^^
+    136 │   const binding = oneCookie(start, "-login");
+    137 │   const finish = await f.app.inject({
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:223:39 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    221 │     const f = await setup();
+    222 │     const start = await f.app.inject({ url: "/modules/sign-in/login" });
+  > 223 │     const state = (f.authorizing() as any).state;
+        │                                       ^^^
+    224 │     for (const headers of [{}, { cookie: `__Host-jeeves-sign-in-login=${"x".repeat(43)}` }])
+    225 │       expect(
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:309:23 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    307 │           "SELECT access_sealed FROM jeeves.browser_sessions WHERE revoked_at IS NULL",
+    308 │         )
+  > 309 │       ).rows.some((r: any) => String(r.access_sealed).startsWith("jke1.new.")),
+        │                       ^^^
+    310 │     ).toBe(true);
+    311 │     f.settings.keys = keys(["new"]);
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:405:24 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    403 │       (
+    404 │         await f.pg.query("SELECT access_sealed,refresh_sealed FROM jeeves.browser_sessions")
+  > 405 │       ).rows.every((r: any) => r.access_sealed === null && r.refresh_sealed === null),
+        │                        ^^^
+    406 │     ).toBe(true);
+    407 │   });
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:417:39 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    415 │     });
+    416 │     const start = await f.app.inject({ url: "/modules/sign-in/login" });
+  > 417 │     const state = (f.authorizing() as any).state;
+        │                                       ^^^
+    418 │     const result = await f.app.inject({
+    419 │       url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+Checked 2153 files in 1006ms. No fixes applied.
+Found 9 warnings.
+Found 3 infos.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: e2e/module-authoring.spec.ts(196,69): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+jeeves/apps/web typecheck:   Type 'undefined' is not assignable to type 'string'.
+jeeves/apps/web typecheck: Failed
+[ELIFECYCLE] Command failed with exit code 1.
+jeeves/apps/server typecheck: Done
+Error: ERR_PNPM_RECURSIVE_FAIL
+
+  × "pnpm recursive run" failed in 1 packages
+
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

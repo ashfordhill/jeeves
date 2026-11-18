@@ -1894,3 +1894,7 @@ bounded work, not a throughput guarantee. Heartbeat, committed product progress,
 and cleanup backlog answer different questions; absent provider depth remains unknown. Quarantine
 requeue preserves original bytes and identity and requires a receipt-backed effect contract, since
 an uncertain copy can itself create duplicate deliveries.
+
+## 2026-11-17 RG19: cookie authority and its bootstrap are generated policy
+
+A browser session is one identity authority per Service. Optional means absence can be anonymous; a supplied expired/bad cookie must refuse and be noticed. Keep bootstrap exceptions explicit, and let generated guards run before product formatting. Bind CSRF to every declared active stateful context, including guest identity; a cookieless logout must not clear Lax cookies omitted by a cross-site POST. Session expiry uses store time and persists revocation, without a clock-return exception. The diagram's Identity must drive compiled realm/client setup or an honest required integration gap; a successful protocol stand-in is not a native issuer/TLS deployment proof.

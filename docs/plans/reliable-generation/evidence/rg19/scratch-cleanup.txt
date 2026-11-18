@@ -1,0 +1,9 @@
+Removed exact task-owned scratch paths recorded in RG19 logs and runner receipts:
+/tmp/jeeves-rg19-compile-7SWOnd
+/tmp/jeeves-rg19-compile-LQxYP4
+/tmp/jeeves-rg19-compile-dcmUd6
+/tmp/jeeves-rg19-compile-j4KyfN
+/tmp/jeeves-rg19-compile-ncBjhi
+/tmp/jeeves-rg19-compile-oRw9uX
+/tmp/jeeves-rg19-compile-tDLqcA
+/tmp/jeeves-rg19-deps-o4HKIB

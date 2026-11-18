@@ -107,7 +107,8 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
       const selections = model.selections.filter((s) =>
         ["module-stub", "scheduled-task", "webhook-receiver"].includes(s.binding.kind),
       );
-      if (!selections.length) return { files: [] };
+      if (!selections.length && !model.selections.some((s) => s.binding.kind === "browser-session"))
+        return { files: [] };
       const files: V2TemplateFile[] = [
         {
           path: dependenciesPath,

@@ -1,0 +1,236 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+jeeves-generator/src/v2/browser-session.test.ts:112:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    110 │     settings: { requestTimeoutMs: 1000, concurrencyLimit: 10 },
+    111 │     formatError: () => ({ success: true }),
+  > 112 │     configure(open: any) {
+        │                     ^^^
+    113 │       session.mount(open);
+    114 │       const routes = session.routes(open);
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:119:30 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    117 │           method,
+    118 │           url: "/product",
+  > 119 │           handler: (request: any) => session.caller(request),
+        │                              ^^^
+    120 │         });
+    121 │     },
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:128:23 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    126 │   return { ...f, session, app, settings, exchangeCalls, authorizing: () => authorizing };
+    127 │ }
+  > 128 │ const oneCookie = (r: any, suffix: string) => {
+        │                       ^^^
+    129 │   const c = r.cookies.find((c: any) => c.name.endsWith(suffix) && c.value);
+    130 │   return c ? `${c.name}=${c.value}` : "";
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:129:32 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    127 │ }
+    128 │ const oneCookie = (r: any, suffix: string) => {
+  > 129 │   const c = r.cookies.find((c: any) => c.name.endsWith(suffix) && c.value);
+        │                                ^^^
+    130 │   return c ? `${c.name}=${c.value}` : "";
+    131 │ };
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:135:37 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    133 │   const start = await f.app.inject({ url: "/modules/sign-in/login?returnTo=%2Faccount" });
+    134 │   expect(start.statusCode).toBe(302);
+  > 135 │   const state = (f.authorizing() as any).state;
+        │                                     ^^^
+    136 │   const binding = oneCookie(start, "-login");
+    137 │   const finish = await f.app.inject({
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:223:39 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    221 │     const f = await setup();
+    222 │     const start = await f.app.inject({ url: "/modules/sign-in/login" });
+  > 223 │     const state = (f.authorizing() as any).state;
+        │                                       ^^^
+    224 │     for (const headers of [{}, { cookie: `__Host-jeeves-sign-in-login=${"x".repeat(43)}` }])
+    225 │       expect(
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:309:23 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    307 │           "SELECT access_sealed FROM jeeves.browser_sessions WHERE revoked_at IS NULL",
+    308 │         )
+  > 309 │       ).rows.some((r: any) => String(r.access_sealed).startsWith("jke1.new.")),
+        │                       ^^^
+    310 │     ).toBe(true);
+    311 │     f.settings.keys = keys(["new"]);
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:405:24 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    403 │       (
+    404 │         await f.pg.query("SELECT access_sealed,refresh_sealed FROM jeeves.browser_sessions")
+  > 405 │       ).rows.every((r: any) => r.access_sealed === null && r.refresh_sealed === null),
+        │                        ^^^
+    406 │     ).toBe(true);
+    407 │   });
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+jeeves-generator/src/v2/browser-session.test.ts:417:39 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━
+
+  ! Unexpected any. Specify a different type.
+
+    415 │     });
+    416 │     const start = await f.app.inject({ url: "/modules/sign-in/login" });
+  > 417 │     const state = (f.authorizing() as any).state;
+        │                                       ^^^
+    418 │     const result = await f.app.inject({
+    419 │       url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+  i any disables many type checking rules. Its use should be avoided.
+
+
+Checked 2153 files in 725ms. No fixes applied.
+Found 9 warnings.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/local.test.ts (11 tests | 1 failed) 4637ms
+   ❯ standalone local foundation (11)
+     × gives the application its package manifests with the template's bytes (QG03) 280ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/local.test.ts > standalone local foundation > gives the application its package manifests with the template's bytes (QG03)
+AssertionError: expected 'FROM node:24.21.0-bookworm-slim@sha25…' to contain 'COPY package.json pnpm-lock.yaml ./\n…'
+
+- Expected
++ Received
+
+- COPY package.json pnpm-lock.yaml ./
++ FROM node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS app
++ WORKDIR /app
++ RUN npm install --global pnpm@12.16.1
++ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+- RUN pnpm install --frozen-lockfile --ignore-scripts
++ RUN pnpm install --frozen-lockfile --ignore-scripts
++ # Build checks the complete export, including its generated-file manifest and boundary script.
++ COPY . .
++ RUN pnpm build
++ USER node
++ CMD ["node", "scripts/status.mjs"]
++
++ FROM node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS ffmpeg
++ WORKDIR /build
++ COPY ffmpeg-os.lock ./ffmpeg-os.lock
++ # Signed apt metadata authenticates HTTP snapshot transport. Base has no CA package.
++ RUN rm /etc/apt/sources.list.d/debian.sources && printf 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20261024T000000Z bookworm main\ndeb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20261024T000000Z bookworm-security main\n' > /etc/apt/sources.list \
++  && apt-get update -o APT::Update::Error-Mode=any \
++  && apt-get download ffmpeg=7:5.1.9-0+deb12u1 \
++  && echo '2ba8ead87657c123ce6de2de5ecdbc1fb4ead9a4b317b85b8ec41e16c890fe01  ffmpeg_7%3a5.1.9-0+deb12u1_amd64.deb' | sha256sum -c - \
++  && rm ffmpeg_*.deb \
++  && apt-get install -y --no-install-recommends ffmpeg=7:5.1.9-0+deb12u1 \
++  && dpkg-query -W -f='${Package}=${Version}\n' | LC_ALL=C sort > /tmp/ffmpeg-os.lock \
++  && diff -u ffmpeg-os.lock /tmp/ffmpeg-os.lock \
++  && test "$(dpkg-query -W -f='${Version}' ffmpeg)" = '7:5.1.9-0+deb12u1' \
++  && rm -rf /var/lib/apt/lists/*
++ FROM ffmpeg AS media
++ WORKDIR /app
++ COPY --from=app /app /app
++ USER node
++ CMD ["node", "dist/services/media.js"]
+
+
+ ❯ src/v2/local.test.ts:266:42
+    264|       for (const path of ["tsconfig.json", "Dockerfile", "scripts/loca…
+    265|         expect(ownership(bundle, path)).toBe("generated-scaffold");
+    266|       expect(text(bundle, "Dockerfile")).toContain(
+       |                                          ^
+    267|         "COPY package.json pnpm-lock.yaml ./\nRUN pnpm install --froze…
+    268|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 142 passed (143)
+      Tests  1 failed | 1300 passed (1301)
+   Start at  20:38:49
+   Duration  107.66s (tests 82%, import 13%, environment 2%, transform 2%)
+
+    Isolate  143 workers spawned · ~157ms startup each (spawn + environment, per file)
+             at least ~5.45s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

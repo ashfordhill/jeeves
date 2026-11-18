@@ -1,0 +1,11 @@
+{
+  "dependency": "openid-client",
+  "version": "6.8.9",
+  "published": "2026-11-02T08:49:27.763Z",
+  "verifiedAt": "2026-11-17",
+  "source": "https://registry.npmjs.org/openid-client",
+  "apiSources": [
+    "https://github.com/panva/openid-client/tree/v6.8.9/docs",
+    "https://github.com/panva/openid-client/blob/v6.8.9/examples/oidc.ts"
+  ]
+}

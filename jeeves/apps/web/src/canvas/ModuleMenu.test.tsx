@@ -32,6 +32,7 @@ describe("moduleMenuGroups", () => {
         "Requests",
         "api",
         [
+          "Browser session: lead",
           "Rate limiter: lead",
           "Redirect responder: stub",
           "Auth guard: lead",
@@ -129,7 +130,7 @@ describe("ModuleAddButton", () => {
       ["Files & media", "worker"],
       ["Custom", "generic"],
     ]);
-    expect(screen.getAllByRole("menuitem")).toHaveLength(15);
+    expect(screen.getAllByRole("menuitem")).toHaveLength(16);
     const data = screen.getByRole("menuitem", { name: "Data access" });
     expect(data.dataset.family).toBe("data");
     const described = document.getElementById(data.getAttribute("aria-describedby") ?? "");

@@ -50,6 +50,11 @@ export const generationBindingSchema = z.discriminatedUnion("kind", [
     cache: dep,
     identity: generationIdentitySchema,
   }),
+  z.strictObject({
+    kind: z.literal("browser-session"),
+    state: dep,
+    identity: generationIdentitySchema,
+  }),
   z.strictObject({ kind: z.literal("scheduled-task"), state: dep }),
   z.strictObject({ kind: z.literal("webhook-receiver"), state: dep }),
   z.strictObject({ kind: z.literal("event-counter"), state: dep, events: dep }),
@@ -100,6 +105,7 @@ export const generationHost = (selection: GenerationSelection) =>
 export const generationBindingIdentity = (binding: GenerationBinding) =>
   binding.kind === "owned-multipart" ||
   binding.kind === "verified-identity" ||
+  binding.kind === "browser-session" ||
   binding.kind === "favorites"
     ? binding.identity
     : undefined;
@@ -155,6 +161,7 @@ export function generationReferences(binding: GenerationBinding) {
       resource("source", binding.source, "database");
       resource("cache", binding.cache, "cache");
       break;
+    case "browser-session":
     case "scheduled-task":
     case "webhook-receiver":
       resource("state", binding.state, "database");
@@ -279,7 +286,11 @@ export function generationFindings(design: DesignDocument): Finding[] {
           ["binding", "identity", "guard"],
           "Missing canonical authentication guard.",
         );
-      else if (guard.host !== host || guard.settings.kind !== "auth-guard")
+      else if (
+        guard.host !== host ||
+        guard.settings.kind !==
+          (selection.binding.kind === "browser-session" ? "browser-session" : "auth-guard")
+      )
         row(
           "CONFIG_INVALID",
           ["binding", "identity", "guard"],
@@ -288,7 +299,7 @@ export function generationFindings(design: DesignDocument): Finding[] {
             : "Authentication guard must belong to the selected host.",
         );
       else if (
-        selection.binding.kind === "verified-identity" &&
+        ["verified-identity", "browser-session"].includes(selection.binding.kind) &&
         selection.target.kind === "component" &&
         selection.target.component !== guard.id
       )

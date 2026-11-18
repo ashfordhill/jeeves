@@ -651,6 +651,8 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
               "consumer_receipts",
               "consumer_receipts_maintenance",
               "consumer_receipts_workers",
+              "browser_sessions",
+              "browser_logins",
             ].includes(grant.relation) &&
             grant.kind === "table"
           )) ||

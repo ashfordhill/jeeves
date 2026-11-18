@@ -21,6 +21,7 @@ export function createLocalComposition(sourcePaths: readonly string[]): V2Emitte
       "search-projection",
       "search-query",
       "verified-identity",
+      "browser-session",
       "favorites",
       "rate-limiter",
     ] as const

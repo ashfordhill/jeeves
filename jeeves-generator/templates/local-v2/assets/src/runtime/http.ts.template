@@ -146,6 +146,7 @@ export async function createHttpService(options: {
   app.setErrorHandler((error, request, reply) => reply.send(publicBody(error, request, reply)));
   app.addHook("onSend", async (request, reply, payload) => {
     reply.header("Cache-Control", "no-store");
+    reply.header("Referrer-Policy", "no-referrer");
     const context = request.operationContext;
     if (context) {
       reply.header("X-Request-Id", context.requestId);

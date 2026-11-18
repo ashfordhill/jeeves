@@ -1,0 +1,46 @@
+frozen-v2 80 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'Dockerfile',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'src/runtime/http.ts'
+]
+v2-module-design 87 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'Dockerfile',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'src/runtime/http.ts',
+  'src/runtime/settings.ts'
+]
+stub-stack 60 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'Dockerfile',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'src/runtime/settings.ts'
+]
+node:internal/fs/promises:1345
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: ENOENT: no such file or directory, open 'jeeves-generator/src/v2/fixtures/processes-off.json'
+    at async open (node:internal/fs/promises:1345:25)
+    at async writeFile (node:internal/fs/promises:1965:14)
+    at async <anonymous> (/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg19/pins.ts:14:38) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'jeeves-generator/src/v2/fixtures/processes-off.json'
+}
+
+Node.js v24.21.0
+Error: ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL
+
+  × "pnpm recursive exec" failed in /home/ash/github/jeeves/jeeves/apps/server

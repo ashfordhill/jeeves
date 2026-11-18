@@ -19097,3 +19097,28 @@ workload settings the same way.
   root hashes, exact original owner patch under archive remapping, frozen v1 and42 container
   IDs/names/states match. Owner `a3a26fa`/README work preserved and excluded. One explicit-path local
   commit follows: `RG18: bound receipt lifecycle and expose truthful consumer progress`; no push/deploy.
+
+## 2026-11-17 — RG19 browser sessions active, unaccepted/uncommitted
+
+- Sole assigned RG19 on accepted RG18 `ba89ff1`; reading installed authoring, ownership, private keys and HTTP boundaries before adding Browser session. No refresh/forwarding or later-unit work.
+- Session/login state will use declared owned PostgreSQL state, append-only protected migration and precise framework grants; maintained OIDC code+PKCE, private sealed tokens, cookie/CSRF/expiry policies and owning-service subject revocation are in scope.
+- Protocol stand-ins, actual export checker/TS7.0.2, D11, mouse/chat parity, evidence and one explicit-path local commit remain. Root/owner files, archived evidence,42 original containers and owner studio remain preserved.
+
+## 2026-11-17 — RG19 browser session verification active, unaccepted/uncommitted
+
+- Installed Service Browser session leads declared Identity/state, five finite settings and protected054. Private RG08 sealed tokens/login state, maintained pinned OIDC6.8.9, one-use browser/state/nonce/PKCE callback, flagged cookies, CSRF/guest facts, irreversible store-time expiry and owning-service subject revocation are implemented. Invalid supplied identity never becomes anonymous; cookieless logout cannot clear omitted Lax cookies. JWT-only template/guard/webhook/session-forwarding combinations explicitly refuse.
+- Actual full/custom and Browser-only exports compile/check under TS7.0.2. Pinned-library protocol stand-ins pass auth negatives and network/503/429/malformed body/JWKS unknown behavior; deterministic gated32-pending capacity/no blind grant retry passes. Selected Keycloak realm/compiled client/trusted HTTPS setup remains an explicit required integration gap. No insecure production clock/TLS shortcut, refresh, forwarding, native issuer matrix or new provider.
+- Full browser86/86 (TinyURL/new session controls/refusal/export included), web build and plain offline chat pass. Focused33/33 and chat parity pass. Full check lint/types1300/1301 found only an old exact Docker COPY expectation after required workspace-pin copying; corrected focused11/11. Final full check is running after formatting this unit's own new inventory JSON. Six root hashes/original owner patch/all42 containers/accepted050–053/counter builders/frozen v1 match. Final evidence/handoff and one explicit-path local commit remain.
+
+## 2026-11-17 — RG19 authority-bound sessions verified, final handoff pending commit
+
+- Protected054 login/session rows now bind the compiled Identity and exact issuer/client authority; changed authorities refuse retained cookies/transactions. Subject revocation spans all authority versions in its compiled owner/module/Identity scope. Old-scope drain/revocation and explicit migration are required on Identity-link changes. Startup verifies each protected privilege individually; SELECT-only grants refuse.
+- Final authority/grant26/26, actual67-file/custom and64-file/Browser-only checker/TS7.0.2, actual pinned OIDC protocol stand-ins (including gated32 actual pending POSTs), final mouse1/1 and full pnpm check143files/1305tests pass. Earlier full86/86 browser, web build and plain offline chat pass. Unsupported JWT-only/guard/webhook/session-forwarding pairings and explicit Keycloak HTTPS/client integration gap remain; refresh/native issuer proof remain unavailable/deferred.
+- All RG19 E2E projects removed. Original six root hashes/owner patch/all42 container triples/applied050–053/counter SQL/frozen v1 match. Final evidence and short completion entry/one explicit-path local commit remain; no later unit, paid/live call, owner service, root edit, push or deployment.
+
+## 2026-11-17 — RG19 browser sign-in sessions and CSRF complete for coordinator review
+
+- Installed Browser session binds selected Identity/owned state and exact issuer/client authority. Protected054/private RG08 tokens, maintained OIDC6.8.9 code+PKCE, one-use browser/state/nonce transaction, fresh secure cookies, CSRF/guest facts, irreversible idle/absolute expiry and owning-service subject revocation are generated. Product receives immutable facts only; every supplied invalid identity refuses.
+- Five normal controls share mouse/chat/blueprint/emitter consumers. Bearer guards, webhook ingress, JWT-only Required-user templates and session forwarding explicitly refuse. HTTPS/compiled confidential-client registration against the selected Keycloak realm is required integration work; no production bypass, refresh, new provider, account-management UI or native issuer proof.
+- Final pnpm check lint/types143files/1305tests; full browser86/86 plus final source mouse1/1; web build/plain offline chat; actual67/64-file extension checker/TS7.0.2 and pinned-library protocol stand-ins all pass. Authority/grant26/26 includes wrong-issuer/client retained-cookie/transaction and SELECT-only startup refusal. Deterministic32-pending token POST proof preserves unknown outcomes/no retry. Detailed failures, limits and receipts live in [RG19 evidence](plans/reliable-generation/evidence/rg19/README.md).
+- All RG19 projects/recorded scratch exports removed. Six original root hashes/owner patch/all42 container states/applied050–053/counter builders/frozen v1 preserved. Root/owner files and unrelated modes excluded. One explicit-path local commit follows: `RG19: generate browser sign-in sessions and CSRF protection`; no push/deploy/later unit.

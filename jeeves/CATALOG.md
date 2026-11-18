@@ -650,3 +650,7 @@ with owned state can opt into the checked receipt/scoped-product declaration; le
 keep durable progress unknown. Cleanup and heartbeat run independently of arrivals. Internal
 quarantine commands require receipt support and refuse unknown effects; Pub/Sub retry/ACK policy
 is preserved and automatic Pub/Sub quarantine requeue remains unavailable.
+
+### Browser session
+
+`browser-session` (**Browser session**, shield icon) is installed in Service with an Identity and writable owned PostgreSQL state. It generates maintained OIDC code+PKCE login/callback, secure cookie sessions, CSRF/session/logout routes and an internal owning-service subject-revocation command. Five normal controls choose required/optional sign-in, idle/absolute expiry, guest context and offline-access request. Protected054 state and private RG08 rings keep tokens/cookie secrets out of hooks. Invalid supplied identity401s; absent Optional identity stays anonymous. The export explicitly requires HTTPS and registration of its exact client against the selected Keycloak Identity. Bearer guards, webhook ingress, JWT-only Required-user templates and session service forwarding refuse. Refresh remains unavailable. [Exact contract](../docs/plans/reliable-generation/evidence/rg19/protocol.md).

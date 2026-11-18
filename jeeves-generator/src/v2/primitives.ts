@@ -91,6 +91,11 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       }
       if (model.selections.some((s) => s.binding.kind === "webhook-receiver"))
         add(["webhook"], ["generation", "processes"]);
+      if (model.selections.some((s) => s.binding.kind === "browser-session"))
+        add(
+          ["browser-session", "browser-settings", "browser-oidc", "transaction"],
+          ["generation", "processes"],
+        );
       for (const selection of model.selections) {
         if ("host.requestTimeoutMs" in selection.inputs)
           add(["admission", "http"], selection.sourcePath);
@@ -117,6 +122,15 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       if (model.selections.some((selection) => selection.binding.kind === "positive-cache-read"))
         modules.delete("valkey");
       return {
+        gaps: model.selections
+          .filter((s) => s.binding.kind === "browser-session")
+          .map((s) => ({
+            id: `browser-issuer-${s.id}`,
+            status: "custom" as const,
+            required: true,
+            sourcePaths: [`/${s.sourcePath.join("/")}`],
+            description: `Configure selected Keycloak Identity ${s.identity?.element} through a trusted HTTPS issuer at /realms/${s.identity?.element}, register confidential code+S256 client jeeves-browser-${s.host}-${s.target.kind === "component" ? s.target.component : s.id} with the exact HTTPS callback, and mount its private client secret/RG08 ring. Plain-HTTP local Keycloak/edge defaults cannot provide secure browser sessions. No production TLS bypass, automatic issuer provisioning or refresh/forwarding is claimed; see .jeeves/extensions.md.`,
+          })),
         files: [...modules]
           .sort(([a], [b]) => v2Compare(a, b))
           .map(([name, paths]) => ({

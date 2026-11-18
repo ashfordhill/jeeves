@@ -43,6 +43,7 @@ export const studioComponentLimits = {
 const bounded = ({ min, max }: { min: number; max: number }) => z.int().min(min).max(max);
 
 export const studioComponentKinds = [
+  "browser-session",
   "scheduled-task",
   "webhook-receiver",
   "rate-limiter",
@@ -87,6 +88,24 @@ export const dataReadRoutingSchema = z.enum(["primary", "replica"]);
 export const authCredentialSchema = z.enum(["jwt", "api-key", "session"]);
 /** An Auth guard's Sign-in (v3 contract, section 2): absent reads as Required. */
 export const authSignInSchema = z.enum(["required", "optional"]);
+
+export const studioBrowserSessionSettingsSchema = z
+  .strictObject({
+    kind: z.literal("browser-session"),
+    signIn: authSignInSchema,
+    idleSeconds: z.int().min(60).max(86400),
+    absoluteSeconds: z.int().min(60).max(604800),
+    guestContext: switchSchema,
+    offlineAccess: switchSchema,
+  })
+  .superRefine((v, ctx) => {
+    if (v.idleSeconds > v.absoluteSeconds)
+      ctx.addIssue({
+        code: "custom",
+        path: ["idleSeconds"],
+        message: "Idle expiry must not exceed absolute expiry.",
+      });
+  });
 
 /** Every kind is a strict object; omitted optional numbers mean "unspecified", never zero. */
 export const studioWebhookReceiverSettingsSchema = z.strictObject({
@@ -216,6 +235,7 @@ export const studioSearchQuerySettingsSchema = z.strictObject({ kind: z.literal(
 export const studioFavoritesSettingsSchema = z.strictObject({ kind: z.literal("favorites") });
 
 export const studioComponentSettingsSchemas = {
+  "browser-session": studioBrowserSessionSettingsSchema,
   "scheduled-task": studioScheduledTaskSettingsSchema,
   "webhook-receiver": studioWebhookReceiverSettingsSchema,
   "rate-limiter": studioRateLimiterSettingsSchema,
@@ -239,6 +259,7 @@ export const studioComponentSettingsSchemas = {
   favorites: studioFavoritesSettingsSchema,
 } as const;
 export const studioComponentSettingsSchema = z.discriminatedUnion("kind", [
+  studioBrowserSessionSettingsSchema,
   studioScheduledTaskSettingsSchema,
   studioWebhookReceiverSettingsSchema,
   studioRateLimiterSettingsSchema,
@@ -271,6 +292,14 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
   kind: K,
 ): StudioComponentSettingsByKind[K] {
   const defaults: StudioComponentSettingsByKind = {
+    "browser-session": {
+      kind: "browser-session",
+      signIn: "optional",
+      idleSeconds: 86400,
+      absoluteSeconds: 604800,
+      guestContext: "disabled",
+      offlineAccess: "disabled",
+    },
     "scheduled-task": { kind: "scheduled-task", intervalSeconds: 60 },
     "webhook-receiver": {
       kind: "webhook-receiver",
@@ -391,6 +420,7 @@ export type StudioComponentField =
     });
 /** The installed templates a module can lead or be part of (`generationTemplates` keys). */
 export const studioModuleTemplates = [
+  "browser-session",
   "verified-identity",
   "owned-multipart",
   "asset-lifecycle",
@@ -628,6 +658,31 @@ function component<K extends StudioComponentKind>(
 export const studioComponentDefinitions: {
   readonly [K in StudioComponentKind]: StudioComponentDefinition<K>;
 } = Object.freeze({
+  "browser-session": component("browser-session", {
+    name: "Browser session",
+    description:
+      "OIDC code+PKCE sign-in, secure cookie sessions and CSRF on declared owned state. Invalid supplied cookies refuse; refresh and forwarding are unavailable.",
+    thirdParty: ["openid-client", "PostgreSQL"],
+    browserHost: false,
+    hosts: ["service"],
+    scope: "generic",
+    slots: [slot("identity", ["identity"], "verify"), slot("state", ["database"], "read-write")],
+    generation: lead("browser-session"),
+    targets: ["identity", "database"],
+    fields: [
+      select("signIn", "Sign-in", ["required", "optional"]),
+      integer("idleSeconds", "Idle expiry", { min: 60, max: 86400 }, "s"),
+      integer("absoluteSeconds", "Absolute expiry", { min: 60, max: 604800 }, "s"),
+      select("guestContext", "Guest cookie context", ["disabled", "enabled"]),
+      select(
+        "offlineAccess",
+        "Request offline access",
+        ["disabled", "enabled"],
+        "Options",
+        "Stores sealed refresh material only. Refresh remains unavailable.",
+      ),
+    ],
+  }),
   "webhook-receiver": component("webhook-receiver", {
     name: "Webhook receiver",
     description:
@@ -1055,6 +1110,11 @@ export function studioComponentRequirements(settings: StudioComponentSettings): 
 }[] {
   const need = (kinds: readonly StudioComponentTargetKind[], reason: string) => [{ kinds, reason }];
   switch (settings.kind) {
+    case "browser-session":
+      return [
+        ...need(["identity"], "Browser sessions require an installed OIDC Identity."),
+        ...need(["database"], "Browser sessions require writable owned state."),
+      ];
     case "webhook-receiver":
       return need(["database"], "A Webhook receiver requires writable owned database state.");
     case "scheduled-task":
