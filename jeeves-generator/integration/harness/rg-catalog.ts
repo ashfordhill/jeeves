@@ -10,6 +10,8 @@ import { faultContainer, SqlSession } from "./faults.ts";
 import { command, poll, repository } from "./process.ts";
 import { finish, native } from "./rg-foundations.ts";
 
+import { prepareTransactionPooler, verifyTransactionPooler } from "./wd-pooler.ts";
+
 const infra = (app: Application) => join(app.directory, "../rg-catalog-infra");
 async function control(app: Application, patch: Record<string, boolean>) {
   const path = join(infra(app), "control.json");
@@ -71,6 +73,7 @@ async function prepare(app: Application) {
     join(app.directory, "compose.override.yaml"),
     JSON.stringify({ services }, null, 2),
   );
+  await prepareTransactionPooler(app);
 }
 type ProxyStats = {
   commits: { released: boolean; from: string }[];
@@ -231,6 +234,7 @@ export async function catalogScenario() {
         api: api.map((r) => r.Id),
         workers: workers.map((r) => r.Id),
       });
+      await verifyTransactionPooler(app, "app-caller");
       await check(
         "HMAC durable acceptance survives process death",
         "stored work exists while ACK withheld; another same Service processor completes once; changed content409, terminal failure visible",

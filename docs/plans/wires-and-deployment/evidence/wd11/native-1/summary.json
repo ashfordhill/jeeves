@@ -1,0 +1,7 @@
+{
+  "id": "gs-8736cf36-1273-4084-8f01-7986f5145588",
+  "selected": ["rg-mechanisms"],
+  "outcome": "failed",
+  "elapsedMs": 207533,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /tmp/jeeves-wd11/native-1/run.json"
+}

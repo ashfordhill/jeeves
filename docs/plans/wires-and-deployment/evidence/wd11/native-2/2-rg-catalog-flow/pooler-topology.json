@@ -1,0 +1,28 @@
+{
+  "image": "edoburu/pgbouncer@sha256:68969403ee54dbf98601b49a1e92db644a9fdeed5c40969f7f0adce5193ac5b8",
+  "mode": "transaction",
+  "defaultPoolSize": 2,
+  "processPoolMax": 3,
+  "publishedPoolerPorts": [],
+  "services": {
+    "app-caller": {
+      "JEEVES_TILE_CALLEE_URL": "http://rg-provider:8080",
+      "JEEVES_DATABASE_CALLER_DB_HOST": "rg-provider",
+      "JEEVES_DATABASE_CALLER_DB_PORT": "5433",
+      "JEEVES_SECRET_JEEVES_WEBHOOK_CATALOG_EVENTS_KEYS_FILE": "/rg/webhook-ring",
+      "JEEVES_DB_POOL_MAX": "3"
+    },
+    "app-projector": {
+      "JEEVES_BROKER_HOST": "rg-provider",
+      "JEEVES_BROKER_PORT": "5673",
+      "JEEVES_DB_POOL_MAX": "3",
+      "JEEVES_DATABASE_CALLER_DB_HOST": "wd11-pooler",
+      "JEEVES_DATABASE_CALLER_DB_PORT": "6432"
+    },
+    "app-callee": {
+      "JEEVES_DB_POOL_MAX": "3",
+      "JEEVES_DATABASE_CALLEE_DB_HOST": "wd11-pooler",
+      "JEEVES_DATABASE_CALLEE_DB_PORT": "6432"
+    }
+  }
+}

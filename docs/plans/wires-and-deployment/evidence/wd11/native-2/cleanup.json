@@ -1,0 +1,35 @@
+{
+  "outcomes": [
+    {
+      "project": "gs-10b57e91-78bf-42b7-8410-e17207601513-1",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    },
+    {
+      "project": "gs-10b57e91-78bf-42b7-8410-e17207601513-2",
+      "before": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      },
+      "after": {
+        "containers": [],
+        "networks": [],
+        "volumes": [],
+        "images": []
+      }
+    }
+  ],
+  "temporaryRemoved": true
+}

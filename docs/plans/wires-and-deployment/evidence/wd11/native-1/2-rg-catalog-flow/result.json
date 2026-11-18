@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-catalog-flow",
+  "phase": "setup",
+  "outcome": "failed",
+  "error": "Error: EEXIST: file already exists, mkdir '/tmp/jeeves-system-Mf2zGq/wd11-pooler'"
+}

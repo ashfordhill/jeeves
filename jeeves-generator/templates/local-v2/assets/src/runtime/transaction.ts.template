@@ -10,6 +10,17 @@ export interface Tx {
   ): Promise<pg.QueryResult<Row>>;
 }
 export type TransactionPool = Pick<pg.Pool, "connect">;
+// Each generated pool carries its configured server budget without relying on session state.
+const timeouts = new WeakMap<TransactionPool, number>();
+export function configureTransactionTimeout(pool: TransactionPool, milliseconds: number): void {
+  if (!Number.isSafeInteger(milliseconds) || milliseconds < 1) throw Error("Invalid database timeout");
+  timeouts.set(pool, milliseconds);
+}
+/** A transaction-local setting is safe when a pooler lends a different server next time. */
+export async function localStatementTimeout(client: Pick<pg.PoolClient, "query">, milliseconds: number): Promise<void> {
+  if (!Number.isSafeInteger(milliseconds) || milliseconds < 1) throw Error("Invalid database timeout");
+  await client.query(`SET LOCAL statement_timeout = '${milliseconds}ms'`);
+}
 const scopes = new WeakMap<Tx, { active: boolean; failure?: { error: unknown } }>();
 export function assertTransaction(tx: Tx): void {
   const scope = scopes.get(tx);
@@ -43,11 +54,14 @@ async function executeTransaction<T>(
   });
   scopes.set(tx, scope);
   let began = false,
+    beginSent = false,
     discard = false;
   try {
     assertOperation();
+    beginSent = true;
     await client.query(options.readOnly ? "BEGIN READ ONLY" : "BEGIN");
     began = true;
+    await localStatementTimeout(client, timeouts.get(pool) ?? 2000);
     const result = await effect(tx);
     assertTransaction(tx);
     assertOperation();
@@ -88,7 +102,7 @@ async function executeTransaction<T>(
       } catch {
         discard = true;
       }
-    } else discard = true;
+    } else discard = beginSent;
     throw error;
   } finally {
     scope.active = false;

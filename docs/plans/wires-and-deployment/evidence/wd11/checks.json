@@ -1,0 +1,46 @@
+{
+  "node": "24.21.0",
+  "biomeConfig": "tooling/biome.config.json",
+  "pnpm check": {
+    "result": "passed",
+    "files": 153,
+    "tests": 1424,
+    "seconds": 115.6
+  },
+  "pnpm test:e2e": {
+    "result": "passed",
+    "tests": 89,
+    "duration": "5.1m",
+    "bothMouseRebuilds": "passed"
+  },
+  "pnpm --filter @jeeves/web build": {
+    "result": "passed",
+    "seconds": 2.01,
+    "laterWebBuildInputChanges": false
+  },
+  "native RG23 through pinned PgBouncer": {
+    "result": "passed",
+    "tests": 2,
+    "foundationAssertions": 10,
+    "catalogAssertions": 6,
+    "sessionCases": 4,
+    "seconds": 488.4,
+    "attempt": "native-2",
+    "suite": "rg-mechanisms"
+  },
+  "scratch API8 / TypeScript 7.0.2": {
+    "result": "passed",
+    "exportFiles": [94, 46],
+    "install": false
+  },
+  "public update check": "unchanged; no refusals",
+  "focusedCorrections": "RG10/deployment26/26 passed; initial mismatches retained",
+  "initialFullCheck": "1422 passed /1 fake-injection mismatch",
+  "initialE2E": "80 passed /9 Project-button5000ms startup failures",
+  "initialNative": "failed refresh503/503 and own harness directory collision; exact cleanup passed",
+  "inheritedWarnings": {
+    "lintWarnings": 8,
+    "lintInfos": 12,
+    "viteChunkWarning": true
+  }
+}

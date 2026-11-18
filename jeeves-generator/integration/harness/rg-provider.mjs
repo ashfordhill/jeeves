@@ -99,7 +99,10 @@ net
 const commits = [];
 net
   .createServer((client) => {
-    const upstream = net.connect(5432, "local-postgres");
+    const upstream = net.connect(
+      Number(process.env.WD11_PG_PORT ?? 5432),
+      process.env.WD11_PG_HOST ?? "local-postgres",
+    );
     let buffered = Buffer.alloc(0),
       startup = true,
       insert = false,

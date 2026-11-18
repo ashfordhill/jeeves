@@ -10,6 +10,7 @@ import {
   deploymentDesign,
 } from "../../../field-projects/generator-system/fixtures/wd-deployment/design.ts";
 import { expectedDeployment } from "../../../field-projects/generator-system/fixtures/wd-deployment/expected.ts";
+import { emptyDesign } from "../../../jeeves/packages/spec/src/design.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
 import { exportNewDirectory } from "../export.ts";
@@ -47,6 +48,7 @@ function auditEnvironment(id: string) {
             seen.add(key);
             if (key.startsWith("JEEVES_SECRET_"))
               return namedSecrets ? "/audit/credential" : undefined;
+            if (key === "JEEVES_DB_POOL_MAX") return "3";
             if (key === "SECRET_DIR") return "/audit";
             if (key === "JEEVES_REQUIRE_TLS") return secure ? "true" : undefined;
             if (key === "NODE_TLS_REJECT_UNAUTHORIZED") return secure ? "1" : undefined;
@@ -77,6 +79,9 @@ function auditEnvironment(id: string) {
           .replace(/\bexport\s+(?=(?:const|let|function|async|class)\b)/g, "");
         return runInNewContext(`(() => {${source}\n;return {${names.join(",")}};})()`, globals);
       }
+      // This fixture's independent expectation and import-closure assertion require Postgres
+      // in each process. Never use the emitted env list to decide which readers to execute.
+      load("src/runtime/postgres.ts", ["databasePoolMaximum"]);
       const local = load("src/runtime/local.ts", ["readSecret"]);
       globals.readSecret = local.readSecret;
       const clients = load("src/runtime/module-clients.ts", ["databaseEndpoint", "brokerBinding"]);
@@ -138,6 +143,7 @@ describe("WD09 deployment contract", () => {
       "JEEVES_DATABASE_SESSIONS_PORT",
       "JEEVES_DATABASE_SESSIONS_TLS",
       "JEEVES_DATABASE_SESSIONS_TLS_SERVERNAME",
+      "JEEVES_DB_POOL_MAX",
       "JEEVES_REQUIRE_TLS",
       "JEEVES_SECRET_JEEVES_BROWSER_LOGIN_CLIENT_SECRET_FILE",
       "JEEVES_SECRET_JEEVES_BROWSER_LOGIN_KEYS_FILE",
@@ -145,6 +151,62 @@ describe("WD09 deployment contract", () => {
       "NODE_TLS_REJECT_UNAUTHORIZED",
       "SECRET_DIR",
     ]);
+  });
+  it("WD11 omits the pool setting when no database runtime is imported", () => {
+    const design = runStudioCommands(emptyDesign(), [
+      {
+        type: "addTile",
+        from: { lane: "download" },
+        side: "after",
+        tile: { id: "front", name: "HTTP only", kind: "service" },
+        linkId: "entry-front",
+        system: { name: "WD11 no database" },
+      },
+      { type: "addModule", host: "front", id: "echo", name: "Echo", kind: "custom" },
+      { type: "setRunnableProcesses", on: true },
+    ]);
+    const exported = assembleV2({ designJson: JSON.stringify(design) }, registry);
+    const actual = JSON.parse(
+      new TextDecoder().decode(
+        must(exported.files.find((f) => f.path === "deploy/contract.json")).bytes,
+      ),
+    );
+    expect(actual.processes[0].env).not.toContain("JEEVES_DB_POOL_MAX");
+    expect(exported.files.some((f) => f.path === "src/runtime/postgres.ts")).toBe(false);
+    expect(
+      new TextDecoder().decode(
+        must(exported.files.find((f) => f.path === "src/runtime/module-clients.ts")).bytes,
+      ),
+    ).not.toContain('from "./postgres.ts"');
+  });
+  it("WD11 does not invent a pool reader for an isolated HTTP shell in a SQL bundle", () => {
+    const design = runStudioCommands(deploymentDesign(), [
+      {
+        type: "addTile",
+        from: { lane: "download" },
+        side: "after",
+        tile: { id: "echo-only", name: "Echo only", kind: "service" },
+        linkId: "entry-echo",
+      },
+    ]);
+    const exported = assembleV2({ designJson: JSON.stringify(design) }, registry);
+    const actual = JSON.parse(
+      new TextDecoder().decode(
+        must(exported.files.find((f) => f.path === "deploy/contract.json")).bytes,
+      ),
+    );
+    const entry = new TextDecoder().decode(
+      must(exported.files.find((f) => f.path === "src/processes/echo-only.ts")).bytes,
+    );
+    expect(entry).not.toMatch(
+      /from "..\/(?:runtime\/module-clients|features\/service-resources)\.ts"/,
+    );
+    expect(actual.processes.find((p: { id: string }) => p.id === "echo-only").env).not.toContain(
+      "JEEVES_DB_POOL_MAX",
+    );
+    expect(actual.processes.find((p: { id: string }) => p.id === "front").env).toContain(
+      "JEEVES_DB_POOL_MAX",
+    );
   });
   it("keeps admission state original despite its physical cache kind", () => {
     const design = deploymentAdmissionDesign();
@@ -202,6 +264,7 @@ describe("WD09 deployment contract", () => {
           "src/runtime/local.ts",
           "src/runtime/module-clients.ts",
           "src/runtime/settings.ts",
+          "src/runtime/postgres.ts",
           ...(process.id === "catalog"
             ? ["src/features/service-resources.ts", "src/runtime/valkey.ts"]
             : []),

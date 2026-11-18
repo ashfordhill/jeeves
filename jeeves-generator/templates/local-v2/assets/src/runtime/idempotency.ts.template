@@ -5,7 +5,7 @@
 // whose stubs write it. Export rewrites this file.
 import { createHash } from "node:crypto";
 import type { IdempotencyScope, Tx } from "../modules/dependencies.ts";
-import type { TransactionPool } from "./transaction.ts";
+import { transaction, type TransactionPool } from "./transaction.ts";
 
 /** The idempotency policy (`idempotency-policy` in the generation catalog). */
 export const idempotencyPolicy = {
@@ -152,31 +152,18 @@ export async function storeResult(
   if (updated.rowCount !== 1) throw new Error("Idempotency record changed; retry");
 }
 
-/**
- * One sweep, on one connection: with `pg_try_advisory_lock(hashtext('jeeves.idempotency'))` it
- * deletes at most 1,000 expired records (any tile's, oldest first, skipping one a transaction
- * holds), then unlocks; a copy that doesn't get the lock does nothing. A failure discards the
- * connection, which ends its session and so its lock. Resolves the records deleted.
- */
+/** One bounded deletion under a transaction advisory lock. Other copies skip a held lock;
+ * COMMIT/ROLLBACK releases it before a transaction pooler lends the server to anyone else. */
 export async function sweepExpired(pool: TransactionPool): Promise<number> {
-  const client = await pool.connect();
-  let discard = true;
-  try {
-    const { rows } = await client.query<{ locked: boolean }>(
-      "SELECT pg_try_advisory_lock(hashtext('jeeves.idempotency')) AS locked",
+  return transaction(pool, async (tx) => {
+    const { rows } = await tx.query<{ locked: boolean }>(
+      "SELECT pg_try_advisory_xact_lock(hashtext('jeeves.idempotency')) AS locked",
     );
-    if (rows[0]?.locked !== true) {
-      discard = false;
-      return 0;
-    }
-    const deleted = await client.query(
+    if (rows[0]?.locked !== true) return 0;
+    const deleted = await tx.query(
       "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE status BETWEEN 200 AND 299 AND expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
       [idempotencyPolicy.sweepBatch],
     );
-    await client.query("SELECT pg_advisory_unlock(hashtext('jeeves.idempotency'))");
-    discard = false;
     return deleted.rowCount ?? 0;
-  } finally {
-    client.release(discard);
-  }
+  });
 }

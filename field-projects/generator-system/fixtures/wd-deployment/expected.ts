@@ -1,6 +1,7 @@
 /** Hand-reviewed from design.ts and the runtime contract, independent of the emitter.
  * Optional TLS/file/replay reads are included; timer has no local-operation/replay API. */
 const database = [
+  "JEEVES_DB_POOL_MAX",
   "JEEVES_DATABASE_RECORDS_CA_FILE",
   "JEEVES_DATABASE_RECORDS_HOST",
   "JEEVES_DATABASE_RECORDS_PORT",
@@ -55,6 +56,7 @@ export const expectedDeployment = {
       ...http,
       alwaysOn: false,
       env: sorted([
+        "JEEVES_DB_POOL_MAX",
         ...workload,
         ...transport,
         "SECRET_DIR",
@@ -73,6 +75,7 @@ export const expectedDeployment = {
       env: [
         "JEEVES_BROKER_HOST",
         "JEEVES_BROKER_PORT",
+        "JEEVES_DB_POOL_MAX",
         "JEEVES_SECRET_BROKER_PASSWORD_FILE",
         "SECRET_DIR",
       ],

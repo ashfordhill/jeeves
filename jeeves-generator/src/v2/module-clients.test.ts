@@ -478,6 +478,7 @@ describe("emitted module-clients.ts (tile process contract, sections 4 and 6)", 
       await registered.call();
       expect(fake.connections.at(-1)).toEqual([
         "BEGIN READ ONLY",
+        "SET LOCAL statement_timeout = '2000ms'",
         "SELECT $1",
         "COMMIT",
         "release",
@@ -1124,6 +1125,7 @@ describe("a stub's database transaction (QL03)", () => {
     expect(fake.connections).toEqual([
       [
         "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
         "SELECT $1",
         "INSERT INTO t VALUES ($1)",
         "UPDATE t SET x = 1",
@@ -1163,7 +1165,13 @@ describe("a stub's database transaction (QL03)", () => {
       }),
     ).rejects.toBe(duplicate);
     expect(fake.connections).toEqual(
-      [1, 2, 3].map((n) => ["BEGIN", `INSERT INTO t VALUES (${n})`, "ROLLBACK", "release"]),
+      [1, 2, 3].map((n) => [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        `INSERT INTO t VALUES (${n})`,
+        "ROLLBACK",
+        "release",
+      ]),
     );
     expect(fake.calls).toEqual([]);
   });
@@ -1193,6 +1201,7 @@ describe("a stub's database transaction (QL03)", () => {
     expect(fake.connections).toEqual([
       [
         "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
         "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE",
         "PREPARE q AS SELECT 1",
         "COMMIT",
@@ -1215,12 +1224,32 @@ describe("a stub's database transaction (QL03)", () => {
       return runs;
     });
     await vi.advanceTimersByTimeAsync(19);
-    expect(fake.connections).toEqual([["BEGIN", "UPDATE t SET x = 1", "ROLLBACK", "release"]]);
+    expect(fake.connections).toEqual([
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "UPDATE t SET x = 1",
+        "ROLLBACK",
+        "release",
+      ],
+    ]);
     await vi.advanceTimersByTimeAsync(1);
     expect(await settled).toBe(2);
     expect(fake.connections).toEqual([
-      ["BEGIN", "UPDATE t SET x = 1", "ROLLBACK", "release"],
-      ["BEGIN", "UPDATE t SET x = 1", "COMMIT", "release"],
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "UPDATE t SET x = 1",
+        "ROLLBACK",
+        "release",
+      ],
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "UPDATE t SET x = 1",
+        "COMMIT",
+        "release",
+      ],
     ]);
   });
 
@@ -1245,7 +1274,13 @@ describe("a stub's database transaction (QL03)", () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(await settled).toBe(failures[2]);
     expect(fake.connections).toEqual(
-      [1, 2, 3].map(() => ["BEGIN", "UPDATE t SET x = 1", "ROLLBACK", "release"]),
+      [1, 2, 3].map(() => [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "UPDATE t SET x = 1",
+        "ROLLBACK",
+        "release",
+      ]),
     );
   });
 
@@ -1280,6 +1315,7 @@ describe("a stub's database transaction (QL03)", () => {
     expect(fake.connections).toEqual(
       lost.map(() => [
         "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
         "INSERT INTO t VALUES (1)",
         "COMMIT",
         "ROLLBACK",
@@ -1320,7 +1356,13 @@ describe("a stub's database transaction (QL03)", () => {
     expect(await settled).toBe(failures[2]);
     expect(runs).toBe(3);
     expect(fake.connections).toEqual(
-      [1, 2, 3].map(() => ["BEGIN", "COMMIT", "ROLLBACK", "release"]),
+      [1, 2, 3].map(() => [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "COMMIT",
+        "ROLLBACK",
+        "release",
+      ]),
     );
   });
 });
@@ -1343,8 +1385,7 @@ describe("a stub's idempotency records (QL04)", () => {
   const hash = idempotency.requestHash({ method: "POST", route: "POST /links", body: { a: 1 } });
   const request = { scope: { kind: "account", id: "acct-1" }, key: "key-1", hash };
   const key = ["links-api", "account", "acct-1", "key-1"];
-  const lock = "SELECT pg_try_advisory_lock(hashtext('jeeves.idempotency')) AS locked";
-  const unlock = "SELECT pg_advisory_unlock(hashtext('jeeves.idempotency'))";
+  const lock = "SELECT pg_try_advisory_xact_lock(hashtext('jeeves.idempotency')) AS locked";
   /** Each statement a reserved connection sent, with its values. */
   const sent: { sql: string; values?: unknown[] }[] = [];
   const scopes: ReturnType<typeof testScope>[] = [];
@@ -1382,10 +1423,15 @@ describe("a stub's idempotency records (QL04)", () => {
     return db;
   }
   /** The transactions' connections, without the sweep's. */
-  const transactions = () => fake.connections.filter((statements) => statements[0] === "BEGIN");
-  const sweeps = () => fake.connections.filter((statements) => statements[0] === lock);
+  const transactions = () =>
+    fake.connections.filter(
+      (statements) => statements[0] === "BEGIN" && !statements.includes(lock),
+    );
+  const sweeps = () => fake.connections.filter((statements) => statements.includes(lock));
   const short = (sql: string) =>
-    sql.startsWith("INSERT INTO links") ? sql : sql.split(" ").slice(0, 2).join(" ");
+    sql.startsWith("INSERT INTO links") || sql.startsWith("SET LOCAL")
+      ? sql
+      : sql.split(" ").slice(0, 2).join(" ");
 
   it("runs BEGIN, DELETE, INSERT, fn, UPDATE and COMMIT for a new key, and stores a 2xx answer", async () => {
     const db = await database();
@@ -1397,6 +1443,7 @@ describe("a stub's idempotency records (QL04)", () => {
     expect(transactions().map((statements) => statements.map(short))).toEqual([
       [
         "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
         "DELETE FROM",
         "INSERT INTO",
         "INSERT INTO links VALUES ($1)",
@@ -1406,13 +1453,13 @@ describe("a stub's idempotency records (QL04)", () => {
       ],
     ]);
     const [statements] = transactions();
-    expect(statements?.[1]).toBe(
+    expect(statements?.[2]).toBe(
       "DELETE FROM jeeves.idempotency_records WHERE tile = $1 AND scope_kind = $2 AND scope_id = $3 AND idem_key = $4 AND expires_at <= now()",
     );
-    expect(statements?.[2]).toBe(
+    expect(statements?.[3]).toBe(
       "INSERT INTO jeeves.idempotency_records (tile, scope_kind, scope_id, idem_key, request_hash, status, response, created_at, expires_at) VALUES ($1, $2, $3, $4, decode($5, 'hex'), 0, '{}', now(), now() + interval '86400 seconds') ON CONFLICT DO NOTHING",
     );
-    expect(statements?.[4]).toBe(
+    expect(statements?.[5]).toBe(
       "UPDATE jeeves.idempotency_records SET status = $5, response = $6::jsonb WHERE tile = $1 AND scope_kind = $2 AND scope_id = $3 AND idem_key = $4",
     );
   });
@@ -1444,7 +1491,15 @@ describe("a stub's idempotency records (QL04)", () => {
     });
     expect(fn).not.toHaveBeenCalled();
     expect(transactions().map((statements) => statements.map(short))).toEqual([
-      ["BEGIN", "DELETE FROM", "INSERT INTO", "SELECT encode(request_hash,", "COMMIT", "release"],
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "DELETE FROM",
+        "INSERT INTO",
+        "SELECT encode(request_hash,",
+        "COMMIT",
+        "release",
+      ],
     ]);
   });
 
@@ -1460,7 +1515,15 @@ describe("a stub's idempotency records (QL04)", () => {
     expect(conflict).toMatchObject({ name: "IdempotencyConflict" });
     expect(fn).not.toHaveBeenCalled();
     expect(transactions().map((statements) => statements.map(short))).toEqual([
-      ["BEGIN", "DELETE FROM", "INSERT INTO", "SELECT encode(request_hash,", "ROLLBACK", "release"],
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "DELETE FROM",
+        "INSERT INTO",
+        "SELECT encode(request_hash,",
+        "ROLLBACK",
+        "release",
+      ],
     ]);
     // A record that went between the INSERT and the SELECT: try again.
     const gone = await database((sql) => {
@@ -1482,6 +1545,7 @@ describe("a stub's idempotency records (QL04)", () => {
     expect(transactions().map((statements) => statements.map(short))).toEqual([
       [
         "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
         "DELETE FROM",
         "INSERT INTO",
         "INSERT INTO links VALUES ($1)",
@@ -1525,9 +1589,11 @@ describe("a stub's idempotency records (QL04)", () => {
     await db.idempotent(request, async () => ({ status: 200, body: {} }));
     await vi.advanceTimersByTimeAsync(0);
     const sweep = [
+      "BEGIN",
+      "SET LOCAL statement_timeout = '2000ms'",
       lock,
       "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE status BETWEEN 200 AND 299 AND expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
-      unlock,
+      "COMMIT",
       "release",
     ];
     expect(sweeps()).toEqual([sweep]);
@@ -1546,12 +1612,14 @@ describe("a stub's idempotency records (QL04)", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("does nothing without the lock, and logs a failed sweep's failure line, discarding its connection", async () => {
+  it("does nothing without the lock, and logs a failed sweep's failure line after rollback", async () => {
     vi.useFakeTimers();
     const db = await database();
     await db.idempotent(request, async () => ({ status: 200, body: {} }));
     await vi.advanceTimersByTimeAsync(0);
-    expect(sweeps()).toEqual([[lock, "release"]]);
+    expect(sweeps()).toEqual([
+      ["BEGIN", "SET LOCAL statement_timeout = '2000ms'", lock, "COMMIT", "release"],
+    ]);
     const out = stdout();
     try {
       fake.answer = (sql) => {
@@ -1561,9 +1629,12 @@ describe("a stub's idempotency records (QL04)", () => {
       };
       await vi.advanceTimersByTimeAsync(60_000);
       expect(sweeps()[1]).toEqual([
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
         lock,
         "DELETE FROM jeeves.idempotency_records WHERE (tile, scope_kind, scope_id, idem_key) IN (SELECT tile, scope_kind, scope_id, idem_key FROM jeeves.idempotency_records WHERE status BETWEEN 200 AND 299 AND expires_at <= now() ORDER BY expires_at LIMIT $1 FOR UPDATE SKIP LOCKED)",
-        "release discard",
+        "ROLLBACK",
+        "release",
       ]);
       expect(out.lines()).toEqual([
         {
@@ -2756,7 +2827,7 @@ describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
   });
 
   it("passes the client a query timeout 500 ms past the statement timeout", () => {
-    expect(source).toContain("statement_timeout: options.statementTimeoutMs,");
+    expect(source).not.toMatch(/statement_timeout\s*:/);
     expect(source).toContain("query_timeout: options.statementTimeoutMs + 500,");
   });
 
@@ -2781,7 +2852,6 @@ describe("emitted postgres.ts: a query settles while PostgreSQL stalls", () => {
         user: "r_links_db__links_api",
         password: "secret of sql-links-db",
         max: 10,
-        statement_timeout: 2000,
         query_timeout: 2500,
         connectionTimeoutMillis: 2000,
       },
@@ -3095,7 +3165,14 @@ describe("RG03 emitted dependency contexts and uncertain effects", () => {
     });
     expect(product).toHaveBeenCalledOnce();
     expect(fake.connections).toEqual([
-      ["BEGIN", "INSERT INTO product VALUES (1)", "COMMIT", "ROLLBACK", "release discard"],
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "INSERT INTO product VALUES (1)",
+        "COMMIT",
+        "ROLLBACK",
+        "release discard",
+      ],
     ]);
     for (const close of scope.owned.reverse()) await close();
   });
@@ -3130,7 +3207,14 @@ describe("RG03 emitted dependency contexts and uncertain effects", () => {
       .catch((error: unknown) => error);
     await vi.advanceTimersByTimeAsync(20);
     expect(await pending).toMatchObject({ outcome: "unknown" });
-    expect(fake.connections).toEqual([["BEGIN", "INSERT INTO product VALUES (1)", "COMMIT"]]);
+    expect(fake.connections).toEqual([
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "INSERT INTO product VALUES (1)",
+        "COMMIT",
+      ],
+    ]);
     let drained = false;
     const close = lifecycle.close().then(() => {
       drained = true;
@@ -3141,7 +3225,13 @@ describe("RG03 emitted dependency contexts and uncertain effects", () => {
     await close;
     expect(product).toHaveBeenCalledOnce();
     expect(fake.connections).toEqual([
-      ["BEGIN", "INSERT INTO product VALUES (1)", "COMMIT", "release"],
+      [
+        "BEGIN",
+        "SET LOCAL statement_timeout = '2000ms'",
+        "INSERT INTO product VALUES (1)",
+        "COMMIT",
+        "release",
+      ],
     ]);
     request.close();
   });
@@ -3390,7 +3480,7 @@ describe("RG10 captured capability isolation and independent cleanup", () => {
     });
     const scope = testScope();
     fake.answer = (sql: string) =>
-      sql.startsWith("SELECT pg_try_advisory_lock") ? { rows: [{ locked: true }] } : undefined;
+      sql.startsWith("SELECT pg_try_advisory_xact_lock") ? { rows: [{ locked: true }] } : undefined;
     const prepared = {
       configuration: {
         ...clients.databaseEndpoint("links-db"),

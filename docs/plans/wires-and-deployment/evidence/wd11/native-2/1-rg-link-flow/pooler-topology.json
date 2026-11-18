@@ -1,0 +1,59 @@
+{
+  "image": "edoburu/pgbouncer@sha256:68969403ee54dbf98601b49a1e92db644a9fdeed5c40969f7f0adce5193ac5b8",
+  "mode": "transaction",
+  "defaultPoolSize": 2,
+  "processPoolMax": 3,
+  "publishedPoolerPorts": [],
+  "services": {
+    "app-gateway": {
+      "NODE_EXTRA_CA_CERTS": "/rg/ca.crt",
+      "OIDC_ISSUER": "[REDACTED]",
+      "OIDC_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_ISSUER": "[REDACTED]",
+      "JEEVES_WORKLOAD_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_TOKEN_URL": "https://rg-issuer:8443[REDACTED]",
+      "JEEVES_DB_POOL_MAX": "3",
+      "JEEVES_DATABASE_ITEMS_DB_HOST": "wd11-pooler",
+      "JEEVES_DATABASE_ITEMS_DB_PORT": "6432"
+    },
+    "app-items-api": {
+      "NODE_EXTRA_CA_CERTS": "/rg/ca.crt",
+      "OIDC_ISSUER": "[REDACTED]",
+      "OIDC_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_ISSUER": "[REDACTED]",
+      "JEEVES_WORKLOAD_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_TOKEN_URL": "https://rg-issuer:8443[REDACTED]",
+      "JEEVES_SECRET_JEEVES_REPLAY_KEYS_FILE": "/rg14-replay-keys.json",
+      "JEEVES_DB_POOL_MAX": "3",
+      "JEEVES_DATABASE_ITEMS_DB_HOST": "wd11-pooler",
+      "JEEVES_DATABASE_ITEMS_DB_PORT": "6432"
+    },
+    "app-items-worker": {
+      "NODE_EXTRA_CA_CERTS": "/rg/ca.crt",
+      "OIDC_ISSUER": "[REDACTED]",
+      "OIDC_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_ISSUER": "[REDACTED]",
+      "JEEVES_WORKLOAD_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_TOKEN_URL": "https://rg-issuer:8443[REDACTED]",
+      "JEEVES_DB_POOL_MAX": "3",
+      "JEEVES_DATABASE_ITEMS_DB_HOST": "wd11-pooler",
+      "JEEVES_DATABASE_ITEMS_DB_PORT": "6432"
+    },
+    "app-browser": {
+      "NODE_EXTRA_CA_CERTS": "/rg/ca.crt",
+      "OIDC_ISSUER": "[REDACTED]",
+      "OIDC_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_ISSUER": "[REDACTED]",
+      "JEEVES_WORKLOAD_JWKS_URL": "[REDACTED]/protocol/openid-connect/certs",
+      "JEEVES_WORKLOAD_TOKEN_URL": "https://rg-issuer:8443[REDACTED]",
+      "JEEVES_BROWSER_IDENTITY_SIGN_IN_ISSUER": "[REDACTED]",
+      "JEEVES_BROWSER_SESSION_CALLBACK": "https://browser.test/modules/session/callback",
+      "JEEVES_BROWSER_SESSION_AUDIENCE": "[REDACTED]",
+      "JEEVES_SECRET_JEEVES_BROWSER_SESSION_CLIENT_SECRET_FILE": "/rg/browser-secret",
+      "JEEVES_SECRET_JEEVES_BROWSER_SESSION_KEYS_FILE": "/rg/browser-ring",
+      "JEEVES_DB_POOL_MAX": "3",
+      "JEEVES_DATABASE_SESSIONS_HOST": "wd11-pooler",
+      "JEEVES_DATABASE_SESSIONS_PORT": "6432"
+    }
+  }
+}

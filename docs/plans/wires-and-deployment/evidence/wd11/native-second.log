@@ -1,0 +1,17 @@
+$ tsx integration/run.ts --suite=rg-mechanisms --transaction-pooler --artifacts=/tmp/jeeves-wd11/native-2
+Generated system suites: rg-mechanisms; artifacts: /tmp/jeeves-wd11/native-2
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts (2 tests) 488182ms
+   ✓ RG23: link/account sessions compose with foundation mechanisms in independent processes 190805ms
+   ✓ RG23: catalog events, remote recovery and queue receipts compose across native copies 297376ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  05:25:38
+   Duration  488.40s (tests 100%)
+
+JSON report written to /tmp/jeeves-wd11/native-2/vitest.json
+JUNIT report written to /tmp/jeeves-wd11/native-2/junit.xml
+

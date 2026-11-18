@@ -17,9 +17,11 @@ if (args[0] === "--cleanup") {
   const suites = implementedSuites;
   let suite = "core";
   let artifacts = "";
+  let databasePooler = false;
   let testNamePattern: string | undefined;
   for (const arg of args) {
-    if (arg.startsWith("--suite=")) suite = arg.slice(8);
+    if (arg === "--transaction-pooler") databasePooler = true;
+    else if (arg.startsWith("--suite=")) suite = arg.slice(8);
     else if (arg.startsWith("--artifacts=")) artifacts = resolve(arg.slice(12));
     else if (arg.startsWith("--test-name=")) testNamePattern = arg.slice(12);
     else throw new Error(`Unknown option ${arg}`);
@@ -27,6 +29,8 @@ if (args[0] === "--cleanup") {
   if (suite !== "all" && !suites.includes(suite))
     throw new Error(`Suite '${suite}' is not implemented. Implemented: ${suites.join(", ")}`);
   const selected = suite === "all" ? suites : [suite];
+  if (databasePooler && suite !== "rg-mechanisms")
+    throw Error("--transaction-pooler supports only --suite=rg-mechanisms");
   const id = `gs-${randomUUID()}`;
   if (!artifacts) artifacts = join(repository, "test-results/generated", id);
   await mkdir(artifacts, { recursive: true });
@@ -56,6 +60,7 @@ if (args[0] === "--cleanup") {
       id,
       selected,
       testNamePattern,
+      databasePooler,
       commit: (await command("git", ["rev-parse", "HEAD"])).trim(),
       dirty: (
         await command("git", [
@@ -99,6 +104,7 @@ if (args[0] === "--cleanup") {
       {
         timeoutMs: suite === "all" ? 2_400_000 : 1_200_000,
         env: {
+          ...(databasePooler ? { JEEVES_SYSTEM_DB_POOLER: "wd11" } : {}),
           JEEVES_SYSTEM_RECORD: recordPath,
           JEEVES_SYSTEM_SUITES: selected.join(","),
           JEEVES_SYSTEM_ARTIFACTS: artifacts,

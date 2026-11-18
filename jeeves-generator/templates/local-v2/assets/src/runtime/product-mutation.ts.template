@@ -59,6 +59,6 @@ export async function productMutation<T>(
   } finally {
     active = false;
   }
-  await tx.query("RESET ROLE");
+  await tx.query("SET LOCAL ROLE NONE");
   return result;
 }

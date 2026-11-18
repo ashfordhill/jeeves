@@ -7,6 +7,8 @@ import { rememberSecrets } from "./evidence.ts";
 import { command, repository } from "./process.ts";
 import { finish, native, prepareFoundation } from "./rg-foundations.ts";
 
+import { prepareTransactionPooler } from "./wd-pooler.ts";
+
 export async function prepareLinkFlow(app: Application) {
   await prepareFoundation(app);
   const infra = join(app.directory, "../rg-infra");
@@ -150,6 +152,7 @@ export async function prepareLinkFlow(app: Application) {
     join(app.directory, "compose.override.yaml"),
     JSON.stringify({ services }, null, 2),
   );
+  await prepareTransactionPooler(app);
 }
 export async function issuerMode(app: Application, mode: string) {
   await writeFile(join(app.directory, "../rg-infra/control.json"), JSON.stringify({ mode }));

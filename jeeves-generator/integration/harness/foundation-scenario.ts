@@ -21,6 +21,8 @@ import {
   productPermissions,
 } from "./rg-foundations.ts";
 
+import { verifyTransactionPooler } from "./wd-pooler.ts";
+
 export async function foundationScenario(
   options: {
     fixture?: string;
@@ -86,6 +88,7 @@ export async function foundationScenario(
         gateways: gateways.map((row) => row.Id),
         addresses,
       });
+      await verifyTransactionPooler(app, "app-items-api");
       await options.extra?.(app);
       const identity = new IdentityClient(app);
       const accounts = await identity.provision();
@@ -536,8 +539,8 @@ await lifecycle.close();
 ${privateScope}
 import net from 'node:net';import {prepareProductDatabase,productDatabaseClient} from './dist/runtime/module-clients.js';
 import {localOperation} from './dist/modules/items-api/create.js';import {createValkeyCache} from './dist/runtime/valkey.js';import {createRateLimiter} from './dist/runtime/rate-limiter.js';
-let dropped=0;
-const server=net.createServer(down=>{const up=net.connect(5432,'local-postgres');let commit=false,mutation=false;let reply=Buffer.alloc(0);down.on('error',()=>{});up.on('error',()=>down.destroy());
+let dropped=0;const upstreamHost=process.env.JEEVES_DATABASE_ITEMS_DB_HOST??'local-postgres',upstreamPort=Number(process.env.JEEVES_DATABASE_ITEMS_DB_PORT??5432);
+const server=net.createServer(down=>{const up=net.connect(upstreamPort,upstreamHost);let commit=false,mutation=false;let reply=Buffer.alloc(0);down.on('error',()=>{});up.on('error',()=>down.destroy());
 down.on('data',data=>{if(data.includes(Buffer.from('INSERT INTO jeeves.idempotency_records')))mutation=true;if(mutation&&!dropped&&data.includes(Buffer.from('COMMIT\\0')))commit=true;up.write(data);});
 up.on('data',data=>{if(commit&&!dropped){reply=Buffer.concat([reply,data]);if(reply.includes(Buffer.from('COMMIT\\0'))){dropped++;down.destroy();up.end();}}else down.write(data);});down.on('close',()=>up.destroy());up.on('close',()=>down.destroy());});
 await new Promise(done=>server.listen(0,'127.0.0.1',done));

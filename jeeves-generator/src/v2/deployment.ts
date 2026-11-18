@@ -1,6 +1,9 @@
 import type { NormalizedGeneration } from "@jeeves/spec";
 import { jsonFile, refuse } from "../json.ts";
+import { stubClients } from "./client-wiring.ts";
+import { httpMounts } from "./http-wiring.ts";
 import { endpointId, localEndpoints, type V2LocalContribution } from "./local-contract.ts";
+import { loopMounts } from "./loop-wiring.ts";
 import { v2Compare } from "./registry.ts";
 
 type Service = NonNullable<V2LocalContribution["services"]>[number];
@@ -67,6 +70,34 @@ function environment(model: NormalizedGeneration, runtime: Runtime) {
     process?.workload
   )
     names.push(...tls);
+  // Match the actual shared import surfaces. Merely having a database in another process
+  // does not load Postgres in a process that imports no clients or template constructors.
+  const processes = model.processes ?? [];
+  const sharedSqlClients = processes.some((p) =>
+    stubClients(p, model.selections, processes).sections.has("database"),
+  );
+  const importsClients =
+    !!process &&
+    !!stubClients(process, model.selections, processes).mount?.imports.some(
+      (item) => item.from === "../runtime/module-clients.ts",
+    );
+  const sharedSqlConstructors = model.selections.some(
+    (s) =>
+      s.binding.kind !== "module-stub" &&
+      s.resources.some((r) => ["state", "source", "items", "counts"].includes(r.field)),
+  );
+  const importsConstructors =
+    !process ||
+    [
+      ...(process.shape === "http" ? httpMounts(process, model.selections, processes) : []),
+      ...loopMounts(process, model.selections),
+    ].some((mount) => !!mount.template);
+  if (
+    service.sql?.length ||
+    (sharedSqlClients && importsClients) ||
+    (sharedSqlConstructors && importsConstructors)
+  )
+    names.push("JEEVES_DB_POOL_MAX");
   if (service.identity) names.push("OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL");
   if (process?.workload) names.push(...workloadEnv);
   if (process?.frontDoor) names.push("JEEVES_EDGE_STAMP_KEY", "JEEVES_EDGE_STAMP_KEY_PREVIOUS");

@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-link-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "AssertionError: expected [ 503, 503 ] to deeply equal [ 404, 404 ]"
+}

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
+import { posix } from "node:path";
 import { designSchema } from "@jeeves/spec";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -410,6 +411,25 @@ describe("emitted runtime primitives", () => {
     );
     const minimal = emit();
     expect(minimal.files.some((file) => file.path === "src/runtime/postgres.ts")).toBe(true);
+    expect(minimal.files.filter((file) => file.path === "src/runtime/transaction.ts")).toHaveLength(
+      1,
+    );
+    const postgres = minimal.files.find((file) => file.path === "src/runtime/postgres.ts");
+    expect(new TextDecoder().decode(postgres?.bytes)).toContain('from "./transaction.ts"');
+    const visited = new Set<string>();
+    const visit = (path: string) => {
+      if (visited.has(path)) return;
+      visited.add(path);
+      const file = minimal.files.find((f) => f.path === path);
+      expect(file, path).toBeDefined();
+      const source = stripTypeScriptTypes(new TextDecoder().decode(file?.bytes));
+      for (const match of source.matchAll(/from\s+["'](\.[^"']+)["']/g)) {
+        const from = match[1];
+        if (from) visit(posix.join(posix.dirname(path), from));
+      }
+    };
+    visit("src/runtime/postgres.ts");
+    expect([...visited]).toContain("src/runtime/transaction.ts");
     for (const omitted of ["amqp", "delivery", "identity", "objects", "search"])
       expect(minimal.files.some((file) => file.path === `src/runtime/${omitted}.ts`)).toBe(false);
   });

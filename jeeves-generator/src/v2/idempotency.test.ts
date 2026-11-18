@@ -242,7 +242,11 @@ describe("the idempotency records on PostgreSQL (PGlite, QL04)", () => {
     await pg.exec(
       "UPDATE jeeves.idempotency_records SET expires_at = now() - interval '1 second' WHERE idem_key <> 'k4'",
     );
-    expect(await idempotency.sweepExpired(pool)).toBe(3);
+    const racing = await Promise.all([
+      idempotency.sweepExpired(pool),
+      idempotency.sweepExpired(pool),
+    ]);
+    expect(racing.sort()).toEqual([0, 3]);
     expect((await pg.query("SELECT idem_key FROM jeeves.idempotency_records")).rows).toEqual([
       { idem_key: "k4" },
     ]);

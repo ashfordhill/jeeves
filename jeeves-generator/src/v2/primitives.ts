@@ -110,7 +110,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
             kind === "cache" && selection.binding.kind === "rate-limiter"
               ? ["valkey"]
               : kind === "database"
-                ? ["postgres"]
+                ? ["postgres", "transaction"]
                 : kind === "queue"
                   ? ["delivery", "amqp"]
                   : kind === "object-store"
@@ -123,6 +123,10 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       }
       if (model.selections.some((selection) => selection.binding.kind === "positive-cache-read"))
         modules.delete("valkey");
+      // Durability owns the shared transaction scaffold when installed. Apply this after all
+      // resource contributions so a SQL-only reader also gets the helper without two owners.
+      if (model.selections.some((selection) => durableKinds.includes(selection.binding.kind)))
+        modules.delete("transaction");
       return {
         gaps: model.selections
           .filter((s) => s.binding.kind === "browser-session")

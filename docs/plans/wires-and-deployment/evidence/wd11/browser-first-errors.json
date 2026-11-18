@@ -1,0 +1,38 @@
+[
+  {
+    "case": "module-authoring-a-module--0b386-Service-identity-as-Refused-chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "module-authoring-adds-comp-2a002--user-webhook-host-by-mouse-chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "blueprint-chat-saves-a-war-6e78f--details-and-one-mouse-Undo-chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "cache-reader-RG22-refuses--244dd-er-edit-atomically-by-mouse-chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "module-authoring-connects--ca115-nnects-from-its-line-s-menu-chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "generation-mouse-previews--42c68-ject-switch-cannot-download-chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "diagram-export-PNG-draws-t-922db-e-the-loader-arrow-an-icon--chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "blueprint-chat-names-a-ref-cf956-es-the-corrected-one-V3-19--chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  },
+  {
+    "case": "edit-history-a-historical--5588e-hrough-Undo-Redo-and-reload-chromium",
+    "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: /^Project:/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('button', { name: /^Project:/ }) with timeout 5000ms\n  - waiting for getByRole('button', { name: /^Project:/ })"
+  }
+]

@@ -120,37 +120,54 @@ test("RG14: known-down PG has one tracked process-scoped SELECT 1 recovery probe
   if (!raw) throw Error("factory pool");
   vi.spyOn(raw, "connect").mockRejectedValue(Error("connection lost"));
   let settle!: (value: unknown) => void;
-  const query = vi.fn(() => {
+  const trace: string[] = [];
+  const query = vi.fn((sql: string) => {
     expect(operation.currentProcess()).toBe(scope);
     expect(operation.currentOperation()).toBeUndefined();
+    trace.push(sql);
+    if (sql !== "SELECT 1") return Promise.resolve({ rows: [], rowCount: 0 });
     return new Promise((resolve) => {
       settle = resolve;
     });
   });
-  Object.assign(raw, { query });
   const request = operation.operation({ maximumMs: 10 });
   try {
     await expect(operation.withOperation(request.context, () => pool.connect())).rejects.toThrow(
       "connection lost",
     );
     expect(dependencyReady).toHaveBeenLastCalledWith(expect.any(Object), false);
+    vi.mocked(raw.connect).mockImplementation(
+      async () => ({ query, release() {} }) as unknown as Client,
+    );
     await vi.advanceTimersByTimeAsync(5000);
-    expect(query).toHaveBeenCalledExactlyOnceWith({ text: "SELECT 1", query_timeout: 2000 });
+    expect(trace).toEqual([
+      "BEGIN READ ONLY",
+      "SET LOCAL statement_timeout = '1000ms'",
+      "SELECT 1",
+    ]);
     expect(tracked).toHaveLength(1);
     await vi.advanceTimersByTimeAsync(15000);
-    expect(query).toHaveBeenCalledTimes(1);
+    expect(trace.filter((sql) => sql === "SELECT 1")).toHaveLength(1);
+    settle({ rows: [{ value: 1 }], rowCount: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    // A result arriving after the probe's deadline cannot declare readiness.
+    expect(dependencyReady).toHaveBeenLastCalledWith(expect.any(Object), false);
+    expect(trace.at(-1)).toBe("COMMIT");
+    raw.emit("error", Error("connection lost again"));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(trace.filter((sql) => sql === "SELECT 1")).toHaveLength(2);
     settle({ rows: [{ value: 1 }], rowCount: 1 });
     await vi.advanceTimersByTimeAsync(0);
     expect(dependencyReady).toHaveBeenLastCalledWith(expect.any(Object), true);
-    raw.emit("error", Error("connection lost again"));
+    raw.emit("error", Error("down before shutdown"));
     await vi.advanceTimersByTimeAsync(5000);
-    expect(query).toHaveBeenCalledTimes(2);
+    expect(trace.filter((sql) => sql === "SELECT 1")).toHaveLength(3);
     for (const stop of stops) stop();
     abort.abort();
     const calls = dependencyReady.mock.calls.length;
     settle({ rows: [], rowCount: 0 });
     await vi.advanceTimersByTimeAsync(20000);
-    expect(query).toHaveBeenCalledTimes(2);
+    expect(trace.filter((sql) => sql === "SELECT 1")).toHaveLength(3);
     expect(dependencyReady).toHaveBeenCalledTimes(calls);
   } finally {
     request.close();

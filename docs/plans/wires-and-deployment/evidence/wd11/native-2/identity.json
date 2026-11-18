@@ -1,0 +1,13 @@
+{
+  "id": "gs-10b57e91-78bf-42b7-8410-e17207601513",
+  "selected": ["rg-mechanisms"],
+  "databasePooler": true,
+  "commit": "935386de35f6d92c054be2998d156bac9ad44db5",
+  "dirty": "M field-projects/generator-system/fixtures/wd-deployment/expected.ts\n M jeeves-generator/README.md\n M jeeves-generator/integration/harness/foundation-scenario.ts\n M jeeves-generator/integration/harness/rg-catalog.ts\n M jeeves-generator/integration/harness/rg-mechanisms.ts\n M jeeves-generator/integration/harness/rg-provider.mjs\n M jeeves-generator/integration/run.ts\n M jeeves-generator/src/v2/cache-source.test.ts\n M jeeves-generator/src/v2/deployment.test.ts\n M jeeves-generator/src/v2/deployment.ts\n M jeeves-generator/src/v2/durable-work.test.ts\n M jeeves-generator/src/v2/fixtures/processes-off.json\n M jeeves-generator/src/v2/idempotency.test.ts\n M jeeves-generator/src/v2/local-operation.test.helpers.ts\n M jeeves-generator/src/v2/local.ts\n M jeeves-generator/src/v2/module-clients.test.ts\n M jeeves-generator/src/v2/operation.test.helpers.ts\n M jeeves-generator/src/v2/postgres-recovery.test.ts\n M jeeves-generator/src/v2/primitives.test.ts\n M jeeves-generator/src/v2/primitives.ts\n M jeeves-generator/templates/local-v2/assets/src/runtime/idempotency.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/postgres.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/product-mutation.ts.template\n M jeeves-generator/templates/local-v2/assets/src/runtime/transaction.ts.template\n?? jeeves-generator/integration/harness/wd-pooler.ts\n?? jeeves-generator/src/v2/pooler.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

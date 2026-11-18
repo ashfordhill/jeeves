@@ -1,7 +1,18 @@
-import { dependency, currentProcess, assertOperation, OperationError, withProcess } from "./operation.ts";
+import { dependency, currentProcess, OperationError, withProcess } from "./operation.ts";
 import { checkServerIdentity, type PeerCertificate } from "node:tls";
 import pg from "pg";
+import { configureTransactionTimeout, transaction } from "./transaction.ts";
 import { readSecret, type SqlLogin } from "./local.ts";
+
+/** Deployment input, read once during module initialization, before any process opens clients.
+ * No coercion, whitespace, sign, exponent or leading zero; errors never echo the supplied value. */
+export function databasePoolMaximum(raw: string | undefined): number | undefined {
+  if (raw === undefined) return undefined;
+  if (!/^(?:[1-9][0-9]?|100)$/.test(raw))
+    throw Error("Invalid configuration JEEVES_DB_POOL_MAX: expected a whole integer from 1 to 100");
+  return Number(raw);
+}
+const poolMaximum = databasePoolMaximum(process.env.JEEVES_DB_POOL_MAX);
 
 /** How a pool reaches its database (QG10). `disable`: plain TCP or a Unix socket, and `pg` gets
  * `ssl: false`, so `PGSSLMODE` can't change it. `verify-full`: TLS that checks the server's
@@ -54,13 +65,13 @@ export function createPostgres(options: {
     database: options.login.database,
     user: options.login.user,
     password: (options.credential ?? readSecret)(options.login.secret),
-    max: options.poolSize,
-    statement_timeout: options.statementTimeoutMs,
+    max: poolMaximum ?? options.poolSize,
     // The server enforces statement_timeout (57014); one that stops answering can't. 500 ms later
     // the client rejects "Query read timeout" and the pool discards that connection.
     query_timeout: options.statementTimeoutMs + 500,
     connectionTimeoutMillis: options.connectionTimeoutMs,
   });
+  configureTransactionTimeout(pool, options.statementTimeoutMs);
   const readiness = {};
   let closed = false, probing = false;
   let retry: ReturnType<typeof setTimeout> | undefined;
@@ -83,11 +94,16 @@ export function createPostgres(options: {
       retry = undefined;
       if (closed || operationScope.signal.aborted) return;
       probing = true;
-      const probe = { text: "SELECT 1", query_timeout: 2000 };
-      const work = pool.query(probe).then(recovered, () => {
-        operationScope.dependencyReady?.(readiness, false);
-      }).finally(() => { probing = false; schedule(); });
-      operationScope.track?.(work);
+      let actual: Promise<unknown> | undefined;
+      const work = transaction(pool, (tx) => tx.query("SELECT 1"), {
+        readOnly: true, maximumMs: 2000, observe: (work) => { actual = work; },
+      }).then(recovered, () => {
+        if (!closed) operationScope.dependencyReady?.(readiness, false);
+      }).finally(async () => {
+        // Keep the single probe slot through actual driver settlement, even after its deadline.
+        await actual?.catch(() => {});
+        probing = false; schedule();
+      });
       void work.catch(() => {});
     }), 5000);
     retry.unref?.();
@@ -95,10 +111,10 @@ export function createPostgres(options: {
   operationScope?.admission?.(() => { closed = true; clearTimeout(retry); retry = undefined; });
   // pg-pool observes idle-client errors only. Observe checked-out errors once per physical
   // client too; query rejection/unknown/discard and the pool's idle error handling stay intact.
-  pool.on("connect", (client) => { recovered(); client.on("error", unavailable); });
+  pool.on("connect", (client) => { client.on("error", unavailable); });
   pool.on("error", unavailable);
   schedule();
-  return new Proxy(pool, {
+  const wrapped = new Proxy(pool, {
     get(target, key) {
       if (key === "connect") return async () => {
         try { return await target.connect(); }
@@ -114,24 +130,22 @@ export function createPostgres(options: {
               definite: sqlFailure,
             },
             async () => {
-              const client = await target.connect().catch((error: unknown) => {
+              const single = { connect: () => target.connect().catch((error: unknown) => {
                 unavailable();
-                throw new OperationError("definite-failure", "DATABASE_CONNECT_FAILED", {
-                  cause: error,
-                });
-              });
-              let sent = false,
-                discard = false;
+                throw new OperationError("definite-failure", "DATABASE_CONNECT_FAILED", { cause: error });
+              }) };
+              // Standalone statements use the same transaction/timeout/commit boundary. A caller
+              // deadline never releases the connection before actual settlement.
+              configureTransactionTimeout(single, options.statementTimeoutMs);
               try {
-                assertOperation();
-                sent = true;
-                return await client.query(sql, values);
+                const result = await transaction(single, (tx) => tx.query(sql, values), {
+                  maximumMs: options.statementTimeoutMs,
+                });
+                recovered();
+                return result;
               } catch (error) {
-                discard = sent && !sqlFailure(error);
-                if (discard) unavailable();
+                if (!sqlFailure(error)) unavailable();
                 throw error;
-              } finally {
-                client.release(discard);
               }
             },
           );
@@ -139,4 +153,6 @@ export function createPostgres(options: {
       return typeof value === "function" ? value.bind(target) : value;
     },
   });
+  configureTransactionTimeout(wrapped, options.statementTimeoutMs);
+  return wrapped;
 }

@@ -19701,3 +19701,34 @@ workload settings the same way.
   audit passes with process-local Git abbreviation. No Part A activation, later unit, branch,
   worktree, stash, unrelated cleanup, push or deployment. One explicit-path local commit follows:
   `WD10: public services can require the front door's stamp`. Stop for review.
+
+## 2026-11-18 — WD11 transaction-pooler database access complete
+
+- Generated transactions, standalone statements and recovery probes share transaction-local
+  statement timeouts; query_timeout stays. Expiry cleanup locks inside the deleting transaction;
+  product roles restore locally. Actual driver settlement retains clients, lost COMMIT remains
+  unknown, and a pooler connection alone cannot restore readiness. Grants/migrations stay unchanged.
+- External JEEVES_DB_POOL_MAX is read once before clients: exact decimal 1–100, old per-pool maximum
+  when absent, value-free startup refusal when invalid. Actual SQL imports determine deployment
+  inventory, with independent expectations. Processes-off SQL-only exports get the transaction
+  dependency with one emitter owner. No diagram setting or production pooler provisioning.
+- Final `pnpm check`: 153 files / 1,424 tests, 115.60s; serial native E2E 89/89, 5.1m, including
+  TinyURL and both unchanged mouse rebuilds; web build 2.01s. Offline races/failures, actual API8 and
+  TypeScript 7.0.2 on 94/46-file public CLI exports, and public update check pass. Inherited eight
+  warnings/twelve infos and chunk warning remain.
+- Pinned PgBouncer transaction mode passes both original RG23 scenarios (488.40s): ten foundation,
+  six catalog and four session cases, existing budgets/auth/fences intact, with recorded two-copy
+  IDs and observed mode/9–13 clients. Both COMMIT fault proxies traverse the pooler; explicit setup/
+  admin permission probes remain direct. Exact stack/temp cleanup and new-image removal pass.
+- [Evidence](plans/wires-and-deployment/evidence/wd11.md) retains initial SQL-trace/fake mismatches,
+  nine browser startup waits, one native refresh deadline and a harness directory collision;
+  corrected checks pass without weaker assertions. All 35 captured link-flow runtime payloads
+  match between native attempts; final scratch shared hashes are separate. Reviewed pin deltas
+  preserve every other payload/count; frozen v1, accepted SQL/dependencies and old exports stay intact.
+- All 7,323 protected starting states, owner/root work, original 42 container triples / nine
+  networks / 23 volumes / 43 images and both old E2E rows match; own projects zero, E2E ports free.
+  Read-only RG21 audit passes. Owner web PID 1124326 stays; API child 695306→768143 under existing
+  watcher 1124324 is consistent with automatic source reloads, with no owner-port request/control.
+  No Part A activation, later unit, branch/worktree/stash, push or deployment. One explicit-path
+  local commit follows: `WD11: generated database access survives a transaction pooler`.
+  Stop for coordinator acceptance.

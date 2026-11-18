@@ -1,0 +1,16 @@
+$ tsx src/v2/update-cli.ts /tmp/jeeves-wd11/design.json /tmp/jeeves-wd11/final-export --check
+{
+  "directory": "/tmp/jeeves-wd11/final-export",
+  "check": true,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 93,
+    "keep": 0
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

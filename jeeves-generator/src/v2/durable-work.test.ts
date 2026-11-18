@@ -75,7 +75,7 @@ function expireAfterProduct(f: Awaited<ReturnType<typeof workFixture>>) {
       ...client,
       query: async (sql: string, values?: unknown[]) => {
         const result = await client.query(sql, values);
-        if (sql === "RESET ROLE")
+        if (sql === "SET LOCAL ROLE NONE")
           await client.query(
             "UPDATE jeeves.work_records SET lease_until=clock_timestamp()-interval '1 second'",
           );
@@ -251,7 +251,7 @@ describe("RG15 durable local work", () => {
     const completion = store.complete(claim);
     void completion.catch(() => {});
     await executed;
-    expect(f.trace.some((row) => row.sql === "RESET ROLE")).toBe(false);
+    expect(f.trace.some((row) => row.sql === "SET LOCAL ROLE NONE")).toBe(false);
     release();
     await expect(completion).rejects.toMatchObject({ code: "WORK_LEASE_LOST" });
     expect(

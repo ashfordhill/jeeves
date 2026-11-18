@@ -124,7 +124,13 @@ it("RG13 emitted source helper validates before opening, selects the product cre
     expect(await source.queries.call("read_record", ["guide"])).toMatchObject({
       rows: [{ payload: { key: "guide", public: true } }],
     });
-    expect(sql).toEqual(["SELECT 1", "BEGIN READ ONLY", fixture("read.sql"), "COMMIT"]);
+    expect(sql).toEqual([
+      "SELECT 1",
+      "BEGIN READ ONLY",
+      "SET LOCAL statement_timeout = '2000ms'",
+      fixture("read.sql"),
+      "COMMIT",
+    ]);
     const count = sql.length;
     await expect(
       op.withLocalPolicy(() => shared.queries.call("read_record", ["guide"])),

@@ -80,7 +80,7 @@ async function fixture() {
             values = sql.values;
             sql = sql.text;
           }
-          if (denyLock && sql.includes("pg_try_advisory_xact_lock"))
+          if (denyLock && sql.includes("pg_try_advisory_xact_lock(hashtextextended"))
             return { rows: [{ locked: false }], rowCount: 1 };
           const role =
             sql === "ROLLBACK"

@@ -1,0 +1,11 @@
+{
+  "api": [
+    "7ba8df403bb0129afa2141a3e92df773cced4c63789a289e57da2ca688258499",
+    "115de48a9492a4edf55ba4ab909850be9ffc1aae36f87071ccf5831ba3337da6"
+  ],
+  "gateways": [
+    "4af852064eb5e7dabf3e628e8168e2a29d1a2383d1923c3fd386630ce3e8db10",
+    "7b6fb23df151ea33148c6243ff39da1aed4c846a35868c0c7853a2f96096d07d"
+  ],
+  "addresses": ["172.24.0.11", "172.24.0.14"]
+}

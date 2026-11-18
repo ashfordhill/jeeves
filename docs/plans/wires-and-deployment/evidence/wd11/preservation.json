@@ -1,0 +1,42 @@
+{
+  "protectedStartingStates": 7323,
+  "unexpectedChanges": [],
+  "ownOriginalModesPreserved": true,
+  "originalContainers": 42,
+  "containerTriplesUnchanged": true,
+  "originalNetworks": 9,
+  "originalVolumes": 23,
+  "originalImages": 43,
+  "resourceSignaturesUnchanged": true,
+  "oldE2EProjects": [
+    "6e2bb266-5838-4fdf-804e-ed0dfc80e049|TinyURL \u00b7 studio study",
+    "8ae677a6-eb3f-4432-8905-fee5b41563a9|E2E Every kind"
+  ],
+  "oldE2EProjectRows": [
+    {
+      "id": "6e2bb266-5838-4fdf-804e-ed0dfc80e049",
+      "name": "TinyURL \u00b7 studio study",
+      "revision": 1,
+      "created_at": "2026-11-06T01:25:10.969585+00:00",
+      "updated_at": "2026-11-06T01:25:10.991+00:00"
+    },
+    {
+      "id": "8ae677a6-eb3f-4432-8905-fee5b41563a9",
+      "name": "E2E Every kind",
+      "revision": 11,
+      "created_at": "2026-11-12T23:03:26.928137+00:00",
+      "updated_at": "2026-11-12T23:03:34.347+00:00"
+    }
+  ],
+  "projectRowBaseline": "accepted WD10 resources-before.json; also preserved by its final audit",
+  "ownRemainingProjects": 0,
+  "E2EPortsFree": true,
+  "ownerWebPid": 1124326,
+  "ownerApiBeforePid": 695306,
+  "ownerApiAfterPid": 768143,
+  "ownerWatcherPid": 1124324,
+  "ownerProcessObservation": "    PID    PPID                  STARTED COMMAND\n 768143 1124324 Wed Nov 18 05:27:02 2026 /home/ash/.nvm/versions/node/v24.21.0/bin/node --require /home/ash/github/jeeves/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/preflight.cjs --import file:///home/ash/github/jeeves/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/loader.mjs src/main.ts\n1124324 1124317 Tue Nov 10 15:43:09 2026 node /home/ash/github/jeeves/jeeves/apps/server/node_modules/.bin/../../../../../node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/cli.mjs watch src/main.ts\n1124326 1124318 Tue Nov 10 15:43:09 2026 node /home/ash/github/jeeves/jeeves/apps/web/node_modules/.bin/../../../../../node_modules/.pnpm/vite@8.2.2_@types+node@24.19.2_esbuild@0.28.2_tsx@4.23.15_yaml@2.9.1/node_modules/vite/bin/vite.js\n",
+  "listenerObservation": "State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                 \nLISTEN 0      511        127.0.0.1:4310      0.0.0.0:*    users:((\"MainThread\",pid=768143,fd=32))\nLISTEN 0      511        127.0.0.1:4300      0.0.0.0:*    users:((\"MainThread\",pid=1124326,fd=21))\n",
+  "handoffPrefixUnchanged": true,
+  "headBeforeUnitCommit": "935386de35f6d92c054be2998d156bac9ad44db5"
+}

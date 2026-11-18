@@ -1,0 +1,93 @@
+[
+  {
+    "name": "HMAC durable acceptance survives process death",
+    "expected": "stored work exists while ACK withheld; another same Service processor completes once; changed content409, terminal failure visible",
+    "outcome": "passed",
+    "actual": {
+      "acceptanceInsertBlocked": true,
+      "upstream202BeforeAcceptance": false,
+      "upstream202BeforeCommit": false,
+      "persistedBeforeAck": "accepted",
+      "acknowledgedBeforeCommit": false,
+      "old": "dcb6459e459a8837cb0c28c6345f048dd9151d59409d6e9ecd9193f176e9dfea",
+      "replacement": "848a0402b6a1cb62e5d879745df03ba26458b0c5fbb2cc9a1ad6062e5af41822",
+      "effects": 1,
+      "duplicate": 202,
+      "conflict": 409,
+      "terminal": "failed"
+    }
+  },
+  {
+    "name": "paused stale holder and stable remote identity",
+    "expected": "lease expires with first process paused; second executes same selected ticket/identity; old completion/product mutation refused",
+    "outcome": "passed",
+    "actual": {
+      "old": "dcb6459e459a8837cb0c28c6345f048dd9151d59409d6e9ecd9193f176e9dfea",
+      "new": "848a0402b6a1cb62e5d879745df03ba26458b0c5fbb2cc9a1ad6062e5af41822",
+      "before": "1|488de5b4-8976-42ac-8622-bc1b8f470c4f",
+      "completed": "2|488de5b4-8976-42ac-8622-bc1b8f470c4f",
+      "remoteDispatches": 2,
+      "stableIdentity": "aebae8428eb9833655b46df156c409694b733ffbde61e948987350e211fd30ef",
+      "preparations": 1,
+      "localEffects": 1,
+      "remoteEffects": 1,
+      "staleRefused": true
+    }
+  },
+  {
+    "name": "fresh-context stale fence rejection",
+    "expected": "emitted store uses actual compiled webhook hook/SQL/roles; stale opaque claim cannot invoke non-idempotent product effect after another copy completes",
+    "outcome": "passed",
+    "actual": {
+      "old": "dcb6459e459a8837cb0c28c6345f048dd9151d59409d6e9ecd9193f176e9dfea",
+      "replacement": "848a0402b6a1cb62e5d879745df03ba26458b0c5fbb2cc9a1ad6062e5af41822",
+      "winner": {
+        "code": "COMPLETED",
+        "identity": "51d42ea739c93628d68c1422aa3e270807e4dd6defcec73b2d5c403033c26f0c"
+      },
+      "loser": {
+        "code": "WORK_LEASE_LOST",
+        "identity": "51d42ea739c93628d68c1422aa3e270807e4dd6defcec73b2d5c403033c26f0c"
+      },
+      "freshContext": true,
+      "nonIdempotentEffects": 1
+    }
+  },
+  {
+    "name": "receipt commit precedes ACK and survives redelivery",
+    "expected": "withheld real AMQP Basic.Ack, committed receipt/effect, kill that consumer, another copy redelivers once; dates cannot bypass ID",
+    "outcome": "passed",
+    "actual": {
+      "killed": "cd620edf385fcf2d6c1a9bd14974f792ee8c75fd61a02293b2fcea3e8ddba1fb",
+      "unacknowledgedBeforeKill": 1,
+      "committedReceipt": true,
+      "effectsAfterRedeliveryAndDateChange": 1
+    }
+  },
+  {
+    "name": "retention, idle maintenance and stopped heartbeat",
+    "expected": "receipt remains before immutable DB deadline then idle indexed cleanup deletes after it; stopped/crashed heartbeat becomes stale while live idle heartbeat advances",
+    "outcome": "passed",
+    "actual": {
+      "deadlineAtLeast60Seconds": true,
+      "stoppedOrCrashedStale": 2,
+      "staleThresholdSeconds": 45,
+      "idleLive": 1,
+      "idleCleanup": true,
+      "retainedProduct": 1
+    }
+  },
+  {
+    "name": "native broker stall/drop and recovery",
+    "expected": "required broker loss removes worker readiness, liveness survives, same copy recovers without restart and processes a fresh receipt",
+    "outcome": "passed",
+    "actual": {
+      "worker": "26b2dba55109bdd0a399b8768cdae0038d7b366d75484b8316991842d8311765",
+      "broker": "e3537d447c04d1fa325cfaf34c7dffc4e99bcc06e1f78649b91562c43e82243e",
+      "stallUnready": true,
+      "dropUnready": true,
+      "recovered": true,
+      "effect": 1
+    }
+  }
+]

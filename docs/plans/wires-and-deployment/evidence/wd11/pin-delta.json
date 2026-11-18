@@ -1,0 +1,58 @@
+{
+  "frozen-v2": [
+    {
+      "path": ".jeeves/manifest.json",
+      "before": "646f5e6ef8168c8dfb02770daed2f73bb71deb5c8fc261a44308bddda5670617",
+      "after": "59e02db650bf55f9622193471c1e62a63532e5658e31540c2f1b387aed7dc9e3"
+    },
+    {
+      "path": "README.md",
+      "before": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "after": "0db2fab2d6d00c08bd32ca561775321c136be22fab0c8955fb95fae9ee83c68c"
+    },
+    {
+      "path": "src/runtime/postgres.ts",
+      "before": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+      "after": "3ac1e3191817678183d6c9097c69692c476012c9897ec83a6f422174e94645d3"
+    },
+    {
+      "path": "src/runtime/transaction.ts",
+      "before": "6c263496e277184d337cb266f4ce973a735a0b8ff068dcf253e80231f447fa33",
+      "after": "52fa6ab5bc33c1a75b22dac7050d82d6e1c7a35bc0d392c91c3ea8609fec454b"
+    }
+  ],
+  "v2-module-design": [
+    {
+      "path": ".jeeves/manifest.json",
+      "before": "cb562f0e3d56c056ff980a66553c48dc826dc1f9a4d808b52677488969b25b52",
+      "after": "132e805e7d276e3f5b2a7087c38bac1f608065a95a858b7f2823a28cb9f5ea24"
+    },
+    {
+      "path": "README.md",
+      "before": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "after": "0db2fab2d6d00c08bd32ca561775321c136be22fab0c8955fb95fae9ee83c68c"
+    },
+    {
+      "path": "src/runtime/postgres.ts",
+      "before": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+      "after": "3ac1e3191817678183d6c9097c69692c476012c9897ec83a6f422174e94645d3"
+    },
+    {
+      "path": "src/runtime/transaction.ts",
+      "before": "6c263496e277184d337cb266f4ce973a735a0b8ff068dcf253e80231f447fa33",
+      "after": "52fa6ab5bc33c1a75b22dac7050d82d6e1c7a35bc0d392c91c3ea8609fec454b"
+    }
+  ],
+  "stub-stack": [
+    {
+      "path": ".jeeves/manifest.json",
+      "before": "1a46d59d059d8fcdab035595270263003a6584e197ee1662dda7316e1ef4f76d",
+      "after": "477af9968b386ac9c108bc4b194ef0da0febd31f9be8ac650ad4fd2103598e7b"
+    },
+    {
+      "path": "README.md",
+      "before": "d2f4f8238ff038b3f66e33621169857e9637b8774fa2a8f784ba4d8d17523f59",
+      "after": "0db2fab2d6d00c08bd32ca561775321c136be22fab0c8955fb95fae9ee83c68c"
+    }
+  ]
+}

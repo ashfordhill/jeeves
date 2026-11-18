@@ -1429,3 +1429,20 @@ Scheduled integrations preserve RG15's honest limits: only actual authenticated 
 explicit workload-only callee opt-in, same compiled workload/process identity for remote recovery,
 Required-user refusal, no saved bearer, and `WORK_SECRET_CHECKPOINT_UNSUPPORTED` before a declared
 secret remote result can execute. No arbitrary cron, workflow or cloud scheduler is implemented.
+
+### Database access through a transaction pooler
+
+Current v2 runtime clients keep no database session state beyond a transaction. Standalone
+statements also run in a transaction; its first setting is `SET LOCAL statement_timeout`, using
+the pool's existing configured statement budget. The client `query_timeout` remains 500 ms longer.
+The legacy idempotency sweeper takes its transaction advisory lock inside the deletion transaction;
+commit/rollback releases it. Product mutation roles are restored with `SET LOCAL ROLE NONE`.
+Browser refresh retains its existing bounded transaction-local timeout overrides.
+
+Set deployment environment `JEEVES_DB_POOL_MAX` to an exact decimal integer from 1 through 100
+(no spaces, sign, leading zero, fraction or exponent). It is read once during startup, before
+clients open, and overrides each runtime Postgres pool's maximum. Absence retains that pool's
+existing default/configuration. Invalid values fail with a value-free configuration message.
+There is no diagram setting. A no-SQL process that imports shared SQL clients/constructors in a mixed SQL export
+reads this variable too; a process with no SQL imports and an entirely SQL-free export do not. The deployment
+contract reflects those actual reads. Provisioning a pooler remains outside generation.
