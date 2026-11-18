@@ -246,3 +246,11 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Resolution update (2026-11-18):** `Finish studio wire rendering and interaction` activates
   coloured outlined wires and hover in Simple and Detailed, separates the YouTube Detailed return
   trunks, and retains browser-only slots and light PNGs. [Evidence and remaining geometry limits](plans/wires-and-deployment/evidence/wire-ui-finish/README.md).
+
+## 2026-11-18 — Wire outline, amber colours and arrow spacing
+
+[Screenshot](human-feedback/2026-11-18-wire-outline-and-amber.png)
+
+- **Problem:** on QRWTY (revision 84, Detailed) the wires' black outline doesn't suit the tiles, the yellow and orange families read as olive and brown, and arrows into one tile sit bunched with a kink before each head.
+- **Decision:** none yet. The owner asked for a preview with switchable options, and wants arrows into a tile to share its side evenly (two at thirds, three at quarters) and taper in.
+- **Resolution:** a [preview](https://claude.ai/artifact/CJAcHYup1FphraHB435THE) redraws QRWTY with the studio's own tile faces and layout engine and nine groups of choices: outline, colour set, what takes the colour, shades, thickness, arrowhead, where arrows land, how they come in, corners. The owner replies with a code such as `1b 2b 3a 4b 5a 6a 7b 8c 9a`. Nothing in the studio has changed.
