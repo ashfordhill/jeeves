@@ -1634,3 +1634,19 @@ checks remain in force. Availability probes assume those configured resources an
 they do not continually revalidate every administrator change. Shutdown cancels future probes,
 tracks active work and ignores late readiness restoration. Readiness is a bounded observation,
 not instantaneous knowledge of every failure.
+
+Scheduled task modules run in either Service or Worker using the common durable-work lifecycle.
+Adding a Worker from a lane creates its Scheduled task and enables Runnable processes; adding a
+Worker after a queue keeps the message-consumer workflow. Connect the task's state slot to its
+owned writable database, and set its interval in the inspector or chat. A separate Worker joins
+an API's logical owner explicitly before sharing product writes, with its own precise credentials.
+
+The generated task module is the product handler scaffold. Its `durableWork` declaration has a
+stable identity and fixed seven-day completed retention; its completion receives registered
+commands under the product role, with no raw SQL, timers, leases or network handles. Ordinary
+Service routes are unaffected. Scheduling progresses without HTTP or message traffic while a
+process is running. Database time chooses ticks; all copies share one unfinished intent, downtime
+coalesces and stale completion cannot commit. Failed/unknown ticks halt further admission with
+fixed safe logs, rather than appearing idle. See the generated extension guide for explicit
+handler migration and RG15 workload recovery limits. Native competing-worker kill evidence is
+reserved for the later approved integration checkpoint.

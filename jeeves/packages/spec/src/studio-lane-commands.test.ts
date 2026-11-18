@@ -279,9 +279,18 @@ describe("addTile", () => {
     // Nothing is inserted before a tile or an action any more.
     for (const from of [{ tile: "url-db" }, { lane: "download" as const }])
       expect(add({ from, side: "before" as never })).toMatch(/after/);
-    expect(add({ from: { lane: "download" }, tile: tile("geo", "Geo worker", "worker") })).toBe(
-      "Open link can't link to Geo worker. An action reaches a service (not a worker), an API or the CDN.",
-    );
+    const scheduled = run(design, {
+      type: "addTile",
+      from: { lane: "download" },
+      side: "after",
+      tile: tile("geo", "Geo worker", "worker"),
+      linkId: "scheduled-entry",
+    });
+    expect(
+      scheduled.design.architecture?.studio?.components?.some(
+        (c) => c.host === "geo" && c.settings.kind === "scheduled-task",
+      ),
+    ).toBe(true);
     // A new entry into storage or an external API is refused.
     expect(add({ from: { lane: "upload" }, tile: tile("media", "Media", "object-store") })).toBe(
       "Shorten can't link to Media. An action reaches a service (not a worker), an API or the CDN.",
@@ -751,11 +760,11 @@ describe("link fan options", () => {
     expect(queue.find((o) => o.kind === "search")?.refusal).toBe(
       "Click events can't link to a search index. A queue feeds only an application, not a search index.",
     );
-    // An action's entry is a service (not a worker), Uploads, Identity or the CDN.
+    // An action can start a Worker with an automatically created Scheduled task.
     const entries = linkFanOptions(design, { lane: "upload" });
     expect(kinds(entries)).toEqual([
       "service",
-      "-",
+      "worker",
       "uploads",
       "identity",
       "-",
@@ -766,9 +775,7 @@ describe("link fan options", () => {
       "cdn",
       "-",
     ]);
-    expect(entries.find((o) => o.kind === "worker")?.refusal).toBe(
-      "Shorten can't link to a worker. An action reaches a service (not a worker), an API or the CDN.",
-    );
+    expect(entries.find((o) => o.kind === "worker")?.refusal).toBeUndefined();
     // From a lane with no action, the options are those of its new action.
     expect(kinds(linkFanOptions(emptyDesign(), { lane: "download" }))).toEqual(kinds(entries));
     // A full tile (five links) refuses every kind with the cap; the Worker keeps its own reason.

@@ -28,7 +28,7 @@ import { architectureSchema } from "./architecture.ts";
 import { type DesignDocument, elementSchema } from "./design.ts";
 import { idSchema } from "./ids.ts";
 import type { OperationInput } from "./operations.ts";
-import { studioComponentDefinitions } from "./studio-components.ts";
+import { createStudioComponentSettings, studioComponentDefinitions } from "./studio-components.ts";
 import { studioDefinitions } from "./studio-definitions.ts";
 import { freshId, slug, usedIds } from "./studio-ids.ts";
 import {
@@ -189,7 +189,7 @@ const isApplication = (kind: StudioKind | undefined) =>
   kind !== undefined && studioDefinitions[kind].classification.kind === "Application";
 const isResource = (kind: StudioKind) => studioResourceKinds.some((item) => item === kind);
 
-type Tile = { id: string; kind: StudioKind; name?: string };
+type Tile = { id: string; kind: StudioKind; name?: string; scheduled?: boolean };
 /**
  * The design's lane graph with names and rules. The returned view function adds a tile an edit
  * is about to create, or overrides a tile's kind, so the rules can judge it.
@@ -221,7 +221,15 @@ function lanes(design: DesignDocument) {
       /** A tile (it has a kind), not the actor or an action. */
       isTile: (id: string) => kinds.get(id) !== undefined,
       hasAction: (lane: StudioLane) => actions.some((item) => item.lane === lane),
-      rules: laneRules(kindOf),
+      rules: laneRules(
+        kindOf,
+        new Set([
+          ...(studio?.components
+            ?.filter((c) => c.settings.kind === "scheduled-task")
+            .map((c) => c.host) ?? []),
+          ...(tile?.scheduled ? [tile.id] : []),
+        ]),
+      ),
     };
   };
 }
@@ -566,12 +574,27 @@ export function buildLaneCommand(
     case "addTile": {
       const { from, tile } = input;
       requireFree(draft, [tile.id, input.linkId]);
-      const view = at(tile);
+      const scheduled = "lane" in from && tile.kind === "worker";
+      const view = at({ ...tile, scheduled });
       const mode = input.link ?? pairMode(view, ...addedLink(from, tile.id));
       const why = addTileRefusal(view, from, mode === "async", tile, input.linkId);
       if (why) refuse(why);
       if ("lane" in from) {
         addElement(out, tile);
+        if (scheduled) {
+          const id = freshId(`${tile.id}-scheduled-task`, (candidate) =>
+            usedIds(draft).has(candidate),
+          );
+          studio.components = [
+            ...(studio.components ?? []),
+            {
+              id,
+              host: tile.id,
+              name: "Scheduled task",
+              settings: createStudioComponentSettings("scheduled-task"),
+            },
+          ];
+        }
         addEntry(out, { id: input.linkId, lane: from.lane, element: tile.id });
         break;
       }
@@ -787,7 +810,12 @@ export function linkFanOptions(design: DesignDocument, from: LaneFrom): LinkFanO
   const at = lanes("lane" in from ? withAction(design, from.lane) : design);
   return studioLinkFanGroups.flatMap((group) =>
     studioLinkFan[group].map((kind) => {
-      const tile = { id: "@new", kind, name: noun(kind) };
+      const tile = {
+        id: "@new",
+        kind,
+        name: noun(kind),
+        scheduled: "lane" in from && kind === "worker",
+      };
       const view = at(tile);
       const async = pairMode(view, ...addedLink(from, tile.id)) === "async";
       const refusal = broken

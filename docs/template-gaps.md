@@ -143,3 +143,10 @@ health probes and recovery. Required AMQP/PubSub state and bounded safe object/s
 use the same private readiness state. The installed Garage listener is private with no admin
 credential or grant expansion. Optional cache fallback stays available. No new normal control,
 provider, business retry or monitoring service was added; see the RG14 review for exact evidence.
+
+RG16 closes the missing generated home for interval reconciliation in both Service and Worker.
+The installed Scheduled task binding uses the accepted durable engine and common lifecycle,
+DB-time interval identities, one unfinished tick across copies and a scoped product handler.
+Queue-free timer Workers keep explicit logical ownership and precise credentials. Retry/fence
+bookkeeping stays private. Native competing-worker kill proof remains a later checkpoint;
+cron/cloud/workflow scheduling and RG15's unsupported remote authority/result cases remain unavailable.

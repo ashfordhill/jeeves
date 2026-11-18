@@ -219,7 +219,10 @@ export function durableWorkDefinition(work: unknown, property: string, writable:
   return { work: work as object, definition };
 }
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-const envelope = (value: unknown) => ({ present: value !== undefined, value: value ?? null });
+const envelope = (value: unknown) => ({
+  present: value !== undefined,
+  value: value ?? null,
+});
 interface Row {
   work_id: string;
   scope_key: string;
@@ -237,13 +240,22 @@ interface Row {
   external_state: string;
 }
 const claims = new WeakMap<object, { store: object; row: Row }>();
-type WorkLogFields = { operation: string; correlationId?: string; work?: string };
+type WorkLogFields = {
+  operation: string;
+  correlationId?: string;
+  work?: string;
+};
 const failureWork = new WeakMap<object, { work: string }>();
 export interface WorkClaim {
   readonly identity: string;
 }
 /** Fixed bookkeeping bounds are generated defaults, never diagram settings or hook controls. */
-export const workPolicy = Object.freeze({ leaseMs: 30000, batch: 10, sweep: 100, pollMs: 1000 });
+export const workPolicy = Object.freeze({
+  leaseMs: 30000,
+  batch: 10,
+  sweep: 100,
+  pollMs: 1000,
+});
 export function createWorkStore(options: {
   namespace: string;
   process?: string;
@@ -293,6 +305,45 @@ export function createWorkStore(options: {
       throw error;
     }
   };
+  const insert = async (
+    tx: Parameters<Parameters<typeof transaction>[1]>[0],
+    scopeKey: string,
+    workKey: string,
+    input: unknown,
+    remote: unknown,
+  ) => {
+    const canonical = envelope(input),
+      identity = digest([canonical, remote]);
+    await tx.query(
+      "INSERT INTO jeeves.work_records(namespace,scope_key,work_key,input,input_hash,configuration,max_attempts,retention_seconds,remote_input) VALUES($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9::jsonb) ON CONFLICT DO NOTHING",
+      [
+        namespace,
+        scopeKey,
+        workKey,
+        JSON.stringify(canonical),
+        identity,
+        configuration,
+        definition.maxAttempts,
+        definition.retentionSeconds,
+        JSON.stringify(envelope(remote)),
+      ],
+    );
+    const { rows } = await tx.query<WorkStatus & { input_hash: string; configuration: string }>(
+      "SELECT state,attempts,error,input_hash,configuration FROM jeeves.work_records WHERE namespace=$1 AND scope_key=$2 AND work_key=$3",
+      [namespace, scopeKey, workKey],
+    );
+    const row = rows[0];
+    if (!row || row.input_hash !== identity) throw new WorkError("WORK_IDENTITY_CONFLICT");
+    if (row.configuration !== configuration) throw new WorkError("WORK_CONFIGURATION_CONFLICT");
+    return snapshot(row);
+  };
+  const checkSchedule = async (tx: Parameters<Parameters<typeof transaction>[1]>[0]) => {
+    const { rows } = await tx.query(
+      "SELECT 1 FROM jeeves.work_records WHERE namespace=$1 AND configuration<>$2 LIMIT 1",
+      [namespace, configuration],
+    );
+    if (rows.length) throw new WorkError("WORK_SCHEDULE_MIGRATION_REQUIRED");
+  };
   const store = {
     configureTarget(handle: unknown) {
       transport = workTarget(handle);
@@ -303,32 +354,47 @@ export function createWorkStore(options: {
       input: unknown,
       remote: unknown = null,
     ): Promise<WorkStatus> {
-      const canonical = envelope(input),
-        identity = digest([canonical, remote]);
+      return storage(pool, (tx) => insert(tx, scopeKey, workKey, input, remote));
+    },
+    async checkSchedule() {
+      return storage(pool, checkSchedule, { readOnly: true });
+    },
+    async schedule(intervalSeconds: number): Promise<"failed" | "unknown" | undefined> {
+      validateInterval(intervalSeconds);
+      // A caller timeout does not release an actual database/transport slot.
+      if (active.size) return;
       return storage(pool, async (tx) => {
-        await tx.query(
-          "INSERT INTO jeeves.work_records(namespace,scope_key,work_key,input,input_hash,configuration,max_attempts,retention_seconds,remote_input) VALUES($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9::jsonb) ON CONFLICT DO NOTHING",
-          [
-            namespace,
-            scopeKey,
-            workKey,
-            JSON.stringify(canonical),
-            identity,
-            configuration,
-            definition.maxAttempts,
-            definition.retentionSeconds,
-            JSON.stringify(envelope(remote)),
-          ],
+        const locked = await tx.query<{ locked: boolean }>(
+          "SELECT pg_try_advisory_xact_lock(hashtextextended($1,16)) AS locked",
+          [namespace],
         );
-        const { rows } = await tx.query<WorkStatus & { input_hash: string; configuration: string }>(
-          "SELECT state,attempts,error,input_hash,configuration FROM jeeves.work_records WHERE namespace=$1 AND scope_key=$2 AND work_key=$3",
-          [namespace, scopeKey, workKey],
+        if (!locked.rows[0]?.locked) return;
+        await checkSchedule(tx);
+        // One unfinished tick per namespace across every copy and interval revision.
+        // Failed/unknown outcomes remain visible and stop new admission until explicitly migrated.
+        const pending = await tx.query<{ state: WorkState }>(
+          "SELECT state FROM jeeves.work_records WHERE namespace=$1 AND state<>'completed' LIMIT 1",
+          [namespace],
         );
-        const row = rows[0];
-        if (!row || row.input_hash !== identity) throw new WorkError("WORK_IDENTITY_CONFLICT");
-        if (row.configuration !== configuration) throw new WorkError("WORK_CONFIGURATION_CONFLICT");
-        return snapshot(row);
+        const pendingState = pending.rows[0]?.state;
+        if (pendingState)
+          return pendingState === "failed" || pendingState === "unknown" ? pendingState : undefined;
+        const { rows } = await tx.query<{ tick: string }>(
+          "SELECT floor(extract(epoch FROM clock_timestamp())/$1::int)::bigint::text AS tick",
+          [intervalSeconds],
+        );
+        const tick = rows[0]?.tick;
+        if (!tick || !/^[0-9]+$/.test(tick)) throw new Error("Invalid database interval identity");
+        const input = pure(() => definition.validate({ tick, intervalSeconds }));
+        const remote = definition.integration
+          ? pure(() => definition.integration!.map(input as Readonly<unknown>))
+          : null;
+        if (definition.integration && remote === undefined) throw new WorkError("WORK_INPUT");
+        await insert(tx, "{}", `s:${intervalSeconds}:${tick}`, input, remote);
       });
+    },
+    get idle() {
+      return active.size === 0;
     },
     async status(scopeKey: string, workKey: string): Promise<WorkStatus | undefined> {
       return storage(
@@ -354,7 +420,9 @@ export function createWorkStore(options: {
         return rows
           .filter((row) => row.state === "running")
           .map((row) => {
-            const claim = Object.freeze({ identity: digest([namespace, row.work_id]) });
+            const claim = Object.freeze({
+              identity: digest([namespace, row.work_id]),
+            });
             claims.set(claim, { store, row });
             return claim;
           });
@@ -509,7 +577,11 @@ export function createWorkStore(options: {
         // No external effect is dispatched until this COMMIT has definitely succeeded.
         await update("remote_ticket=$6,remote_protocol=$7::jsonb,external_state='prepared'", [
           body.ticket,
-          JSON.stringify({ protocol: body.protocol, version: body.version, secret: body.secret }),
+          JSON.stringify({
+            protocol: body.protocol,
+            version: body.version,
+            secret: body.secret,
+          }),
         ]);
         row = await read();
         if (!row) throw new WorkError("WORK_LEASE_LOST");
@@ -660,7 +732,10 @@ export function bindDurableWork(
     commands: CommandFactory;
   },
 ) {
-  const store = createWorkStore({ ...options, definition: prepared.definition });
+  const store = createWorkStore({
+    ...options,
+    definition: prepared.definition,
+  });
   bindings.set(handle, { work: prepared.work, store });
   return store;
 }
@@ -670,6 +745,7 @@ export function startDurableWork(
   dependencies: object,
   scope: ProcessScope,
   log: (event: string, fields: WorkLogFields) => void,
+  intervalSeconds?: number,
 ) {
   if (work === undefined) return;
   const definition = definitions.get(work as object);
@@ -684,11 +760,26 @@ export function startDurableWork(
   periodic(
     scope,
     async () => {
-      const execution = operation({ maximumMs: 30000, signals: [scope.signal] });
+      const execution = operation({
+        maximumMs: 30000,
+        signals: [scope.signal],
+      });
       try {
         await withOperation(execution.context, async () => {
+          if (intervalSeconds !== undefined) {
+            const halted = await binding.store.schedule(intervalSeconds);
+            if (halted)
+              log(`scheduled task halted ${halted}`, {
+                operation: definition!.id,
+                correlationId: execution.context.correlationId,
+              });
+          }
           await binding.store.runBatch(log);
-          if (!execution.context.signal.aborted) await binding.store.sweep();
+          if (
+            !execution.context.signal.aborted &&
+            (intervalSeconds === undefined || binding.store.idle)
+          )
+            await binding.store.sweep();
         });
       } catch (error) {
         if (
@@ -697,6 +788,17 @@ export function startDurableWork(
             ["CONTEXT_EXPIRED", "PROCESS_STOPPING"].includes(error.code))
         )
           return;
+        if (
+          intervalSeconds !== undefined &&
+          error instanceof WorkError &&
+          error.code === "WORK_SCHEDULE_MIGRATION_REQUIRED"
+        ) {
+          log("scheduled task migration required", {
+            operation: definition!.id,
+            correlationId: execution.context.correlationId,
+          });
+          return;
+        }
         log("work storage unavailable", {
           operation: definition!.id,
           correlationId: execution.context.correlationId,
@@ -708,4 +810,40 @@ export function startDurableWork(
     },
     workPolicy.pollMs,
   );
+}
+
+function validateInterval(intervalSeconds: number) {
+  if (!Number.isSafeInteger(intervalSeconds) || intervalSeconds < 1 || intervalSeconds > 604800)
+    throw new Error("Scheduled interval must be 1..604800 seconds");
+}
+/** Private generated validation: no timer methods or lease controls enter the extension API. */
+export function validateScheduledTaskBinding(work: unknown, properties: readonly string[]) {
+  validateDurableWorkBinding(work, properties);
+  const definition = work && typeof work === "object" ? definitions.get(work) : undefined;
+  if (!definition || definition.retentionSeconds !== 604800)
+    throw new Error(
+      "Scheduled task requires a durableWork declaration with fixed seven-day retention; migrate the handler explicitly",
+    );
+}
+/** Same process lifecycle and engine as accepted work, independent of HTTP or deliveries. */
+export async function startScheduledTask(
+  work: unknown,
+  dependencies: object,
+  scope: ProcessScope,
+  log: (event: string, fields: WorkLogFields) => void,
+  intervalSeconds: number,
+) {
+  validateInterval(intervalSeconds);
+  const definition = definitions.get(work as object);
+  validateScheduledTaskBinding(work, definition ? [definition.database] : []);
+  const handle = Object.getOwnPropertyDescriptor(dependencies, definition!.database)?.value;
+  const binding = handle && bindings.get(handle);
+  if (!binding || binding.work !== work) throw new Error("Unconfigured scheduled task");
+  const execution = operation({ maximumMs: 30000, signals: [scope.signal] });
+  try {
+    await withOperation(execution.context, () => binding.store.checkSchedule());
+  } finally {
+    execution.close();
+  }
+  startDurableWork(work, dependencies, scope, log, intervalSeconds);
 }

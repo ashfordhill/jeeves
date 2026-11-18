@@ -18948,3 +18948,46 @@ workload settings the same way.
 - Root7 hashes, exact34001-byte owner diff/modes, frozen v1 and42 original container ID/name/states
   preserved. No later unit, native matrix, owner studio/database, paid/live call, push or deployment.
   One local commit follows: `RG15: persist durable work and fence completion across replicas`.
+
+## 2026-11-17 — RG16 scheduled tasks active, unaccepted/uncommitted
+
+- Sole assigned unit RG16 on accepted RG15 `3071978`; Scheduled task binding/module, one interval
+  control, Service/Worker mounts and queue-free timer Worker creation are being implemented.
+  Same durable engine/product roles/lifecycle; no native suite or later unit started.
+- Internal policy: fixed seven-day completed retention covers every supported 1..604800s interval;
+  interval changes preserve the durable descriptor/configuration. DB-time identities and a
+  namespace transaction lock admit one unfinished tick across copies. Failed/unknown ticks halt
+  new admission with fixed safe logs; incompatible unfinished configurations refuse startup.
+- First focused pass: existing durable-work/module-stub checks pass; new PGlite coordination and
+  authoring tests 6/9 pass, with fixture clock/role-drain/aborted-scope oracles being corrected.
+  First actual 68-file scratch export passes its real extension checker/TypeScript7.0.2 after
+  fixing emitted types; final re-export/recheck and all D11/offline/mouse checks remain pending.
+- Preserve this diff for same-unit continuation/review. No commit, root edit, owner service/DB,
+  paid/live call, push or deployment. Final evidence and one explicit-path commit still required.
+
+## 2026-11-17 — RG16 scheduled tasks complete for coordinator review
+
+- Installed Scheduled task in Service/Worker; one interval control shared by inspector/chat/
+  blueprint/export. Queue-free lane Worker creation adds its task and Runnable processes;
+  explicit logical ownership/distinct credentials/exact grants remain. Worker initialization
+  now runs work mounts. Scoped handler scaffold reuses API8/durable052/private lifecycle engine.
+- DB-time keys + namespace transaction lock admit one unfinished tick across copies; downtime/
+  slow work coalesce after accepted intent settles. Fixed7day retention covers1..604800s intervals;
+  interval edits preserve old work. Actual callback slots and RG15 final fencing stay bounded.
+  Failed/unknown ticks visibly halt; incompatible retained definitions require explicit migration.
+- Final pnpm check138files/1251tests, web build, focused45/45, real68file scratch checker/TS7.0.2
+  and offline chat eval pass. Browser78/82 then affected6/6 accounts for all83 unique cases,
+  including TinyURL, both long rebuilds and both new mouse paths. Initial stale assertions/HMR
+  interruption, corrections and controlled-DB/native limits are in evidence/rg16/README.md.
+- Next unit can rely on independent scheduled Service/Worker progress and explicit owner state.
+  Remote integration keeps RG15 same-process affinity, Required-user/secret-result refusals and
+  ticket limits. Handler/version/identity changes need stopped schedulers, drained/resolved intent
+  and explicit retained-record migration; no reset UI or native kill claim. No later unit run.
+- Protected owner diff remains exact34001bytes, frozen v1 untouched, all42 container ID/name/states
+  match. Concurrent owner feedback parentc475ffc/root README edits preserved and excluded from
+  staging; six other original root hashes match. One local RG16 commit follows; no push/deploy.
+
+- RG16 final review correction: keep selection and module identities distinct in generated task
+  startup and interval lookup; work identity remains module-based. Aliased actual scratch export,
+  focused identity/client wiring28/28 and foreign-owner/schedule10/10 pass. Final pnpm check rerun
+  uses this emitter correction; normal mouse/web-build inputs are unchanged. No scope expansion.

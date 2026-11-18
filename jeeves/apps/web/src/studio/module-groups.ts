@@ -29,7 +29,11 @@ const groups: readonly ModuleGroup[] = [
       "lifecycle-writer",
     ],
   },
-  { label: "Events", family: "messaging", kinds: ["event-publisher", "event-consumer"] },
+  {
+    label: "Events",
+    family: "messaging",
+    kinds: ["scheduled-task", "event-publisher", "event-consumer"],
+  },
   {
     label: "Files & media",
     family: "worker",

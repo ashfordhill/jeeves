@@ -49,12 +49,16 @@ describe("moduleMenuGroups", () => {
           "Favorites: lead",
         ],
       ],
-      ["Events", "messaging", ["Event publisher: part", "Event consumer: stub"]],
+      [
+        "Events",
+        "messaging",
+        ["Scheduled task: lead", "Event publisher: part", "Event consumer: stub"],
+      ],
       ["Files & media", "worker", ["Multipart uploads: lead"]],
       ["Custom", "generic", ["Custom: stub"]],
     ]);
     const worker = rows("transcoder", "worker");
-    expect(worker.flatMap(([, , items]) => items)).toHaveLength(16);
+    expect(worker.flatMap(([, , items]) => items)).toHaveLength(17);
     expect(worker[1]).toEqual([
       "Data",
       "data",
@@ -120,7 +124,7 @@ describe("ModuleAddButton", () => {
       ["Files & media", "worker"],
       ["Custom", "generic"],
     ]);
-    expect(screen.getAllByRole("menuitem")).toHaveLength(13);
+    expect(screen.getAllByRole("menuitem")).toHaveLength(14);
     const data = screen.getByRole("menuitem", { name: "Data access" });
     expect(data.dataset.family).toBe("data");
     const described = document.getElementById(data.getAttribute("aria-describedby") ?? "");

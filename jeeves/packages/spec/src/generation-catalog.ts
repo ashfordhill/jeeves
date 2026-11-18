@@ -123,6 +123,7 @@ export const generationTemplates = freezeRecord({
   /** An account's favorite items behind a Required sign-in (v3 contract, section 3). */
   favorites: template("favorites", [generationPolicies.favorites.ref]),
   "rate-limiter": template("rate-limiter", []),
+  "scheduled-task": template("scheduled-task", []),
   "youtube-upload": template("youtube-upload", [generationPolicies.publicVideo.ref]),
   "youtube-watch": template("youtube-watch", [generationPolicies.publicVideo.ref]),
   "youtube-search": template("youtube-search", [generationPolicies.publicVideo.ref]),

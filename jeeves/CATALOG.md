@@ -627,3 +627,15 @@ These probes never retry a business operation. Shutdown cancels future probes, t
 and ignores late readiness restoration. Saturated Valkey stays connected and does not become
 unready merely because its queue is full. Readiness is a bounded observation, not instantaneous
 knowledge of every possible dependency failure.
+
+### Scheduled reconciliation
+
+`scheduled-task` (**Scheduled task**, gear icon) is an installed module in Service and Worker.
+It leads the `scheduled-task` binding when its **state** slot names writable owned PostgreSQL;
+its optional **target** and **workload** slots retain the existing authenticated durable-work
+integration contract. **Interval** is the sole normal setting (1–604800 seconds, default 60).
+Generated lifecycle mounts admit database-time ticks independently of HTTP/messages, coalescing
+missed intervals with one unfinished tick across copies. Product completion remains a scoped
+handler scaffold. Failed/unknown work halts admission; completed retention is fixed at seven days.
+A Worker added from a lane starts with this module and needs no queue. A Worker without a task
+still takes message work from a queue/topic. Logical ownership and exact grants remain explicit.

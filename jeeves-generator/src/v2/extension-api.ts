@@ -72,7 +72,7 @@ export function createLocalExtensionApi(sourcePaths: readonly string[]): V2Emitt
       ];
       for (const [file, names, used] of safeTypes)
         if (used) publicLines.push(`export type { ${names} } from "../runtime/${file}.ts";`);
-      if (has("module-stub"))
+      if (has("module-stub") || has("scheduled-task"))
         publicLines.push(
           'export type { CacheClient, ObjectReader, ObjectWriter, ObjectStore, QueuePublisher, SearchReader, SearchWriter, SearchIndex, ModuleCall } from "../modules/dependencies.ts";',
           'export { declareSettings, text, integer, url, optional, signingKeys, sealingKeys } from "../runtime/settings.ts";',

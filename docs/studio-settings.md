@@ -600,3 +600,17 @@ consume the installed `cache-reader.read@1` contract; parts cannot consume these
 HTTP Cache reader exposure on an internal service refuses because no workload-authenticated
 template adapter is installed. Select `in-process` and invoke it through an authenticated route
 module. Public eligible-record HTTP exposure remains supported.
+
+### Scheduled task (RG16)
+
+A Scheduled task in a Service or Worker has one normal setting: **Interval**, 1–604800 seconds
+(default 60). It requires a **state** link to a writable PostgreSQL database and Runnable
+processes. Missing state leaves an explicit handler scaffold; incompatible owner/write access
+refuses the connection. Worker ownership is declared with **shareOwner**, never inferred from a
+shared database or a similar name. Product permissions and credentials remain distinct by role.
+
+No cron, timer callback, retry/fence control or Advanced fields are offered. Missed intervals
+coalesce to one current database-time tick, with one unfinished tick per task across copies.
+Failed/unknown ticks halt new admission and log that outcome. The generated scaffold keeps
+seven-day completed retention, independent of the interval. Changing the interval preserves
+unfinished accepted work; changing the handler/version/identity needs explicit migration.

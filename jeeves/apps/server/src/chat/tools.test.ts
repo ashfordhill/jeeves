@@ -459,7 +459,7 @@ describe("studio chat tools", () => {
       hosts: string[];
       generation: { kind: string };
     }[];
-    expect(catalog).toHaveLength(19);
+    expect(catalog).toHaveLength(20);
     expect(catalog.find((item) => item.kind === "video-encoder")).toMatchObject({
       hosts: ["worker"],
       as: { worker: "Template" },

@@ -274,9 +274,16 @@ export function stubClients(
       });
       imports.push({
         from: "../runtime/durable-work.ts",
-        name: "startDurableWork",
+        name: stub.role === "scheduled-task" ? "startScheduledTask" : "startDurableWork",
       });
       imports.push({ from: tileProcess, name: "createFailureLog" });
+      if (stub.role === "scheduled-task") {
+        imports.push({ from: "../runtime/durable-work.ts", name: "validateScheduledTaskBinding" });
+        imports.push({ from: "../modules/dependencies.ts", name: "scheduledTasks" });
+        localChecks.push(
+          `validateScheduledTaskBinding((${pascal(id)}Module as { durableWork?: unknown }).durableWork, ${JSON.stringify(workDatabases)});`,
+        );
+      }
       localChecks.push(
         `validateDurableWorkBinding((${pascal(id)}Module as { durableWork?: unknown }).durableWork, ${JSON.stringify(workDatabases)}, ${JSON.stringify(properties.filter((item) => item.type === "ServiceTarget").map((item) => item.property))});`,
       );
@@ -617,9 +624,17 @@ export function stubClients(
             (item) => item.type === "DatabaseReadWriter",
           ),
         )
-        .map(({ module }) => {
+        .map(({ module, stub }) => {
           const id = generationLocalIdentity(module.component).local;
-          return `startDurableWork((${pascal(id)}Module as { durableWork?: unknown }).durableWork, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields));`;
+          const selection = selections.find((s) => s.id === stub.selection);
+          const start =
+            module.kind === "scheduled-task" && selection?.binding.kind === "scheduled-task"
+              ? `await startScheduledTask`
+              : "startDurableWork";
+          const interval = start.startsWith("await")
+            ? `, scheduledTasks[${text(stub.selection)}].intervalSeconds`
+            : "";
+          return `${start}((${pascal(id)}Module as { durableWork?: unknown }).durableWork, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields)${interval});`;
         }),
       started: [],
       routes: [],

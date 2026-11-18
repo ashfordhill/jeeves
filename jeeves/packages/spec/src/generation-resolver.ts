@@ -199,7 +199,7 @@ export type NormalizedProcess = {
   stubs: {
     module: string;
     selection: string;
-    role: "loop" | "route" | "library";
+    role: "loop" | "route" | "library" | "scheduled-task";
     /** A loop stub's queues, one loop each (section 5): the queue tile with its saved mode and
      * provider, and the module link that consumes it. */
     consumes?: NormalizedLoopQueue[];
@@ -616,18 +616,24 @@ export function resolveGeneration(
     const host = generationHost(selection);
     const hostBinding = element(host);
     const role = ownership.roles.find((entry) => entry.element === host);
+    const requiredRole =
+      selection.binding.kind === "scheduled-task"
+        ? hostBinding?.settings.kind === "worker"
+          ? "worker"
+          : "api"
+        : capability.role;
     // A capability without a role (the module stub) needs none.
-    if (capability.role && !role)
+    if (requiredRole && !role)
       report(
         "CONFIG_REQUIRED",
         [...base, "target"],
         "Selected host requires an explicit logical owner and role.",
       );
-    else if (capability.role && role && role.kind !== capability.role)
+    else if (requiredRole && role && role.kind !== requiredRole)
       report(
         "CONFIG_INVALID",
         [...base, "target"],
-        `Template requires an explicit ${capability.role} role.`,
+        `Template requires an explicit ${requiredRole} role.`,
       );
     if (
       hostBinding &&
@@ -679,7 +685,13 @@ export function resolveGeneration(
         .map((policy) => structuredClone(policy)),
     };
     normalized.push(row);
-    if (selection.binding.kind === "module-stub") {
+    if (selection.binding.kind === "scheduled-task" && !generation.processes)
+      report(
+        "CONFIG_REQUIRED",
+        ["generation", "processes"],
+        "Scheduled tasks require Runnable processes for their lifecycle.",
+      );
+    if (["module-stub", "scheduled-task"].includes(selection.binding.kind)) {
       const target = selection.target;
       const component =
         target.kind === "component"
@@ -999,6 +1011,7 @@ export function resolveGeneration(
       "youtube-search",
       "module-stub",
       "verified-identity",
+      "scheduled-task",
     ].includes(selection.binding.kind);
     const audit = (value: object, path: Path, ignored: string[] = []) => {
       for (const key of Object.keys(value))
@@ -1587,7 +1600,12 @@ function processSettings(
     return generationProcessSettings[process.shape === "http" ? "http" : "worker"].flatMap(
       (rule): GenerationSettingDecision[] => {
         const value = current[rule.setting as keyof typeof current];
+        const scheduledOnly =
+          process.stubs.some((stub) => stub.role === "scheduled-task") &&
+          !process.stubs.some((stub) => stub.role === "loop") &&
+          process.templates.length === 0;
         if (
+          (rule.setting === "concurrency" && scheduledOnly) ||
           !value ||
           value.origin === "template" ||
           !generationProcessSettingKinds[rule.setting]?.includes(process.kind) ||
@@ -1876,7 +1894,7 @@ function normalizedProcesses(
       ...(shape === "worker" && { worker: { concurrency: limit("concurrency", 1) } }),
       sourcePath: ["architecture", "studio", "elements", index],
       templates: hosted
-        .filter((item) => item.binding.kind !== "module-stub")
+        .filter((item) => !["module-stub", "scheduled-task"].includes(item.binding.kind))
         .map((item) => {
           const target = item.target.kind === "component" ? item.target.component : undefined;
           const lead = target
@@ -1921,9 +1939,11 @@ function normalizedProcesses(
           {
             module: item.module.component,
             selection: item.id,
-            ...(consumes.length
-              ? { role: "loop" as const, consumes }
-              : { role: shape === "http" ? ("route" as const) : ("library" as const) }),
+            ...(item.binding.kind === "scheduled-task"
+              ? { role: "scheduled-task" as const }
+              : consumes.length
+                ? { role: "loop" as const, consumes }
+                : { role: shape === "http" ? ("route" as const) : ("library" as const) }),
             ...(stores.length && { stores }),
           },
         ];

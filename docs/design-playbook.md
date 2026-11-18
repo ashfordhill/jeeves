@@ -43,7 +43,7 @@ name, so names leave the kind out.
 | --- | --- | --- |
 | API servers, web servers, an app service | Service (`service`) | One per responsibility the reader should see (Watch API, Search API). |
 | An upload API that signs URLs, a resumable upload server (tusd) | Service (`uploads`) | Its **Transfer** says how the bytes travel: `signed-url` or `tus` (pattern 1). |
-| Workers, a worker pool, task workers, consumers | Service (`worker`), after a queue | A worker is never an entry; it hangs after a queue. |
+| Message consumers, a worker pool | Service (`worker`), after a queue | Message work enters through its queue/topic. A Scheduled task Worker may start a lane without a fake queue. |
 | Load balancer | none | Implied by a service's replicas and autoscaling. See the gateway smell. |
 | API gateway | API (`gateway`) | Only when the reader needs to see it (smells). |
 | Message queue for jobs | Queue (`queue`, `work-queue`) | Owned by the publisher. |
@@ -1867,3 +1867,19 @@ resource setup must observe errors once per physical connection, including after
 query rejection, unknown-outcome classification and idle pool handling intact. Registering on
 every checkout accumulates listeners. Verify the actual driver/store failure, since a rejected
 promise in a fake does not reproduce the later EventEmitter error.
+
+
+## 2026-11-17 RG16: give reconciliation an honest trigger and owner
+
+Interval maintenance can live inside its owning Service or in an independently running Worker.
+Draw a Scheduled task and its writable owned state; do not draw a message channel when no
+message triggers the work. A separate Worker joins the logical owner explicitly and keeps its
+own precise credentials. Its timer is a lifecycle concern, not a cloud deployment promise.
+
+Use database time for durable tick identity. Keep one unfinished reconciliation tick across
+copies, reclaim accepted work before admitting a fresh tick, and coalesce downtime to the current
+interval. The product transaction still needs a final holder/fence/unexpired-lease check; a lease
+by itself cannot stop stale completion. Interval edits must preserve accepted work, and completed
+retention must cover the longest supported interval so cleanup cannot recreate a current tick.
+Failed/unknown outcomes need a visible halt, not an endlessly growing backlog or a healthy idle
+appearance. Keep retries and fences inside the mechanism, outside ordinary controls.

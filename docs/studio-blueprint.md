@@ -311,3 +311,10 @@ UTC clocks. Optional cache failure uses bounded authoritative fallback and recov
 HTTP Cache reader exposure on an internal service refuses because no workload-authenticated
 template adapter is installed. Select `in-process` and invoke it through an authenticated route
 module. Public eligible-record HTTP exposure remains supported.
+
+RG16 Blueprint v3 retains each `scheduled-task` module's bounded `intervalSeconds`, state link,
+logical owner and exact product grants. The installed normalized binding is `scheduled-task` with
+its writable `state` dependency and `task.intervalSeconds` setting consumer. Runnable process
+rows classify it as `scheduled-task`, independently of routes or deliveries. Preview/export
+reports each process's `schedules` (module, interval, `coalesce-current-one-outstanding` policy)
+and the handler scaffold separately from runtime evidence. No synthetic queue is required.

@@ -1,0 +1,246 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+Checked 2130 files in 1085ms. No fixes applied.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/composition.test.ts (9 tests | 1 failed) 1013ms
+   ❯ reusable composition before product completion (9)
+     × exports reusable mechanisms from a saved product design and leaves every product implementation custom 96ms
+ ❯ |server| src/chat/tools.test.ts (27 tests | 1 failed) 2038ms
+   ❯ studio chat tools (27)
+     × adds and connects modules with the canvas's commands and reads their status 46ms
+ ❯ |spec| src/module-generation.test.ts (40 tests | 1 failed) 2317ms
+   ❯ module catalog records (2)
+     × names each template's lead as its only component target 12ms
+ ❯ |spec| src/studio-modules.test.ts (2 tests | 1 failed) 63ms
+   ❯ modules (2)
+     × are offered only on applications and get free names and IDs per host 22ms
+ ❯ |web| src/canvas/ModuleMenu.test.tsx (3 tests | 2 failed) 349ms
+   ❯ moduleMenuGroups (1)
+     × groups a Service's and a Worker's kinds by what they do, each with what it generates there 10ms
+   ❯ ModuleAddButton (2)
+     × toggles the menu, closes it on a press elsewhere, the wheel or Escape, and reports a pick 306ms
+ ❯ |web| src/studio/module-status.test.ts (3 tests | 1 failed) 9ms
+   ❯ moduleGeneration (1)
+     × names a lead or part only where its template allows the tile, else a stub 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |spec| src/module-generation.test.ts > module catalog records > names each template's lead as its only component target
+AssertionError: expected { …(15) } to deeply equal { …(14) }
+
+- Expected
++ Received
+
+@@ -6,19 +6,22 @@
+      "event-counter",
+    ],
+    "favorites": [
+      "favorites",
+    ],
+-   "module-stub": 19,
++   "module-stub": 20,
+    "owned-multipart": [
+      "multipart-uploads",
+    ],
+    "positive-cache-read": [
+      "cache-reader",
+    ],
+    "rate-limiter": [
+      "rate-limiter",
++   ],
++   "scheduled-task": [
++     "scheduled-task",
+    ],
+    "search-projection": [
+      "index-writer",
+    ],
+    "search-query": [
+
+ ❯ src/module-generation.test.ts:240:7
+    238|         ]),
+    239|       ),
+    240|     ).toEqual({
+       |       ^
+    241|       "owned-multipart": ["multipart-uploads"],
+    242|       "asset-lifecycle": ["lifecycle-writer"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |spec| src/studio-modules.test.ts > modules > are offered only on applications and get free names and IDs per host
+AssertionError: expected [ 'scheduled-task', …(13) ] to have a length of 13 but got 14
+
+- Expected
++ Received
+
+- 13
++ 14
+
+ ❯ src/studio-modules.test.ts:37:44
+     35|     const design = tinyurl();
+     36|     // A service takes the ten generic kinds plus Multipart uploads, S…
+     37|     expect(moduleKinds(design, "shorten")).toHaveLength(13);
+       |                                            ^
+     38|     expect(moduleKinds(design, "shorten")).toEqual(
+     39|       expect.arrayContaining(["multipart-uploads", "search-query", "fa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |generator| src/v2/composition.test.ts > reusable composition before product completion > exports reusable mechanisms from a saved product design and leaves every product implementation custom
+AssertionError: expected [ { ref: { …(3) }, …(1) }, …(11) ] to have a length of 11 but got 12
+
+- Expected
++ Received
+
+- 11
++ 12
+
+ ❯ src/v2/composition.test.ts:49:42
+     47|     // The video preset stays installed for designs that attached it; …
+     48|     expect(registry.installed.presets).toEqual([generationPresets.vide…
+     49|     expect(registry.installed.templates).toHaveLength(12);
+       |                                          ^
+     50|     const a = assembleV2({ designJson: JSON.stringify(design) }, regis…
+     51|     expect(design).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |server| src/chat/tools.test.ts > studio chat tools > adds and connects modules with the canvas's commands and reads their status
+AssertionError: expected [ …(20) ] to have a length of 19 but got 20
+
+- Expected
++ Received
+
+- 19
++ 20
+
+ ❯ src/chat/tools.test.ts:462:21
+    460|       generation: { kind: string };
+    461|     }[];
+    462|     expect(catalog).toHaveLength(19);
+       |                     ^
+    463|     expect(catalog.find((item) => item.kind === "video-encoder")).toMa…
+    464|       hosts: ["worker"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |web| src/canvas/ModuleMenu.test.tsx > moduleMenuGroups > groups a Service's and a Worker's kinds by what they do, each with what it generates there
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+- Expected
++ Received
+
+@@ -22,10 +22,11 @@
+    ],
+    [
+      "Events",
+      "messaging",
+      [
++       "Scheduled task: lead",
+        "Event publisher: part",
+        "Event consumer: stub",
+      ],
+    ],
+    [
+
+ ❯ src/canvas/ModuleMenu.test.tsx:30:38
+     28| describe("moduleMenuGroups", () => {
+     29|   it("groups a Service's and a Worker's kinds by what they do, each wi…
+     30|     expect(rows("watch", "service")).toEqual([
+       |                                      ^
+     31|       [
+     32|         "Requests",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |web| src/canvas/ModuleMenu.test.tsx > ModuleAddButton > toggles the menu, closes it on a press elsewhere, the wheel or Escape, and reports a pick
+AssertionError: expected [ <button …(8)>…(2)</button>, …(13) ] to have a length of 13 but got 14
+
+- Expected
++ Received
+
+- 13
++ 14
+
+ ❯ src/canvas/ModuleMenu.test.tsx:123:45
+    121|       ["Custom", "generic"],
+    122|     ]);
+    123|     expect(screen.getAllByRole("menuitem")).toHaveLength(13);
+       |                                             ^
+    124|     const data = screen.getByRole("menuitem", { name: "Data access" });
+    125|     expect(data.dataset.family).toBe("data");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |web| src/studio/module-status.test.ts > moduleGeneration > names a lead or part only where its template allows the tile, else a stub
+AssertionError: expected [ 'scheduled-task', …(4) ] to deeply equal [ 'lifecycle-writer', …(3) ]
+
+- Expected
++ Received
+
+  [
++   "scheduled-task",
+    "lifecycle-writer",
+    "video-encoder",
+    "event-counter",
+    "index-writer",
+  ]
+
+ ❯ src/studio/module-status.test.ts:15:82
+     13|     expect(by("worker")["cache-reader"]).toBe("stub");
+     14|     // The Worker leads the lifecycle, encoding, counting and indexing…
+     15|     expect(studioComponentKinds.filter((kind) => by("worker")[kind] ==…
+       |                                                                                  ^
+     16|       "lifecycle-writer",
+     17|       "video-encoder",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  6 failed | 132 passed (138)
+      Tests  7 failed | 1244 passed (1251)
+   Start at  18:02:16
+   Duration  142.88s (tests 79%, import 15%, transform 3%, environment 3%)
+
+    Isolate  138 workers spawned · ~244ms startup each (spawn + environment, per file)
+             at least ~8.18s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

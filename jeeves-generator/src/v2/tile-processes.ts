@@ -175,7 +175,9 @@ export function createLocalTileProcesses(sourcePaths: readonly string[]): V2Emit
           // "Not implemented" and the failure log (every process and the stubs' clients use
           // them), the 501 wrapper and the loops, beside the processes that use them.
           ...[
-            ...(http || looping
+            ...(http ||
+            looping ||
+            processes.some((p) => p.stubs.some((s) => s.role === "scheduled-task"))
               ? [scaffolds.core, scaffolds.entry]
               : processes.length
                 ? [scaffolds.core]
@@ -326,7 +328,29 @@ function reportRow(
         answers: loop.answers,
       })),
     ),
-    templates: mounts.flatMap((mount) => (mount.template ? [mount.template] : [])),
+    templates: [
+      ...mounts.flatMap((mount) => (mount.template ? [mount.template] : [])),
+      ...process.stubs
+        .filter((s) => s.role === "scheduled-task")
+        .map((s) => ({
+          selection: s.selection,
+          template: "scheduled-task",
+          level: "mounted" as const,
+        })),
+    ],
+    ...(process.stubs.some((s) => s.role === "scheduled-task") && {
+      schedules: process.stubs
+        .filter((s) => s.role === "scheduled-task")
+        .map((s) => ({
+          module: s.module,
+          intervalSeconds: Number(
+            selections.find((selection) => selection.id === s.selection)?.inputs[
+              "task.intervalSeconds"
+            ],
+          ),
+          policy: "coalesce-current-one-outstanding" as const,
+        })),
+    }),
     hooks: mounts.flatMap((mount) =>
       mount.hooks && mount.template
         ? [
@@ -496,6 +520,7 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         ...logs,
         ...indent(validation, 2),
         ...indent(setup, 2),
+        ...indent(initialize, 2),
         ...(loops.length
           ? []
           : [

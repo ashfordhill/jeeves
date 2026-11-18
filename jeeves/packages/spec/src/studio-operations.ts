@@ -306,7 +306,10 @@ export function buildStudioCommand(
   }
   // Module commands derive the module-level generation; removing a tile or a link, or re-keying
   // IDs, re-derives it once it exists. The older component commands never do.
+  const scheduledWorker =
+    input.type === "addTile" && "lane" in input.from && input.tile.kind === "worker";
   const moduleCommand =
+    scheduledWorker ||
     input.type === "addModule" ||
     input.type === "connectModule" ||
     input.type === "disconnectModule" ||
@@ -326,6 +329,8 @@ export function buildStudioCommand(
     ((input.type === "removeTile" || input.type === "removeLink" || renames.length > 0 || signIn) &&
       hasModuleSelections(design));
   if (moduleCommand) upgradeForModules(draft, ops);
+  if (scheduledWorker && draft.schemaVersion === 3 && draft.generation)
+    draft.generation.processes = true;
   switch (input.type) {
     case "edit": {
       const id = moved(input.element);

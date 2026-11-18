@@ -1,0 +1,25 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:3228286) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3228305) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:3228399) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 3 workers
+
+(node:3228455) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3228457) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3228456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:401:1 › looking, hovering and cancelled drags change neither the design nor the blueprint (5.3s)
+  ✓  1 [chromium] › jeeves/apps/web/e2e/module-authoring.spec.ts:913:1 › with Runnable processes on, a stub tile's Options show what its process runs, typing saves on the tile and Undo restores it (8.1s)
+  ✓  3 [chromium] › jeeves/apps/web/e2e/scheduled-task.spec.ts:21:1 › RG16 edits both task intervals and connects a queue-free timer Worker by mouse with export parity (9.6s)
+  ✓  5 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:39:1 › clicks the link tab, then a kind, to add a linked tile (3.4s)
+  ✓  4 [chromium] › jeeves/apps/web/e2e/scheduled-task.spec.ts:120:1 › RG16 creates an independent scheduled Worker from its lane menu by mouse (6.9s)
+  ✓  6 [chromium] › jeeves/apps/web/e2e/spawn.spec.ts:143:1 › an action's link tab adds an entry; a drag in Connect mode adds one too (4.6s)
+
+  6 passed (17.8s)

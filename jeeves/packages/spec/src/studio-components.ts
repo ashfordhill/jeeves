@@ -21,6 +21,7 @@ export const studioComponentLimits = {
   name: 120,
   description: 240,
   action: 60,
+  intervalSeconds: { min: 1, max: 604_800 },
   rateLimit: { min: 1, max: 1_000_000 },
   windowSeconds: { min: 1, max: 604_800 },
   l1MaxEntries: { min: 1, max: 10_000_000 },
@@ -40,6 +41,7 @@ export const studioComponentLimits = {
 const bounded = ({ min, max }: { min: number; max: number }) => z.int().min(min).max(max);
 
 export const studioComponentKinds = [
+  "scheduled-task",
   "rate-limiter",
   "cache-reader",
   "id-generator",
@@ -84,6 +86,10 @@ export const authCredentialSchema = z.enum(["jwt", "api-key", "session"]);
 export const authSignInSchema = z.enum(["required", "optional"]);
 
 /** Every kind is a strict object; omitted optional numbers mean "unspecified", never zero. */
+export const studioScheduledTaskSettingsSchema = z.strictObject({
+  kind: z.literal("scheduled-task"),
+  intervalSeconds: bounded(studioComponentLimits.intervalSeconds),
+});
 export const studioRateLimiterSettingsSchema = z.strictObject({
   kind: z.literal("rate-limiter"),
   algorithm: rateLimiterAlgorithmSchema,
@@ -201,6 +207,7 @@ export const studioSearchQuerySettingsSchema = z.strictObject({ kind: z.literal(
 export const studioFavoritesSettingsSchema = z.strictObject({ kind: z.literal("favorites") });
 
 export const studioComponentSettingsSchemas = {
+  "scheduled-task": studioScheduledTaskSettingsSchema,
   "rate-limiter": studioRateLimiterSettingsSchema,
   "cache-reader": studioCacheReaderSettingsSchema,
   "id-generator": studioIdGeneratorSettingsSchema,
@@ -222,6 +229,7 @@ export const studioComponentSettingsSchemas = {
   favorites: studioFavoritesSettingsSchema,
 } as const;
 export const studioComponentSettingsSchema = z.discriminatedUnion("kind", [
+  studioScheduledTaskSettingsSchema,
   studioRateLimiterSettingsSchema,
   studioCacheReaderSettingsSchema,
   studioIdGeneratorSettingsSchema,
@@ -252,6 +260,7 @@ export function createStudioComponentSettings<K extends StudioComponentKind>(
   kind: K,
 ): StudioComponentSettingsByKind[K] {
   const defaults: StudioComponentSettingsByKind = {
+    "scheduled-task": { kind: "scheduled-task", intervalSeconds: 60 },
     "rate-limiter": {
       kind: "rate-limiter",
       algorithm: "sliding-window",
@@ -371,6 +380,7 @@ export const studioModuleTemplates = [
   "search-projection",
   "search-query",
   "favorites",
+  "scheduled-task",
   "rate-limiter",
 ] as const;
 export type StudioModuleTemplate = (typeof studioModuleTemplates)[number];
@@ -597,6 +607,30 @@ function component<K extends StudioComponentKind>(
 export const studioComponentDefinitions: {
   readonly [K in StudioComponentKind]: StudioComponentDefinition<K>;
 } = Object.freeze({
+  "scheduled-task": component("scheduled-task", {
+    name: "Scheduled task",
+    description:
+      "Reconciles current state at a database-time interval, with durable fenced completion and missed ticks coalesced.",
+    thirdParty: ["PostgreSQL"],
+    browserHost: false,
+    hosts: ["service", "worker"],
+    scope: "generic",
+    slots: [
+      slot("state", ["database"], "read-write"),
+      slot("target", ["application"], "request", "optional"),
+    ],
+    generation: lead("scheduled-task"),
+    targets: ["database", "application"],
+    fields: [
+      integer(
+        "intervalSeconds",
+        "Interval",
+        L.intervalSeconds,
+        "s",
+        "Missed intervals coalesce to one current reconciliation tick. Accepted work continues when this interval changes.",
+      ),
+    ],
+  }),
   "rate-limiter": component("rate-limiter", {
     name: "Rate limiter",
     description:
@@ -964,6 +998,8 @@ export function studioComponentRequirements(settings: StudioComponentSettings): 
 }[] {
   const need = (kinds: readonly StudioComponentTargetKind[], reason: string) => [{ kinds, reason }];
   switch (settings.kind) {
+    case "scheduled-task":
+      return need(["database"], "A Scheduled task requires writable owned database state.");
     case "rate-limiter":
       return need(["cache"], "A distributed rate limiter requires a shared cache connection.");
     case "cache-reader":

@@ -1,0 +1,9 @@
+frozen-v2 80 80
+ changed .jeeves/extensions.md
+ changed .jeeves/manifest.json
+v2-module-design 87 87
+ changed .jeeves/extensions.md
+ changed .jeeves/manifest.json
+stub-stack 60 60
+ changed .jeeves/extensions.md
+ changed .jeeves/manifest.json

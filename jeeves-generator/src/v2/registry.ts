@@ -68,6 +68,11 @@ export type V2ProcessReport = {
   }[];
   routes: readonly { method: string; path: string; answers: string }[];
   loops: readonly { queue: string; module: string; answers: string }[];
+  schedules?: readonly {
+    module: string;
+    intervalSeconds: number;
+    policy: "coalesce-current-one-outstanding";
+  }[];
   /** The templates the process runs: mounted on their real libraries, or a placeholder. */
   templates: readonly { selection: string; template: string; level: "mounted" | "placeholder" }[];
   /** Each mounted template's generated hooks file and the hooks that answer "Not implemented". */

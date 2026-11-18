@@ -1389,3 +1389,26 @@ logs carry operation/correlation IDs and an opaque work hash, excluding keys, in
 tickets, results and original exception values. Deterministic PGlite/failure-point evidence is in
 `docs/plans/reliable-generation/evidence/rg15/`; native process-kill evidence remains a later
 checkpoint.
+
+RG16 adds the `scheduled-task` module/binding in Service and Worker. Its sole normal setting is
+`intervalSeconds` (1..604800), with a writable owned PostgreSQL state slot and Runnable processes.
+A Worker added from a lane includes the task and enables its process; a Worker added after a
+queue stays a consumer. Separate Workers use explicit `shareOwner` and distinct precise grants.
+The module exports the existing API8 `durableWork` descriptor as its scoped handler scaffold;
+private generated `startScheduledTask` mounts it in both process shapes. No public timer API is added.
+
+A namespace transaction lock admits one unfinished tick across all copies. Database time derives
+`s:<interval>:<floor(epoch/interval)>`; skipped intervals are never backfilled. Existing unfinished
+intent is reclaimed before admitting a current tick. RG15 owns bounded execution, cancellation,
+actual callback/transaction drain, stable remote checkpoints and final fenced completion.
+Failed/unknown ticks halt admission with safe fixed logs. Completed rows retain seven days, at
+least every supported interval, so cleanup cannot recreate a current tick with a new acceptance UUID.
+Changing intervals preserves accepted input/configuration; changing handler identity/version needs
+old schedulers stopped, old work drained/resolved and explicit retained-record migration (or an
+intentional new stable identity). Incompatible retained definitions refuse startup. During a mixed
+interval rollout either cadence can admit the next tick; stop old copies for a single cadence.
+
+Scheduled integrations preserve RG15's honest limits: only actual authenticated generated targets,
+explicit workload-only callee opt-in, same compiled workload/process identity for remote recovery,
+Required-user refusal, no saved bearer, and `WORK_SECRET_CHECKPOINT_UNSUPPORTED` before a declared
+secret remote result can execute. No arbitrary cron, workflow or cloud scheduler is implemented.

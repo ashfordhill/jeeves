@@ -154,11 +154,11 @@ test("an action's link tab adds an entry; a drag in Connect mode adds one too", 
   await expect(tabs("Open link")).toHaveCount(1);
   await expect(tabs("Open link")).toHaveAttribute("data-glyph", "link");
   await openFan(page, "Open link", LINK_TAB);
-  // An entry is a service (not a worker), Uploads, Identity or the CDN.
-  for (const name of ["Microservice", "Uploads", "Identity", "CDN"])
+  // A lane Worker includes a Scheduled task; ordinary worker calls still need a queue.
+  for (const name of ["Microservice", "Worker service", "Uploads", "Identity", "CDN"])
     await expect(fanItem(page, name)).not.toHaveAttribute("aria-disabled");
   for (const name of FAN.flat().filter(
-    (name) => !["Microservice", "Uploads", "Identity", "CDN"].includes(name),
+    (name) => !["Microservice", "Worker service", "Uploads", "Identity", "CDN"].includes(name),
   ))
     await expect(fanItem(page, name)).toHaveAttribute("aria-disabled", "true");
   await moveOnto(page, fanItem(page, "Object storage"));

@@ -13,6 +13,7 @@ describe("moduleGeneration", () => {
     expect(by("worker")["cache-reader"]).toBe("stub");
     // The Worker leads the lifecycle, encoding, counting and indexing templates.
     expect(studioComponentKinds.filter((kind) => by("worker")[kind] === "lead")).toEqual([
+      "scheduled-task",
       "lifecycle-writer",
       "video-encoder",
       "event-counter",

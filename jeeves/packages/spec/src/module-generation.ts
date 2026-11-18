@@ -78,6 +78,7 @@ const templateWords: Record<StudioModuleTemplate, string> = {
   "search-query": "search query",
   favorites: "favorites",
   "rate-limiter": "rate limiting",
+  "scheduled-task": "scheduled reconciliation",
 };
 
 type ModuleLink = {
@@ -207,7 +208,7 @@ export function planModules(
     const same = leads.filter(
       (other) => other.binding && other.lead.host === host && other.template === plan.template,
     );
-    if (same.length > 1 && same[0] === plan)
+    if (plan.template !== "scheduled-task" && same.length > 1 && same[0] === plan)
       refuse(
         `${sentence(view.name(host))} can hold one ${templateWords[plan.template]} template; ${list(same.map((item) => item.lead.name))} would each make one.`,
       );
@@ -268,6 +269,12 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
   };
   const isIdentity = (link: ModuleLink) => !!link.tile && view.kindOf(link.tile) === "identity";
   switch (plan.template) {
+    case "scheduled-task": {
+      const state = dependency(view.linksOf(lead, "state")[0]);
+      if (!state) needs.push("a writable database connected to its state slot");
+      else plan.binding = { kind: "scheduled-task", state };
+      break;
+    }
     case "verified-identity": {
       // An External API target stays a stub: only an Identity tile runs as Keycloak.
       const identity = view.linksOf(lead, "identity").find(isIdentity);

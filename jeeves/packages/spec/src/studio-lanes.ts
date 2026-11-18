@@ -157,7 +157,10 @@ export type LaneRules = Rules & {
  * action's links are its entries). `kindOf` names each tile's kind, including a tile an edit is
  * about to add.
  */
-export function laneRules(kindOf: (id: string) => StudioKind | undefined): LaneRules {
+export function laneRules(
+  kindOf: (id: string) => StudioKind | undefined,
+  scheduled: ReadonlySet<string> = new Set(),
+): LaneRules {
   const end = (id: string): StudioLinkEnd | undefined =>
     id === LANE_ACTOR ? "user" : laneActionOf(id) ? "action" : kindOf(id);
   const refusal = (source: string, target: string, async: boolean) => {
@@ -165,6 +168,7 @@ export function laneRules(kindOf: (id: string) => StudioKind | undefined): LaneR
     if (!to) return "The target has no studio settings.";
     const from = end(source);
     if (!from) return "The source has no studio settings.";
+    if (from === "action" && to === "worker" && scheduled.has(target) && !async) return undefined;
     return studioLinkRefusal(from, to, async ? "async" : "sync");
   };
   return {
@@ -193,7 +197,12 @@ export function laneFindings(design: DesignDocument): Finding[] {
   if (!studio) return [];
   const graph = laneGraph(design);
   const kinds = new Map(graph.nodes.map((node) => [node.id, node.kind]));
-  const rules = laneRules((id) => kinds.get(id));
+  const rules = laneRules(
+    (id) => kinds.get(id),
+    new Set(
+      studio.components?.filter((c) => c.settings.kind === "scheduled-task").map((c) => c.host),
+    ),
+  );
   const names = new Map(design.elements.map((element) => [element.id, element.name]));
   const actions = new Map(
     studioActions(studio).map((action) => [laneActionNode(action.lane), action.name]),

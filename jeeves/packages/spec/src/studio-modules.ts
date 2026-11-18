@@ -20,6 +20,7 @@ import type { StudioKind } from "./studio-model.ts";
 export const studioComponentVisuals: Readonly<
   Record<StudioComponentKind, Readonly<Pick<StudioVisual, "icon" | "color">>>
 > = {
+  "scheduled-task": { icon: "gear", color: "worker" },
   "rate-limiter": { icon: "gauge", color: "generic" },
   "cache-reader": { icon: "bolt", color: "data" },
   "id-generator": { icon: "hash", color: "generic" },

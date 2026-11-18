@@ -81,6 +81,7 @@ const SERVICE = [
   ["Data access", "Building block"],
   ["Search query", "Generated"],
   ["Favorites", "Generated"],
+  ["Scheduled task", "Generated"],
   ["Event publisher", "Building block"],
   ["Event consumer", "You write it"],
   ["Multipart uploads", "Generated"],
@@ -97,6 +98,7 @@ const WORKER = [
   ["Lifecycle writer", "Generated"],
   ["Event counter", "Generated"],
   ["Index writer", "Generated"],
+  ["Scheduled task", "Generated"],
   ["Event publisher", "Building block"],
   ["Event consumer", "Building block"],
   ["Video encoder", "Generated"],
@@ -403,7 +405,7 @@ test("looking, hovering and cancelled drags change neither the design nor the bl
   const before = { design: await saved(page, id), blueprint: await blueprint(page, id) };
   // The Redirect service is a Service: its module menu, opened and closed.
   await tile(page, "Redirect service").getByRole("button", { name: PLUS }).click();
-  await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(13);
+  await expect(moduleMenu(page).getByRole("menuitem")).toHaveCount(SERVICE.length);
   await page.keyboard.press("Escape");
   await expect(moduleMenu(page)).toHaveCount(0);
 

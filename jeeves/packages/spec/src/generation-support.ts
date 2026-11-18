@@ -464,6 +464,29 @@ export const generationCapabilities = freezeRecord({
     ],
     ["cache-reader"],
   ),
+  "scheduled-task": capability(
+    "scheduled-task",
+    "worker",
+    ["service", "worker"],
+    [{ ...store("state", "database", "read-write"), pool: "fixed" }],
+    [
+      ...host,
+      rule(
+        "task.intervalSeconds",
+        "component",
+        "intervalSeconds",
+        integer(1, 604800),
+        "scheduled-task.intervalSeconds",
+        {
+          component: "scheduled-task",
+          required: true,
+          userNeed:
+            "Choose the reconciliation interval; missed intervals coalesce to the current tick.",
+        },
+      ),
+    ],
+    ["scheduled-task"],
+  ),
   "event-counter": capability(
     "event-counter",
     "worker",

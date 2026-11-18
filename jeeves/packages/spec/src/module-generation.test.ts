@@ -248,10 +248,11 @@ describe("module catalog records", () => {
       "verified-identity": ["auth-guard"],
       favorites: ["favorites"],
       "rate-limiter": ["rate-limiter"],
+      "scheduled-task": ["scheduled-task"],
       "youtube-upload": ["custom"],
       "youtube-watch": ["custom"],
       "youtube-search": ["custom"],
-      "module-stub": 19,
+      "module-stub": 20,
     });
     expect(generationCapabilities["module-stub"].role).toBeUndefined();
     expect(generationCapabilities["module-stub"].resources).toEqual([]);
