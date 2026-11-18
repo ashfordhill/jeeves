@@ -1,0 +1,145 @@
+{
+  "sourceEquality": [
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/front-door.ts.template",
+      "acceptedRevision": "935386de",
+      "unchanged": true,
+      "sha256": "f54ed2725894bceb4f318d0853467bd31df18e66778e8e3e4ca9455ce277bdb7"
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/http.ts.template",
+      "acceptedRevision": "935386de",
+      "unchanged": true,
+      "sha256": "d4a3d75c1622f21e5859a0506aaf4a06b49142759cbd2e56757487ee297e9f49"
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/scripts/edge-stamp.mjs",
+      "acceptedRevision": "935386de",
+      "unchanged": true,
+      "sha256": "0e2ab04fc98734c89d8cd866552d0cafc19eca01ae32937f1e44ab241a54372d"
+    },
+    {
+      "path": "jeeves-generator/src/v2/front-door.ts",
+      "acceptedRevision": "935386de",
+      "unchanged": true,
+      "sha256": "a74b8f67ee0b77f9dbbe3ca4e7716f86e19a0db5e49aa86d57ed9c814f067099"
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/postgres.ts.template",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "3ac1e3191817678183d6c9097c69692c476012c9897ec83a6f422174e94645d3"
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/transaction.ts.template",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "52fa6ab5bc33c1a75b22dac7050d82d6e1c7a35bc0d392c91c3ea8609fec454b"
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/idempotency.ts.template",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "f40abf9dce73bb2fb2221bbec6dd69f046d8d9f1db11f29d5ad9c6b087f6df77"
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/product-mutation.ts.template",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "12719e1e6dc0f8af4e48906b783e607f3f32969762aa84189684f76b8deb3345"
+    },
+    {
+      "path": "jeeves-generator/integration/harness/wd-pooler.ts",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "ed7898f78fc08000bd788bb7620a97a8abc7a838773379c95f57b50c0e78a1ee"
+    },
+    {
+      "path": "jeeves-generator/templates/local-v2/assets/src/runtime/workload.ts.template",
+      "acceptedRevision": "238de083",
+      "unchanged": true,
+      "sha256": "6345550176825a6b7285fd13013b9de9547c31f0979da8bb7ca1fd70983d5b0a"
+    },
+    {
+      "path": "jeeves-generator/src/v2/deployment.ts",
+      "acceptedRevision": "238de083",
+      "unchanged": true,
+      "sha256": "964cc13f485a23667d8d777647743be4a4c3f586c97b0dfb338e36db63149260"
+    },
+    {
+      "path": "jeeves-generator/integration/harness/foundation-scenario.ts",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "65edc238296d9039b17a1ac4d6171911e4fabeb4733bb91b7fca1a006fa46ea5"
+    },
+    {
+      "path": "jeeves-generator/integration/harness/rg-mechanisms.ts",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "545cfb1e486b541f55c84ce36b16807be64bbc2ed69eafb1a4f67d52a1534cb1"
+    },
+    {
+      "path": "jeeves-generator/integration/harness/rg-catalog.ts",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "128bc5a335f2876036000ee973b2cc54d0e489171f83127614e8cc0ca610d756"
+    },
+    {
+      "path": "jeeves-generator/integration/harness/rg-provider.mjs",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "213e767c4bb6b744e4871c7c024a5ea0d90869e20cde3642758a29ced7abccff"
+    },
+    {
+      "path": "jeeves-generator/integration/run.ts",
+      "acceptedRevision": "91a3cda9",
+      "unchanged": true,
+      "sha256": "4d8d4c98ba546812f9695eb2d1189d1434d788e5599fa3fa36797a94bb6a312f"
+    }
+  ],
+  "partAUnchangedSince": "a115abdf9a8c4fbfa8561525351b15c0ae575f5e",
+  "partAPaths": [
+    "jeeves/packages/board",
+    "jeeves/apps/web/src/canvas/wireColours.ts",
+    "jeeves/apps/web/src/canvas/LaneCanvas.tsx",
+    "jeeves/apps/web/src/canvas/Workspace.tsx",
+    "jeeves/apps/web/src/canvas/canvas.css",
+    "jeeves/apps/web/src/canvas/tiles/ContainerTile.tsx",
+    "jeeves/apps/web/src/studio/preferences.ts",
+    "docs/plans/wires-and-deployment/evidence/wd08"
+  ],
+  "nativeRerun": false,
+  "reason": "Only emitted root documentation and provenance change; accepted runtime payloads/sources unchanged.",
+  "nativeObservations": {
+    "1-rg-link-flow": {
+      "cases": 10,
+      "names": [
+        "authenticated generated calls and independent user identity",
+        "precise native product and framework credentials",
+        "concurrent native migration serialization",
+        "competing replay and atomic admission",
+        "old version fill fencing and absolute validity",
+        "native pending bound and unknown cache mutation",
+        "native lost COMMIT response and durable sealed replay",
+        "forwarded deadline and explicit unknown effects",
+        "store loss, retained admission state and recovery",
+        "bounded shutdown of a hung operation"
+      ],
+      "outcomes": "all passed"
+    },
+    "2-rg-catalog-flow": {
+      "cases": 6,
+      "names": [
+        "HMAC durable acceptance survives process death",
+        "paused stale holder and stable remote identity",
+        "fresh-context stale fence rejection",
+        "receipt commit precedes ACK and survives redelivery",
+        "retention, idle maintenance and stopped heartbeat",
+        "native broker stall/drop and recovery"
+      ],
+      "outcomes": "all passed"
+    },
+    "sessionCases": 4,
+    "frontDoorObservations": 27
+  }
+}

@@ -1,3 +1,7 @@
+> **Current WD14 status (2026-11-18):** final review complete for coordinator acceptance; execution
+> stops here. WD01–05/08–11/13 are accepted; WD06/07/12 remain accepted stop records. Studio
+> wires/hover and the exported failure drill are unavailable. [WD14 findings and dispositions](#wd14--final-review-of-wires-and-deployment).
+
 # WD08 — review of the wire canvas
 
 Independent review on `e1c7f87863541029dc41450726b5d159d8bea560`, 2026-11-18. Findings were
@@ -216,3 +220,139 @@ evidence; no new test harness dependency or permanent browser fixture is install
 Raw console evidence retains terminal whitespace and blank EOF lines. The broad own-path Git
 whitespace check flags only those logs; the scoped source/docs/JSON/script check passes. Raw
 results remain intact; this required no product change or test rerun.
+
+# WD14 — final review of wires and deployment
+
+Independent review starts at accepted WD13 `238de0836dd285904b741895c4f1457de06f6928`,
+2026-11-18. Approved plan `95d60ac` predates accepted RG23–RG26 carry-in; the actual WD
+implementation base is amended RG26 `0ea91d3`. Stopped patches were read without applying them.
+
+## Findings first
+
+1. **Bounded documentation defect reproduced on fresh public CLI exports.** The generated root
+   README calls its local Compose/external-URL summary “Each process reads”. On the required
+   `wd-front-door` export it lists `app-front: none` and `app-edge-stamp: LOCAL_HTTP_PORT`, although
+   the service and stamper read the private stamp key supplied by `env_file`. On `wd-deployment`
+   it also omits optional `JEEVES_DB_POOL_MAX`. Both deployment inventories are correct. The
+   correction now describes the local summary's actual scope and links the exact installed-runtime
+   inventory. Its observable-output regression [failed first](evidence/wd14/readme-fail-first.log.gz)
+   and then passed. No second inventory was added.
+2. **Unmet Acceptance remains explicit.** WD06/WD07 studio wires/hover remain off. WD12 shipped
+   no drill, check scripts or workflow: receipt/progress alone cannot prove a product effect.
+   The stopped proof's valid duplicate catalog delivery gives one receipt and zero product rows.
+   A mandatory application-owned request/auth/message/effect interface requires owner direction.
+3. **Part A follow-ups remain open.** The accepted optional Board hit fix does not resolve all
+   stopped studio failures. Detailed shared return, fixed-height arrival collapse, close fans,
+   nominal head spacing and input-proportional sampling remain decisions/limits, as detailed above.
+
+## Combined diff and handoff ledger
+
+The actual combined diff from `95d60ac` to WD13 covers **957 paths**: 739 RG-only carry-in,
+205 WD-only, and 13 shared. The [complete inventory](evidence/wd14/diff-inventory.tsv) distinguishes
+those scopes. Accepted RG23–RG26 integration fixtures/harness, regeneration evidence and handback
+are carry-in, rather than WD implementations. Necessary shared sources, emitted consumers,
+settings/creation/chat call sites, tests, pins and documentation were reviewed against that diff.
+No approved unit brief, decision or previous handoff was changed.
+
+The earlier WD01–WD08 ledger above remains applicable. Its rough edges are not erased by later
+units. [Source equality](evidence/wd14/evidence-reuse.json) confirms the Part A implementation,
+activation call sites and WD08 evidence have not changed since accepted WD08 `a115abdf`.
+
+| Origin | Rough edge or stopped work | Final disposition |
+| --- | --- | --- |
+| WD01–05 | Optional lanes/artwork/colours/preferences had no studio consumer; mechanical formatting/comparator corrections. | Optional mechanisms accepted, tooling corrections resolved in their units. Default board behavior preserved; no later activation. |
+| WD02–03 | Simple YouTube crossings 1→2; optional return separation only finitely tested. | Recorded limit. WD08's Detailed shared trunk remains open. |
+| WD06 | Existing chooser requires an incoming shared approach incompatible with the prescribed separate lanes/heads. | **Stopped/restored**, saved [patch](stopped/WD06.patch). Requires owner choice about the incompatible retained regression/activation boundary. |
+| WD06/08 | Wire mouse identity, YouTube selection, inline hit-path selected stroke and PNG ink sampling failures. | WD08 fixed actual SVG-body identity plus pointer snapping for generic Board with two fail-first tests and native mouse proof. The stopped YouTube case, old inline-stroke assertion and wire PNG helper failures were not all resolved. |
+| WD06–07 | Partial TinyURL wire captures; incorrect new colour-case IDs corrected but not rerun; zero live wires prevents hover. | Historical partial evidence only. WD07 **stopped/restored** in [patch](stopped/WD07.patch); opacity/after-blueprint steps never reached. No reload slot-life or studio wire-hover acceptance. |
+| WD08 | 61px Detailed YouTube shared return; synthetic fixed-height arrivals collapse; close fans and nominal 1.05px head gap. | All remain owner follow-ups. Prescribed geometry/constants are unchanged. No routing/capacity redesign or wire activation. |
+| WD08 | Native sampling medians ~129/157ms; 4,763/6,510 sampled points; no worst-case bound. | Measured limitation remains. No optimization or latency guarantee. The 12 actual studio cases were **legacy, zero wires**; default PNG/mouse success is not wire acceptance. |
+| WD09 | Inventory could overclaim application settings, SDK conventions or background/state intent. | Explicit installed-runtime scope retained. Conservative `alwaysOn` includes capability-enabled maintenance/durable work; only source-backed positive copies are rebuildable. Search events alone do not prove full reconstruction. |
+| WD09 | Resource labels, old counts/pins and startup-reader audit needed adjustment; owner API child reloaded. | Accepted display-metadata changes preserve stable identities/runtime facts. Exact tests/pin review passed. Automatic watcher reload is recorded, not an owner-service control or unchanged-PID claim. |
+| WD10 | First exemption admitted internal descendants/methods; normal mouse creation differed from chat. | Corrected with fail-first and mouse/chat proof in WD10. Exact compiled roots preserve guards; saved absence remains none. Identity vendor has no required consumer. |
+| WD10 | Native internal 401s were user-first; initial v3 trace/PNG lost. | Reused 27 observations retain their limit: `SIGN_IN_REQUIRED` is not new issuer/workload-token proof. All 51 old non-inventory payloads were byte-identical then. Lost trace/PNG is not reconstructed; full failure log remains. |
+| WD11 | New SQL traces/fakes, first refresh deadline failure and sibling-directory collision. | Corrected/preserved evidence; serial native-2 passed. Resource contention is an inference about the first deadline, not a proved cause. Existing budgets/assertions were retained. |
+| WD11 | Pooler topology could be bypassed by fault proxies/admin probes. | Native-2 has 10 foundation + 6 catalog + 4 session cases, pinned transaction mode, two copies. **Both COMMIT proxies traverse it**. Setup/admin/permission probes stay direct and do not count as pooler-path runtime evidence. No production pooler supplied. |
+| WD12 | Existing design/deployment/API8 seams lack valid ordinary request/auth/message factories and a product-effect observer. | **Stopped/restored**, saved [patch](stopped/WD12.patch). Valid catalog duplicate delivery under an API8-valid no-op records one receipt/progress and zero product rows. Neither product completion nor successful drill follows. |
+| WD12 | Worker health routes absent; optional cache legitimately stays ready. | Existing ready marker/process/progress and optional-cache fallback are feasible nearest details, not blockers. Existing hook/stub/operator seams were considered. A new helper/config file alone is not architectural; making a new application-owned test/oracle interface mandatory is the missing owner contract decision. No interface invented. |
+| WD13 | File reread versus cached token and issuer coordination; initial assertion/inventory failures. | Six real-file/fake-issuer cases cover rotation/coalescing/failure/expiry/recovery and old startup snapshot. No live issuer. Documentation and exact inventory assertions corrected; WD14 addresses the separate root README's overbroad local-table label. |
+| All | Inherited lint/chunk warnings, preservation comparisons and setup-tool failures. | Kept separate from product findings. Required checks and final preservation are linked below; no broad cleanup or baseline edits. |
+
+[Stopped-patch inventory](evidence/wd14/stopped-inventory.json) records all three hashes/sections,
+including saved evidence and binary artifacts. They were read as stopped work, never applied.
+
+## WD09–WD13 Acceptance against fresh exports
+
+The public CLI freshly exported the existing `wd-deployment` source (94 files, zero findings,
+12 explicit application gaps), with supplemental `wd-front-door("required")` (55 files, zero
+findings, two gaps). Both generated deployment JSON and guides were **opened and compared by hand**
+with their source designs. [Detailed comparison and artifact links](evidence/wd14/README.md),
+[exact before/after payload review](evidence/wd14/export-review.json). These are partial scaffolds,
+not completed products. No generated implementation was patched.
+
+| Unit | Independent review and finite proof | Acceptance status / limit |
+| --- | --- | --- |
+| WD09 | Four processes/four stores, six uses/call arrows, one async consumer edge; sorted IDs/names and matching headings/clicks/source folders. Full JSON equals the pre-existing handwritten expectation. Actual configuration-reader audit and generated-update/tamper tests pass. | Accepted implementation. Environment means possible installed-runtime reads, including optional imported readers; excludes application settings/SDK/setup conventions. Fresh artifact check and public update check pass. |
+| WD10 | Required export lists both keys/header/60s window; exact gate/runtime/local edge are unchanged since accepted native27. Missing/stale/future/wrong-method/path/MAC, current/previous, health, direct/edge/none cases are covered there and by current focused tests. Current E2E covers mouse/chat creation/edit; old saved absence retains none. | Accepted finite proof. Missing key fails startup before readiness. Internal 401 observations reach user auth first; no new native valid-user/workload-token or live issuer proof. Old51 byte identity is historical WD10 evidence, not a claim that later intentional pooler/workload updates change no bytes. |
+| WD11 | Fresh export has transaction-local timeouts, xact cleanup lock, no forbidden session surface and pool maximum in actual imported SQL readers. Offline races/mechanisms pass; unchanged pooler sources support reuse of native-2's two fixtures/20 cases. | Accepted implementation and finite pooler evidence. Setup/admin probes direct; arbitrary application SQL and managed-provider compatibility need their own review. Optional maximum 1–100 is startup-only, with old defaults when absent. |
+| WD12 | Fresh package has no `drill`, `check`, `check:all`, drill script or check workflow. Saved valid-DTO no-effect proof was inspected against the mapper, receipt callback and product table. | **Acceptance unmet/stopped.** Neither required fixture drill, bad-readiness variant nor failure-path cleanup acceptance was run. One receipt/progress cannot substitute for one product effect. Owner must choose the application input/auth/message/effect oracle contract or change Acceptance. |
+| WD13 | Fresh contract/guide names the optional file and endpoint-defined issuer; actual workload runtime rereads inside new-token acquisition. Six real-file/fake-issuer cases preserve cache, one refresh per audience, safe file failure/cooldown/expiry/recovery and old per-client startup form. | Accepted finite offline proof. Rotation takes effect at next refresh; valid cached token's existing bounds remain. Issuer-side acceptance/rotation is operator-owned; no live/provider issuer claimed. |
+
+The only WD14 executable-source correction emits documentation. Before/after comparisons show
+all **55/24 source payloads** in the two exports byte-identical; only their root README and
+report/manifest provenance change. Both actual API8 checkers, TypeScript **7.0.2**, and public
+`update:v2 --check` pass offline with existing pinned dependencies and no install. All three
+processes-off pins pass unchanged. Current focused review tests pass **70/70**. No native system
+matrix rerun is warranted by the documentation-only payload delta; accepted finite scenarios
+are reused only with the [recorded source equality](evidence/wd14/evidence-reuse.json).
+
+## Migration and operating guidance
+
+Existing generated applications migrate explicitly to RG **API8**, acknowledging with
+`--ack-extension-api=8` only after reviewing/migrating affected application-owned hooks, registered
+product SQL and calls. Preserve hooks, product data, stable owner/process/module identities,
+private runtime credentials and their original Docker volumes. The updater does not rewrite
+product bodies or perform database/issuer migration. Follow the emitted extension packet and
+[RG migration evidence](../reliable-generation/owner-handback.md#migration-and-maintenance-cost).
+
+An existing diagram with absent `frontDoor` stays none. Enabling required on an already retained
+local runtime requires privately provisioning its stamp key/env file and coordinating the front
+door/service keys; rerunning the **single-use** setup or resetting `.runtime` is not a migration.
+Production front doors, secret distribution and TLS remain operator-owned. Pool maximum is an
+optional external 1–100 startup decision, not a diagram setting. Workload secret-file replacement
+is read at next refresh; coordinate issuer-side changes yourself. Cached-token validity is
+unchanged, and changing the selected file path/endpoints still requires configuration restart.
+No QRWTY redesign, regeneration or deployment, and no new whole-application LOC benchmark was done.
+
+## Final checks and preservation
+
+Required serial gates and mouse/export proof are recorded in [WD14 evidence](evidence/wd14/README.md).
+The serial gates pass: `pnpm check` **153 files / 1,431 tests** (114.19s), native E2E **89/89**
+(5.1m, TinyURL and both mouse rebuilds), and web build **832ms**. The targeted mouse/export
+probe passes **1/1**: TinyURL renders with 12 legacy edges/zero wires; mouse Preview/Download
+delivers the corrected root README, its deployment links and exact stamp-key inventory. Both
+screenshots were visually inspected. The first probe reached download, then failed because
+`unzip` is absent; its log/PNG/trace are retained, and only the temporary harness changed to
+Python's standard ZIP reader. No product change or unrelated gate rerun followed.
+
+The [preservation receipt](evidence/wd14/preservation.json) records 7,404 unrelated starting
+byte/mode/absence states, all starting modes and the prior handoff prefix; original 42 full
+container ID/name/state triples, nine networks, 23 volumes, 43 images and both old E2E rows are
+preserved. No task project/container remains; 4301/4311 are free. Read-only RG21 audit passes
+with process-local `core.abbrev=7`. Owner web PID stays 1124326; API child 907676→927362 under
+the pre-existing watcher is consistent with automatic reload from authorized source edits.
+No owner-port request or service control occurred. Root/owner files, stopped patches, old
+apps/exports/evidence, accepted SQL/dependencies and frozen v1 are preserved. No push/deployment,
+later plan/unit or new benchmark occurred. Inherited lint/chunk warnings remain.
+
+## Owner list
+
+- **Ran:** optional Board wires/colours/preferences and its bounded hit fix; deployment contract,
+  front-door stamp, pooler-safe SQL and workload secret-file rotation; WD14 fresh artifact review
+  and bounded README scope correction. Regression results are linked above, with finite proof limits.
+- **Stopped:** WD06's distinct lanes conflict with a retained shared-run chooser assertion; WD07
+  needs that absent activation; WD12 lacks application-valid inputs and a product-effect oracle.
+  Their implementations were restored. No studio wires/hover or exported drill/check/workflow shipped.
+- **Decision needed:** reconcile wire activation/regressions and outstanding geometry/sampling
+  limits; choose WD12's application-owned input/auth/message/effect contract or amend its acceptance.
+  No later plan, remedial unit or deferred-reachability work is started by this review.

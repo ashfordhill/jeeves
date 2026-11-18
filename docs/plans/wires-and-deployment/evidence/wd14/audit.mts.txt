@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync, cpSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { expectedDeployment } from '/home/ash/github/jeeves/field-projects/generator-system/fixtures/wd-deployment/expected.ts';
+const root='/tmp/jeeves-wd14';
+const contract=JSON.parse(readFileSync(`${root}/deployment-final/deploy/contract.json`,'utf8'));
+assert.deepEqual(contract,expectedDeployment);
+for(const name of ['deployment','required']){
+ const path=`${root}/${name}-final`, guide=readFileSync(`${path}/deploy/README.md`,'utf8');
+ const c=JSON.parse(readFileSync(`${path}/deploy/contract.json`,'utf8'));
+ const nodes=[...guide.matchAll(/^  ([ps]\d+)\[/gm)].map(m=>m[1]);
+ const arrows=[...guide.matchAll(/^  ([ps]\d+) (?:-->|-\.->)(?:\|[^|]+\|)? ([ps]\d+)$/gm)];
+ assert.equal(nodes.length,c.processes.length+c.stores.length);
+ assert.equal(arrows.length,c.processes.reduce((n,p)=>n+p.calls.length+p.uses.length,0));
+ for(const m of arrows){assert(nodes.includes(m[1]));assert(nodes.includes(m[2]));}
+ for(const m of guide.matchAll(/^  click ([ps]\d+) "#(process|store)-([^"]+)"$/gm)){
+  assert(nodes.includes(m[1]));assert(guide.includes(`## ${m[2][0].toUpperCase()+m[2].slice(1)} ${m[3]}\n`));
+ }
+ const packageJson=JSON.parse(readFileSync(`${path}/package.json`,'utf8'));
+ for(const script of ['drill','check','check:all'])assert.equal(packageJson.scripts[script],undefined);
+ for(const file of ['deploy/contract.json','deploy/README.md']){
+  const manifest=JSON.parse(readFileSync(`${path}/.jeeves/manifest.json`,'utf8'));
+  assert.equal(manifest.files.find(f=>f.path===file).ownership,'generated-scaffold');
+ }
+ for(const [source,dest] of [['deploy/contract.json','contract.json'],['deploy/README.md','guide.md'],['README.md','root-readme.md']])
+  cpSync(`${path}/${source}`,`/home/ash/github/jeeves/docs/plans/wires-and-deployment/evidence/wd14/${name}-${dest}`);
+}
+const required=JSON.parse(readFileSync(`${root}/required-final/deploy/contract.json`,'utf8'));
+assert.deepEqual(required.processes[0].env,['JEEVES_EDGE_STAMP_KEY','JEEVES_EDGE_STAMP_KEY_PREVIOUS']);
+assert.equal(required.identity,undefined);
+console.log('Fresh CLI contracts match handwritten expectation and manual process/store review; Mermaid, scaffold ownership and WD12 absence checks pass.');

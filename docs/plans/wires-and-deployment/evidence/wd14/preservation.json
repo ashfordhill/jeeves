@@ -1,0 +1,64 @@
+{
+  "startingPaths": 7411,
+  "unrelatedStartingStatesPreserved": 7404,
+  "allowedExistingPaths": [
+    "docs/handoff.md",
+    "docs/plans/README.md",
+    "docs/plans/reliable-generation/README.md",
+    "docs/plans/reliable-generation/execution.md",
+    "docs/plans/wires-and-deployment/review.md",
+    "jeeves-generator/src/v2/deployment.test.ts",
+    "jeeves-generator/src/v2/local.ts"
+  ],
+  "allStartingModesPreserved": true,
+  "newUnitEvidencePaths": 46,
+  "handoffPrefix": {
+    "bytes": 1479508,
+    "sha256": "404970ac858f5d294f47d94f44add2fb6a2f628b8534e3c47d0aceef2650e28e",
+    "preserved": true
+  },
+  "docker": {
+    "containers": {
+      "count": 42,
+      "beforeSha256": "cb3a6b915eccf8b749d925a4fc72f99ef61c1e93a589a20b4cc8bbc2ab4d1e28",
+      "afterSha256": "cb3a6b915eccf8b749d925a4fc72f99ef61c1e93a589a20b4cc8bbc2ab4d1e28",
+      "exactMatch": true
+    },
+    "networks": {
+      "count": 9,
+      "beforeSha256": "312708f221fe9e18c223495308f9bf676128855ff7e0c52c1bc0094ff9a7bd6c",
+      "afterSha256": "312708f221fe9e18c223495308f9bf676128855ff7e0c52c1bc0094ff9a7bd6c",
+      "exactMatch": true
+    },
+    "volumes": {
+      "count": 23,
+      "beforeSha256": "91254603f6d319c5d648bc1acacf344dd243dd412cc36f275394e2e973af9a4b",
+      "afterSha256": "91254603f6d319c5d648bc1acacf344dd243dd412cc36f275394e2e973af9a4b",
+      "exactMatch": true
+    },
+    "images": {
+      "count": 43,
+      "beforeSha256": "3b61e0d7ae54fc19d99f139499ca62effdaa7e0cd0d959446fa0766ed52aa5a4",
+      "afterSha256": "3b61e0d7ae54fc19d99f139499ca62effdaa7e0cd0d959446fa0766ed52aa5a4",
+      "exactMatch": true
+    }
+  },
+  "originalPostgresPort": "5432/tcp -> 127.0.0.1:54329",
+  "originalE2eRows": 2,
+  "e2eRowsSha256": "860445b1e5e3516b3acd262a2dc6db33985dc7ad9a217528508d392fa4620055",
+  "taskResourcesOrProjectsRemaining": 0,
+  "testPortsFree": true,
+  "ownerListeners": {
+    "before": {
+      "4300": 1124326,
+      "4310": 907676
+    },
+    "after": {
+      "4300": 1124326,
+      "4310": 927362
+    },
+    "apiChange": "Automatic child reload under existing watcher1124324, consistent with authorized shared-source edits; no owner request or control action."
+  },
+  "rg21Audit": "passed; process-local core.abbrev=7; script/baselines/config unchanged",
+  "e2eRowsSerialization": "psql -At: SELECT row_to_json(p)::text FROM projects p ORDER BY id;"
+}

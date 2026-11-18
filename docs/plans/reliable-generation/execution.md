@@ -1,7 +1,7 @@
 # Sequential execution protocol
 
 The owner approved this protocol and the [plan](README.md), then authorized execution on
-2026-11-16. RG01–25 are accepted; RG26 is complete for coordinator acceptance in its local commit.
+2026-11-16. RG01–26 are accepted, through amended RG26 `0ea91d3`.
 The [handback](owner-handback.md) records revisions and limits. This packet replaced unfinished
 older queues for RG work; implemented code remained the starting point. No agent resumes an old
 QL/QG/other pending unit on its own. Owner commit `95d60ac` separately authorizes the

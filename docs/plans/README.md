@@ -5,16 +5,17 @@ queue. Current behavior is documented in the [studio guide](../studio.md),
 [generator guide](../../jeeves-generator/README.md) and [template gaps](../template-gaps.md).
 Earlier plans and evidence remain preserved below.
 
-## Current handback and approved next work
+## Current handback and final review
 
-- [Reliable generation](reliable-generation/README.md): RG01–RG25 accepted; RG26 documentation
-  complete for coordinator acceptance in its local commit. The [owner handback](reliable-generation/owner-handback.md)
-  records all 26 unit revisions, shipped capabilities, finite proof, migration costs and gaps.
-  This closes the RG scope after acceptance; it creates no extra implementation units.
-- [Wires and deployment](wires-and-deployment/units.md): **approved next plan after RG26 is
-  accepted and committed**, by owner commit `95d60ac4b34a70336b246d30949e5f8ce006fb3c`.
-  This is an authorized future queue, not inactive or abandoned. RG26 did not read its unit
-  briefs, implement it or run its checks; the coordinator dispatches WD01 after acceptance.
+- [Reliable generation](reliable-generation/README.md): **RG01–RG26 accepted**, through amended
+  RG26 `0ea91d3`. The [owner handback](reliable-generation/owner-handback.md) records its shipped
+  capabilities, finite proof, migration costs and gaps. It creates no extra implementation units.
+- [Wires and deployment](wires-and-deployment/units.md), approved by owner commit `95d60ac`:
+  WD01–05/08–11/13 accepted; WD06/07/12 have accepted stop records with implementation restored.
+  **WD14 final review is complete for coordinator acceptance; execution stops here.** The
+  [current review](wires-and-deployment/review.md#wd14--final-review-of-wires-and-deployment) records
+  shipped work, unmet acceptance, finite evidence and owner decisions. Studio wires/hover and
+  exported failure drill/check/workflow remain unavailable. No further unit or plan is started.
 
 ## Preserved earlier work
 

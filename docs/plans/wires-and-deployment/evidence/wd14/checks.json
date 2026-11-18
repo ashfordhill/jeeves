@@ -1,0 +1,31 @@
+{
+  "node": "24.21.0",
+  "pnpmCheck": {
+    "exit": 0,
+    "files": 153,
+    "tests": 1431,
+    "durationSeconds": 114.19
+  },
+  "nativeE2E": {
+    "exit": 0,
+    "tests": 89,
+    "duration": "5.1m"
+  },
+  "webBuild": {
+    "exit": 0,
+    "builtMilliseconds": 832
+  },
+  "targetedMouseExport": {
+    "exit": 0,
+    "tests": 1,
+    "durationSeconds": 9.2,
+    "initialHarnessFailure": "unzip executable unavailable; preserved, switched only temporary harness to Python standard-library zipfile"
+  },
+  "focusedTests": 70,
+  "offPinsChanged": false,
+  "scratchApi8": "both passed",
+  "scratchTypeScript": "7.0.2 both passed",
+  "publicUpdate": "both zero changes/refusals",
+  "mouseArchiveSha256": "fd27d38f74181d76fae197b79e50757d7691ab491fa1c22935406a179fe65bb1",
+  "rg21AuditExit": 0
+}

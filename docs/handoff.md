@@ -19783,3 +19783,37 @@ workload settings the same way.
 - No provider, dependency, normal diagram control, application authority, protected edit, broad
   golden refresh, later-unit work, push or deployment. WD12 remains stopped; studio wires remain
   off. Local commit follows: `WD13: a workload secret can be rotated from a file`. Stop for review.
+
+## 2026-11-18 — WD14 final review complete for coordinator acceptance
+
+- Independently reviewed all WD handoffs, the combined actual diff (957 paths: 739 RG-only
+  carry-in / 205 WD-only / 13 shared), all stopped patches and relevant source/evidence. The
+  [final review](plans/wires-and-deployment/review.md#wd14--final-review-of-wires-and-deployment)
+  distinguishes accepted mechanisms, finite proof and unmet Acceptance, with the rough-edge
+  ledger, migration guidance and short owner decision list. Status/index reconciled; approved
+  briefs/decisions and prior handoffs preserved. Part A follow-ups remain open; wires stay off.
+- Fresh public CLI exports of wd-deployment and required wd-front-door were opened and compared
+  by hand: 94/55 files, zero findings, 12/two explicit application gaps. Both actual API8 checkers,
+  TypeScript7.0.2 and public update checks pass offline. A fail-first output test fixes only the
+  generated root README's overbroad local-table claim by naming its scope and linking the exact
+  deployment inventory. Only README/report/manifest payloads change; all55/24 source files and
+  all off pins are unchanged. No second inventory, runtime feature or generated handpatch.
+- Serial gates pass: `pnpm check`153files/1431tests (114.19s), native E2E89/89 (5.1m; TinyURL and
+  both mouse rebuilds), web build832ms, focused70/70. Targeted mouse/export1/1 passes, screenshots
+  visually inspected; TinyURL has12 legacy edges/zero wires and downloaded README links/inventory
+  agree. First probe's missing `unzip` failure/log/PNG/trace retained; only its temporary reader
+  changed to Python zipfile. No unrelated successful gate rerun. Inherited warnings remain.
+- [Evidence](plans/wires-and-deployment/evidence/wd14/README.md) records accepted native evidence
+  reuse with unchanged source/harness hashes and explicit limits: WD10 native27 user-first401,
+  WD11 native2 ten foundation/six catalog/four session pooler cases, WD13 six real-file/fake-issuer
+  cases; no live issuer or blanket system rerun. WD12 remains stopped: valid duplicate receipt/
+  progress with zero product effect is not Acceptance; input/auth/message/effect contract needs
+  owner decision. No exported drill/check/workflow or Part A activation was applied.
+- Preserved7404 unrelated starting states, own modes/prior handoff, original42 full container
+  triples/9 networks/23 volumes/43 images and both old E2E rows. No task resource/project remains,
+  test ports free; read-only RG21 audit passes. Owner web1124326 unchanged; API907676→927362 under
+  existing watcher reflects automatic source reload (inference), with no owner request/control.
+  Root/owner changes, old apps/exports/evidence, SQL/dependencies/frozenv1 remain untouched.
+- One explicit-path local commit follows: `WD14: final review of wires and deployment`. Execution
+  stops here for coordinator acceptance; no later unit/plan, QRWTY work, new benchmark, push or
+  deployment. WD06/07/12 stop records and owner decisions remain outstanding as listed in review.

@@ -1,0 +1,9 @@
+import { defineConfig } from '/home/ash/github/jeeves/node_modules/@playwright/test/index.mjs';
+import base from '/home/ash/github/jeeves/jeeves/playwright.config.ts';
+export default defineConfig({
+ ...base,
+ testDir:'/tmp/jeeves-wd14/browser',
+ outputDir:'/tmp/jeeves-wd14/browser-results',
+ workers:1,
+ webServer:base.webServer.map(server=>({...server,cwd:'/home/ash/github/jeeves'})),
+});

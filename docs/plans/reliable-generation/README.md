@@ -1,8 +1,8 @@
 # Reliable generation: build plan
 
-**Status: RG01–RG25 accepted; RG26 documentation complete for coordinator acceptance in its local
-commit.** The [owner handback](owner-handback.md) gives every unit's revision, actual capabilities,
-proof and limits. See the [plan index](../README.md) for the approved next queue.
+**Status: RG01–RG26 accepted, through amended RG26 `0ea91d3`.** The
+[owner handback](owner-handback.md) gives every unit's revision, actual capabilities, proof and
+limits. See the [plan index](../README.md) for current execution status.
 
 Prepared against Jeeves `73266a1`, after the QRWTY A/B evaluations and the owner's follow-up.
 This is a Jeeves improvement plan. QRWTY and YouTube supply examples and regression cases;

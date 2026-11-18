@@ -10,6 +10,7 @@ import {
   deploymentDesign,
 } from "../../../field-projects/generator-system/fixtures/wd-deployment/design.ts";
 import { expectedDeployment } from "../../../field-projects/generator-system/fixtures/wd-deployment/expected.ts";
+import { frontDoorDesign } from "../../../field-projects/generator-system/fixtures/wd-front-door/design.ts";
 import { emptyDesign } from "../../../jeeves/packages/spec/src/design.ts";
 import { runStudioCommands } from "../../../jeeves/packages/spec/src/fixtures/v2-modules.ts";
 import { loadLocalV2Registry } from "../../templates/local-v2/index.ts";
@@ -132,6 +133,36 @@ function auditEnvironment(id: string) {
 }
 
 describe("WD09 deployment contract", () => {
+  it("WD14 distinguishes local configuration summaries from the runtime deployment inventory", () => {
+    const stamped = assembleV2(
+      { designJson: JSON.stringify(frontDoorDesign("required")) },
+      registry,
+    );
+    for (const exported of [bundle, stamped]) {
+      const output = (path: string) =>
+        new TextDecoder().decode(must(exported.files.find((file) => file.path === path)).bytes);
+      const readme = output("README.md");
+      expect(readme).toContain("**Local configuration summary.**");
+      expect(readme).toContain(
+        "excludes env_file and other secret-path overrides and other optional reads",
+      );
+      expect(readme).toContain("[deployment guide](deploy/README.md)");
+      expect(readme).toContain("[machine-readable contract](deploy/contract.json)");
+      expect(readme).not.toContain("Each process reads (also");
+    }
+    const stampedText = (path: string) =>
+      new TextDecoder().decode(must(stamped.files.find((file) => file.path === path)).bytes);
+    // These omissions are valid only in the explicitly limited local summary. Runtime facts
+    // already live in the deployment inventory, including file-injected and optional reads.
+    expect(stampedText("README.md")).toContain("- `app-front`: none");
+    expect(JSON.parse(stampedText("deploy/contract.json")).processes[0].env).toEqual([
+      "JEEVES_EDGE_STAMP_KEY",
+      "JEEVES_EDGE_STAMP_KEY_PREVIOUS",
+    ]);
+    expect(contract.processes.every((process) => process.env.includes("JEEVES_DB_POOL_MAX"))).toBe(
+      true,
+    );
+  });
   it("reports browser maintenance and actual private configuration reads, not unused mounts", () => {
     const result = assembleV2({ designJson: JSON.stringify(deploymentBrowserDesign()) }, registry);
     const actual = JSON.parse(

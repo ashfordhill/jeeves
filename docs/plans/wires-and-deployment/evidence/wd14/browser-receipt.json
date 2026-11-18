@@ -1,0 +1,16 @@
+{
+  "tinyurl": {
+    "rendered": true,
+    "legacyEdges": 12,
+    "wires": 0,
+    "mouseFit": true
+  },
+  "export": {
+    "mousePreview": true,
+    "mouseDownload": true,
+    "limitedSummary": true,
+    "deploymentLinks": true,
+    "exactStampInventory": ["JEEVES_EDGE_STAMP_KEY", "JEEVES_EDGE_STAMP_KEY_PREVIOUS"]
+  },
+  "projectCleanedInFinally": "873decdb-e97f-48e7-a44b-fc803c063d53"
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "fixture": "deployment",
+    "files": 94,
+    "changed": [
+      {
+        "path": ".jeeves/manifest.json",
+        "before": "97900576c343db22957579fc73e2f9aa93b77f92835d1b48ac3aa401ad731592",
+        "after": "7269562f4f35336a9ae421c4399fc13122b7a870fd07fa9909e587e2dabf7fc8"
+      },
+      {
+        "path": ".jeeves/report.json",
+        "before": "cf64a9e5c125497338f76219b6155731158f57721f5ef9d090801aa9f896c0f0",
+        "after": "9e97422346211b0a702c7954dcdd1c9b093e0b1eed8555df9e7952905d8002d9"
+      },
+      {
+        "path": "README.md",
+        "before": "aacf0776e8a11b5af4db2bcdcb7c0207050a87a93759e506cb32af9fd3733915",
+        "after": "7b238a317823cb2e3484d2028da14a938df491d65edd8b73bbdae9c38ca8a218"
+      }
+    ],
+    "unchangedSourceFiles": 55,
+    "api8": "passed",
+    "typescript": "7.0.2 passed",
+    "requiredGaps": 12,
+    "findings": 0
+  },
+  {
+    "fixture": "required",
+    "files": 55,
+    "changed": [
+      {
+        "path": ".jeeves/manifest.json",
+        "before": "963c03cfb61cfe9385a8a32633262a01286f07f40ce09f160d364e3a6d4edde8",
+        "after": "31040918f39b7029480f2746ade451ac30ed4b4fc593ef3be932a00ca2f6a564"
+      },
+      {
+        "path": ".jeeves/report.json",
+        "before": "83053346ba22cb80d9b0482a610313b2c726db87b5224a9302d72528238b7803",
+        "after": "8a84a12feba49d52b1c3799027a9ee4162686d7142f200860785acc1ec592885"
+      },
+      {
+        "path": "README.md",
+        "before": "40969ebc5f37b9d54e9e2c5f47351cc9ad3a84252f71cf4804c5bba3971dc454",
+        "after": "46fc66f8fd45349cfaa46329e5c01b3ffd44c7e91189caa4ce1a26e7538a44fd"
+      }
+    ],
+    "unchangedSourceFiles": 24,
+    "api8": "passed",
+    "typescript": "7.0.2 passed",
+    "requiredGaps": 2,
+    "findings": 0
+  }
+]

@@ -1,0 +1,958 @@
+path	scope
+docs/design-playbook.md	RG carry-in
+docs/glossary.md	RG carry-in
+docs/handoff.md	shared
+docs/plans/README.md	RG carry-in
+docs/plans/broker-reconnect/units.md	RG carry-in
+docs/plans/generated-system-tests/units.md	RG carry-in
+docs/plans/production-foundations/units.md	RG carry-in
+docs/plans/qrwty-gaps/units.md	RG carry-in
+docs/plans/qrwty-lessons/README.md	RG carry-in
+docs/plans/qrwty-lessons/units.md	RG carry-in
+docs/plans/reliable-foundations/backend-first-proof-plan.md	RG carry-in
+docs/plans/reliable-foundations/next-contract-plan.md	RG carry-in
+docs/plans/reliable-foundations/units.md	RG carry-in
+docs/plans/reliable-foundations/youtube-field-project-plan.md	RG carry-in
+docs/plans/reliable-foundations/youtube-v2-plan.md	RG carry-in
+docs/plans/reliable-generation/README.md	RG carry-in
+docs/plans/reliable-generation/evidence.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/README.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/artifact-format-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/artifact-format.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/attachment-path-review.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/build-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/build.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/catalog-compile.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/catalog-install.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/catalog-proof-reuse.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/check-1.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/check-before-result-guard.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/check-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/cleanup-audit.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/docker-after-final.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/docker-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/e2e-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/emitted-surface-review.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/final-path-lint.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/final-source-comparison.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/final-source-lint.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/final-source-types.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/focused-lint.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/focused-types.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/link-compile.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/link-install.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/link-proof-reuse.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/log-normalization.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/mechanism-tests.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/1-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-1/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/1-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-2/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/browser-worker-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/1-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/2-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-3/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/browser-worker-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/named-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/session-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/1-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/named-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/2-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-4/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/browser-worker-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/named-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/session-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/1-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/named-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/2-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-5/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/browser-worker-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/named-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/session-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/1-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/named-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/selected-cases.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/2-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-6/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/independent-copies.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/named-assertions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/selected-cases.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/1-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/native-7/vitest.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/oracle-preservation.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/oracle-preservation.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-before.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-inventory.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-native1.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-native3.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-native4.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-native5.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-native6.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/preservation-native7.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/process-counts.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/progress.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/projects-after.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/projects-before.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-lint.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-no-match/vitest.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-proof.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/result-guard-types.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/results.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/safe-artifacts.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg23/source-final.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/README.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/build-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/check-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/cleanup-audit.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/docker-after-final.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/docker-after-native.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/docker-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/e2e-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/final-evidence-review.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/final-lint.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/format-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/format-own.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/ack-cannot-skip-checker.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/ack-cannot-skip-checker.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/ack-cannot-skip-sql-baseline.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/ack-cannot-skip-sql-baseline.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/ack-cannot-skip-types.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/ack-cannot-skip-types.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/legacy-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/legacy-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/legacy-install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/legacy-origin.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/migrated-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/unmigrated-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/unmigrated-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/unmigrated-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration/unmigrated-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/legacy-1/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/maintenance.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/manual-work-inventory.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/migration.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/ack-cannot-skip-checker.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/ack-cannot-skip-checker.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/ack-cannot-skip-sql-baseline.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/ack-cannot-skip-sql-baseline.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/ack-cannot-skip-types.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/ack-cannot-skip-types.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/legacy-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/legacy-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/legacy-install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/legacy-origin.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/namespace-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/namespace-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/namespace-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/namespace-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/old-export-preserved.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/unmigrated-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/unmigrated-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/unmigrated-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration/unmigrated-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/adopted-fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/adopted-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/compiler-version.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/determinism.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/identical-regeneration-1.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/identical-regeneration-1.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/identical-regeneration-2.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/identical-regeneration-2.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/migrated-catalog-backend-scope.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/migrated-catalog-manual-sql.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/migrated-catalog-source-loc-inputs.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/migrated-catalog-source-loc.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/migration-preservation.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/determinism.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identical-regeneration-1.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identical-regeneration-1.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identical-regeneration-2.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identical-regeneration-2.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identity-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identity-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identity-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/identity-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/label-fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/label-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/label-only-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/label-only-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/policy-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/policy-start.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/setting-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/setting-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/setting-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/setting-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/setting-fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/setting-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow/update-stop.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/product-policy-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/product-policy-start.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-2/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/1-rg-regeneration/legacy-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/1-rg-regeneration/legacy-install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/1-rg-regeneration/legacy-origin.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/1-rg-regeneration/legacy-types.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/1-rg-regeneration/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/determinism.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identical-regeneration-1.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identical-regeneration-1.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identical-regeneration-2.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identical-regeneration-2.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identity-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identity-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identity-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/identity-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/label-fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/label-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/label-only-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/label-only-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/link-account-backend-scope.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/link-account-manual-sql.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/link-account-source-loc-inputs.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/link-account-source-loc.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/policy-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/policy-start.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/setting-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/setting-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/setting-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/setting-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/setting-fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/setting-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/update-preservation.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/update-stop.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/updated-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/updated-start.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/product-policy-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/product-policy-start.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/setting-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/setting-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/setting-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/setting-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/setting-fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow/update-stop.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/failure.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-3/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/ack-cannot-skip-immutable-input.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/ack-cannot-skip-immutable-input.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/compiler-version.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/determinism.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/identical-regeneration-1.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/identical-regeneration-1.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/identical-regeneration-2.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/identical-regeneration-2.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/in-place-hook-backend-scope.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/in-place-hook-manual-sql.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/in-place-hook-source-loc-inputs.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/in-place-hook-source-loc.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/incompatible-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/incompatible-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/incompatible-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/incompatible-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/legacy-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/legacy-install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/legacy-origin.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/legacy-types.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/migrated-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/migrated-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/migrated-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/migrated-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/migrated-checker.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/migrated-types.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/migration-preservation.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/attached-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/catalog-event-backend-scope.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/catalog-event-manual-sql.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/catalog-event-source-loc-inputs.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/catalog-event-source-loc.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/compose-state.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/containers.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/containers.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/determinism.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/final-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/first-run.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/identical-regeneration-1.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/identical-regeneration-1.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/identical-regeneration-2.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/identical-regeneration-2.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/install.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/manifest.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/observations.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/product-policy-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/product-policy-start.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/report.json.gz	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/result.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/setting-apply.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/setting-apply.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/setting-check.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/setting-check.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/setting-fresh-export.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/setting-hashes.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/source-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/stack-cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/update-preservation.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/update-stop.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/updated-build.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/updated-start.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/cleanup.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/identity.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/junit.xml	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/run.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/sanitized.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/source.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/summary.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/vitest.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/native-4/vitest.log	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/preservation-before.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/preservation-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/preservation-inventory.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/preservation-native2.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/preservation-native3.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/preservation-native4.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/progress.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/projects-after.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/projects-before.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/recount-catalog.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/recount-cold.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/recount-link.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/recount-tiny.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/recount-verification.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/reviewed-scope-and-shadow-exclusions.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/root-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/safe-artifacts.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/source-final.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg24/source-review.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/build-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/check-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/compile.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/e2e-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/emitted-review.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/evidence-audit.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/focused-format.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/guidance-after.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/guidance-before-corrected-oracle.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/guidance-before.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/links.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/pin-review.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/preservation-after.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/preservation-before.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/preservation-final.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/progress.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/projects-after.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/projects-before.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/review.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg25/safe-artifacts.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg26/README.md	RG carry-in
+docs/plans/reliable-generation/evidence/rg26/checks.json	RG carry-in
+docs/plans/reliable-generation/evidence/rg26/preservation.txt	RG carry-in
+docs/plans/reliable-generation/evidence/rg26/unit-status.json	RG carry-in
+docs/plans/reliable-generation/execution.md	RG carry-in
+docs/plans/reliable-generation/owner-handback.md	RG carry-in
+docs/plans/store-outage/units.md	RG carry-in
+docs/plans/ui-followups/units.md	RG carry-in
+docs/plans/ui-refresh/units.md	RG carry-in
+docs/plans/wires-and-deployment/evidence/wd01/progress.md	WD
+docs/plans/wires-and-deployment/evidence/wd02/progress.md	WD
+docs/plans/wires-and-deployment/evidence/wd02/studies.json	WD
+docs/plans/wires-and-deployment/evidence/wd03/progress.md	WD
+docs/plans/wires-and-deployment/evidence/wd04/progress.md	WD
+docs/plans/wires-and-deployment/evidence/wd05/progress.md	WD
+docs/plans/wires-and-deployment/evidence/wd08/README.md	WD
+docs/plans/wires-and-deployment/evidence/wd08/board-after-fix.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/browser-harness-initial-failure.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/browser-harness-run2-failure.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/browser-matrix.json	WD
+docs/plans/wires-and-deployment/evidence/wd08/browser-review.config.ts.txt	WD
+docs/plans/wires-and-deployment/evidence/wd08/browser-review.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/browser-review.spec.ts.txt	WD
+docs/plans/wires-and-deployment/evidence/wd08/build.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/constraint-review.json	WD
+docs/plans/wires-and-deployment/evidence/wd08/diff-inventory.tsv	WD
+docs/plans/wires-and-deployment/evidence/wd08/e2e.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/geometry-harness-initial-failure.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/geometry-measurement.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/geometry-measurement.test.ts.txt	WD
+docs/plans/wires-and-deployment/evidence/wd08/geometry-review.json	WD
+docs/plans/wires-and-deployment/evidence/wd08/marketplace-detailed-dark.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/marketplace-detailed-export.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/marketplace-detailed-light.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/marketplace-simple-dark.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/marketplace-simple-export.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/marketplace-simple-light.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/optional-board-native-selection.json	WD
+docs/plans/wires-and-deployment/evidence/wd08/optional-board-native-selection.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/optional-layouts.json	WD
+docs/plans/wires-and-deployment/evidence/wd08/preservation.json	WD
+docs/plans/wires-and-deployment/evidence/wd08/raw-log-whitespace-check.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/rg21-preservation.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/selection-curves-only-failure.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/selection-fail-first.log	WD
+docs/plans/wires-and-deployment/evidence/wd08/tinyurl-detailed-dark.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/tinyurl-detailed-export.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/tinyurl-detailed-light.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/tinyurl-simple-dark.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/tinyurl-simple-export.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/tinyurl-simple-light.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/youtube-detailed-dark.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/youtube-detailed-export.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/youtube-detailed-light.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/youtube-simple-dark.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/youtube-simple-export.png	WD
+docs/plans/wires-and-deployment/evidence/wd08/youtube-simple-light.png	WD
+docs/plans/wires-and-deployment/evidence/wd09/README.md	WD
+docs/plans/wires-and-deployment/evidence/wd09/checks.json	WD
+docs/plans/wires-and-deployment/evidence/wd09/label-rename.json	WD
+docs/plans/wires-and-deployment/evidence/wd09/pin-delta.json	WD
+docs/plans/wires-and-deployment/evidence/wd09/preservation.json	WD
+docs/plans/wires-and-deployment/evidence/wd10/README.md	WD
+docs/plans/wires-and-deployment/evidence/wd10/browser-first-failure.md	WD
+docs/plans/wires-and-deployment/evidence/wd10/browser-first-failure.png	WD
+docs/plans/wires-and-deployment/evidence/wd10/checks.json	WD
+docs/plans/wires-and-deployment/evidence/wd10/compatibility.json	WD
+docs/plans/wires-and-deployment/evidence/wd10/emitted-delta.json	WD
+docs/plans/wires-and-deployment/evidence/wd10/exact-route-fail-first.log	WD
+docs/plans/wires-and-deployment/evidence/wd10/native-exact-route-fail-first.log	WD
+docs/plans/wires-and-deployment/evidence/wd10/native-first.log	WD
+docs/plans/wires-and-deployment/evidence/wd10/native-results.json	WD
+docs/plans/wires-and-deployment/evidence/wd10/native.mjs	WD
+docs/plans/wires-and-deployment/evidence/wd10/preservation.json	WD
+docs/plans/wires-and-deployment/evidence/wd10/wd10-created-required.png	WD
+docs/plans/wires-and-deployment/evidence/wd10/wd10-mouse-required.png	WD
+docs/plans/wires-and-deployment/evidence/wd11.md	WD
+docs/plans/wires-and-deployment/evidence/wd11/browser-first-errors.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/build.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/check-final.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/check-first.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/checks.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/docker-after.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/docker-before.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/e2e-final.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/e2e-first.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/1-rg-link-flow/browser-worker-copies.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/1-rg-link-flow/independent-copies.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/1-rg-link-flow/pooler-observed.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/1-rg-link-flow/pooler-topology.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/1-rg-link-flow/result.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/1-rg-link-flow/stack-cleanup.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/2-rg-catalog-flow/result.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/2-rg-catalog-flow/stack-cleanup.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/cleanup.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/identity.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/sanitized.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-1/summary.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/browser-worker-copies.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/independent-copies.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/named-assertions.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/pooler-observed.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/pooler-topology.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/result.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/session-assertions.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/1-rg-link-flow/stack-cleanup.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/2-rg-catalog-flow/independent-copies.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/2-rg-catalog-flow/named-assertions.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/2-rg-catalog-flow/pooler-observed.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/2-rg-catalog-flow/pooler-topology.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/2-rg-catalog-flow/result.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/2-rg-catalog-flow/stack-cleanup.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/cleanup.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/identity.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/sanitized.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-2/summary.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-first.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-runtime-comparison.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/native-second.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/pin-delta.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/pooler-image-cleanup.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/preservation.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/rg21-preservation.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/scratch-results.json	WD
+docs/plans/wires-and-deployment/evidence/wd11/unsupported-pooler-suite.log	WD
+docs/plans/wires-and-deployment/evidence/wd11/update-check.log	WD
+docs/plans/wires-and-deployment/evidence/wd13/build.log.gz	WD
+docs/plans/wires-and-deployment/evidence/wd13/check.log.gz	WD
+docs/plans/wires-and-deployment/evidence/wd13/e2e.log.gz	WD
+docs/plans/wires-and-deployment/evidence/wd13/focused-correction.log.gz	WD
+docs/plans/wires-and-deployment/evidence/wd13/focused.log.gz	WD
+docs/plans/wires-and-deployment/evidence/wd13/output-review.json	WD
+docs/plans/wires-and-deployment/evidence/wd13/pin-delta.json	WD
+docs/plans/wires-and-deployment/evidence/wd13/preservation.json	WD
+docs/plans/wires-and-deployment/evidence/wd13/results.md	WD
+docs/plans/wires-and-deployment/evidence/wd13/rg21-preservation.txt	WD
+docs/plans/wires-and-deployment/review.md	WD
+docs/plans/wires-and-deployment/stopped/WD06.patch	WD
+docs/plans/wires-and-deployment/stopped/WD07.patch	WD
+docs/plans/wires-and-deployment/stopped/WD12.patch	WD
+docs/studio-blueprint.md	shared
+docs/studio-settings.md	shared
+docs/studio.md	shared
+docs/template-gaps.md	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/README.md	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/attachments.json	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/design.json	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/design.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/accept_event.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/apply-catalog.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/apply_catalog.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/callee-0001.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/callee-db.json	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/caller-0001.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/caller-db.json	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/catalog-events.hooks.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/catalog-events.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/catalog.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/catalog_sync.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/provider_apply.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/receive.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-catalog-flow/owned/send.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/README.md	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/attachments.json	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/design.json	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/0001-initial.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/0002-checkpoint.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/compose.override.yaml	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/create-limit.hooks.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/create.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/create.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/forbidden.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/forward.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/navigate.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/products-next.json	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/products.json	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/published.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/published.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/read-record.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/read.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/record-reader.hooks.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/record.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/slow.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/slow.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/worker-access.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-link-flow/owned/worker.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/README.md	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/attachments.json	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/design.json	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/legacy-hook-design.json	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/0001-initial.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/catalog-read.hooks.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/catalog-writer.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/echo-legacy.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/echo.ts	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/list.sql	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/products.json	RG carry-in
+field-projects/generator-system/fixtures/rg-regeneration/owned/read.sql	RG carry-in
+field-projects/generator-system/fixtures/wd-deployment/design.ts	WD
+field-projects/generator-system/fixtures/wd-deployment/expected.ts	WD
+field-projects/generator-system/fixtures/wd-front-door/design.ts	WD
+field-projects/generator-system/fixtures/wd-front-door/echo.ts	WD
+field-projects/generator-system/fixtures/wd-front-door/receive.ts	WD
+jeeves-generator/README.md	shared
+jeeves-generator/integration/harness/application.ts	RG carry-in
+jeeves-generator/integration/harness/foundation-scenario.ts	shared
+jeeves-generator/integration/harness/identity.ts	RG carry-in
+jeeves-generator/integration/harness/rg-catalog.ts	shared
+jeeves-generator/integration/harness/rg-foundations.ts	RG carry-in
+jeeves-generator/integration/harness/rg-issuer.mjs	RG carry-in
+jeeves-generator/integration/harness/rg-mechanisms.ts	shared
+jeeves-generator/integration/harness/rg-provider.mjs	shared
+jeeves-generator/integration/harness/rg-regeneration.ts	RG carry-in
+jeeves-generator/integration/harness/suites.ts	RG carry-in
+jeeves-generator/integration/harness/wd-pooler.ts	WD
+jeeves-generator/integration/rg24-recount.ts	RG carry-in
+jeeves-generator/integration/run.ts	shared
+jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts	RG carry-in
+jeeves-generator/integration/scenarios/rg-foundations.system.test.ts	RG carry-in
+jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts	RG carry-in
+jeeves-generator/src/v2/assemble.test.ts	WD
+jeeves-generator/src/v2/assemble.ts	shared
+jeeves-generator/src/v2/cache-source.test.ts	WD
+jeeves-generator/src/v2/composition-parity.test.ts	RG carry-in
+jeeves-generator/src/v2/deployment.test.ts	WD
+jeeves-generator/src/v2/deployment.ts	WD
+jeeves-generator/src/v2/durable-work.test.ts	WD
+jeeves-generator/src/v2/fixtures/processes-off.json	shared
+jeeves-generator/src/v2/front-door.test.ts	WD
+jeeves-generator/src/v2/front-door.ts	WD
+jeeves-generator/src/v2/http-wiring.test.ts	WD
+jeeves-generator/src/v2/idempotency.test.ts	WD
+jeeves-generator/src/v2/local-operation.test.helpers.ts	WD
+jeeves-generator/src/v2/local.ts	WD
+jeeves-generator/src/v2/module-clients.test.ts	WD
+jeeves-generator/src/v2/operation.test.helpers.ts	WD
+jeeves-generator/src/v2/pooler.test.ts	WD
+jeeves-generator/src/v2/postgres-recovery.test.ts	WD
+jeeves-generator/src/v2/primitives.test.ts	WD
+jeeves-generator/src/v2/primitives.ts	WD
+jeeves-generator/src/v2/processes-off.test.ts	WD
+jeeves-generator/src/v2/tile-processes.test.ts	WD
+jeeves-generator/src/v2/tile-processes.ts	WD
+jeeves-generator/src/v2/workload.test.ts	WD
+jeeves-generator/templates/local-v2/assets/scripts/edge-stamp.mjs	WD
+jeeves-generator/templates/local-v2/assets/src/runtime/front-door.ts.template	WD
+jeeves-generator/templates/local-v2/assets/src/runtime/http.ts.template	WD
+jeeves-generator/templates/local-v2/assets/src/runtime/idempotency.ts.template	WD
+jeeves-generator/templates/local-v2/assets/src/runtime/postgres.ts.template	WD
+jeeves-generator/templates/local-v2/assets/src/runtime/product-mutation.ts.template	WD
+jeeves-generator/templates/local-v2/assets/src/runtime/transaction.ts.template	WD
+jeeves-generator/templates/local-v2/assets/src/runtime/workload.ts.template	WD
+jeeves/CATALOG.md	shared
+jeeves/PLAN.md	RG carry-in
+jeeves/apps/server/src/chat/front-door.test.ts	WD
+jeeves/apps/server/src/chat/tools.test.ts	WD
+jeeves/apps/server/src/chat/tools.ts	WD
+jeeves/apps/web/e2e/front-door.spec.ts	WD
+jeeves/apps/web/e2e/v2-rebuild.spec.ts	WD
+jeeves/apps/web/src/canvas/creation.tsx	WD
+jeeves/apps/web/src/canvas/laneLayout.test.ts	WD
+jeeves/apps/web/src/canvas/wireColours.test.ts	WD
+jeeves/apps/web/src/canvas/wireColours.ts	WD
+jeeves/apps/web/src/studio/InspectorForm.tsx	WD
+jeeves/apps/web/src/studio/preferences.test.ts	WD
+jeeves/apps/web/src/studio/preferences.ts	WD
+jeeves/fixtures/chat/e2e-script.json	WD
+jeeves/packages/board/src/layout/align.ts	WD
+jeeves/packages/board/src/layout/bands.ts	WD
+jeeves/packages/board/src/layout/elkGraph.ts	WD
+jeeves/packages/board/src/layout/engine.ts	WD
+jeeves/packages/board/src/layout/index.ts	WD
+jeeves/packages/board/src/layout/lanes.test.ts	WD
+jeeves/packages/board/src/layout/lanes.ts	WD
+jeeves/packages/board/src/layout/layout.test.ts	WD
+jeeves/packages/board/src/layout/metrics.ts	WD
+jeeves/packages/board/src/layout/returns.ts	WD
+jeeves/packages/board/src/react/Board.tsx	WD
+jeeves/packages/board/src/react/BoardLine.tsx	WD
+jeeves/packages/board/src/react/board.css	WD
+jeeves/packages/board/src/react/board.test.tsx	WD
+jeeves/packages/board/src/react/wirePath.test.ts	WD
+jeeves/packages/board/src/react/wirePath.ts	WD
+jeeves/packages/board/src/react/wireSelection.test.tsx	WD
+jeeves/packages/spec/src/generation-resolver.test.ts	WD
+jeeves/packages/spec/src/generation-resolver.ts	WD
+jeeves/packages/spec/src/module-generation.test.ts	WD
+jeeves/packages/spec/src/process-settings.test.ts	WD
+jeeves/packages/spec/src/studio-definitions.ts	WD
+jeeves/packages/spec/src/studio-model.ts	WD
+jeeves/packages/spec/src/supported-authoring.ts	WD

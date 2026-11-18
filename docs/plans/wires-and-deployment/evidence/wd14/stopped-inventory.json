@@ -1,0 +1,45 @@
+[
+  {
+    "path": "docs/plans/wires-and-deployment/stopped/WD06.patch",
+    "sha256": "41d5270e6e4b837d049472aa688c8a59895a9705feedb0fb111c588acc9b58cb",
+    "sections": 33,
+    "binarySections": 11,
+    "applied": false,
+    "sourceSections": [
+      "a/docs/HUMAN_FEEDBACK.md b/docs/HUMAN_FEEDBACK.md",
+      "a/docs/design-playbook.md b/docs/design-playbook.md",
+      "a/docs/studio.md b/docs/studio.md",
+      "a/jeeves/apps/web/e2e/canvas.spec.ts b/jeeves/apps/web/e2e/canvas.spec.ts",
+      "a/jeeves/apps/web/e2e/detailed-view.spec.ts b/jeeves/apps/web/e2e/detailed-view.spec.ts",
+      "a/jeeves/apps/web/src/canvas/LaneCanvas.tsx b/jeeves/apps/web/src/canvas/LaneCanvas.tsx",
+      "a/jeeves/apps/web/src/canvas/LineLegend.test.tsx b/jeeves/apps/web/src/canvas/LineLegend.test.tsx",
+      "a/jeeves/apps/web/src/canvas/LineLegend.tsx b/jeeves/apps/web/src/canvas/LineLegend.tsx",
+      "a/jeeves/apps/web/src/canvas/Workspace.tsx b/jeeves/apps/web/src/canvas/Workspace.tsx",
+      "a/jeeves/apps/web/src/canvas/canvas.css b/jeeves/apps/web/src/canvas/canvas.css",
+      "a/jeeves/apps/web/src/canvas/tiles/ContainerTile.tsx b/jeeves/apps/web/src/canvas/tiles/ContainerTile.tsx"
+    ]
+  },
+  {
+    "path": "docs/plans/wires-and-deployment/stopped/WD07.patch",
+    "sha256": "9525dd18e88d02417053c8f58116b7b76b5190671229293106554f989518420f",
+    "sections": 11,
+    "binarySections": 2,
+    "applied": false,
+    "sourceSections": [
+      "a/docs/studio.md b/docs/studio.md",
+      "a/jeeves/apps/web/e2e/canvas.spec.ts b/jeeves/apps/web/e2e/canvas.spec.ts",
+      "a/jeeves/packages/board/src/react/board.css b/jeeves/packages/board/src/react/board.css"
+    ]
+  },
+  {
+    "path": "docs/plans/wires-and-deployment/stopped/WD12.patch",
+    "sha256": "4eb87a08472eaf571ae807cc54b0f2bcca7b675985b01066b25373e5633ea223",
+    "sections": 20,
+    "binarySections": 0,
+    "applied": false,
+    "sourceSections": [
+      "a/field-projects/generator-system/fixtures/wd-drill-no-effect/apply-catalog.ts b/field-projects/generator-system/fixtures/wd-drill-no-effect/apply-catalog.ts",
+      "a/jeeves-generator/src/v2/wd12-drill-feasibility.test.ts b/jeeves-generator/src/v2/wd12-drill-feasibility.test.ts"
+    ]
+  }
+]

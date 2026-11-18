@@ -1,0 +1,5 @@
+import { writeFileSync } from 'node:fs';
+import { deploymentDesign } from '/home/ash/github/jeeves/field-projects/generator-system/fixtures/wd-deployment/design.ts';
+import { frontDoorDesign } from '/home/ash/github/jeeves/field-projects/generator-system/fixtures/wd-front-door/design.ts';
+writeFileSync('/tmp/jeeves-wd14/deployment.json', JSON.stringify(deploymentDesign(), null, 2)+'\n');
+writeFileSync('/tmp/jeeves-wd14/required.json', JSON.stringify(frontDoorDesign('required'), null, 2)+'\n');
