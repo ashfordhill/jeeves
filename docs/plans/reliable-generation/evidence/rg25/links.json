@@ -1,0 +1,101 @@
+{
+  "checked": [
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "emitted-review.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "guidance-before-corrected-oracle.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "guidance-after.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "guidance-before.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "pin-review.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "emitted-review.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "compile.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "check-final.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "e2e-final.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "build-final.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "evidence-audit.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "../rg14/review.md"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "../rg23/results.md"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "../rg24/migration.md"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "../rg24/maintenance.md"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "preservation-before.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "preservation-after.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "preservation-final.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "projects-before.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "projects-after.txt"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "links.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/review.md",
+      "target": "safe-artifacts.json"
+    },
+    {
+      "file": "docs/plans/reliable-generation/evidence/rg25/progress.md",
+      "target": "review.md"
+    },
+    {
+      "file": "docs/template-gaps.md",
+      "target": "plans/reliable-generation/evidence/rg25/review.md"
+    }
+  ],
+  "allExist": true
+}

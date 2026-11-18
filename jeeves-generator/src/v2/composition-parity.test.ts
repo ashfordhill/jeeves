@@ -17,6 +17,18 @@ import { assembleV2 } from "./assemble.ts";
 
 const registry = loadLocalV2Registry();
 
+it("RG25 emitted migration commands acknowledge the actual target extension API", () => {
+  const bundle = assembleV2({ designJson: JSON.stringify(foundationsDesign()) }, registry);
+  const file = bundle.files.find((item) => item.path === ".jeeves/extensions.md");
+  expect(file).toBeDefined();
+  const versions = [
+    ...new TextDecoder().decode(file?.bytes).matchAll(/--ack-extension-api=(\d+)/g),
+  ].map((match) => Number(match[1]));
+  expect(versions.length).toBeGreaterThan(2);
+  // The updater accepts the emitted target version, including SQL-baseline migrations.
+  expect(new Set(versions)).toEqual(new Set([bundle.manifest.extensionApi.version]));
+});
+
 it("RG22 raw selections refuse shared cache eviction requirements and callable effect mismatches", () => {
   const raw = foundationsDesign(),
     generation = designGeneration(raw);

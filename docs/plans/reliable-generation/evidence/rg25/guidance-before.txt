@@ -1,0 +1,25 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generator| src/v2/composition-parity.test.ts (8 tests | 1 failed | 7 skipped) 178ms
+   × RG25 emitted migration commands acknowledge the actual target extension API 178ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/composition-parity.test.ts > RG25 emitted migration commands acknowledge the actual target extension API
+AssertionError: README.md: expected 0 to be greater than 2
+ ❯ src/v2/composition-parity.test.ts:27:35
+     25|     const versions = [...new TextDecoder().decode(file!.bytes).matchAl…
+     26|       .map((match) => Number(match[1]));
+     27|     expect(versions.length, path).toBeGreaterThan(2);
+       |                                   ^
+     28|     // The updater accepts the emitted target version, including SQL-b…
+     29|     expect(new Set(versions), path).toEqual(new Set([bundle.manifest.e…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  01:00:36
+   Duration  992ms (transform 56%, import 25%, tests 19%)

@@ -159,3 +159,8 @@ RG21 closes request-scoped Browser session forwarding for declared matching-Iden
 callee route operations. Generic POST remains unretried: an arbitrary key does not establish a
 callee replay/recovery contract. HTTPS/client/audience registration remains required integration
 work. See [the exact forwarding boundary](plans/reliable-generation/evidence/rg21/protocol.md).
+
+RG25 found two stale API7 acknowledgement commands in the generated API8 SQL migration guide.
+The assembler now uses the emitted target version; a regression checks every acknowledgement
+command in the actual extension guide against its manifest. Runtime and exported README bytes
+are unchanged. [Independent review](plans/reliable-generation/evidence/rg25/review.md).

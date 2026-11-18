@@ -1,0 +1,29 @@
+{
+  "containers": {
+    "count": 42,
+    "exactFields": ["ID", "Names", "State"],
+    "matchesAccepted24": true
+  },
+  "networks": {
+    "count": 9,
+    "exactFields": ["ID", "Name", "Driver", "Scope"],
+    "matchesAccepted24": true
+  },
+  "volumes": {
+    "count": 23,
+    "exactFields": ["Name", "Driver", "Scope"],
+    "matchesAccepted24": true
+  },
+  "images": {
+    "count": 43,
+    "exactFields": ["ID", "Repository", "Tag"],
+    "matchesAccepted24": true
+  },
+  "e2eProjects": {
+    "oldInventoryCount": 2,
+    "exactInventoryMatch": true,
+    "unitCreatedRemaining": 0
+  },
+  "ownerREADMESha256": "7cee84a454f220152e8c973b4c2062c603c82067f334ad628beeae0332c0aa40",
+  "nativeResourcesCreated": 0
+}

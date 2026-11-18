@@ -19338,3 +19338,36 @@ workload settings the same way.
 - No production template/runtime/API/dependency/framework migration, original app, root/owner
   studio, later unit, live/paid call, push or deployment. WD-after-RG26 queue preserved unread.
   One explicit-path local commit follows: `RG24: prove regeneration migration and reduced handwritten infrastructure`.
+
+## 2026-11-18 — RG25 independent review active, unaccepted/uncommitted
+
+- Sole RG25 on accepted RG24 `ed99644`; contract/amendment, RG14/23/24 actual evidence, emitted
+  snapshots and representative authoring/runtime/SQL/recovery/session/update source reviewed.
+  No architectural blocker found. All retained link83/catalog72 scaffolds match manifest hashes.
+- One bounded finding: emitted API8 SQL migration guidance supplies stale acknowledgement7 twice,
+  while updater requires8. Correcting emitted target-version guidance with a focused regression;
+  D11, actual export checker/compiler, final review/preservation and explicit-path commit remain.
+- Original roots/owner patch,42 container triples, accepted SQL/dependency assets and frozenv1
+  pass read-only preservation. No native mutation, other unit, root edit, delegation or push.
+  Recoverable status: [RG25 progress](plans/reliable-generation/evidence/rg25/progress.md).
+
+## 2026-11-18 — RG25 independent final review complete for coordinator acceptance
+
+- Traced actual emitted link/account and catalog/event operations through model/authoring,
+  public API/hooks, precise SQL/auth, replay/tickets/fences, sessions, receipts and lifecycle.
+  Independently verified83/72 retained scaffold hashes and94 catalog payload identities across
+  selected native runs, retaining failed/unreached outcomes. No unresolved release blocker found.
+- Corrected two stale API7 acknowledgement commands in the API8 exported extension guide using
+  its target version. Added emitted-guide regression; only guide/provenance and exact associated
+  pins change. Every inspected runtime/README byte stays unchanged; no API/schema/provider expands.
+- Focused54/54, actual75-file exported checker/TypeScript7.0.2, pnpm check145files/1354tests,
+  browser87/87 (TinyURL/both mouse rebuilds), web build and focused evidence/link/preservation pass.
+  Initial wrong README test assumption and reproduced stale-command failure are retained honestly.
+  No affected native behavior, so no native matrix rerun. [Review](plans/reliable-generation/evidence/rg25/review.md).
+- Recommend acceptance within the finite contract: remote generated-workload/process affinity,
+  refused secret checkpoint, finite retention/cache assumptions, unknown outcomes, guarded/manual
+  legacy SQL conversion and backend-composition-only LOC limits remain explicit for RG26.
+- Roots/current README/owner patch,42 original triples/9 networks/23 volumes/43 images, two old
+  e2e identities, accepted SQL/dependencies and frozenv1 preserved; own projects/resources0.
+  No root/owner studio/original app/historical evidence/later unit, paid/live call, push or deploy.
+  One explicit-path local commit follows: `RG25: review and correct the reliable generation implementation`.

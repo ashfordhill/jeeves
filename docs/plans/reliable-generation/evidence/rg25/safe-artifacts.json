@@ -1,0 +1,8 @@
+{
+  "kind": "RG25 own retained artifacts only",
+  "filesScanned": 19,
+  "rawJwtMatches": 0,
+  "privateKeyPemMatches": 0,
+  "noGeneratedSourceOrCredentialsRetained": true,
+  "scope": "Text evidence, hashes and review only; historical artifacts were not altered"
+}

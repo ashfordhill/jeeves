@@ -1,0 +1,59 @@
+[
+  {
+    "fixture": "link",
+    "retainedSnapshot": "docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow/link-account-source-loc-inputs.json.gz",
+    "retainedSnapshotSha256": "46b9da3d3dfbdd7d1dadbf7cece9910162f86ac71f0d7a327589051fd2bef837",
+    "retainedScaffoldsValidated": 83,
+    "currentEmittedFiles": 111,
+    "metadataAndScaffoldChanges": [".jeeves/extensions.md", ".jeeves/report.json"],
+    "manifestAlsoChanges": true,
+    "reportChangeIsProvenanceOnly": true,
+    "READMEUnchanged": true,
+    "runtimeFilesUnchanged": 35,
+    "coreTemplatesEqual": [
+      "operation",
+      "process",
+      "transaction",
+      "product-mutation",
+      "local-operation",
+      "durable-work",
+      "workload",
+      "receipt-consumer",
+      "receipts",
+      "browser-refresh",
+      "browser-session"
+    ],
+    "api": 8,
+    "processes": ["browser", "gateway", "items-api", "items-worker"],
+    "commandVersions": [8],
+    "applicationComplete": false
+  },
+  {
+    "fixture": "catalog",
+    "retainedSnapshot": "docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow/catalog-event-source-loc-inputs.json.gz",
+    "retainedSnapshotSha256": "ea348c40ec8463c3625db54566abb41cfc1c0feb3557207010fcfcc4cd32300f",
+    "retainedScaffoldsValidated": 72,
+    "currentEmittedFiles": 95,
+    "metadataAndScaffoldChanges": [".jeeves/extensions.md", ".jeeves/report.json"],
+    "manifestAlsoChanges": true,
+    "reportChangeIsProvenanceOnly": true,
+    "READMEUnchanged": true,
+    "runtimeFilesUnchanged": 29,
+    "coreTemplatesEqual": [
+      "operation",
+      "process",
+      "transaction",
+      "product-mutation",
+      "local-operation",
+      "durable-work",
+      "workload",
+      "receipt-consumer",
+      "receipts",
+      "webhook"
+    ],
+    "api": 8,
+    "processes": ["callee", "caller", "projector"],
+    "commandVersions": [8],
+    "applicationComplete": false
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "fixture": "frozen-v2",
+    "files": 80,
+    "changed": [".jeeves/extensions.md", ".jeeves/manifest.json"],
+    "READMEUnchanged": true,
+    "allRuntimeFilesUnchanged": true
+  },
+  {
+    "fixture": "v2-module-design",
+    "files": 87,
+    "changed": [".jeeves/extensions.md", ".jeeves/manifest.json"],
+    "READMEUnchanged": true,
+    "allRuntimeFilesUnchanged": true
+  },
+  {
+    "fixture": "stub-stack",
+    "files": 60,
+    "changed": [".jeeves/extensions.md", ".jeeves/manifest.json"],
+    "READMEUnchanged": true,
+    "allRuntimeFilesUnchanged": true
+  }
+]

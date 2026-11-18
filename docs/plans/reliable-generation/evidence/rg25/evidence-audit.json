@@ -1,0 +1,53 @@
+{
+  "kind": "RG25 read-only retained-evidence audit; no native execution",
+  "reviewedHead": "ed996447993d09f7e8736ebe01074d1691d7c3d1",
+  "receipts": [
+    {
+      "path": "rg14/native-8/1-rg-foundations/named-assertions.json",
+      "sha256": "d95a57b7c45d4f9884fec02676e04f513c05fac282a08ee331827c9c801c35ed"
+    },
+    {
+      "path": "rg23/native-6/1-rg-link-flow/named-assertions.json",
+      "sha256": "d26b2be6fb45dab370349806d975e843c4174bfd9cac65075ea948156cf630dc"
+    },
+    {
+      "path": "rg23/native-6/1-rg-link-flow/session-assertions.json",
+      "sha256": "8e67aa2bf9496989ed744ce0095121735cdfb444023d1aa62a7ddf53a9ad6a42"
+    },
+    {
+      "path": "rg23/native-5/2-rg-catalog-flow/named-assertions.json",
+      "sha256": "05dd361be9129473ca6875a973f95b6ae829e21e962168f88e90187df0ddd494"
+    },
+    {
+      "path": "rg23/native-7/1-rg-catalog-flow/named-assertions.json",
+      "sha256": "be77431867417bf701aa3e4b7c3143a9ec9217ef61685edf29aaf2e6571539e9"
+    },
+    {
+      "path": "rg24/native-3/2-rg-link-flow/update-preservation.json",
+      "sha256": "ff5112b6154e927e07863ff7e2253e3e0f6a6e84031a2f4fde57ddcab2ddd7e8"
+    },
+    {
+      "path": "rg24/native-4/2-rg-catalog-flow/update-preservation.json",
+      "sha256": "e57c52b59780b37aaa403490025988f4a8df8b44b241c19395c4a8249109a0ec"
+    },
+    {
+      "path": "rg24/native-4/1-rg-regeneration/migration-preservation.json",
+      "sha256": "db872f414c33a823cf8a697a63dd65bfe0a43cd15149e99462032e725935fd6c"
+    }
+  ],
+  "foundationGroupsEach": 10,
+  "sessionBranches": 4,
+  "catalogNative5RecoveryGroups": 3,
+  "native5FailedReceiptPreserved": true,
+  "catalogNative7ReceiptRetentionBrokerGroups": 3,
+  "catalogEmittedPathsAndHashesEqualAcrossNative5_6_7": 94,
+  "api8StableIdStoppedUpdatePreservation": true,
+  "manualApi1To8InPlaceMigration": true,
+  "identicalUpdateReceipts": [
+    "rg24/native-3/2-rg-link-flow/identical-regeneration-1.json",
+    "rg24/native-3/2-rg-link-flow/identical-regeneration-2.json",
+    "rg24/native-4/2-rg-catalog-flow/identical-regeneration-1.json",
+    "rg24/native-4/2-rg-catalog-flow/identical-regeneration-2.json"
+  ],
+  "nativeReruns": 0
+}
