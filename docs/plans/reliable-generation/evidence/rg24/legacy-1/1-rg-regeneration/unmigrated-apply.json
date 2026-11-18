@@ -1,0 +1,23 @@
+{
+  "directory": "/tmp/jeeves-system-TR6S6u/1-rg-regeneration",
+  "check": false,
+  "refused": [
+    "Product SQL baseline/migration required for infra/postgres/catalog/modules/catalog-writer.sql. Supply reviewed products.json, ordered migration files and .jeeves/product-sql-migration.json (version 1, mode external-reviewed, legacy file/sha256 records). Perform database baseline/data migration externally; this updater never executes old SQL or converts schemas. Existing application bytes are preserved.",
+    "Extension API 1 -> 8 requires migration; edit these files and acknowledge --ack-extension-api=8: src/modules/catalog-api/catalog-read.hooks.ts, src/modules/catalog-api/catalog-writer.ts"
+  ],
+  "counts": {
+    "create": 30,
+    "replace": 31,
+    "unchanged": 10,
+    "keep": 0
+  },
+  "keepChanged": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/modules/catalog-api/catalog-read.hooks.ts",
+    "src/modules/catalog-api/catalog-writer.ts"
+  ],
+  "override": [],
+  "remove": [],
+  "orphan": ["infra/postgres/catalog/modules/catalog-writer.sql"]
+}

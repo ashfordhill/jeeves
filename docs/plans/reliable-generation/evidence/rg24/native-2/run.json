@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659",
+  "suite": "regeneration",
+  "temporary": "/tmp/jeeves-system-Ii23wa",
+  "stacks": [
+    {
+      "project": "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-1",
+      "fixture": "rg-regeneration",
+      "application": "/tmp/jeeves-system-Ii23wa/1-rg-regeneration",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-2/1-rg-regeneration",
+      "ports": [45163, 43329, 43209]
+    },
+    {
+      "project": "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-2",
+      "fixture": "rg-regeneration",
+      "application": "/tmp/jeeves-system-Ii23wa/2-rg-regeneration",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-2/2-rg-regeneration",
+      "ports": [42337, 33867, 34663]
+    },
+    {
+      "project": "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3",
+      "fixture": "rg-link-flow",
+      "application": "/tmp/jeeves-system-Ii23wa/3-rg-link-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-2/3-rg-link-flow",
+      "ports": [37117, 35273, 35257]
+    },
+    {
+      "project": "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4",
+      "fixture": "rg-catalog-flow",
+      "application": "/tmp/jeeves-system-Ii23wa/4-rg-catalog-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-2/4-rg-catalog-flow",
+      "ports": [43527, 35613, 41761]
+    }
+  ]
+}

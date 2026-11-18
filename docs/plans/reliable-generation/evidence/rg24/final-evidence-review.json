@@ -1,0 +1,187 @@
+{
+  "localMarkdownLinksChecked": 44,
+  "allLinksExist": true,
+  "links": [
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "migration.md"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "maintenance.md"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "recount-verification.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "check-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "e2e-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "build-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "source-review.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "reviewed-scope-and-shadow-exclusions.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "preservation-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "preservation-inventory.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "cleanup-audit.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "safe-artifacts.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/README.md",
+      "target": "progress.md"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "native-4/1-rg-regeneration/migration-preservation.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "native-2/1-rg-regeneration/old-export-preserved.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "native-2/2-rg-regeneration/migration-preservation.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "native-3/2-rg-link-flow/update-preservation.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "native-4/2-rg-catalog-flow/update-preservation.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "native-4/summary.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "check-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "build-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "e2e-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "preservation-final.txt"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "preservation-inventory.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "cleanup-audit.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/migration.md",
+      "target": "safe-artifacts.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "../../../../field-projects/source-loc.md"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-4/1-rg-regeneration/in-place-hook-source-loc.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-4/1-rg-regeneration/in-place-hook-backend-scope.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-4/1-rg-regeneration/in-place-hook-source-loc-inputs.json.gz"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-2/2-rg-regeneration/migrated-catalog-source-loc.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-2/2-rg-regeneration/migrated-catalog-backend-scope.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-2/2-rg-regeneration/migrated-catalog-source-loc-inputs.json.gz"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-3/2-rg-link-flow/link-account-source-loc.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-3/2-rg-link-flow/link-account-backend-scope.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-3/2-rg-link-flow/link-account-source-loc-inputs.json.gz"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-4/2-rg-catalog-flow/catalog-event-source-loc.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-4/2-rg-catalog-flow/catalog-event-backend-scope.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "native-4/2-rg-catalog-flow/catalog-event-source-loc-inputs.json.gz"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "reviewed-scope-and-shadow-exclusions.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "recount-verification.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "manual-work-inventory.json"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "../../../../../.docs/readme/v0/qrwty/evaluations/codex-2026-11-16.md"
+    },
+    {
+      "source": "docs/plans/reliable-generation/evidence/rg24/maintenance.md",
+      "target": "../../../../../.docs/readme/v0/qrwty/evaluations/fable-2026-11-16.md"
+    }
+  ],
+  "sourceExactNative4": true,
+  "allRequiredChecksPassed": true,
+  "productionFilesChanged": 0,
+  "oldFieldFixturesOrExportsChanged": 0,
+  "manualGeneratedFileEdits": 0
+}

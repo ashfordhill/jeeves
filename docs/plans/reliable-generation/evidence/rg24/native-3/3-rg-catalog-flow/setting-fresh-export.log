@@ -1,0 +1,21 @@
+Error: pnpm --dir exit 1
+$ tsx src/v2/cli.ts /tmp/jeeves-system-aYtO9G/catalog-setting.json /tmp/jeeves-system-aYtO9G/setting-fresh
+node:internal/fs/promises:1564
+  return await PromisePrototypeThen(
+         ^
+
+Error: EEXIST: file already exists, mkdir '/tmp/jeeves-system-aYtO9G/setting-fresh'
+    at async mkdir (node:internal/fs/promises:1564:10)
+    at async exportNewDirectory (/home/ash/github/jeeves/jeeves-generator/src/export.ts:21:3)
+    at async <anonymous> (/home/ash/github/jeeves/jeeves-generator/src/v2/cli.ts:20:7) {
+  errno: -17,
+  code: 'EEXIST',
+  syscall: 'mkdir',
+  path: '/tmp/jeeves-system-aYtO9G/setting-fresh'
+}
+
+Node.js v24.21.0
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator

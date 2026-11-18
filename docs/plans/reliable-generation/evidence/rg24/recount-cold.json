@@ -1,0 +1,577 @@
+{
+  "report": {
+    "method": "source-loc-v2",
+    "parser": "rolldown@1.2.15",
+    "app": "app",
+    "baselineCommit": "4c63795c5bbbfcf875b374c1dfa1799bd4e906ec",
+    "finalCommit": "17ae4efa26121c8506d62587efa0b9fdfccbe177",
+    "baselineManifestSha256": "baf7b5f83d320cadc37aca7bb3bc9b6b01edd9fb7c9aa1ac02e0b862458ddf8e",
+    "scope": {
+      "version": 1,
+      "backendPaths": ["src"],
+      "uiPaths": ["browser", "public"]
+    },
+    "scopeSha256": "2470cf09403a51c51c533da1407e301e6c501794ed2140ef415019e55a29450a",
+    "rules": {
+      "scope": "Backend production JS/TS in src directories, classified by an explicit scope. UI is excluded regardless of location; unclassified eligible source refuses the report. Tests, fixtures, configuration, declarations and build/vendor output excluded.",
+      "lines": "Physical nonblank lines after parsed comments are removed; indentation ignored, other code and wrapping preserved.",
+      "attribution": "Longest ordered matching lines in the same path are retained template lines; other final lines are post-template. New paths are entirely post-template; renames are not inferred.",
+      "interpretation": "Source composition only. Includes boilerplate and stubs; does not measure working behavior, quality, labor saved or agent versus human authorship."
+    },
+    "totals": {
+      "includedFiles": 39,
+      "baselineLoc": 5794,
+      "finalLoc": 5797,
+      "retainedTemplateLoc": 5772,
+      "postTemplateLoc": 25,
+      "removedOrReplacedTemplateLoc": 22,
+      "templatePercent": 99.57
+    },
+    "included": [
+      {
+        "path": "src/contracts/index.ts",
+        "baselineSha256": "843db8b20be176b4e0bc0c0d3f9cf298d8f816d1f0eef3b7b97d167e9eddbc34",
+        "finalSha256": "843db8b20be176b4e0bc0c0d3f9cf298d8f816d1f0eef3b7b97d167e9eddbc34",
+        "baselineLoc": 1,
+        "finalLoc": 1,
+        "retainedTemplateLoc": 1,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/extension-api/index.ts",
+        "baselineSha256": "3b9c62d2ac21bd3197d1d415349101fa36fb2357548fb0eeaca9107159a3ea7c",
+        "finalSha256": "3b9c62d2ac21bd3197d1d415349101fa36fb2357548fb0eeaca9107159a3ea7c",
+        "baselineLoc": 27,
+        "finalLoc": 27,
+        "retainedTemplateLoc": 27,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/application-bindings.ts",
+        "baselineSha256": "16f92f1a05bce072df715b225fe57de413411dda4f03b8e618dbf7bc6fe6d3ac",
+        "finalSha256": "16f92f1a05bce072df715b225fe57de413411dda4f03b8e618dbf7bc6fe6d3ac",
+        "baselineLoc": 1,
+        "finalLoc": 1,
+        "retainedTemplateLoc": 1,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/local-bindings.ts",
+        "baselineSha256": "7f6c77e9521e0468229f46bcf47cb6d427808fcc3812da75d33558924e82e684",
+        "finalSha256": "7f6c77e9521e0468229f46bcf47cb6d427808fcc3812da75d33558924e82e684",
+        "baselineLoc": 3,
+        "finalLoc": 3,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/positive-cache-bindings.ts",
+        "baselineSha256": "ed711b9967da6acbdc29253c36992570032b7aa706013c18cc37beaa30f68752",
+        "finalSha256": "ed711b9967da6acbdc29253c36992570032b7aa706013c18cc37beaa30f68752",
+        "baselineLoc": 1,
+        "finalLoc": 1,
+        "retainedTemplateLoc": 1,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/service-resources.ts",
+        "baselineSha256": "3e9478cc4a615708195f809d7c8ab69572b81cdf1538258793eb52c7c3013193",
+        "finalSha256": "3e9478cc4a615708195f809d7c8ab69572b81cdf1538258793eb52c7c3013193",
+        "baselineLoc": 169,
+        "finalLoc": 169,
+        "retainedTemplateLoc": 169,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/http-errors.hooks.ts",
+        "baselineSha256": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+        "finalSha256": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+        "baselineLoc": 2,
+        "finalLoc": 2,
+        "retainedTemplateLoc": 2,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/catalog-api/catalog-read.hooks.ts",
+        "baselineSha256": "2f219fe12f726b82e10dc4b1777cdc67a137363edaa4325196c7b37a860e7252",
+        "finalSha256": "8af59257d162a51050d6cfca4d0d85040cb91a6b605e713184bcea0337a28864",
+        "baselineLoc": 26,
+        "finalLoc": 28,
+        "retainedTemplateLoc": 8,
+        "postTemplateLoc": 20,
+        "removedOrReplacedTemplateLoc": 18
+      },
+      {
+        "path": "src/modules/catalog-api/catalog-writer.slots.ts",
+        "baselineSha256": "3b5e9362e802afb87ada5a6afda184812896b4790d087a6d882e35e31603c152",
+        "finalSha256": "3b5e9362e802afb87ada5a6afda184812896b4790d087a6d882e35e31603c152",
+        "baselineLoc": 9,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 9,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/catalog-api/catalog-writer.ts",
+        "baselineSha256": "048603adc92b3bc1363f75e01c43a5ba8b4d4ce0403c5020d93ab91d8a7ccce5",
+        "finalSha256": "b8eff19f1322bff1f4b9282304e57a5e7745fd02ff01cf5385ad07f8405c6979",
+        "baselineLoc": 7,
+        "finalLoc": 8,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 5,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/modules/dependencies.ts",
+        "baselineSha256": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+        "finalSha256": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+        "baselineLoc": 58,
+        "finalLoc": 58,
+        "retainedTemplateLoc": 58,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/entry.ts",
+        "baselineSha256": "a5c04a7c47a86ac23414a42dee4cb80ab82e9e8a6a36ee0738fa08092c9f574f",
+        "finalSha256": "a5c04a7c47a86ac23414a42dee4cb80ab82e9e8a6a36ee0738fa08092c9f574f",
+        "baselineLoc": 104,
+        "finalLoc": 104,
+        "retainedTemplateLoc": 104,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/processes/catalog-api.ts",
+        "baselineSha256": "cf9b53e097991ac881aec9e178e46449b4c8f6d10fa995bfb916b4ef24ffbd48",
+        "finalSha256": "cf9b53e097991ac881aec9e178e46449b4c8f6d10fa995bfb916b4ef24ffbd48",
+        "baselineLoc": 142,
+        "finalLoc": 142,
+        "retainedTemplateLoc": 142,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/admission.ts",
+        "baselineSha256": "19059bf92a789a6c69641a8d4f8812d354ec192081155f70518ef8d6ee110cf5",
+        "finalSha256": "19059bf92a789a6c69641a8d4f8812d354ec192081155f70518ef8d6ee110cf5",
+        "baselineLoc": 177,
+        "finalLoc": 177,
+        "retainedTemplateLoc": 177,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/delivery.ts",
+        "baselineSha256": "7beac97570c15cd6d2fa1ec6f15daa8f2204d45efb91951176dd2c2a4a609b84",
+        "finalSha256": "7beac97570c15cd6d2fa1ec6f15daa8f2204d45efb91951176dd2c2a4a609b84",
+        "baselineLoc": 270,
+        "finalLoc": 270,
+        "retainedTemplateLoc": 270,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/durable-sql.ts",
+        "baselineSha256": "da416c3733163295fd3bd656c163b3441b211b1c6f4b3d421314214c263be41f",
+        "finalSha256": "da416c3733163295fd3bd656c163b3441b211b1c6f4b3d421314214c263be41f",
+        "baselineLoc": 94,
+        "finalLoc": 94,
+        "retainedTemplateLoc": 94,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/durable-work.ts",
+        "baselineSha256": "74de1cc88f0d1be7e6908da23f84eb43bd1a38da6908690daf7f155ffc1aa987",
+        "finalSha256": "74de1cc88f0d1be7e6908da23f84eb43bd1a38da6908690daf7f155ffc1aa987",
+        "baselineLoc": 845,
+        "finalLoc": 845,
+        "retainedTemplateLoc": 845,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/hook-boundary.ts",
+        "baselineSha256": "c87a4b30039d6616af6a126b81a1d950057702b112a8ec82849b9214a9e62e7d",
+        "finalSha256": "c87a4b30039d6616af6a126b81a1d950057702b112a8ec82849b9214a9e62e7d",
+        "baselineLoc": 123,
+        "finalLoc": 123,
+        "retainedTemplateLoc": 123,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/http.ts",
+        "baselineSha256": "59f11ece27c6a698449e395b11d92a820a9e207f2f63469c9909680ce5fe0a46",
+        "finalSha256": "59f11ece27c6a698449e395b11d92a820a9e207f2f63469c9909680ce5fe0a46",
+        "baselineLoc": 217,
+        "finalLoc": 217,
+        "retainedTemplateLoc": 217,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/idempotency.ts",
+        "baselineSha256": "706d8381557b117093be20389bd6b5d7b14d99153961b1b06163970351fa96f4",
+        "finalSha256": "706d8381557b117093be20389bd6b5d7b14d99153961b1b06163970351fa96f4",
+        "baselineLoc": 134,
+        "finalLoc": 134,
+        "retainedTemplateLoc": 134,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/keys.ts",
+        "baselineSha256": "d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82",
+        "finalSha256": "d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82",
+        "baselineLoc": 175,
+        "finalLoc": 175,
+        "retainedTemplateLoc": 175,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/local-operation.ts",
+        "baselineSha256": "0bdf92469a5389e54fe08b9a1db1ea356128a592bf2976677eaa499e35c874eb",
+        "finalSha256": "0bdf92469a5389e54fe08b9a1db1ea356128a592bf2976677eaa499e35c874eb",
+        "baselineLoc": 545,
+        "finalLoc": 545,
+        "retainedTemplateLoc": 545,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/local.ts",
+        "baselineSha256": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+        "finalSha256": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+        "baselineLoc": 26,
+        "finalLoc": 26,
+        "retainedTemplateLoc": 26,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/module-clients.ts",
+        "baselineSha256": "16b72bac03a9058e424ad411886f684d2828c3b873351d5e333b90db72324ef6",
+        "finalSha256": "16b72bac03a9058e424ad411886f684d2828c3b873351d5e333b90db72324ef6",
+        "baselineLoc": 377,
+        "finalLoc": 377,
+        "retainedTemplateLoc": 377,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/operation.ts",
+        "baselineSha256": "e2743e278e3573da639feed3f5c0d53cfbd510346d25615e54d9514c70e67a08",
+        "finalSha256": "e2743e278e3573da639feed3f5c0d53cfbd510346d25615e54d9514c70e67a08",
+        "baselineLoc": 257,
+        "finalLoc": 257,
+        "retainedTemplateLoc": 257,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/positive-cache.ts",
+        "baselineSha256": "d0ad6e6b0c3bade8d193e6bcb2495f8996a0325d9a3b50c896777e70da67f529",
+        "finalSha256": "d0ad6e6b0c3bade8d193e6bcb2495f8996a0325d9a3b50c896777e70da67f529",
+        "baselineLoc": 189,
+        "finalLoc": 189,
+        "retainedTemplateLoc": 189,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/postgres.ts",
+        "baselineSha256": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+        "finalSha256": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+        "baselineLoc": 124,
+        "finalLoc": 124,
+        "retainedTemplateLoc": 124,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/process.ts",
+        "baselineSha256": "0074f3d49abc015bee9a996d3265f6f8ffb8e76818474c065b92fdf44c5c308b",
+        "finalSha256": "0074f3d49abc015bee9a996d3265f6f8ffb8e76818474c065b92fdf44c5c308b",
+        "baselineLoc": 208,
+        "finalLoc": 208,
+        "retainedTemplateLoc": 208,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/product-contract.ts",
+        "baselineSha256": "9c91c8084b4b7237bb050d97b89f6897e645009bb00650bcb8a87ef3e7be2294",
+        "finalSha256": "9c91c8084b4b7237bb050d97b89f6897e645009bb00650bcb8a87ef3e7be2294",
+        "baselineLoc": 325,
+        "finalLoc": 325,
+        "retainedTemplateLoc": 325,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/product-mutation.ts",
+        "baselineSha256": "4e304ca4236bcaa306d125a7463f8358de0212d779440790655425854d838042",
+        "finalSha256": "4e304ca4236bcaa306d125a7463f8358de0212d779440790655425854d838042",
+        "baselineLoc": 63,
+        "finalLoc": 63,
+        "retainedTemplateLoc": 63,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/product-operations.ts",
+        "baselineSha256": "97ace79caa5daf629573bc47c4a6c541a0a202af45156259011358201befe722",
+        "finalSha256": "97ace79caa5daf629573bc47c4a6c541a0a202af45156259011358201befe722",
+        "baselineLoc": 76,
+        "finalLoc": 76,
+        "retainedTemplateLoc": 76,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/receipt-consumer.ts",
+        "baselineSha256": "a4f20b827c2dab1772823a5345ee20e572413178e0c33eeb7d93567fd52b38ba",
+        "finalSha256": "a4f20b827c2dab1772823a5345ee20e572413178e0c33eeb7d93567fd52b38ba",
+        "baselineLoc": 136,
+        "finalLoc": 136,
+        "retainedTemplateLoc": 136,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/receipts.ts",
+        "baselineSha256": "50fd21989bc71b57ef3b24e60384d4364fb2454f3d9cbf7a7954854c29764c05",
+        "finalSha256": "50fd21989bc71b57ef3b24e60384d4364fb2454f3d9cbf7a7954854c29764c05",
+        "baselineLoc": 131,
+        "finalLoc": 131,
+        "retainedTemplateLoc": 131,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/service-contract.ts",
+        "baselineSha256": "6776e8b4e2a7799b697c35d03b62e6a2a409a61ff2d1966479900e295508ea0e",
+        "finalSha256": "6776e8b4e2a7799b697c35d03b62e6a2a409a61ff2d1966479900e295508ea0e",
+        "baselineLoc": 31,
+        "finalLoc": 31,
+        "retainedTemplateLoc": 31,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/tile-http.ts",
+        "baselineSha256": "54af44df89460a0333a7440480d494d07298068bf2f3179b84c06fd2af286c40",
+        "finalSha256": "54af44df89460a0333a7440480d494d07298068bf2f3179b84c06fd2af286c40",
+        "baselineLoc": 148,
+        "finalLoc": 148,
+        "retainedTemplateLoc": 148,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/tile-process.ts",
+        "baselineSha256": "80a485b77c8c29fbb1568181163b4ffb57bc101989962371451c88b666d1cfd7",
+        "finalSha256": "80a485b77c8c29fbb1568181163b4ffb57bc101989962371451c88b666d1cfd7",
+        "baselineLoc": 74,
+        "finalLoc": 74,
+        "retainedTemplateLoc": 74,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/transaction.ts",
+        "baselineSha256": "6c263496e277184d337cb266f4ce973a735a0b8ff068dcf253e80231f447fa33",
+        "finalSha256": "6c263496e277184d337cb266f4ce973a735a0b8ff068dcf253e80231f447fa33",
+        "baselineLoc": 113,
+        "finalLoc": 113,
+        "retainedTemplateLoc": 113,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/valkey.ts",
+        "baselineSha256": "c4efb7fd1a5dcd8dafb2daad929b9a57d4808efacb3021aca167ec6963bb3e2b",
+        "finalSha256": "c4efb7fd1a5dcd8dafb2daad929b9a57d4808efacb3021aca167ec6963bb3e2b",
+        "baselineLoc": 368,
+        "finalLoc": 368,
+        "retainedTemplateLoc": 368,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/work-integration.ts",
+        "baselineSha256": "caf9430cfc69f31477c9e110504eb61fc1aaf2cfa48868f02915c1bb07c8f9c6",
+        "finalSha256": "caf9430cfc69f31477c9e110504eb61fc1aaf2cfa48868f02915c1bb07c8f9c6",
+        "baselineLoc": 18,
+        "finalLoc": 18,
+        "retainedTemplateLoc": 18,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      }
+    ],
+    "excluded": [
+      {
+        "path": ".dockerignore",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".gitignore",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/extensions.md",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/inputs/design.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/manifest.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/normalized.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/report.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "Dockerfile",
+        "reason": "outside-src"
+      },
+      {
+        "path": "README.md",
+        "reason": "outside-src"
+      },
+      {
+        "path": "compose.yaml",
+        "reason": "outside-src"
+      },
+      {
+        "path": "diagnostics/generation.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "ffmpeg-os.lock",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/edge/nginx.conf",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/local.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/catalog/000-foundation.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/catalog/products.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/catalog/products/commands/example.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/catalog/products/migrations/p_catalog_api_owner/0001-initial.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/catalog/products/queries/example.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/catalog/products/queries/list.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/catalog/products/queries/read.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "package.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "reason": "outside-src"
+      },
+      {
+        "path": "pnpm-workspace.yaml",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/bootstrap.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/broker-init.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/check-extensions.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/common.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/local.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/migrate.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/products.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/setup.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/status.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/storage-config.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "src/runtime/settings.ts",
+        "reason": "configuration-or-build"
+      },
+      {
+        "path": "tsconfig.json",
+        "reason": "outside-src"
+      }
+    ]
+  },
+  "provenance": {
+    "temporaryBareObjects": true,
+    "refs": 0,
+    "branches": 0,
+    "worktrees": 0,
+    "baselineContentSha256": "21628600bb03f7a88635369c9e6a29159631f2bc964cbe733fa87c33a21c1c0d",
+    "completedContentSha256": "19a43b6b56adfe5f0ce416022f035a67c5604693f4ca24a634c07696f50df29b"
+  }
+}

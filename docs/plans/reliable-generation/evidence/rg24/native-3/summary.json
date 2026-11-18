@@ -1,0 +1,7 @@
+{
+  "id": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848",
+  "selected": ["regeneration"],
+  "outcome": "failed",
+  "elapsedMs": 338175,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-3/run.json"
+}

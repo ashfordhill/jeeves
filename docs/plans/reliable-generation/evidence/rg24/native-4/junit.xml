@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="199.465076344">
+    <testsuite name="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" timestamp="2026-11-18T06:37:11.710Z" hostname="BASEMENT-PC" tests="4" failures="0" errors="0" skipped="2" time="199.465076344">
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: unchanged-namespace legacy API migration succeeds in place only after handwritten repair" time="9.838425914">
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates" time="0">
+            <skipped/>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: link/account public setting update preserves policy bodies, rows and session expiry promises" time="0">
+            <skipped/>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: catalog update retains accepted remote work and product data before process resumption" time="189.625768074">
+        </testcase>
+    </testsuite>
+    <testsuite name="jeeves-generator/integration/scenarios/regeneration.system.test.ts" timestamp="2026-11-18T06:37:11.711Z" hostname="BASEMENT-PC" tests="1" failures="0" errors="0" skipped="1" time="0">
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration.system.test.ts" name="B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data" time="0">
+            <skipped/>
+        </testcase>
+    </testsuite>
+</testsuites>

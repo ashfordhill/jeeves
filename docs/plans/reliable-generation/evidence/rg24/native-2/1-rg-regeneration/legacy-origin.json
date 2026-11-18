@@ -1,0 +1,12 @@
+{
+  "revision": "d52484597b7fb62d5c3b3bfb629884ab3978255f",
+  "archiveSha256": "4825ad5db06a32f2b6b4092f12fb8ccc6b38a498a721b0c06230cfdc2be6b77a",
+  "oldDesignSha256": "26ac68fa5b0ca89579d5af1d26bea1281bb5e15afbd2203a07137319c2927f18",
+  "copiedDesignSha256": "7acfcb8043551ab052c102be3e8b8b20c4b9140603cb3e76ca9a08aee505c074",
+  "manifestSha256": "0e25a973b2f2124f9ea69cbd34fd4aa59796bbaebd405b4ae4767b921b89dd0d",
+  "extensionMetadataAbsent": true,
+  "noManifestRewriting": true,
+  "archivedWorkspaceImport": "<archived-source>/jeeves/packages/spec/src/index.ts",
+  "archivedSpecSha256": "9a2317a952d58a1af3178fffeac171e47f88800223da2f5bcdff8741e0d38076",
+  "pinnedSpecSha256": "9a2317a952d58a1af3178fffeac171e47f88800223da2f5bcdff8741e0d38076"
+}

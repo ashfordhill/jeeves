@@ -1,0 +1,33 @@
+{
+  "containers": {
+    "before": 42,
+    "after": 42,
+    "exactFields": ["ID", "Names", "State"],
+    "match": true
+  },
+  "networks": {
+    "before": 9,
+    "after": 9,
+    "exactFields": ["ID", "Name", "Driver", "Scope"],
+    "match": true
+  },
+  "volumes": {
+    "before": 23,
+    "after": 23,
+    "exactFields": ["Name", "Driver", "Scope"],
+    "match": true
+  },
+  "images": {
+    "before": 43,
+    "after": 43,
+    "exactFields": ["ID", "Repository", "Tag"],
+    "match": true
+  },
+  "oldE2EProjects": {
+    "before": 2,
+    "after": 2,
+    "exactInventoryMatch": true,
+    "unitCreatedRemaining": 0
+  },
+  "rootSnapshotMatches": true
+}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848",
+  "suite": "regeneration",
+  "temporary": "/tmp/jeeves-system-aYtO9G",
+  "stacks": [
+    {
+      "project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-1",
+      "fixture": "rg-regeneration",
+      "application": "/tmp/jeeves-system-aYtO9G/1-rg-regeneration",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-3/1-rg-regeneration",
+      "ports": [38931, 43313, 33023]
+    },
+    {
+      "project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+      "fixture": "rg-link-flow",
+      "application": "/tmp/jeeves-system-aYtO9G/2-rg-link-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-3/2-rg-link-flow",
+      "ports": [35099, 35915, 33235]
+    },
+    {
+      "project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3",
+      "fixture": "rg-catalog-flow",
+      "application": "/tmp/jeeves-system-aYtO9G/3-rg-catalog-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-3/3-rg-catalog-flow",
+      "ports": [35923, 33083, 43443]
+    }
+  ]
+}

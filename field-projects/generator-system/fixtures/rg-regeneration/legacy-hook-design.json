@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 3,
+  "revision": 4,
+  "elements": [
+    {
+      "id": "echo-api",
+      "name": "Echo API",
+      "classification": {
+        "kind": "Application"
+      }
+    }
+  ],
+  "connections": [],
+  "architecture": {
+    "system": {
+      "name": "Legacy hook migration",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "echo-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [],
+      "components": [
+        {
+          "id": "echo",
+          "host": "echo-api",
+          "name": "Echo",
+          "settings": {
+            "kind": "custom"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "entry-echo",
+          "lane": "download",
+          "element": "echo-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Echo"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "echo",
+        "target": {
+          "kind": "component",
+          "component": "echo",
+          "host": "echo-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      }
+    ]
+  }
+}

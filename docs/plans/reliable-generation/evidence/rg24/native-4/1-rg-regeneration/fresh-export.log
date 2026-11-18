@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/legacy-hook-design.json /tmp/jeeves-system-T5y6v7/tiny-current-fresh
+{
+  directory: '/tmp/jeeves-system-T5y6v7/tiny-current-fresh',
+  files: 51,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 2
+}

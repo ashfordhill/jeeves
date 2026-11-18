@@ -1,0 +1,16 @@
+$ tsx src/v2/update-cli.ts /tmp/jeeves-system-aYtO9G/catalog-setting.json /tmp/jeeves-system-aYtO9G/3-rg-catalog-flow --check
+{
+  "directory": "/tmp/jeeves-system-aYtO9G/3-rg-catalog-flow",
+  "check": true,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 5,
+    "unchanged": 80,
+    "keep": 9
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

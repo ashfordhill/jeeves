@@ -1,0 +1,27 @@
+Error: pnpm --dir exit 1
+$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/legacy-hook-design.json /tmp/jeeves-system-T5y6v7/1-rg-regeneration --check
+{
+  "directory": "/tmp/jeeves-system-T5y6v7/1-rg-regeneration",
+  "check": true,
+  "refused": [
+    "Extension API 1 -> 8 requires migration; edit these files and acknowledge --ack-extension-api=8: src/modules/echo-api/echo.ts"
+  ],
+  "counts": {
+    "create": 13,
+    "replace": 26,
+    "unchanged": 8,
+    "keep": 0
+  },
+  "keepChanged": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/modules/echo-api/echo.ts"
+  ],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator

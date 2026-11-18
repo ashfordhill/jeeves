@@ -1,0 +1,23 @@
+$ tsx src/v2/update-cli.ts /tmp/jeeves-system-Ii23wa/link-label.json /tmp/jeeves-system-Ii23wa/3-rg-link-flow
+{
+  "directory": "/tmp/jeeves-system-Ii23wa/3-rg-link-flow",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 11,
+    "unchanged": 87,
+    "keep": 6
+  },
+  "keepChanged": [
+    "src/modules/items-api/create-limit.hooks.ts",
+    "src/modules/items-api/create.ts",
+    "src/modules/items-api/forbidden.ts",
+    "src/modules/items-api/read-record.ts",
+    "src/modules/items-api/record-reader.hooks.ts",
+    "src/modules/items-api/slow.ts"
+  ],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

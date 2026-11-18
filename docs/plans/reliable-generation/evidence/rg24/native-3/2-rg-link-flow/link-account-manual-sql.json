@@ -1,0 +1,101 @@
+{
+  "method": "Physical nonblank lines excluding -- comment-only lines; separate from source-loc-v2",
+  "files": [
+    {
+      "path": "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql",
+      "sha256": "a1820cce349b10a2fb7a08069e198673b8e1804dbd9a66e6878741ed516f7631",
+      "nonblankNonLineCommentLines": 4
+    },
+    {
+      "path": "infra/postgres/items-db/products/commands/create.sql",
+      "sha256": "80e98a9bad3740704b0d8aaba2300ebb542384dc4e27aac79602d93ab82d799b",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/items-db/products/commands/worker.sql",
+      "sha256": "c61cfb5412cf83aa9274fade4c0a7adb6a4a4f1c0d937b90252b6deb843488c4",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/items-db/products/queries/read.sql",
+      "sha256": "090c61e32a6f1f9dc627637ed6de1f38875e4afecfe5570088210d7d1cc3068c",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/items-db/products/queries/published.sql",
+      "sha256": "754116f11a7b73981789716e8568b2543e6c13732b9c7c074a467e8da2f47157",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/items-db/products/queries/slow.sql",
+      "sha256": "5cc65e3af0e0c21ccb5d9ceb2e2a53268dc8b1bd8394a7890fd3c64e45b0e78c",
+      "nonblankNonLineCommentLines": 1
+    }
+  ],
+  "total": 9,
+  "handwrittenTypeScript": [
+    {
+      "path": "src/modules/gateway/forward.ts",
+      "sha256": "51b44c3a4814a033cce5ad1951f0e41317f161ff07c35c5526a2626cf6120045",
+      "physicalCodeLines": 16
+    },
+    {
+      "path": "src/modules/gateway/published.ts",
+      "sha256": "6f3908f9cfc579b9e88e3aa32a1e7a3d2cac6d8bd598d5b2a6df87bae86de0c6",
+      "physicalCodeLines": 8
+    },
+    {
+      "path": "src/modules/items-api/create.ts",
+      "sha256": "eb9d796a0ce90110324a5a45c7f9cfe8c38c8234d2170a78a4f590510b2072e1",
+      "physicalCodeLines": 33
+    },
+    {
+      "path": "src/modules/items-api/slow.ts",
+      "sha256": "f062fe88748db81d60935c2ddf88be5f5bba06dd7986f4d341f00cd5d37428c6",
+      "physicalCodeLines": 14
+    },
+    {
+      "path": "src/modules/items-api/forbidden.ts",
+      "sha256": "97d8f8f7d4a29e726d019202f1499573362105da10816734aca3d7a4979625be",
+      "physicalCodeLines": 9
+    },
+    {
+      "path": "src/modules/items-api/read-record.ts",
+      "sha256": "9ce30100cd14238b760c713906e881ceb9eae136d18e4fb5aa202de7a6368cfe",
+      "physicalCodeLines": 20
+    },
+    {
+      "path": "src/modules/items-worker/worker-access.ts",
+      "sha256": "9c837e94da3d5dd7d540446208a262c42286c370bb28d11fe49afa66de1ecb2a",
+      "physicalCodeLines": 4
+    },
+    {
+      "path": "src/modules/items-api/record-reader.hooks.ts",
+      "sha256": "50e8db84a1124639bfa0732f4c5e43424d2d2ea490d5fe5ea65f2e70ddee80cb",
+      "physicalCodeLines": 17
+    },
+    {
+      "path": "src/modules/items-api/create-limit.hooks.ts",
+      "sha256": "7e8e0ec6b85267d15a400d01edaace4b43b9958e6aac163b1d6915fc8ce8207a",
+      "physicalCodeLines": 4
+    },
+    {
+      "path": "src/contracts/record.ts",
+      "sha256": "f021c158e088eb4b9369bd04d01c0c59d1acb761501ebef7deac672f315d80f5",
+      "physicalCodeLines": 26
+    },
+    {
+      "path": "src/modules/browser/navigate.ts",
+      "sha256": "c9783ab4f16dc4e2649d5a8cedf0d09462155ae2cde03a327f934522f314c760",
+      "physicalCodeLines": 11
+    }
+  ],
+  "declarationFiles": ["infra/postgres/items-db/products.json"],
+  "infrastructureExcluded": [
+    "../rg-infra TLS/CA/issuer",
+    "../rg-catalog-infra protocol/fault proxy",
+    "integration harness/native probes",
+    "compose.override.yaml",
+    ".jeeves/generated update shadows (not runtime-imported)"
+  ]
+}

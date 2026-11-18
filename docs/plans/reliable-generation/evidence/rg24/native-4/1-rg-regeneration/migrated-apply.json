@@ -1,0 +1,15 @@
+{
+  "directory": "/tmp/jeeves-system-T5y6v7/1-rg-regeneration",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 13,
+    "replace": 26,
+    "unchanged": 8,
+    "keep": 0
+  },
+  "keepChanged": ["package.json", "pnpm-lock.yaml", "src/modules/echo-api/echo.ts"],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

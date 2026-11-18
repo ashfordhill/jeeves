@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "namespaces": [
+    {
+      "schema": "p_catalog_api_owner",
+      "migrations": [
+        {
+          "version": "0001",
+          "file": "infra/postgres/catalog/products/migrations/p_catalog_api_owner/0001-initial.sql"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "schema": "p_catalog_api_owner",
+      "name": "records"
+    }
+  ],
+  "views": [],
+  "operations": [
+    {
+      "name": "read_record",
+      "host": "catalog-api",
+      "module": "catalog-read",
+      "kind": "query",
+      "file": "infra/postgres/catalog/products/queries/read.sql",
+      "parameters": 1,
+      "relations": [
+        {
+          "schema": "p_catalog_api_owner",
+          "name": "records",
+          "operations": ["select"]
+        }
+      ]
+    },
+    {
+      "name": "list_records",
+      "host": "catalog-api",
+      "module": "catalog-writer",
+      "kind": "query",
+      "file": "infra/postgres/catalog/products/queries/list.sql",
+      "parameters": 0,
+      "relations": [
+        {
+          "schema": "p_catalog_api_owner",
+          "name": "records",
+          "operations": ["select"]
+        }
+      ]
+    }
+  ]
+}

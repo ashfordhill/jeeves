@@ -1,0 +1,31 @@
+Error: pnpm --dir exit 1
+$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/design.json /tmp/jeeves-system-Ii23wa/1-rg-regeneration --check --ack-extension-api=8
+{
+  "directory": "/tmp/jeeves-system-Ii23wa/1-rg-regeneration",
+  "check": true,
+  "refused": [
+    "Runtime identity/namespace migration required for product:catalog.catalog-writer. Review .jeeves/normalized.json and application-owned hook paths (infra/postgres/catalog/modules/catalog-writer.sql); export to a fresh directory and migrate application/data explicitly. This updater cannot migrate identities; extension-API acknowledgement does not authorize it."
+  ],
+  "counts": {
+    "create": 26,
+    "replace": 32,
+    "unchanged": 9,
+    "keep": 0
+  },
+  "keepChanged": [
+    "infra/postgres/catalog/products.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/modules/catalog-api/catalog-read.hooks.ts",
+    "src/modules/catalog-api/catalog-writer.ts"
+  ],
+  "override": [],
+  "remove": [],
+  "orphan": [
+    "infra/postgres/catalog/modules/catalog-writer.sql"
+  ]
+}
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator

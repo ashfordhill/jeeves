@@ -1,0 +1,30 @@
+{
+  "project": "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3",
+  "before": {
+    "containers": [
+      "c4733235564a",
+      "832c1e30168e",
+      "17ceb2585570",
+      "0441607fde16",
+      "ba4f49b75524",
+      "a8745d93467d",
+      "8c4d20f40b6a",
+      "1bc351ae165c",
+      "5ff5fddc5310",
+      "6ca3894413ac"
+    ],
+    "networks": ["21b094df22da"],
+    "volumes": [
+      "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-admission",
+      "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-records",
+      "gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_postgres-data"
+    ],
+    "images": ["gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest"]
+  },
+  "after": {
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": []
+  }
+}

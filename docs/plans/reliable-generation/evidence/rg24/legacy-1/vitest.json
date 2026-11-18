@@ -1,0 +1,92 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 1,
+  "numFailedTestSuites": 1,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 4,
+  "numPassedTests": 0,
+  "numFailedTests": 1,
+  "numPendingTests": 3,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794982626643,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "status": "failed",
+          "title": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "duration": 9182.897345000001,
+          "failureMessages": [
+            "Error: Error: pnpm --dir exit 1\n$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/design.json /tmp/jeeves-system-TR6S6u/1-rg-regeneration --check --ack-extension-api=8\n{\n  \"directory\": \"/tmp/jeeves-system-TR6S6u/1-rg-regeneration\",\n  \"check\": true,\n  \"refused\": [\n    \"Extension migration build failed (src/modules/catalog-api/catalog-read.hooks.ts, src/modules/catalog-api/catalog-writer.ts): infra/postgres/catalog/products.json: Invalid product SQL declaration: table exceeds compiled owner/grant maximum\\n\"\n  ],\n  \"counts\": {\n    \"create\": 28,\n    \"replace\": 31,\n    \"unchanged\": 10,\n    \"keep\": 0\n  },\n  \"keepChanged\": [\n    \"infra/postgres/catalog/products.json\",\n    \"infra/postgres/catalog/products/migrations/m_catalog_writer/0001-initial.sql\",\n    \"package.json\",\n    \"pnpm-lock.yaml\",\n    \"src/modules/catalog-api/catalog-read.hooks.ts\",\n    \"src/modules/catalog-api/catalog-writer.ts\"\n  ],\n  \"override\": [],\n  \"remove\": [],\n  \"orphan\": [\n    \"infra/postgres/catalog/modules/catalog-writer.sql\"\n  ]\n}\n[ELIFECYCLE] Command failed with exit code 1.\nError: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL\n\n  × \"pnpm recursive run\" failed in /home/ash/github/jeeves/jeeves-generator\n\n\n    at Application.execute (/home/ash/github/jeeves/jeeves-generator/integration/harness/application.ts:95:13)\n    at publicUpdate (/home/ash/github/jeeves/jeeves-generator/integration/harness/rg-regeneration.ts:112:14)\n    at /home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:111:21\n    at file:///home/ash/github/jeeves/node_modules/.pnpm/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@24.19.2_jsdom@29.1.1_@noble+hashes@2_b72d06d6de49ea9f9ac618588292c926/node_modules/vitest/dist/chunks/run.CQOUYP-x.js:2783:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "status": "skipped",
+          "title": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "status": "skipped",
+          "title": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794982627196,
+      "endTime": 1794982636378.8975,
+      "status": "failed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "status": "skipped",
+          "title": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794982626643,
+      "endTime": 1794982626643,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration.system.test.ts"
+    }
+  ]
+}

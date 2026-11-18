@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /tmp/jeeves-system-aYtO9G/link-label.json /tmp/jeeves-system-aYtO9G/label-fresh
+{
+  directory: '/tmp/jeeves-system-aYtO9G/label-fresh',
+  files: 111,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 20
+}

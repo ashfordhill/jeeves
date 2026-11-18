@@ -1,0 +1,15 @@
+{
+  "legacyApi": 1,
+  "currentApi": 8,
+  "unchangedNamespaces": true,
+  "acknowledgedInPlaceSuccess": true,
+  "manuallyRepairedFiles": ["src/modules/echo-api/echo.ts"],
+  "hookBeforeMigration": "098796d92c4fd5e136d7942e8a5308b8a45616510488c14f9b4fec44f5911c37",
+  "hookAfterRepair": "69f0ee3488cb10899fe18e76ed961aa409e170198983fa5c9957aabe5248016d",
+  "hookAfterUpdates": "69f0ee3488cb10899fe18e76ed961aa409e170198983fa5c9957aabe5248016d",
+  "noGeneratedFilesManuallyEdited": true,
+  "oldManifest": "64b9a245345769cc971e3861a51aa104ce8c6bd10e2e26126a50813325d915d4",
+  "newManifest": "5697f228b721a0b35b0c8baeb4afcce06fb63b43c75b18f859a140e94651c840",
+  "generatedScaffoldMatchesFresh": true,
+  "applicationConfigurationKept": ["package.json", "pnpm-lock.yaml"]
+}

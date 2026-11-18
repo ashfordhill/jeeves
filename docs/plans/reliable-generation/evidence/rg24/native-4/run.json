@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf",
+  "suite": "regeneration",
+  "temporary": "/tmp/jeeves-system-T5y6v7",
+  "stacks": [
+    {
+      "project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-1",
+      "fixture": "rg-regeneration",
+      "application": "/tmp/jeeves-system-T5y6v7/1-rg-regeneration",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-4/1-rg-regeneration",
+      "ports": [34465, 36373, 36677]
+    },
+    {
+      "project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2",
+      "fixture": "rg-catalog-flow",
+      "application": "/tmp/jeeves-system-T5y6v7/2-rg-catalog-flow",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-4/2-rg-catalog-flow",
+      "ports": [40693, 38025, 37599]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "native4SourceSha256": "dd282fedf89d2abeb7c9451cd0c37ce52de725fd8ca885ff931e8a76bbf02766",
+  "finalSourceSha256": "dd282fedf89d2abeb7c9451cd0c37ce52de725fd8ca885ff931e8a76bbf02766",
+  "sourceUnchangedAfterNative4": true,
+  "productionDiffFromAccepted23": [],
+  "productionPathsReviewed": [
+    "jeeves-generator/src",
+    "jeeves-generator/templates",
+    "jeeves/packages/spec",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "noPinsUpdated": true
+}

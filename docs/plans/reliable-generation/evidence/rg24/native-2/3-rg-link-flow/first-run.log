@@ -1,0 +1,278 @@
+$ node scripts/local.mjs first-run
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Building
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Building
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Building
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Building
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Building
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Built
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Built
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Built
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Built
+ Image gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app Built
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.85kB done
+#1 DONE 0.0s
+
+#2 [app-gateway internal] load build definition from Dockerfile
+#2 DONE 0.0s
+
+#2 [setup-migrate internal] load build definition from Dockerfile
+#2 transferring dockerfile:
+#2 transferring dockerfile: 1.71kB done
+#2 DONE 0.2s
+
+#3 [app-items-api internal] load metadata for docker.io/library/node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 0.4s
+
+#4 [app-gateway internal] load .dockerignore
+#4 transferring context:
+#4 transferring context: 84B done
+#4 DONE 0.2s
+
+#5 [app-items-worker internal] load build context
+#5 DONE 0.0s
+
+#6 [app-items-worker app 1/7] FROM docker.io/library/node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#6 resolve docker.io/library/node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.1s done
+#6 resolve docker.io/library/node:24.21.0-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.1s done
+#6 DONE 0.1s
+
+#5 [app-items-api internal] load build context
+#5 transferring context: 5.98MB 0.0s done
+#5 DONE 0.2s
+
+#7 [app-gateway app 4/7] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+#7 CACHED
+
+#8 [app-gateway app 2/7] WORKDIR /app
+#8 CACHED
+
+#9 [app-gateway app 3/7] RUN npm install --global pnpm@12.16.1
+#9 CACHED
+
+#10 [app-browser app 5/7] RUN pnpm install --frozen-lockfile --ignore-scripts
+#10 CACHED
+
+#11 [app-browser app 6/7] COPY . .
+#11 DONE 0.6s
+
+#12 [app-browser app 7/7] RUN pnpm build
+#12 0.529 $ pnpm check:extensions && tsc -p tsconfig.json
+#12 0.541 $ node scripts/check-extensions.mjs
+#12 0.739 Extension boundaries passed (API v8; cooperative misuse check; no hostile-code sandbox). Hook completeness and runtime behavior are not assessed.
+#12 DONE 1.2s
+
+#13 [setup-migrate] exporting to image
+#13 exporting layers
+#13 exporting layers 0.8s done
+#13 exporting manifest sha256:74dd634ad538a18f977d72de6e2d2248ba03695c9f2a2051e6404ad0dfb7d137
+#13 exporting manifest sha256:74dd634ad538a18f977d72de6e2d2248ba03695c9f2a2051e6404ad0dfb7d137 0.4s done
+#13 exporting config sha256:6373d13b4ed13bf062e997f7d79f09ce9ce6854604df644beb7f22755c8ce36c
+#13 exporting config sha256:6373d13b4ed13bf062e997f7d79f09ce9ce6854604df644beb7f22755c8ce36c 0.4s done
+#13 exporting attestation manifest sha256:501f443581f4ea767e1f59768b3591fe27b9c9787c2d38ee61d92eec2d8530a1
+#13 exporting attestation manifest sha256:501f443581f4ea767e1f59768b3591fe27b9c9787c2d38ee61d92eec2d8530a1 0.5s done
+#13 exporting manifest list sha256:b5dddd69b3722f87b0b2c88054ccd612b8a03065542852470c9e54eb25926965
+#13 exporting manifest list sha256:b5dddd69b3722f87b0b2c88054ccd612b8a03065542852470c9e54eb25926965 0.4s done
+#13 naming to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest
+#13 naming to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 0.1s done
+#13 unpacking to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest
+#13 ...
+
+#14 [app-items-worker] exporting to image
+#14 exporting layers 0.8s done
+#14 exporting manifest sha256:187e61c2d6e4f72c5842e5a30a20e2c6b77ec0a97942016e9b8e44eb6871b358 0.4s done
+#14 exporting config sha256:09e0510e0bf70b45ef6ab48e5c887a4f6981f59effd6d10536925f46a2d17fb3 0.4s done
+#14 exporting attestation manifest sha256:cc0ed496315e959e541d5c8fe5d72a08eef3c89928ece931234f2ba55217381f 0.5s done
+#14 exporting manifest list sha256:497d21a3a5510170b7b8743be793644510f186a62044b3185c156dbefdb08185 0.4s done
+#14 naming to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 0.1s done
+#14 unpacking to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 9.9s done
+#14 DONE 12.9s
+
+#13 [setup-migrate] exporting to image
+#13 unpacking to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 9.9s done
+#13 DONE 12.9s
+
+#15 [app-items-api] exporting to image
+#15 exporting layers 0.9s done
+#15 exporting manifest sha256:1c2192d5e1260b73bbe4501e60f5eb92581a968ccc3ccf2b2799f3e84c790098 0.3s done
+#15 exporting config sha256:1f2bdb8744e1f00f247675383ff37e32d14830174a4d07145489ebad60cbf14e 0.4s done
+#15 exporting attestation manifest sha256:a82c717bbec96b20299a5f462c5bfbaa5f1738374309a14232f025fc7fd7e07a 0.5s done
+#15 exporting manifest list sha256:1ba158ba9bd812a4d43f37d086ae4be193fb4f7f43ce85dab674de5f646809e4 0.3s done
+#15 naming to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 0.1s done
+#15 unpacking to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 10.0s done
+#15 DONE 13.0s
+
+#16 [app-browser] exporting to image
+#16 exporting layers 0.9s done
+#16 exporting manifest sha256:841da36b06c951a39834e606213e7533110f7ee6ddf7a8af798b1cd4c0056c18 0.4s done
+#16 exporting config sha256:12597f01cfc7e472c588e33f1087ae15de80e54d58b2046981224c834a540ce5 0.4s done
+#16 exporting attestation manifest sha256:c4dc17041d65201c9da8d40b8cab04adb6ad68c2562d06458188463b41b51d3d 0.5s done
+#16 exporting manifest list sha256:a94049e117a88712e445bc19ca7f5912c49cb8b130948b3c91af63ce0d25388c 0.4s done
+#16 naming to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 0.0s done
+#16 unpacking to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 10.0s done
+#16 DONE 13.0s
+
+#17 [app-gateway] exporting to image
+#17 exporting layers 0.8s done
+#17 exporting manifest sha256:c9a0dd2f6497938bd7e93182a16e1fb189c8b4e72e91364faefe445b29581e05 0.3s done
+#17 exporting config sha256:495f368c22f09eaa4c056c2af54700ac5843e9c35ba5643bcf35e702d200f469 0.4s done
+#17 exporting attestation manifest sha256:ee2e458f6c6285a6163ee9d6e1747743f1ca8945ae3a3d9d11978f7ea5948a41 0.5s done
+#17 exporting manifest list sha256:b6ba476513bab44c381d31fd782356e965a7591e9f5fc82bcc034e061a947d01 0.3s done
+#17 naming to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 0.2s done
+#17 unpacking to docker.io/library/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app:latest 10.0s done
+#17 DONE 13.1s
+
+#18 [app-items-worker] resolving provenance for metadata file
+#18 ...
+
+#19 [app-gateway] resolving provenance for metadata file
+#19 DONE 0.2s
+
+#18 [app-items-worker] resolving provenance for metadata file
+#18 DONE 0.9s
+
+#20 [app-items-api] resolving provenance for metadata file
+#20 DONE 0.5s
+
+#21 [setup-migrate] resolving provenance for metadata file
+#21 DONE 0.8s
+
+#22 [app-browser] resolving provenance for metadata file
+#22 DONE 0.0s
+ Network gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_default Creating
+ Network gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_default Creating
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-admission Creating
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-admission Creating
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-records Creating
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-records Creating
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_postgres-data Creating
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_postgres-data Creating
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-admission Created
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-admission Created
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-records Created
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_cache-records Created
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_postgres-data Created
+ Volume gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_postgres-data Created
+ Network gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_default Created
+ Network gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3_default Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-setup-migrate-run-7234bbbede6b Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-setup-migrate-run-7234bbbede6b Created
+Applied infra/postgres/items-db/000-foundation.sql
+Applied infra/postgres/items-db/050-jeeves-idempotency.sql
+Applied infra/postgres/items-db/051-jeeves-local-operations.sql
+Applied infra/postgres/items-db/052-jeeves-durable-work.sql
+Applied infra/postgres/sessions/000-foundation.sql
+Applied infra/postgres/sessions/054-jeeves-browser-session.sql
+Applied infra/postgres/sessions/055-jeeves-browser-refresh.sql
+Applied infra/postgres/sign-in/000-foundation.sql
+Migrations current; setup-only owners and exact runtime credentials preserved.
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Running
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Running
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Running
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Running
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Running
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-worker-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-api-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-api-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-worker-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-edge-1 Creating
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-edge-1 Created
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-worker-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-api-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-worker-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-api-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-edge-1 Starting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-edge-1 Started
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-edge-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-api-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-worker-1 Waiting
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-worker-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-api-1 Healthy
+ Container gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-edge-1 Healthy
+Local providers initialized (Compose gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3); private credentials and volume identities retained. Application readiness remains in .jeeves/report.json.

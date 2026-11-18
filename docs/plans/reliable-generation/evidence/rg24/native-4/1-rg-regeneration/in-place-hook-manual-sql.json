@@ -1,0 +1,20 @@
+{
+  "method": "Physical nonblank lines excluding -- comment-only lines; separate from source-loc-v2",
+  "files": [],
+  "total": 0,
+  "handwrittenTypeScript": [
+    {
+      "path": "src/modules/echo-api/echo.ts",
+      "sha256": "69f0ee3488cb10899fe18e76ed961aa409e170198983fa5c9957aabe5248016d",
+      "physicalCodeLines": 6
+    }
+  ],
+  "declarationFiles": [],
+  "infrastructureExcluded": [
+    "../rg-infra TLS/CA/issuer",
+    "../rg-catalog-infra protocol/fault proxy",
+    "integration harness/native probes",
+    "compose.override.yaml",
+    ".jeeves/generated update shadows (not runtime-imported)"
+  ]
+}

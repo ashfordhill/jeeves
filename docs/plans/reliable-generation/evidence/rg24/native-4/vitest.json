@@ -1,0 +1,101 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 2,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 5,
+  "numPassedTests": 2,
+  "numFailedTests": 0,
+  "numPendingTests": 3,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794983610058,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: unchanged-namespace legacy API migration succeeds in place only after handwritten repair",
+          "status": "passed",
+          "title": "RG24: unchanged-namespace legacy API migration succeeds in place only after handwritten repair",
+          "duration": 9838.425914,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "status": "skipped",
+          "title": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "status": "skipped",
+          "title": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "status": "passed",
+          "title": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "duration": 189625.768074,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794983610612,
+      "endTime": 1794983810075.768,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "status": "skipped",
+          "title": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794983610058,
+      "endTime": 1794983610058,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration.system.test.ts"
+    }
+  ]
+}

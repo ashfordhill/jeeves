@@ -1,0 +1,15 @@
+{
+  "directory": "/tmp/jeeves-system-aYtO9G/2-rg-link-flow",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 5,
+    "unchanged": 93,
+    "keep": 12
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

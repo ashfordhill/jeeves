@@ -1,0 +1,94 @@
+[
+  {
+    "fixture": "in-place-hook",
+    "report": "native-4/1-rg-regeneration/in-place-hook-source-loc.json",
+    "scope": {
+      "version": 1,
+      "backendPaths": ["src"],
+      "uiPaths": ["browser", "public"]
+    },
+    "scopeSha256": "2470cf09403a51c51c533da1407e301e6c501794ed2140ef415019e55a29450a",
+    "omittedNonRuntimeMetadata": {
+      ".jeeves/generated/package.json": "62be8a96ae5f3816014b5c9d4ac34400e2f5e7805fcbc910a0d0d5d7b510a504",
+      ".jeeves/generated/pnpm-lock.yaml": "85a41dd5d1ae8dc0ea58da3100c9a2ccbc61429b5da58e84d3df43d21150df2b",
+      ".jeeves/generated/src/modules/echo-api/echo.ts": "01e97755450183988b3ef96c254af7ca6ce185d349199bbb80e9cbf76f3c86f0"
+    },
+    "omissionReason": ".jeeves/generated shadows are metadata; tsconfig compiles src/**/*.ts only. Full determinism file hashes include every omitted path. No application-owned runtime source omitted.",
+    "fullDiskHashEvidence": "native-4/1-rg-regeneration/determinism.json",
+    "totals": {
+      "includedFiles": 22,
+      "baselineLoc": 2257,
+      "finalLoc": 2256,
+      "retainedTemplateLoc": 2252,
+      "postTemplateLoc": 4,
+      "removedOrReplacedTemplateLoc": 5,
+      "templatePercent": 99.82
+    }
+  },
+  {
+    "fixture": "migrated-catalog",
+    "report": "native-2/2-rg-regeneration/migrated-catalog-source-loc.json",
+    "scope": {
+      "version": 1,
+      "backendPaths": ["src"],
+      "uiPaths": ["browser", "public"]
+    },
+    "scopeSha256": "2470cf09403a51c51c533da1407e301e6c501794ed2140ef415019e55a29450a",
+    "omittedNonRuntimeMetadata": {},
+    "omissionReason": ".jeeves/generated shadows are metadata; tsconfig compiles src/**/*.ts only. Full determinism file hashes include every omitted path. No application-owned runtime source omitted.",
+    "fullDiskHashEvidence": "native-2/2-rg-regeneration/determinism.json",
+    "totals": {
+      "includedFiles": 39,
+      "baselineLoc": 5794,
+      "finalLoc": 5797,
+      "retainedTemplateLoc": 5772,
+      "postTemplateLoc": 25,
+      "removedOrReplacedTemplateLoc": 22,
+      "templatePercent": 99.57
+    }
+  },
+  {
+    "fixture": "link-account",
+    "report": "native-3/2-rg-link-flow/link-account-source-loc.json",
+    "scope": {
+      "version": 1,
+      "backendPaths": ["src"],
+      "uiPaths": ["browser", "public"]
+    },
+    "scopeSha256": "2470cf09403a51c51c533da1407e301e6c501794ed2140ef415019e55a29450a",
+    "omittedNonRuntimeMetadata": {},
+    "omissionReason": ".jeeves/generated shadows are metadata; tsconfig compiles src/**/*.ts only. Full determinism file hashes include every omitted path. No application-owned runtime source omitted.",
+    "fullDiskHashEvidence": "native-3/2-rg-link-flow/determinism.json",
+    "totals": {
+      "includedFiles": 66,
+      "baselineLoc": 7572,
+      "finalLoc": 7641,
+      "retainedTemplateLoc": 7509,
+      "postTemplateLoc": 132,
+      "removedOrReplacedTemplateLoc": 63,
+      "templatePercent": 98.27
+    }
+  },
+  {
+    "fixture": "catalog-event",
+    "report": "native-4/2-rg-catalog-flow/catalog-event-source-loc.json",
+    "scope": {
+      "version": 1,
+      "backendPaths": ["src"],
+      "uiPaths": ["browser", "public"]
+    },
+    "scopeSha256": "2470cf09403a51c51c533da1407e301e6c501794ed2140ef415019e55a29450a",
+    "omittedNonRuntimeMetadata": {},
+    "omissionReason": ".jeeves/generated shadows are metadata; tsconfig compiles src/**/*.ts only. Full determinism file hashes include every omitted path. No application-owned runtime source omitted.",
+    "fullDiskHashEvidence": "native-4/2-rg-catalog-flow/determinism.json",
+    "totals": {
+      "includedFiles": 49,
+      "baselineLoc": 6495,
+      "finalLoc": 6572,
+      "retainedTemplateLoc": 6474,
+      "postTemplateLoc": 98,
+      "removedOrReplacedTemplateLoc": 21,
+      "templatePercent": 98.51
+    }
+  }
+]

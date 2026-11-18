@@ -1,0 +1,15 @@
+{
+  "directory": "/tmp/jeeves-system-Ii23wa/2-rg-regeneration",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 68,
+    "keep": 4
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

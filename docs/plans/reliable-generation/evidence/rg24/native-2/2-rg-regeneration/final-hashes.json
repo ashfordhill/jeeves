@@ -1,0 +1,25 @@
+{
+  "changedOwned": [
+    {
+      "path": "infra/postgres/catalog/products.json",
+      "ownership": "generated-extension",
+      "sha256": "54aad7a7b2ea9264e0381daf537eb8cda587cdb4b539b2d6a6ee4e6bd4c5a0d9"
+    },
+    {
+      "path": "infra/postgres/catalog/products/migrations/p_catalog_api_owner/0001-initial.sql",
+      "ownership": "generated-extension",
+      "sha256": "b4026f20415d25b567096a978d69086a3696b41f03a7435d435ab54a430a3c20"
+    },
+    {
+      "path": "src/modules/catalog-api/catalog-read.hooks.ts",
+      "ownership": "generated-extension",
+      "sha256": "8af59257d162a51050d6cfca4d0d85040cb91a6b605e713184bcea0337a28864"
+    },
+    {
+      "path": "src/modules/catalog-api/catalog-writer.ts",
+      "ownership": "generated-extension",
+      "sha256": "b8eff19f1322bff1f4b9282304e57a5e7745fd02ff01cf5385ad07f8405c6979"
+    }
+  ],
+  "scaffoldUnchanged": true
+}

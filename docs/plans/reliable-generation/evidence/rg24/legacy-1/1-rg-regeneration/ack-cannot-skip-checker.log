@@ -1,0 +1,32 @@
+Error: pnpm --dir exit 1
+$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/design.json /tmp/jeeves-system-TR6S6u/1-rg-regeneration --ack-extension-api=8
+{
+  "directory": "/tmp/jeeves-system-TR6S6u/1-rg-regeneration",
+  "check": false,
+  "refused": [
+    "Extension migration build failed (src/modules/catalog-api/catalog-read.hooks.ts, src/modules/catalog-api/catalog-writer.ts): infra/postgres/catalog/products.json: Invalid product SQL declaration: table exceeds compiled owner/grant maximum\nsrc/modules/catalog-api/catalog-read.hooks.ts: forbidden driver/runtime import pg\n"
+  ],
+  "counts": {
+    "create": 28,
+    "replace": 31,
+    "unchanged": 10,
+    "keep": 0
+  },
+  "keepChanged": [
+    "infra/postgres/catalog/products.json",
+    "infra/postgres/catalog/products/migrations/m_catalog_writer/0001-initial.sql",
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/modules/catalog-api/catalog-read.hooks.ts",
+    "src/modules/catalog-api/catalog-writer.ts"
+  ],
+  "override": [],
+  "remove": [],
+  "orphan": [
+    "infra/postgres/catalog/modules/catalog-writer.sql"
+  ]
+}
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator

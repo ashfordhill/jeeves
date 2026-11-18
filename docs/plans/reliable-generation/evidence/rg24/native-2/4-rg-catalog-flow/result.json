@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-catalog-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: Timed out waiting for remote effect completed but response withheld; last observation: {\"events\":[{\"phase\":\"prepare\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200}],\"acks\":[],\"ingress\":0,\"commits\":[]}"
+}

@@ -1,0 +1,16 @@
+$ tsx src/v2/update-cli.ts /tmp/jeeves-system-aYtO9G/link-setting.json /tmp/jeeves-system-aYtO9G/2-rg-link-flow
+{
+  "directory": "/tmp/jeeves-system-aYtO9G/2-rg-link-flow",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 98,
+    "keep": 12
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

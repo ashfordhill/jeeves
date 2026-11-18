@@ -1,0 +1,30 @@
+{
+  "method": "Parsed nonblank source lines using unchanged source-loc-v2 codeLines; not a labor-time metric",
+  "migratedCatalogHandwritten": [
+    {
+      "path": "src/modules/catalog-api/catalog-read.hooks.ts",
+      "physicalCodeLines": 28
+    },
+    {
+      "path": "src/modules/catalog-api/catalog-writer.ts",
+      "physicalCodeLines": 8
+    }
+  ],
+  "newCheckpointInfrastructure": [
+    {
+      "path": "jeeves-generator/integration/harness/rg-regeneration.ts",
+      "physicalCodeLines": 352
+    },
+    {
+      "path": "jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts",
+      "physicalCodeLines": 612
+    },
+    {
+      "path": "jeeves-generator/integration/rg24-recount.ts",
+      "physicalCodeLines": 10
+    }
+  ],
+  "existingHarnessChange": "Export catalogUpdateTools to reuse its existing native protocol/setup; no production code",
+  "productGeneratedFilesManuallyEdited": 0,
+  "liveLegacyDatabaseMigrationPerformed": false
+}

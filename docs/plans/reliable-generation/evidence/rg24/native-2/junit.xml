@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="4" failures="2" errors="0" time="303.379779484">
+    <testsuite name="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" timestamp="2026-11-18T06:25:27.591Z" hostname="BASEMENT-PC" tests="3" failures="2" errors="0" skipped="0" time="303.379779484">
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates" time="11.626735336">
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: link/account public setting update preserves policy bodies, rows and session expiry promises" time="154.2025652">
+            <failure message="Unclassified source: .jeeves/generated/src/modules/items-api/create-limit.hooks.ts. Declare it in backendPaths or uiPaths." type="Error">
+Error: Unclassified source: .jeeves/generated/src/modules/items-api/create-limit.hooks.ts. Declare it in backendPaths or uiPaths.
+ ❯ sourceLocReport jeeves-generator/src/source-loc.ts:145:13
+ ❯ countSnapshots jeeves-generator/integration/harness/rg-regeneration.ts:297:15
+ ❯ maintenanceReport jeeves-generator/integration/harness/rg-regeneration.ts:315:18
+ ❯ beforeStart jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:327:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:226:3
+            </failure>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: catalog update retains accepted remote work and product data before process resumption" time="137.549198208">
+            <failure message="Timed out waiting for remote effect completed but response withheld; last observation: {&quot;events&quot;:[{&quot;phase&quot;:&quot;prepare&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200}],&quot;acks&quot;:[],&quot;ingress&quot;:0,&quot;commits&quot;:[]}" type="Error">
+Error: Timed out waiting for remote effect completed but response withheld; last observation: {&quot;events&quot;:[{&quot;phase&quot;:&quot;prepare&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200},{&quot;phase&quot;:&quot;execute&quot;,&quot;key&quot;:&quot;1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0&quot;,&quot;from&quot;:&quot;172.24.0.7&quot;,&quot;status&quot;:200}],&quot;acks&quot;:[],&quot;ingress&quot;:0,&quot;commits&quot;:[]}
+ ❯ poll jeeves-generator/integration/harness/process.ts:165:9
+ ❯ beforeStart jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:412:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:367:3
+            </failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="jeeves-generator/integration/scenarios/regeneration.system.test.ts" timestamp="2026-11-18T06:25:27.592Z" hostname="BASEMENT-PC" tests="1" failures="0" errors="0" skipped="1" time="0">
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration.system.test.ts" name="B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data" time="0">
+            <skipped/>
+        </testcase>
+    </testsuite>
+</testsuites>

@@ -1,0 +1,124 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-18T06:32:05.359Z",
+    "value": [
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-app-callee-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-app-caller-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-app-projector-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-identity-issuer-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-3-rg-provider-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='durable-before'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='durable-before'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='durable-before'",
+    "result": "1"
+  },
+  {
+    "proxy": {
+      "events": [],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "c6f546b65ca1699e3ca962fea64e5bb4e629a7e7c9ecce8ad3fa03fd8fa98376",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "c6f546b65ca1699e3ca962fea64e5bb4e629a7e7c9ecce8ad3fa03fd8fa98376",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "c6f546b65ca1699e3ca962fea64e5bb4e629a7e7c9ecce8ad3fa03fd8fa98376",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "fault": "app-caller kill",
+    "container": "7b93c8d22308e53a41e784014ce47d28c27a44ab0b0e54d35056f5589341c3cd",
+    "at": "2026-11-18T06:32:49.856Z",
+    "monotonicAt": 317143.650015,
+    "elapsedMs": 408,
+    "result": "7b93c8d22308e53a41e784014ce47d28c27a44ab0b0e54d35056f5589341c3cd"
+  },
+  {
+    "sql": "SELECT json_agg(json_build_object('id',work_id,'namespace',namespace,'scope',scope_key,'key',work_key,'state',state,'input',input,'inputHash',input_hash,'fence',fence,'created',created_at,'ticketHash',md5(remote_ticket),'remoteState',external_state,'rowHash',md5(row_to_json(w)::text))) FROM jeeves.work_records w WHERE work_key='pending-update'",
+    "result": "[{\"id\" : \"7bed0668-b9f1-49d5-99e7-1f85bc256f76\", \"namespace\" : \"[\\\"caller-db\\\",\\\"caller-owner\\\",\\\"catalog-replicate\\\"]\", \"scope\" : \"{}\", \"key\" : \"pending-update\", \"state\" : \"running\", \"input\" : {\"value\": {\"id\": \"pending-update\", \"title\": \"Pending catalog\"}, \"present\": true}, \"inputHash\" : \"1c33f2a971b4b6d561a2bdd30d60c3155e02391207f1f61e22e05605673ca75b\", \"fence\" : 1, \"created\" : \"2026-11-18T06:32:44.948486+00:00\", \"ticketHash\" : \"4935dedad945fec12db251a494ace034\", \"remoteState\" : \"dispatched\", \"rowHash\" : \"dc34feeda272e7e2b8aeef75cc7d2242\"}]"
+  },
+  {
+    "sql": "SELECT json_build_object('db',(SELECT oid FROM pg_database WHERE datname=current_database()),'rel','p_caller_owner.inbox'::regclass::oid,'rows',(SELECT json_agg(json_build_object('id',id,'title',title,'effects',effects,'xmin',xmin::text) ORDER BY id) FROM p_caller_owner.inbox))",
+    "result": "{\"db\" : \"16471\", \"rel\" : \"16573\", \"rows\" : [{\"id\" : \"durable-before\", \"title\" : \"durable-before\", \"effects\" : 1, \"xmin\" : \"1234\"}]}"
+  },
+  {
+    "sql": "SELECT effects FROM p_callee_owner.items WHERE id='pending-update'",
+    "result": "1"
+  }
+]

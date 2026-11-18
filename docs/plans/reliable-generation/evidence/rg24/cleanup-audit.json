@@ -1,0 +1,26 @@
+[
+  {
+    "run": "legacy-1",
+    "temporaryRemoved": true,
+    "ownedStacks": 1,
+    "allOwnedResourcesGone": true
+  },
+  {
+    "run": "native-2",
+    "temporaryRemoved": true,
+    "ownedStacks": 4,
+    "allOwnedResourcesGone": true
+  },
+  {
+    "run": "native-3",
+    "temporaryRemoved": true,
+    "ownedStacks": 3,
+    "allOwnedResourcesGone": true
+  },
+  {
+    "run": "native-4",
+    "temporaryRemoved": true,
+    "ownedStacks": 2,
+    "allOwnedResourcesGone": true
+  }
+]

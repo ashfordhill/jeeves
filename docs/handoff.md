@@ -19289,3 +19289,52 @@ workload settings the same way.
   projects, root/owner patch, accepted SQL/dependencies/frozenv1 preserved; own projects/resources0.
 - Owner95d60ac/future WD-after-RG26 queue preserved; no later unit/owner studio/root edit/push.
   One explicit-path local commit follows: `RG23: prove reusable mechanisms under concurrent execution and failures`.
+
+## 2026-11-18 — RG24 regeneration/migration checkpoint active, unaccepted/uncommitted
+
+- Sole RG24 starts from accepted RG23 `99396d1`; read approved contract/unit and existing E10
+  regeneration/update/source-LOC harness. No later brief, delegation or original field-app writes.
+- Preparing scratch-copy legacy migration and compatible updates of the two RG23 mappings,
+  with explicit refusal, handwritten/data/pending-work preservation and two identical updates.
+  Counts use reviewed backend-only scope; SQL, manual migration and test infrastructure stay separate.
+- Native bounded evidence, D11 checks if harness code changes, final preservation/cleanup and one
+  explicit-path commit remain. Original roots/current owner README, owner patch and42 containers
+  verified before work. Owner WD-after-RG26 queue remains future work and unread.
+
+## 2026-11-18 — RG24 finite regeneration proof passed; final regression checks active
+
+- Genuine archived GS08 exports retain their real pre-versioned manifests and archived spec
+  imports. Tiny unchanged-namespace API1→8 update refuses old hooks, enforces readonly input
+  repair/checker/TypeScript7.0.2, then succeeds in place with acknowledgement and preserved body.
+- E10 catalog's missing grants require explicit cold adoption into p_catalog_api_owner; the old
+  m_* namespace change still refuses with acknowledgement. No automatic live legacy DB conversion
+  is claimed. The original fixture/export is untouched; temporary probes are removed by harness.
+- Native3 link and native4 catalog pass stopped public update preservation of hooks/runtime/
+  volumes/data (plus session expiry promises and accepted work). Limit2→3 changes actual admission;
+  body65536→1024 changes HTTP behavior. Original work ID/ticket and local/remote effects1 survive.
+  Two identical actual public regenerations preserve full export hashes, including update shadows.
+- Failed runs retain fixture/oracle/scratch-path issues; source-loc-v2 excludes non-runtime metadata
+  shadows with exact omitted-path inventory, and reports real bare Git snapshot objects/zero refs.
+  No production code/API/template/dependency/SQL change. D11, final evidence/preservation and one
+  explicit-path commit remain. WD-after-RG26 queue preserved, unread and unexecuted.
+
+## 2026-11-18 — RG24 regeneration/migration and maintenance proof complete for coordinator review
+
+- Four passing witnesses: genuine unchanged-namespace API1→8 in-place migration with explicit
+  handwritten repair; guarded old catalog cold adoption; compatible link/account and catalog/event
+  public updates. Refusals precede writes; acknowledgement cannot bypass types/checker/SQL/identity.
+- Modified hook bytes, original product rows/xmin, runtime/volume identities and stored session
+  expiry promises survive. Accepted remote work retains its ID/chosen ticket and completes with
+  local1/remote1 effects. Limit2→3 and body65536→1024 change actual behavior. Two identical public
+  applications preserve complete export hashes, including update shadows.
+- Four unchanged source-loc-v2 reports/reviewed backend-only scopes and exact bare-object recounts
+  separate SQL, declarations, manual migration and974 new checkpoint-infrastructure LOC. No full
+  A/B benchmark or percentage-as-labor claim; [migration/maintenance evidence](plans/reliable-generation/evidence/rg24/README.md)
+  records initial failures, named lessons and the live legacy m_*→p_* conversion limit (cold only).
+- Final pnpm check145files/1353tests, browser87/87 (TinyURL/both mouse rebuilds), web build, native
+  selected witnesses/checker/TypeScript7.0.2 and all4 count recounts pass. Final source equals native4.
+  Original42 container triples/9 networks/23 volumes/43 images, two old e2e projects, roots/current
+  README/owner patch, accepted SQL/dependencies/frozenv1 preserved; own resources/projects0.
+- No production template/runtime/API/dependency/framework migration, original app, root/owner
+  studio, later unit, live/paid call, push or deployment. WD-after-RG26 queue preserved unread.
+  One explicit-path local commit follows: `RG24: prove regeneration migration and reduced handwritten infrastructure`.

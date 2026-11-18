@@ -148,6 +148,9 @@ async function publish(app: Application, id: string, date: string) {
     worker.Id,
   );
 }
+
+/** Reuse this test-owned setup/protocol in the bounded regeneration checkpoint. */
+export const catalogUpdateTools = { prepare, control, stats, send, webhook };
 /** Test-only native probe of the emitted store, actual compiled hook, scoped SQL and real logins.
  * Retain an opaque old claim across OS pause; completion receives a fresh runtime context. */
 async function fenceProbe(app: Application, container: string, hold: boolean) {

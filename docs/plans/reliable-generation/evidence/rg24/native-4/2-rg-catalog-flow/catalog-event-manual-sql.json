@@ -1,0 +1,79 @@
+{
+  "method": "Physical nonblank lines excluding -- comment-only lines; separate from source-loc-v2",
+  "files": [
+    {
+      "path": "infra/postgres/caller-db/products/migrations/p_caller_owner/0001-initial.sql",
+      "sha256": "6593940495c191264f4b4b3095afe3d1ae2eedf65183b69d82c3a01338748746",
+      "nonblankNonLineCommentLines": 3
+    },
+    {
+      "path": "infra/postgres/caller-db/products/commands/catalog_sync.sql",
+      "sha256": "dc54dd50619285c0d13701230784e8d779018e34a275d5321e106f6a9b45673a",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/caller-db/products/commands/accept_event.sql",
+      "sha256": "7af6d26cf7c3a84f6bf8d7750ec528462a57cfaacfd4a9c526c09b4487b17291",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/caller-db/products/commands/apply_catalog.sql",
+      "sha256": "bcc9c0d09d3959f9e392e296227b4e553aab277b173d2f071913cb918e3d2c3b",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/callee-db/products/migrations/p_callee_owner/0001-initial.sql",
+      "sha256": "b32603820eb3ac0f62770aedcb24482cb0632e5fe955305921265810acc4f16b",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/callee-db/products/commands/provider_apply.sql",
+      "sha256": "765b6f45ca5b30b3d043424726a0e724b92a702a8b135c423c9584275b5351bb",
+      "nonblankNonLineCommentLines": 1
+    }
+  ],
+  "total": 8,
+  "handwrittenTypeScript": [
+    {
+      "path": "src/contracts/catalog.ts",
+      "sha256": "356bfbd122b7e75b2d3c89cde3ed89237749fa5d544b81549cfcc7cf40a394db",
+      "physicalCodeLines": 17
+    },
+    {
+      "path": "src/modules/caller/send.ts",
+      "sha256": "1947b4f6695fa23590ff819b5e9a315c71e8c78767abde1ef1b2bf589b2a34d0",
+      "physicalCodeLines": 24
+    },
+    {
+      "path": "src/modules/callee/receive.ts",
+      "sha256": "50c0df390dda84107b20002a98fe353624bca93a0a600c1c19a8ef37342dd73f",
+      "physicalCodeLines": 28
+    },
+    {
+      "path": "src/modules/caller/catalog-events.ts",
+      "sha256": "0aefd5a71a981e8f98fda08c8ec07b9027d915a0d22df08e4c5585f9fa20efc7",
+      "physicalCodeLines": 14
+    },
+    {
+      "path": "src/modules/caller/catalog-events.mapping.hooks.ts",
+      "sha256": "71f5f0d1cfabd344108d6ae40fd9ce22f52e543b5a7b2fdf3c56c3061c56f0e3",
+      "physicalCodeLines": 8
+    },
+    {
+      "path": "src/modules/projector/apply-catalog.ts",
+      "sha256": "96680fb6a63a0e447070f107f5500b6021180484ff4df7f306ddca8fd08bcb93",
+      "physicalCodeLines": 21
+    }
+  ],
+  "declarationFiles": [
+    "infra/postgres/caller-db/products.json",
+    "infra/postgres/callee-db/products.json"
+  ],
+  "infrastructureExcluded": [
+    "../rg-infra TLS/CA/issuer",
+    "../rg-catalog-infra protocol/fault proxy",
+    "integration harness/native probes",
+    "compose.override.yaml",
+    ".jeeves/generated update shadows (not runtime-imported)"
+  ]
+}

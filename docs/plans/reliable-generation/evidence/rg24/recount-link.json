@@ -1,0 +1,911 @@
+{
+  "report": {
+    "method": "source-loc-v2",
+    "parser": "rolldown@1.2.15",
+    "app": "app",
+    "baselineCommit": "6eda39bcf39de5206ab3214386e0be6420637944",
+    "finalCommit": "067a4149714038316a9187a29b09501308a39507",
+    "baselineManifestSha256": "2819d61f3bbdb10098f2aa8bc3838546db50f750e770ff81b7be3e32b926f5f0",
+    "scope": {
+      "version": 1,
+      "backendPaths": ["src"],
+      "uiPaths": ["browser", "public"]
+    },
+    "scopeSha256": "2470cf09403a51c51c533da1407e301e6c501794ed2140ef415019e55a29450a",
+    "rules": {
+      "scope": "Backend production JS/TS in src directories, classified by an explicit scope. UI is excluded regardless of location; unclassified eligible source refuses the report. Tests, fixtures, configuration, declarations and build/vendor output excluded.",
+      "lines": "Physical nonblank lines after parsed comments are removed; indentation ignored, other code and wrapping preserved.",
+      "attribution": "Longest ordered matching lines in the same path are retained template lines; other final lines are post-template. New paths are entirely post-template; renames are not inferred.",
+      "interpretation": "Source composition only. Includes boilerplate and stubs; does not measure working behavior, quality, labor saved or agent versus human authorship."
+    },
+    "totals": {
+      "includedFiles": 66,
+      "baselineLoc": 7572,
+      "finalLoc": 7641,
+      "retainedTemplateLoc": 7509,
+      "postTemplateLoc": 132,
+      "removedOrReplacedTemplateLoc": 63,
+      "templatePercent": 98.27
+    },
+    "included": [
+      {
+        "path": "src/contracts/index.ts",
+        "baselineSha256": "843db8b20be176b4e0bc0c0d3f9cf298d8f816d1f0eef3b7b97d167e9eddbc34",
+        "finalSha256": "843db8b20be176b4e0bc0c0d3f9cf298d8f816d1f0eef3b7b97d167e9eddbc34",
+        "baselineLoc": 1,
+        "finalLoc": 1,
+        "retainedTemplateLoc": 1,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/contracts/record.ts",
+        "baselineSha256": null,
+        "finalSha256": "f021c158e088eb4b9369bd04d01c0c59d1acb761501ebef7deac672f315d80f5",
+        "baselineLoc": 0,
+        "finalLoc": 26,
+        "retainedTemplateLoc": 0,
+        "postTemplateLoc": 26,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/extension-api/index.ts",
+        "baselineSha256": "a04af8e1a871e77622268855dcdedbf81bbd9268525560931b54e83880b46b7f",
+        "finalSha256": "a04af8e1a871e77622268855dcdedbf81bbd9268525560931b54e83880b46b7f",
+        "baselineLoc": 29,
+        "finalLoc": 29,
+        "retainedTemplateLoc": 29,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/application-bindings.ts",
+        "baselineSha256": "2305af0df198e2f75b2656f643194affdd763a61b2a7dbdc43cf9f6ba4728d55",
+        "finalSha256": "2305af0df198e2f75b2656f643194affdd763a61b2a7dbdc43cf9f6ba4728d55",
+        "baselineLoc": 1,
+        "finalLoc": 1,
+        "retainedTemplateLoc": 1,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/local-bindings.ts",
+        "baselineSha256": "bf14a32140b7c023a017a5f8ef46ba8d98668c842fcd512aff21904c93e2955f",
+        "finalSha256": "bf14a32140b7c023a017a5f8ef46ba8d98668c842fcd512aff21904c93e2955f",
+        "baselineLoc": 3,
+        "finalLoc": 3,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/positive-cache-bindings.ts",
+        "baselineSha256": "6ded5255b4a3eeeef17dbdb0ec6aa6aec228acb3ff2ac1bd3d67cd53c4202990",
+        "finalSha256": "6ded5255b4a3eeeef17dbdb0ec6aa6aec228acb3ff2ac1bd3d67cd53c4202990",
+        "baselineLoc": 1,
+        "finalLoc": 1,
+        "retainedTemplateLoc": 1,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/features/service-resources.ts",
+        "baselineSha256": "3e9478cc4a615708195f809d7c8ab69572b81cdf1538258793eb52c7c3013193",
+        "finalSha256": "3e9478cc4a615708195f809d7c8ab69572b81cdf1538258793eb52c7c3013193",
+        "baselineLoc": 169,
+        "finalLoc": 169,
+        "retainedTemplateLoc": 169,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/http-errors.hooks.ts",
+        "baselineSha256": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+        "finalSha256": "547f31f979a291898e1e5c827907779ed7ef36ac3becd0ce428ffbb516b5cf01",
+        "baselineLoc": 2,
+        "finalLoc": 2,
+        "retainedTemplateLoc": 2,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/browser/navigate.slots.ts",
+        "baselineSha256": "d3da12511b2cfc44999b1d73304a26229d357ea6e1888ed6be9d9ff815f62a61",
+        "finalSha256": "d3da12511b2cfc44999b1d73304a26229d357ea6e1888ed6be9d9ff815f62a61",
+        "baselineLoc": 9,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 9,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/browser/navigate.ts",
+        "baselineSha256": "b84277e912e167c458c379ac055367e5f904fdef8c36bb59d1ece6fae3aff1e3",
+        "finalSha256": "c9783ab4f16dc4e2649d5a8cedf0d09462155ae2cde03a327f934522f314c760",
+        "baselineLoc": 7,
+        "finalLoc": 11,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 8,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/modules/dependencies.ts",
+        "baselineSha256": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+        "finalSha256": "3365fa68513741133a268deb9ca173df0ac2bcfa0aa98628d6aeb21e29385f4a",
+        "baselineLoc": 58,
+        "finalLoc": 58,
+        "retainedTemplateLoc": 58,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/entry.ts",
+        "baselineSha256": "a5c04a7c47a86ac23414a42dee4cb80ab82e9e8a6a36ee0738fa08092c9f574f",
+        "finalSha256": "a5c04a7c47a86ac23414a42dee4cb80ab82e9e8a6a36ee0738fa08092c9f574f",
+        "baselineLoc": 104,
+        "finalLoc": 104,
+        "retainedTemplateLoc": 104,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/gateway/forward.slots.ts",
+        "baselineSha256": "00da44e8ea03f9cfebb2c41596cd80706530875297be53b1c219c115194d466e",
+        "finalSha256": "00da44e8ea03f9cfebb2c41596cd80706530875297be53b1c219c115194d466e",
+        "baselineLoc": 9,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 9,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/gateway/forward.ts",
+        "baselineSha256": "de437f5a5da072e11ce0f30ff07e31c05f762f107cd8da5b7e9f73741ba57124",
+        "finalSha256": "51b44c3a4814a033cce5ad1951f0e41317f161ff07c35c5526a2626cf6120045",
+        "baselineLoc": 7,
+        "finalLoc": 16,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 13,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/modules/gateway/published.slots.ts",
+        "baselineSha256": "39b7fbd6031b103da6491ee8ea68eac7a7448d4b19f320b5c7868b4ac85468df",
+        "finalSha256": "39b7fbd6031b103da6491ee8ea68eac7a7448d4b19f320b5c7868b4ac85468df",
+        "baselineLoc": 9,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 9,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/gateway/published.ts",
+        "baselineSha256": "9270ba22b57c8087fbef353cdad401a59a53e5efc3aee6f0691b0e93ec3be7fa",
+        "finalSha256": "6f3908f9cfc579b9e88e3aa32a1e7a3d2cac6d8bd598d5b2a6df87bae86de0c6",
+        "baselineLoc": 7,
+        "finalLoc": 8,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 5,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/modules/items-api/create-limit.hooks.ts",
+        "baselineSha256": "19149b50d120ae145d092ba12d0af33b20af8fa1da39a2ed01607dc0a66d9f1c",
+        "finalSha256": "7e8e0ec6b85267d15a400d01edaace4b43b9958e6aac163b1d6915fc8ce8207a",
+        "baselineLoc": 9,
+        "finalLoc": 4,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 1,
+        "removedOrReplacedTemplateLoc": 6
+      },
+      {
+        "path": "src/modules/items-api/create.slots.ts",
+        "baselineSha256": "9054fe6b599d5fa4773cd82baf5edd52c3ab98292410205d9cbbdda74ebef7fe",
+        "finalSha256": "9054fe6b599d5fa4773cd82baf5edd52c3ab98292410205d9cbbdda74ebef7fe",
+        "baselineLoc": 11,
+        "finalLoc": 11,
+        "retainedTemplateLoc": 11,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/items-api/create.ts",
+        "baselineSha256": "34c498d7e80505e57a656f3169c2bb1c3d4c989b682284608048dd9219871529",
+        "finalSha256": "eb9d796a0ce90110324a5a45c7f9cfe8c38c8234d2170a78a4f590510b2072e1",
+        "baselineLoc": 7,
+        "finalLoc": 33,
+        "retainedTemplateLoc": 2,
+        "postTemplateLoc": 31,
+        "removedOrReplacedTemplateLoc": 5
+      },
+      {
+        "path": "src/modules/items-api/forbidden.slots.ts",
+        "baselineSha256": "6d1a5633e0f39b2081c56ba2cedfb8b5fff04ecd5dfee99340ef29ebfd54b3d3",
+        "finalSha256": "6d1a5633e0f39b2081c56ba2cedfb8b5fff04ecd5dfee99340ef29ebfd54b3d3",
+        "baselineLoc": 5,
+        "finalLoc": 5,
+        "retainedTemplateLoc": 5,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/items-api/forbidden.ts",
+        "baselineSha256": "853bcb3f3c227b099006c3bf2757e9b60f03b211aa1ab749b9d2de89f82abe11",
+        "finalSha256": "97d8f8f7d4a29e726d019202f1499573362105da10816734aca3d7a4979625be",
+        "baselineLoc": 7,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 6,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/modules/items-api/read-record.slots.ts",
+        "baselineSha256": "567c84ca6aa49dc49798b7856cbbe3b4a475a8a46b1e8fa9b60b94a61cdc3913",
+        "finalSha256": "567c84ca6aa49dc49798b7856cbbe3b4a475a8a46b1e8fa9b60b94a61cdc3913",
+        "baselineLoc": 9,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 9,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/items-api/read-record.ts",
+        "baselineSha256": "ff8ce8ef81f5a34b918a2e6e09892e209643b4c40b2d5e79732048433169c3eb",
+        "finalSha256": "9ce30100cd14238b760c713906e881ceb9eae136d18e4fb5aa202de7a6368cfe",
+        "baselineLoc": 7,
+        "finalLoc": 20,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 17,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/modules/items-api/record-reader.hooks.ts",
+        "baselineSha256": "79b089521f61695547f6b2da497bd38a86f3fe08d25f0a92ee99deef107d9890",
+        "finalSha256": "50e8db84a1124639bfa0732f4c5e43424d2d2ea490d5fe5ea65f2e70ddee80cb",
+        "baselineLoc": 29,
+        "finalLoc": 17,
+        "retainedTemplateLoc": 5,
+        "postTemplateLoc": 12,
+        "removedOrReplacedTemplateLoc": 24
+      },
+      {
+        "path": "src/modules/items-api/slow.slots.ts",
+        "baselineSha256": "54e1673c18f4aa311f85350f02c478afbe5862ad8f998b4c9e3948810de2fca3",
+        "finalSha256": "54e1673c18f4aa311f85350f02c478afbe5862ad8f998b4c9e3948810de2fca3",
+        "baselineLoc": 9,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 9,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/items-api/slow.ts",
+        "baselineSha256": "afef3b36e48e49917519d14c5d737750f4169fd8e1b79fb35566c3d879bca191",
+        "finalSha256": "f062fe88748db81d60935c2ddf88be5f5bba06dd7986f4d341f00cd5d37428c6",
+        "baselineLoc": 7,
+        "finalLoc": 14,
+        "retainedTemplateLoc": 3,
+        "postTemplateLoc": 11,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/modules/items-worker/worker-access.slots.ts",
+        "baselineSha256": "e0ca092c73df24164662099135fb720347c553e1ee28952a912b41c0192d74a5",
+        "finalSha256": "e0ca092c73df24164662099135fb720347c553e1ee28952a912b41c0192d74a5",
+        "baselineLoc": 9,
+        "finalLoc": 9,
+        "retainedTemplateLoc": 9,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/modules/items-worker/worker-access.ts",
+        "baselineSha256": "54491e2a34470cc29cb04ff868ffcf187de5308e3345c14395faf80d655f5553",
+        "finalSha256": "9c837e94da3d5dd7d540446208a262c42286c370bb28d11fe49afa66de1ecb2a",
+        "baselineLoc": 6,
+        "finalLoc": 4,
+        "retainedTemplateLoc": 2,
+        "postTemplateLoc": 2,
+        "removedOrReplacedTemplateLoc": 4
+      },
+      {
+        "path": "src/operations/browser-session-revoke-subject.ts",
+        "baselineSha256": "edc5151c5d421ad588ff197df38760e76281a6c2b844d7a932c78de0499e916d",
+        "finalSha256": "edc5151c5d421ad588ff197df38760e76281a6c2b844d7a932c78de0499e916d",
+        "baselineLoc": 8,
+        "finalLoc": 8,
+        "retainedTemplateLoc": 8,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/processes/browser.ts",
+        "baselineSha256": "d186a9942eab89cdfd2d336bd2af320245ac06d709eca128e0811ec92f2712c9",
+        "finalSha256": "d186a9942eab89cdfd2d336bd2af320245ac06d709eca128e0811ec92f2712c9",
+        "baselineLoc": 117,
+        "finalLoc": 117,
+        "retainedTemplateLoc": 117,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/processes/gateway.ts",
+        "baselineSha256": "db4d89157ab0019d738a69fe7374a94aed3ed05dfc82b1b99922d915e18c805e",
+        "finalSha256": "db4d89157ab0019d738a69fe7374a94aed3ed05dfc82b1b99922d915e18c805e",
+        "baselineLoc": 159,
+        "finalLoc": 159,
+        "retainedTemplateLoc": 159,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/processes/items-api.ts",
+        "baselineSha256": "37018a36bd0bfebc3c26f8e3f4e518d6c7fb7b306b7553ed6743f685fd3c8d2f",
+        "finalSha256": "37018a36bd0bfebc3c26f8e3f4e518d6c7fb7b306b7553ed6743f685fd3c8d2f",
+        "baselineLoc": 314,
+        "finalLoc": 314,
+        "retainedTemplateLoc": 314,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/processes/items-worker.ts",
+        "baselineSha256": "77b81e0fc401dd32da61b1b92a87e155b0c9ff4dba4e6986ee9535cad0d7774f",
+        "finalSha256": "77b81e0fc401dd32da61b1b92a87e155b0c9ff4dba4e6986ee9535cad0d7774f",
+        "baselineLoc": 50,
+        "finalLoc": 50,
+        "retainedTemplateLoc": 50,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/admission.ts",
+        "baselineSha256": "19059bf92a789a6c69641a8d4f8812d354ec192081155f70518ef8d6ee110cf5",
+        "finalSha256": "19059bf92a789a6c69641a8d4f8812d354ec192081155f70518ef8d6ee110cf5",
+        "baselineLoc": 177,
+        "finalLoc": 177,
+        "retainedTemplateLoc": 177,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/browser-oidc.ts",
+        "baselineSha256": "5cab3705635b4a3ebc843aca58641117b183c7f482e985b01ba323b0465abcb2",
+        "finalSha256": "5cab3705635b4a3ebc843aca58641117b183c7f482e985b01ba323b0465abcb2",
+        "baselineLoc": 140,
+        "finalLoc": 140,
+        "retainedTemplateLoc": 140,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/browser-refresh.ts",
+        "baselineSha256": "663f284fad926dc65e9d1e0ffd7bef43828ba98012ce34f289a81086523d0637",
+        "finalSha256": "663f284fad926dc65e9d1e0ffd7bef43828ba98012ce34f289a81086523d0637",
+        "baselineLoc": 104,
+        "finalLoc": 104,
+        "retainedTemplateLoc": 104,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/browser-session.ts",
+        "baselineSha256": "7005a6bcf2d7da9f6554ebff0a5bc2b5bab54eb667d6a52ee3664cc566e92540",
+        "finalSha256": "7005a6bcf2d7da9f6554ebff0a5bc2b5bab54eb667d6a52ee3664cc566e92540",
+        "baselineLoc": 210,
+        "finalLoc": 210,
+        "retainedTemplateLoc": 210,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/delivery.ts",
+        "baselineSha256": "7beac97570c15cd6d2fa1ec6f15daa8f2204d45efb91951176dd2c2a4a609b84",
+        "finalSha256": "7beac97570c15cd6d2fa1ec6f15daa8f2204d45efb91951176dd2c2a4a609b84",
+        "baselineLoc": 270,
+        "finalLoc": 270,
+        "retainedTemplateLoc": 270,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/durable-sql.ts",
+        "baselineSha256": "da416c3733163295fd3bd656c163b3441b211b1c6f4b3d421314214c263be41f",
+        "finalSha256": "da416c3733163295fd3bd656c163b3441b211b1c6f4b3d421314214c263be41f",
+        "baselineLoc": 94,
+        "finalLoc": 94,
+        "retainedTemplateLoc": 94,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/durable-work.ts",
+        "baselineSha256": "74de1cc88f0d1be7e6908da23f84eb43bd1a38da6908690daf7f155ffc1aa987",
+        "finalSha256": "74de1cc88f0d1be7e6908da23f84eb43bd1a38da6908690daf7f155ffc1aa987",
+        "baselineLoc": 845,
+        "finalLoc": 845,
+        "retainedTemplateLoc": 845,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/hook-boundary.ts",
+        "baselineSha256": "c87a4b30039d6616af6a126b81a1d950057702b112a8ec82849b9214a9e62e7d",
+        "finalSha256": "c87a4b30039d6616af6a126b81a1d950057702b112a8ec82849b9214a9e62e7d",
+        "baselineLoc": 123,
+        "finalLoc": 123,
+        "retainedTemplateLoc": 123,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/http.ts",
+        "baselineSha256": "59f11ece27c6a698449e395b11d92a820a9e207f2f63469c9909680ce5fe0a46",
+        "finalSha256": "59f11ece27c6a698449e395b11d92a820a9e207f2f63469c9909680ce5fe0a46",
+        "baselineLoc": 217,
+        "finalLoc": 217,
+        "retainedTemplateLoc": 217,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/idempotency.ts",
+        "baselineSha256": "706d8381557b117093be20389bd6b5d7b14d99153961b1b06163970351fa96f4",
+        "finalSha256": "706d8381557b117093be20389bd6b5d7b14d99153961b1b06163970351fa96f4",
+        "baselineLoc": 134,
+        "finalLoc": 134,
+        "retainedTemplateLoc": 134,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/identity.ts",
+        "baselineSha256": "399f3de5f18da69ca6ecd03861050e51d18a6b4b5c49e701824a69afaf68b5f6",
+        "finalSha256": "399f3de5f18da69ca6ecd03861050e51d18a6b4b5c49e701824a69afaf68b5f6",
+        "baselineLoc": 50,
+        "finalLoc": 50,
+        "retainedTemplateLoc": 50,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/keys.ts",
+        "baselineSha256": "d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82",
+        "finalSha256": "d47c3dc2735d1b186a6c22084e27c92944f3c3a2523fecbedae2c12b0dfd3a82",
+        "baselineLoc": 175,
+        "finalLoc": 175,
+        "retainedTemplateLoc": 175,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/local-operation.ts",
+        "baselineSha256": "0bdf92469a5389e54fe08b9a1db1ea356128a592bf2976677eaa499e35c874eb",
+        "finalSha256": "0bdf92469a5389e54fe08b9a1db1ea356128a592bf2976677eaa499e35c874eb",
+        "baselineLoc": 545,
+        "finalLoc": 545,
+        "retainedTemplateLoc": 545,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/local.ts",
+        "baselineSha256": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+        "finalSha256": "c0eac1ff871b3ea3c5da7236b4fff1ba5d4b3d7f2035c642deb19dac8ae7c588",
+        "baselineLoc": 26,
+        "finalLoc": 26,
+        "retainedTemplateLoc": 26,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/module-clients.ts",
+        "baselineSha256": "8bd1d9bc6c36db37357e25d111f225d582ce1ad1fa6778a5dd931c35578c67dc",
+        "finalSha256": "8bd1d9bc6c36db37357e25d111f225d582ce1ad1fa6778a5dd931c35578c67dc",
+        "baselineLoc": 433,
+        "finalLoc": 433,
+        "retainedTemplateLoc": 433,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/operation.ts",
+        "baselineSha256": "e2743e278e3573da639feed3f5c0d53cfbd510346d25615e54d9514c70e67a08",
+        "finalSha256": "e2743e278e3573da639feed3f5c0d53cfbd510346d25615e54d9514c70e67a08",
+        "baselineLoc": 257,
+        "finalLoc": 257,
+        "retainedTemplateLoc": 257,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/positive-cache.ts",
+        "baselineSha256": "d0ad6e6b0c3bade8d193e6bcb2495f8996a0325d9a3b50c896777e70da67f529",
+        "finalSha256": "d0ad6e6b0c3bade8d193e6bcb2495f8996a0325d9a3b50c896777e70da67f529",
+        "baselineLoc": 189,
+        "finalLoc": 189,
+        "retainedTemplateLoc": 189,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/postgres.ts",
+        "baselineSha256": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+        "finalSha256": "3813981a82fc07b66a130de112320c9bed39104a590e6df8c8e1648d46067f70",
+        "baselineLoc": 124,
+        "finalLoc": 124,
+        "retainedTemplateLoc": 124,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/process.ts",
+        "baselineSha256": "0074f3d49abc015bee9a996d3265f6f8ffb8e76818474c065b92fdf44c5c308b",
+        "finalSha256": "0074f3d49abc015bee9a996d3265f6f8ffb8e76818474c065b92fdf44c5c308b",
+        "baselineLoc": 208,
+        "finalLoc": 208,
+        "retainedTemplateLoc": 208,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/product-contract.ts",
+        "baselineSha256": "9c91c8084b4b7237bb050d97b89f6897e645009bb00650bcb8a87ef3e7be2294",
+        "finalSha256": "9c91c8084b4b7237bb050d97b89f6897e645009bb00650bcb8a87ef3e7be2294",
+        "baselineLoc": 325,
+        "finalLoc": 325,
+        "retainedTemplateLoc": 325,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/product-mutation.ts",
+        "baselineSha256": "4e304ca4236bcaa306d125a7463f8358de0212d779440790655425854d838042",
+        "finalSha256": "4e304ca4236bcaa306d125a7463f8358de0212d779440790655425854d838042",
+        "baselineLoc": 63,
+        "finalLoc": 63,
+        "retainedTemplateLoc": 63,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/product-operations.ts",
+        "baselineSha256": "97ace79caa5daf629573bc47c4a6c541a0a202af45156259011358201befe722",
+        "finalSha256": "97ace79caa5daf629573bc47c4a6c541a0a202af45156259011358201befe722",
+        "baselineLoc": 76,
+        "finalLoc": 76,
+        "retainedTemplateLoc": 76,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/rate-limiter.ts",
+        "baselineSha256": "4a0d6893a083a345d1ea3baf65e839400a4a03b3e5a767f1c64ba36d1dfd0523",
+        "finalSha256": "4a0d6893a083a345d1ea3baf65e839400a4a03b3e5a767f1c64ba36d1dfd0523",
+        "baselineLoc": 94,
+        "finalLoc": 94,
+        "retainedTemplateLoc": 94,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/receipt-consumer.ts",
+        "baselineSha256": "a4f20b827c2dab1772823a5345ee20e572413178e0c33eeb7d93567fd52b38ba",
+        "finalSha256": "a4f20b827c2dab1772823a5345ee20e572413178e0c33eeb7d93567fd52b38ba",
+        "baselineLoc": 136,
+        "finalLoc": 136,
+        "retainedTemplateLoc": 136,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/receipts.ts",
+        "baselineSha256": "50fd21989bc71b57ef3b24e60384d4364fb2454f3d9cbf7a7954854c29764c05",
+        "finalSha256": "50fd21989bc71b57ef3b24e60384d4364fb2454f3d9cbf7a7954854c29764c05",
+        "baselineLoc": 131,
+        "finalLoc": 131,
+        "retainedTemplateLoc": 131,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/service-contract.ts",
+        "baselineSha256": "6776e8b4e2a7799b697c35d03b62e6a2a409a61ff2d1966479900e295508ea0e",
+        "finalSha256": "6776e8b4e2a7799b697c35d03b62e6a2a409a61ff2d1966479900e295508ea0e",
+        "baselineLoc": 31,
+        "finalLoc": 31,
+        "retainedTemplateLoc": 31,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/tile-guard.ts",
+        "baselineSha256": "00b916ea67918ca63ce9d19c2980abb9c591e87945cd26d3c2b51beaa690bea8",
+        "finalSha256": "00b916ea67918ca63ce9d19c2980abb9c591e87945cd26d3c2b51beaa690bea8",
+        "baselineLoc": 115,
+        "finalLoc": 115,
+        "retainedTemplateLoc": 115,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/tile-http.ts",
+        "baselineSha256": "54af44df89460a0333a7440480d494d07298068bf2f3179b84c06fd2af286c40",
+        "finalSha256": "54af44df89460a0333a7440480d494d07298068bf2f3179b84c06fd2af286c40",
+        "baselineLoc": 148,
+        "finalLoc": 148,
+        "retainedTemplateLoc": 148,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/tile-process.ts",
+        "baselineSha256": "80a485b77c8c29fbb1568181163b4ffb57bc101989962371451c88b666d1cfd7",
+        "finalSha256": "80a485b77c8c29fbb1568181163b4ffb57bc101989962371451c88b666d1cfd7",
+        "baselineLoc": 74,
+        "finalLoc": 74,
+        "retainedTemplateLoc": 74,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/transaction.ts",
+        "baselineSha256": "6c263496e277184d337cb266f4ce973a735a0b8ff068dcf253e80231f447fa33",
+        "finalSha256": "6c263496e277184d337cb266f4ce973a735a0b8ff068dcf253e80231f447fa33",
+        "baselineLoc": 113,
+        "finalLoc": 113,
+        "retainedTemplateLoc": 113,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/valkey.ts",
+        "baselineSha256": "c4efb7fd1a5dcd8dafb2daad929b9a57d4808efacb3021aca167ec6963bb3e2b",
+        "finalSha256": "c4efb7fd1a5dcd8dafb2daad929b9a57d4808efacb3021aca167ec6963bb3e2b",
+        "baselineLoc": 368,
+        "finalLoc": 368,
+        "retainedTemplateLoc": 368,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/work-integration.ts",
+        "baselineSha256": "caf9430cfc69f31477c9e110504eb61fc1aaf2cfa48868f02915c1bb07c8f9c6",
+        "finalSha256": "caf9430cfc69f31477c9e110504eb61fc1aaf2cfa48868f02915c1bb07c8f9c6",
+        "baselineLoc": 18,
+        "finalLoc": 18,
+        "retainedTemplateLoc": 18,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      },
+      {
+        "path": "src/runtime/workload.ts",
+        "baselineSha256": "854494297ba050b686968a36c90590e91be299018eef33ec31e8ad76d60838f2",
+        "finalSha256": "854494297ba050b686968a36c90590e91be299018eef33ec31e8ad76d60838f2",
+        "baselineLoc": 380,
+        "finalLoc": 380,
+        "retainedTemplateLoc": 380,
+        "postTemplateLoc": 0,
+        "removedOrReplacedTemplateLoc": 0
+      }
+    ],
+    "excluded": [
+      {
+        "path": ".dockerignore",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".gitignore",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/extensions.md",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/inputs/design.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/manifest.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/normalized.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": ".jeeves/report.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "Dockerfile",
+        "reason": "outside-src"
+      },
+      {
+        "path": "README.md",
+        "reason": "outside-src"
+      },
+      {
+        "path": "compose.override.yaml",
+        "reason": "outside-src"
+      },
+      {
+        "path": "compose.yaml",
+        "reason": "outside-src"
+      },
+      {
+        "path": "diagnostics/generation.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "ffmpeg-os.lock",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/edge/nginx.conf",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/local.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/000-foundation.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/050-jeeves-idempotency.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/051-jeeves-local-operations.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/052-jeeves-durable-work.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/commands/create.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/commands/example.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/commands/worker.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/queries/example.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/queries/published.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/queries/read.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/items-db/products/queries/slow.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sessions/000-foundation.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sessions/054-jeeves-browser-session.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sessions/055-jeeves-browser-refresh.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sessions/products.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sessions/products/commands/example.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sessions/products/migrations/m_session/0001-initial.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sessions/products/queries/example.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "infra/postgres/sign-in/000-foundation.sql",
+        "reason": "outside-src"
+      },
+      {
+        "path": "package.json",
+        "reason": "outside-src"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "reason": "outside-src"
+      },
+      {
+        "path": "pnpm-workspace.yaml",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/bootstrap.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/broker-init.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/check-extensions.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/common.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/local.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/migrate.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/products.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/setup.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/status.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "scripts/storage-config.mjs",
+        "reason": "outside-src"
+      },
+      {
+        "path": "src/runtime/browser-settings.ts",
+        "reason": "configuration-or-build"
+      },
+      {
+        "path": "src/runtime/settings.ts",
+        "reason": "configuration-or-build"
+      },
+      {
+        "path": "tsconfig.json",
+        "reason": "outside-src"
+      }
+    ]
+  },
+  "provenance": {
+    "temporaryBareObjects": true,
+    "refs": 0,
+    "branches": 0,
+    "worktrees": 0,
+    "baselineContentSha256": "6f5912bf3fb3fca619a726cac3fc26a9b69ebeb0227720ed9f2fd6a6ab7ad76c",
+    "completedContentSha256": "c59e08af64a4bbab97fdfa709f2c61ab384f1409aa704aa264f654a7dc53deb3"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 1,
+  "numFailedTestSuites": 1,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 4,
+  "numPassedTests": 1,
+  "numFailedTests": 2,
+  "numPendingTests": 1,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794982791286,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "status": "passed",
+          "title": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "duration": 11626.735336,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "status": "failed",
+          "title": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "duration": 154202.56519999998,
+          "failureMessages": [
+            "Error: Unclassified source: .jeeves/generated/src/modules/items-api/create-limit.hooks.ts. Declare it in backendPaths or uiPaths.\n    at sourceLocReport (/home/ash/github/jeeves/jeeves-generator/src/source-loc.ts:145:13)\n    at countSnapshots (/home/ash/github/jeeves/jeeves-generator/integration/harness/rg-regeneration.ts:297:15)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at maintenanceReport (/home/ash/github/jeeves/jeeves-generator/integration/harness/rg-regeneration.ts:315:18)\n    at beforeStart (/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:327:7)\n    at withApplication (/home/ash/github/jeeves/jeeves-generator/integration/harness/application.ts:366:5)\n    at /home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:226:3\n    at file:///home/ash/github/jeeves/node_modules/.pnpm/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@24.19.2_jsdom@29.1.1_@noble+hashes@2_b72d06d6de49ea9f9ac618588292c926/node_modules/vitest/dist/chunks/run.CQOUYP-x.js:2783:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "status": "failed",
+          "title": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "duration": 137549.19820800002,
+          "failureMessages": [
+            "Error: Timed out waiting for remote effect completed but response withheld; last observation: {\"events\":[{\"phase\":\"prepare\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200},{\"phase\":\"execute\",\"key\":\"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0\",\"from\":\"172.24.0.7\",\"status\":200}],\"acks\":[],\"ingress\":0,\"commits\":[]}\n    at poll (/home/ash/github/jeeves/jeeves-generator/integration/harness/process.ts:165:9)\n    at beforeStart (/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:412:7)\n    at withApplication (/home/ash/github/jeeves/jeeves-generator/integration/harness/application.ts:366:5)\n    at /home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:367:3\n    at file:///home/ash/github/jeeves/node_modules/.pnpm/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@24.19.2_jsdom@29.1.1_@noble+hashes@2_b72d06d6de49ea9f9ac618588292c926/node_modules/vitest/dist/chunks/run.CQOUYP-x.js:2783:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794982791860,
+      "endTime": 1794983113156.1982,
+      "status": "failed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "status": "skipped",
+          "title": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794982791286,
+      "endTime": 1794982791286,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration.system.test.ts"
+    }
+  ]
+}

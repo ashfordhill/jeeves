@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/design.json /tmp/jeeves-system-Ii23wa/adopted-fresh
+{
+  directory: '/tmp/jeeves-system-Ii23wa/adopted-fresh',
+  files: 73,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 4
+}

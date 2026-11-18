@@ -1,0 +1,33 @@
+Error: pnpm --dir exit 1
+$ tsx src/v2/update-cli.ts /tmp/jeeves-system-aYtO9G/link-identity.json /tmp/jeeves-system-aYtO9G/2-rg-link-flow --ack-extension-api=8
+{
+  "directory": "/tmp/jeeves-system-aYtO9G/2-rg-link-flow",
+  "check": false,
+  "refused": [
+    "Runtime identity/namespace migration required for selection:create, product:items-db.create. Review .jeeves/normalized.json and application-owned hook paths (src/modules/items-api/create.ts); export to a fresh directory and migrate application/data explicitly. This updater cannot migrate identities; extension-API acknowledgement does not authorize it."
+  ],
+  "counts": {
+    "create": 2,
+    "replace": 11,
+    "unchanged": 86,
+    "keep": 6
+  },
+  "keepChanged": [
+    "src/modules/items-api/create-limit.hooks.ts",
+    "src/modules/items-api/forbidden.ts",
+    "src/modules/items-api/read-record.ts",
+    "src/modules/items-api/record-reader.hooks.ts",
+    "src/modules/items-api/slow.ts"
+  ],
+  "override": [],
+  "remove": [
+    "src/modules/items-api/create.slots.ts"
+  ],
+  "orphan": [
+    "src/modules/items-api/create.ts"
+  ]
+}
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator

@@ -1,0 +1,13 @@
+{
+  "id": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848",
+  "selected": ["regeneration"],
+  "testNamePattern": "RG24: (unchanged|link/account|catalog update)",
+  "commit": "99396d1b63b89b9ec2bc1ebaab3f8f5af6418b17",
+  "dirty": "M jeeves-generator/integration/harness/rg-catalog.ts\n?? field-projects/generator-system/fixtures/rg-regeneration/\n?? jeeves-generator/integration/harness/rg-regeneration.ts\n?? jeeves-generator/integration/rg24-recount.ts\n?? jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts",
+  "tools": {
+    "node": "v24.21.0",
+    "pnpm": "12.16.1",
+    "docker": "29.9.1 / 29.9.1",
+    "compose": "5.6.0"
+  }
+}

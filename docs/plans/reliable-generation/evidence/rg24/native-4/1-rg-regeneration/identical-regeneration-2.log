@@ -1,0 +1,20 @@
+$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/legacy-hook-design.json /tmp/jeeves-system-T5y6v7/1-rg-regeneration
+{
+  "directory": "/tmp/jeeves-system-T5y6v7/1-rg-regeneration",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 47,
+    "keep": 0
+  },
+  "keepChanged": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/modules/echo-api/echo.ts"
+  ],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

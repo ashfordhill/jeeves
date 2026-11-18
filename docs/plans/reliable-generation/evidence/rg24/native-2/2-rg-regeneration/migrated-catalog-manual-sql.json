@@ -1,0 +1,28 @@
+{
+  "method": "Physical nonblank lines excluding -- comment-only lines; separate from source-loc-v2",
+  "files": [
+    {
+      "path": "infra/postgres/catalog/products/migrations/p_catalog_api_owner/0001-initial.sql",
+      "sha256": "b4026f20415d25b567096a978d69086a3696b41f03a7435d435ab54a430a3c20",
+      "nonblankNonLineCommentLines": 2
+    },
+    {
+      "path": "infra/postgres/catalog/products/queries/read.sql",
+      "sha256": "04416cbab06f26c13902298f83f92ce015a153b088dca6fd793641ed6cb2dde2",
+      "nonblankNonLineCommentLines": 1
+    },
+    {
+      "path": "infra/postgres/catalog/products/queries/list.sql",
+      "sha256": "2dc7385eb0350bd7113651208d0a71adad6cb4ba233d19a340f91404aab888a6",
+      "nonblankNonLineCommentLines": 1
+    }
+  ],
+  "total": 4,
+  "declarationFiles": ["infra/postgres/catalog/products.json"],
+  "infrastructureExcluded": [
+    "../rg-infra TLS/CA/issuer",
+    "../rg-catalog-infra protocol/fault proxy",
+    "integration harness/native probes",
+    "compose.override.yaml"
+  ]
+}

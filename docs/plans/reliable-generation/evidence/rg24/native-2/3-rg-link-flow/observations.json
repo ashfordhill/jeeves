@@ -1,0 +1,104 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-18T06:21:36.054Z",
+    "value": [
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-browser-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-gateway-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-api-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-app-items-worker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-admission-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-cache-records-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-identity-sign-in-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-3-rg-issuer-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "rg24-a",
+    "subject": "f2eef6b2-2525-4df7-8ccb-1b6f5966eb8d",
+    "status": 201
+  },
+  {
+    "identitySetup": "user-created",
+    "username": "rg24-b",
+    "subject": "c7c0ed64-1347-494b-95e4-36c27d301b33",
+    "status": 201
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "rg24-a",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "identityFlow": "authorization-code-pkce-S256",
+    "username": "rg24-b",
+    "authorizationStatus": 200,
+    "loginStatus": 302,
+    "tokenStatus": 200
+  },
+  {
+    "sql": "INSERT INTO p_items_api_owner.items(id,marked) VALUES ('retained-rg24',true)",
+    "result": "INSERT 0 1"
+  },
+  {
+    "sql": "SELECT json_build_object('db',(SELECT oid FROM pg_database WHERE datname=current_database()),'rel','p_items_api_owner.items'::regclass::oid,'rows',(SELECT json_agg(json_build_object('id',id,'marked',marked,'xmin',xmin::text) ORDER BY id) FROM p_items_api_owner.items))",
+    "result": "{\"db\" : \"16401\", \"rel\" : \"16463\", \"rows\" : [{\"id\" : \"before-0\", \"marked\" : false, \"xmin\" : \"1250\"}, {\"id\" : \"before-1\", \"marked\" : false, \"xmin\" : \"1251\"}, {\"id\" : \"retained-rg24\", \"marked\" : true, \"xmin\" : \"1252\"}, {\"id\" : \"seed\", \"marked\" : false, \"xmin\" : \"764\"}]}"
+  },
+  {
+    "sql": "SELECT json_agg(json_build_object('row',md5(row_to_json(s)::text),'absolute',absolute_expires_at,'idle',idle_seconds,'lastSeen',last_seen_at)) FROM jeeves.browser_sessions s",
+    "result": "[{\"row\" : \"da17f1ce0990bbcd71c95f1195227a35\", \"absolute\" : \"2026-11-25T06:22:16.469562+00:00\", \"idle\" : 86400, \"lastSeen\" : \"2026-11-18T06:22:16.480147+00:00\"}]"
+  },
+  {
+    "sql": "SELECT json_build_object('db',(SELECT oid FROM pg_database WHERE datname=current_database()),'rel','p_items_api_owner.items'::regclass::oid,'rows',(SELECT json_agg(json_build_object('id',id,'marked',marked,'xmin',xmin::text) ORDER BY id) FROM p_items_api_owner.items))",
+    "result": "{\"db\" : \"16401\", \"rel\" : \"16463\", \"rows\" : [{\"id\" : \"before-0\", \"marked\" : false, \"xmin\" : \"1250\"}, {\"id\" : \"before-1\", \"marked\" : false, \"xmin\" : \"1251\"}, {\"id\" : \"retained-rg24\", \"marked\" : true, \"xmin\" : \"1252\"}, {\"id\" : \"seed\", \"marked\" : false, \"xmin\" : \"764\"}]}"
+  },
+  {
+    "sql": "SELECT json_agg(json_build_object('row',md5(row_to_json(s)::text),'absolute',absolute_expires_at,'idle',idle_seconds,'lastSeen',last_seen_at)) FROM jeeves.browser_sessions s",
+    "result": "[{\"row\" : \"da17f1ce0990bbcd71c95f1195227a35\", \"absolute\" : \"2026-11-25T06:22:16.469562+00:00\", \"idle\" : 86400, \"lastSeen\" : \"2026-11-18T06:22:16.480147+00:00\"}]"
+  }
+]

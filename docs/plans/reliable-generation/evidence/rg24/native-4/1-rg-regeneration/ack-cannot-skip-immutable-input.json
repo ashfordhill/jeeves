@@ -1,0 +1,17 @@
+{
+  "directory": "/tmp/jeeves-system-T5y6v7/1-rg-regeneration",
+  "check": false,
+  "refused": [
+    "Extension migration build failed (src/modules/echo-api/echo.ts): src/modules/echo-api/echo.ts(4,3): error TS2542: Index signature in type 'Readonly<Record<string, string | readonly string[] | undefined>>' only permits reading.\n"
+  ],
+  "counts": {
+    "create": 13,
+    "replace": 26,
+    "unchanged": 8,
+    "keep": 0
+  },
+  "keepChanged": ["package.json", "pnpm-lock.yaml", "src/modules/echo-api/echo.ts"],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

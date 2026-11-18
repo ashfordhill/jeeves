@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="4" failures="1" errors="0" time="9.183542291">
+    <testsuite name="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" timestamp="2026-11-18T06:17:20.068Z" hostname="BASEMENT-PC" tests="3" failures="1" errors="0" skipped="2" time="9.183542291">
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates" time="9.182897345">
+            <failure message="Error: pnpm --dir exit 1
+$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/design.json /tmp/jeeves-system-TR6S6u/1-rg-regeneration --check --ack-extension-api=8
+{
+  &quot;directory&quot;: &quot;/tmp/jeeves-system-TR6S6u/1-rg-regeneration&quot;,
+  &quot;check&quot;: true,
+  &quot;refused&quot;: [
+    &quot;Extension migration build failed (src/modules/catalog-api/catalog-read.hooks.ts, src/modules/catalog-api/catalog-writer.ts): infra/postgres/catalog/products.json: Invalid product SQL declaration: table exceeds compiled owner/grant maximum\n&quot;
+  ],
+  &quot;counts&quot;: {
+    &quot;create&quot;: 28,
+    &quot;replace&quot;: 31,
+    &quot;unchanged&quot;: 10,
+    &quot;keep&quot;: 0
+  },
+  &quot;keepChanged&quot;: [
+    &quot;infra/postgres/catalog/products.json&quot;,
+    &quot;infra/postgres/catalog/products/migrations/m_catalog_writer/0001-initial.sql&quot;,
+    &quot;package.json&quot;,
+    &quot;pnpm-lock.yaml&quot;,
+    &quot;src/modules/catalog-api/catalog-read.hooks.ts&quot;,
+    &quot;src/modules/catalog-api/catalog-writer.ts&quot;
+  ],
+  &quot;override&quot;: [],
+  &quot;remove&quot;: [],
+  &quot;orphan&quot;: [
+    &quot;infra/postgres/catalog/modules/catalog-writer.sql&quot;
+  ]
+}
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × &quot;pnpm recursive run&quot; failed in /home/ash/github/jeeves/jeeves-generator
+
+" type="Error">
+Error: Error: pnpm --dir exit 1
+$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/design.json /tmp/jeeves-system-TR6S6u/1-rg-regeneration --check --ack-extension-api=8
+{
+  &quot;directory&quot;: &quot;/tmp/jeeves-system-TR6S6u/1-rg-regeneration&quot;,
+  &quot;check&quot;: true,
+  &quot;refused&quot;: [
+    &quot;Extension migration build failed (src/modules/catalog-api/catalog-read.hooks.ts, src/modules/catalog-api/catalog-writer.ts): infra/postgres/catalog/products.json: Invalid product SQL declaration: table exceeds compiled owner/grant maximum\n&quot;
+  ],
+  &quot;counts&quot;: {
+    &quot;create&quot;: 28,
+    &quot;replace&quot;: 31,
+    &quot;unchanged&quot;: 10,
+    &quot;keep&quot;: 0
+  },
+  &quot;keepChanged&quot;: [
+    &quot;infra/postgres/catalog/products.json&quot;,
+    &quot;infra/postgres/catalog/products/migrations/m_catalog_writer/0001-initial.sql&quot;,
+    &quot;package.json&quot;,
+    &quot;pnpm-lock.yaml&quot;,
+    &quot;src/modules/catalog-api/catalog-read.hooks.ts&quot;,
+    &quot;src/modules/catalog-api/catalog-writer.ts&quot;
+  ],
+  &quot;override&quot;: [],
+  &quot;remove&quot;: [],
+  &quot;orphan&quot;: [
+    &quot;infra/postgres/catalog/modules/catalog-writer.sql&quot;
+  ]
+}
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × &quot;pnpm recursive run&quot; failed in /home/ash/github/jeeves/jeeves-generator
+
+
+ ❯ Application.execute jeeves-generator/integration/harness/application.ts:95:13
+ ❯ publicUpdate jeeves-generator/integration/harness/rg-regeneration.ts:112:14
+ ❯ jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:111:21
+            </failure>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: link/account public setting update preserves policy bodies, rows and session expiry promises" time="0">
+            <skipped/>
+        </testcase>
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts" name="RG24: catalog update retains accepted remote work and product data before process resumption" time="0">
+            <skipped/>
+        </testcase>
+    </testsuite>
+    <testsuite name="jeeves-generator/integration/scenarios/regeneration.system.test.ts" timestamp="2026-11-18T06:17:20.070Z" hostname="BASEMENT-PC" tests="1" failures="0" errors="0" skipped="1" time="0">
+        <testcase classname="jeeves-generator/integration/scenarios/regeneration.system.test.ts" name="B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data" time="0">
+            <skipped/>
+        </testcase>
+    </testsuite>
+</testsuites>

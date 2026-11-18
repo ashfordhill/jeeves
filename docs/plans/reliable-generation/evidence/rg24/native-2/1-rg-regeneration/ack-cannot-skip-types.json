@@ -1,0 +1,24 @@
+{
+  "directory": "/tmp/jeeves-system-Ii23wa/1-rg-regeneration",
+  "check": false,
+  "refused": [
+    "Extension migration build failed (src/modules/catalog-api/catalog-read.hooks.ts, src/modules/catalog-api/catalog-writer.ts): src/modules/catalog-api/catalog-writer.ts(9,38): error TS2339: Property 'query' does not exist on type 'ProductQueries'.\nsrc/processes/catalog-api.ts(112,57): error TS2740: Type 'Readonly<{ call(name: string, parameters: readonly unknown[]): Promise<{ rows: unknown[]; rowCount: number; }>; }>' is missing the following properties from type 'Pool': totalCount, idleCount, waitingCount, expiredCount, and 21 more.\n"
+  ],
+  "counts": {
+    "create": 28,
+    "replace": 31,
+    "unchanged": 10,
+    "keep": 0
+  },
+  "keepChanged": [
+    "infra/postgres/catalog/products.json",
+    "infra/postgres/catalog/products/migrations/m_catalog_writer/0001-initial.sql",
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/modules/catalog-api/catalog-read.hooks.ts",
+    "src/modules/catalog-api/catalog-writer.ts"
+  ],
+  "override": [],
+  "remove": [],
+  "orphan": ["infra/postgres/catalog/modules/catalog-writer.sql"]
+}

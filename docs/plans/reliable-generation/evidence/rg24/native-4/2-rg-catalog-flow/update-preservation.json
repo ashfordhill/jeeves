@@ -1,0 +1,148 @@
+{
+  "pendingBefore": "[{\"id\" : \"2511abe0-d3d0-44c6-bc72-52ed42a80a2e\", \"namespace\" : \"[\\\"caller-db\\\",\\\"caller-owner\\\",\\\"catalog-replicate\\\"]\", \"scope\" : \"{}\", \"key\" : \"pending-update\", \"state\" : \"running\", \"input\" : {\"value\": {\"id\": \"pending-update\", \"title\": \"Pending catalog\"}, \"present\": true}, \"inputHash\" : \"1c33f2a971b4b6d561a2bdd30d60c3155e02391207f1f61e22e05605673ca75b\", \"fence\" : 1, \"created\" : \"2026-11-18T06:35:49.771876+00:00\", \"ticketHash\" : \"2a8028878b341f39c88f87353be9d1b5\", \"remoteState\" : \"dispatched\", \"rowHash\" : \"57f5cddd843cd57f42c353eceb9cb2eb\"}]",
+  "pendingWhileStopped": "[{\"id\" : \"2511abe0-d3d0-44c6-bc72-52ed42a80a2e\", \"namespace\" : \"[\\\"caller-db\\\",\\\"caller-owner\\\",\\\"catalog-replicate\\\"]\", \"scope\" : \"{}\", \"key\" : \"pending-update\", \"state\" : \"running\", \"input\" : {\"value\": {\"id\": \"pending-update\", \"title\": \"Pending catalog\"}, \"present\": true}, \"inputHash\" : \"1c33f2a971b4b6d561a2bdd30d60c3155e02391207f1f61e22e05605673ca75b\", \"fence\" : 1, \"created\" : \"2026-11-18T06:35:49.771876+00:00\", \"ticketHash\" : \"2a8028878b341f39c88f87353be9d1b5\", \"remoteState\" : \"dispatched\", \"rowHash\" : \"57f5cddd843cd57f42c353eceb9cb2eb\"}]",
+  "pendingAfter": "[{\"id\" : \"2511abe0-d3d0-44c6-bc72-52ed42a80a2e\", \"namespace\" : \"[\\\"caller-db\\\",\\\"caller-owner\\\",\\\"catalog-replicate\\\"]\", \"scope\" : \"{}\", \"key\" : \"pending-update\", \"state\" : \"completed\", \"input\" : {\"value\": {\"id\": \"pending-update\", \"title\": \"Pending catalog\"}, \"present\": true}, \"inputHash\" : \"1c33f2a971b4b6d561a2bdd30d60c3155e02391207f1f61e22e05605673ca75b\", \"fence\" : 2, \"created\" : \"2026-11-18T06:35:49.771876+00:00\", \"ticketHash\" : \"2a8028878b341f39c88f87353be9d1b5\", \"remoteState\" : \"done\", \"rowHash\" : \"60b151004dfbb498c2dc5a895bbaf521\"}]",
+  "productsBefore": "{\"db\" : \"16471\", \"rel\" : \"16573\", \"rows\" : [{\"id\" : \"durable-before\", \"title\" : \"durable-before\", \"effects\" : 1, \"xmin\" : \"1234\"}]}",
+  "productsAfter": "{\"db\" : \"16471\", \"rel\" : \"16573\", \"rows\" : [{\"id\" : \"durable-before\", \"title\" : \"durable-before\", \"effects\" : 1, \"xmin\" : \"1234\"}]}",
+  "runtimeBefore": {
+    "project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2",
+    "ports": [40693, 38025, 37599],
+    "own": {
+      "src/contracts/catalog.ts": "356bfbd122b7e75b2d3c89cde3ed89237749fa5d544b81549cfcc7cf40a394db",
+      "src/modules/caller/send.ts": "1947b4f6695fa23590ff819b5e9a315c71e8c78767abde1ef1b2bf589b2a34d0",
+      "src/modules/callee/receive.ts": "50c0df390dda84107b20002a98fe353624bca93a0a600c1c19a8ef37342dd73f",
+      "src/modules/caller/catalog-events.ts": "0aefd5a71a981e8f98fda08c8ec07b9027d915a0d22df08e4c5585f9fa20efc7",
+      "src/modules/caller/catalog-events.mapping.hooks.ts": "71f5f0d1cfabd344108d6ae40fd9ce22f52e543b5a7b2fdf3c56c3061c56f0e3",
+      "src/modules/projector/apply-catalog.ts": "96680fb6a63a0e447070f107f5500b6021180484ff4df7f306ddca8fd08bcb93",
+      "infra/postgres/caller-db/products.json": "68a8982bb10b01935cb2b5f18fe3b3be06e13566634e36c1a5ee7f82051d20b8",
+      "infra/postgres/caller-db/products/migrations/p_caller_owner/0001-initial.sql": "6593940495c191264f4b4b3095afe3d1ae2eedf65183b69d82c3a01338748746",
+      "infra/postgres/caller-db/products/commands/catalog_sync.sql": "dc54dd50619285c0d13701230784e8d779018e34a275d5321e106f6a9b45673a",
+      "infra/postgres/caller-db/products/commands/accept_event.sql": "7af6d26cf7c3a84f6bf8d7750ec528462a57cfaacfd4a9c526c09b4487b17291",
+      "infra/postgres/caller-db/products/commands/apply_catalog.sql": "bcc9c0d09d3959f9e392e296227b4e553aab277b173d2f071913cb918e3d2c3b",
+      "infra/postgres/callee-db/products.json": "330a07d08e3a43c72f3b8f59791fec4ea80e0d6c54cbf96851c087415649a00c",
+      "infra/postgres/callee-db/products/migrations/p_callee_owner/0001-initial.sql": "b32603820eb3ac0f62770aedcb24482cb0632e5fe955305921265810acc4f16b",
+      "infra/postgres/callee-db/products/commands/provider_apply.sql": "765b6f45ca5b30b3d043424726a0e724b92a702a8b135c423c9584275b5351bb"
+    },
+    "runtime": {
+      ".runtime/local-setup.json": "6e5670aa973fb549543a6a412f25ad319831fb3b55116327d1bf42b4a13242c1",
+      ".runtime/secrets/broker-password": "034946822eb2162dfbe47a26bec09d46015fc93c079e7d5c3130bbaa620f0b16",
+      ".runtime/secrets/identity-admin-issuer": "7ff8119ac2c457a4578806f4127fd34363e799f12ffefc0931184024e3efe806",
+      ".runtime/secrets/identity-issuer": "4709bc87f0104902220151ef60112526e2ee2a22c07e7607834d2c8212ec5c91",
+      ".runtime/secrets/identity-owner-issuer": "9533f0d38e6b6d1726b139cd4d7beae61dddd8cca4e0bda30d94845c1736e91a",
+      ".runtime/secrets/issuer.env": "24c8e9315f35439056b4d98838f0a57441e503be813a27a817638c62cff7153d",
+      ".runtime/secrets/issuer.realm.json": "eb632fb28065c08fc5ea84f2efe06f8ae1739316c5b8108afdafb0063258d101",
+      ".runtime/secrets/owner-callee-db": "1f2797c0f386cdf42593bb694bf0ca0af693a9120bc33547bab3a1760c4899f4",
+      ".runtime/secrets/owner-caller-db": "8814cac75ee77a0c4e139236ee0d761c85aa0a04c6f020d7b766e92812f68312",
+      ".runtime/secrets/postgres-admin": "f2a15c3546bb848053dbcfeb8c9639364d7cb86c2bcb1d78f1dc5379ffe3443a",
+      ".runtime/secrets/product-callee-db--callee": "3e692e6899ae3213f891296f5fe796d44543f7beeef3a7ec41ebad1f972b56b2",
+      ".runtime/secrets/product-caller-db--caller": "c3b1d4567d5821cb9cc22da1c7a32f717acd3eee90ef75251c75ac2e13782a79",
+      ".runtime/secrets/product-caller-db--projector": "26c1028df08e33ec4519cfd4b08f1ad96f809d1ae962c60a642bd9d3f9fb2ac5",
+      ".runtime/secrets/sql-callee-db--callee": "1da07e32f4d54d54d2dd4e9d8e31107275cec39a3251273c54f0f0b3ae97b6ff",
+      ".runtime/secrets/sql-caller-db--caller": "b51abe14899ecb78733ff0f2eaf8a9cff9dfe63426c98d9f077ccdf646971bfa",
+      ".runtime/secrets/sql-caller-db--projector": "5e83577020c1458c48067218426f7335d4e633f6cc5e2722f0ac212909b23673",
+      ".runtime/secrets/workload-jeeves-workload-callee": "145565ea9b0f4f22eddd5af8671396c2f1c6d46c27667911f8de33870831a2fe",
+      ".runtime/secrets/workload-jeeves-workload-caller": "8d7be958af5ef57c11625545b642f9a1e9ce19c1586706c38702b84725552247",
+      ".runtime/workload-contract.json": "c45d909718311564d47aba5b8f2241f1da1717c759e402bb6e3120a72329db12"
+    },
+    "volumes": [
+      {
+        "name": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2_broker-data",
+        "createdAt": "2026-11-18T00:34:01-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "f430d7061221e86873a445e1d8ab205b58dc95dbd7c393895077784c322f39d0",
+          "com.docker.compose.project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "broker-data"
+        }
+      },
+      {
+        "name": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2_postgres-data",
+        "createdAt": "2026-11-18T00:34:01-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "44b136a694d9ef57ca313be3646366ff0252bfe1e09a2b0a149b3dd1f45979dc",
+          "com.docker.compose.project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      }
+    ]
+  },
+  "runtimeAfter": {
+    "project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2",
+    "ports": [40693, 38025, 37599],
+    "own": {
+      "src/contracts/catalog.ts": "356bfbd122b7e75b2d3c89cde3ed89237749fa5d544b81549cfcc7cf40a394db",
+      "src/modules/caller/send.ts": "1947b4f6695fa23590ff819b5e9a315c71e8c78767abde1ef1b2bf589b2a34d0",
+      "src/modules/callee/receive.ts": "50c0df390dda84107b20002a98fe353624bca93a0a600c1c19a8ef37342dd73f",
+      "src/modules/caller/catalog-events.ts": "0aefd5a71a981e8f98fda08c8ec07b9027d915a0d22df08e4c5585f9fa20efc7",
+      "src/modules/caller/catalog-events.mapping.hooks.ts": "71f5f0d1cfabd344108d6ae40fd9ce22f52e543b5a7b2fdf3c56c3061c56f0e3",
+      "src/modules/projector/apply-catalog.ts": "96680fb6a63a0e447070f107f5500b6021180484ff4df7f306ddca8fd08bcb93",
+      "infra/postgres/caller-db/products.json": "68a8982bb10b01935cb2b5f18fe3b3be06e13566634e36c1a5ee7f82051d20b8",
+      "infra/postgres/caller-db/products/migrations/p_caller_owner/0001-initial.sql": "6593940495c191264f4b4b3095afe3d1ae2eedf65183b69d82c3a01338748746",
+      "infra/postgres/caller-db/products/commands/catalog_sync.sql": "dc54dd50619285c0d13701230784e8d779018e34a275d5321e106f6a9b45673a",
+      "infra/postgres/caller-db/products/commands/accept_event.sql": "7af6d26cf7c3a84f6bf8d7750ec528462a57cfaacfd4a9c526c09b4487b17291",
+      "infra/postgres/caller-db/products/commands/apply_catalog.sql": "bcc9c0d09d3959f9e392e296227b4e553aab277b173d2f071913cb918e3d2c3b",
+      "infra/postgres/callee-db/products.json": "330a07d08e3a43c72f3b8f59791fec4ea80e0d6c54cbf96851c087415649a00c",
+      "infra/postgres/callee-db/products/migrations/p_callee_owner/0001-initial.sql": "b32603820eb3ac0f62770aedcb24482cb0632e5fe955305921265810acc4f16b",
+      "infra/postgres/callee-db/products/commands/provider_apply.sql": "765b6f45ca5b30b3d043424726a0e724b92a702a8b135c423c9584275b5351bb"
+    },
+    "runtime": {
+      ".runtime/local-setup.json": "6e5670aa973fb549543a6a412f25ad319831fb3b55116327d1bf42b4a13242c1",
+      ".runtime/secrets/broker-password": "034946822eb2162dfbe47a26bec09d46015fc93c079e7d5c3130bbaa620f0b16",
+      ".runtime/secrets/identity-admin-issuer": "7ff8119ac2c457a4578806f4127fd34363e799f12ffefc0931184024e3efe806",
+      ".runtime/secrets/identity-issuer": "4709bc87f0104902220151ef60112526e2ee2a22c07e7607834d2c8212ec5c91",
+      ".runtime/secrets/identity-owner-issuer": "9533f0d38e6b6d1726b139cd4d7beae61dddd8cca4e0bda30d94845c1736e91a",
+      ".runtime/secrets/issuer.env": "24c8e9315f35439056b4d98838f0a57441e503be813a27a817638c62cff7153d",
+      ".runtime/secrets/issuer.realm.json": "eb632fb28065c08fc5ea84f2efe06f8ae1739316c5b8108afdafb0063258d101",
+      ".runtime/secrets/owner-callee-db": "1f2797c0f386cdf42593bb694bf0ca0af693a9120bc33547bab3a1760c4899f4",
+      ".runtime/secrets/owner-caller-db": "8814cac75ee77a0c4e139236ee0d761c85aa0a04c6f020d7b766e92812f68312",
+      ".runtime/secrets/postgres-admin": "f2a15c3546bb848053dbcfeb8c9639364d7cb86c2bcb1d78f1dc5379ffe3443a",
+      ".runtime/secrets/product-callee-db--callee": "3e692e6899ae3213f891296f5fe796d44543f7beeef3a7ec41ebad1f972b56b2",
+      ".runtime/secrets/product-caller-db--caller": "c3b1d4567d5821cb9cc22da1c7a32f717acd3eee90ef75251c75ac2e13782a79",
+      ".runtime/secrets/product-caller-db--projector": "26c1028df08e33ec4519cfd4b08f1ad96f809d1ae962c60a642bd9d3f9fb2ac5",
+      ".runtime/secrets/sql-callee-db--callee": "1da07e32f4d54d54d2dd4e9d8e31107275cec39a3251273c54f0f0b3ae97b6ff",
+      ".runtime/secrets/sql-caller-db--caller": "b51abe14899ecb78733ff0f2eaf8a9cff9dfe63426c98d9f077ccdf646971bfa",
+      ".runtime/secrets/sql-caller-db--projector": "5e83577020c1458c48067218426f7335d4e633f6cc5e2722f0ac212909b23673",
+      ".runtime/secrets/workload-jeeves-workload-callee": "145565ea9b0f4f22eddd5af8671396c2f1c6d46c27667911f8de33870831a2fe",
+      ".runtime/secrets/workload-jeeves-workload-caller": "8d7be958af5ef57c11625545b642f9a1e9ce19c1586706c38702b84725552247",
+      ".runtime/workload-contract.json": "c45d909718311564d47aba5b8f2241f1da1717c759e402bb6e3120a72329db12"
+    },
+    "volumes": [
+      {
+        "name": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2_broker-data",
+        "createdAt": "2026-11-18T00:34:01-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "f430d7061221e86873a445e1d8ab205b58dc95dbd7c393895077784c322f39d0",
+          "com.docker.compose.project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "broker-data"
+        }
+      },
+      {
+        "name": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2_postgres-data",
+        "createdAt": "2026-11-18T00:34:01-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "44b136a694d9ef57ca313be3646366ff0252bfe1e09a2b0a149b3dd1f45979dc",
+          "com.docker.compose.project": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      }
+    ]
+  },
+  "bodyLimitBefore": 65536,
+  "bodyLimitAfter": 1024,
+  "beforeStatus": {
+    "status": 401
+  },
+  "afterStatus": {
+    "status": 413
+  },
+  "localEffects": 1,
+  "remoteEffects": 1,
+  "stableChosenTicket": true
+}

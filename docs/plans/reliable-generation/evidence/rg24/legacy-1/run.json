@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "gs-e3431f81-28fa-4518-ab10-6271cce37620",
+  "suite": "regeneration",
+  "temporary": "/tmp/jeeves-system-TR6S6u",
+  "stacks": [
+    {
+      "project": "gs-e3431f81-28fa-4518-ab10-6271cce37620-1",
+      "fixture": "rg-regeneration",
+      "application": "/tmp/jeeves-system-TR6S6u/1-rg-regeneration",
+      "artifacts": "/home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/legacy-1/1-rg-regeneration",
+      "ports": [36973, 43959, 44963]
+    }
+  ]
+}

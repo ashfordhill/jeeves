@@ -1,0 +1,16 @@
+$ tsx src/v2/update-cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/rg-regeneration/design.json /tmp/jeeves-system-Ii23wa/2-rg-regeneration
+{
+  "directory": "/tmp/jeeves-system-Ii23wa/2-rg-regeneration",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 68,
+    "keep": 4
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

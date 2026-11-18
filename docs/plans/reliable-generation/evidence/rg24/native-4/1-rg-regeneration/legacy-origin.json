@@ -1,0 +1,12 @@
+{
+  "revision": "d52484597b7fb62d5c3b3bfb629884ab3978255f",
+  "archiveSha256": "4825ad5db06a32f2b6b4092f12fb8ccc6b38a498a721b0c06230cfdc2be6b77a",
+  "designSha256": "20700f9f3ca78b6f1e4c27f2e648be600c24d11428ee2eaa12cf06e8ae87d77a",
+  "designSource": "<repository>/field-projects/generator-system/fixtures/rg-regeneration/legacy-hook-design.json",
+  "manifestSha256": "64b9a245345769cc971e3861a51aa104ce8c6bd10e2e26126a50813325d915d4",
+  "extensionMetadataAbsent": true,
+  "noManifestRewriting": true,
+  "archivedWorkspaceImport": "<archived-source>/jeeves/packages/spec/src/index.ts",
+  "archivedSpecSha256": "9a2317a952d58a1af3178fffeac171e47f88800223da2f5bcdff8741e0d38076",
+  "pinnedSpecSha256": "9a2317a952d58a1af3178fffeac171e47f88800223da2f5bcdff8741e0d38076"
+}

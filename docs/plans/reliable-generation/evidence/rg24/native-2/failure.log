@@ -1,0 +1,52 @@
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |generated-system| jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts (3 tests | 2 failed) 303380ms
+   ✓ RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates 11627ms
+   × RG24: link/account public setting update preserves policy bodies, rows and session expiry promises 154203ms
+   × RG24: catalog update retains accepted remote work and product data before process resumption 137549ms
+ ↓ |generated-system| jeeves-generator/integration/scenarios/regeneration.system.test.ts (1 test | 1 skipped)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts > RG24: link/account public setting update preserves policy bodies, rows and session expiry promises
+Error: Unclassified source: .jeeves/generated/src/modules/items-api/create-limit.hooks.ts. Declare it in backendPaths or uiPaths.
+ ❯ sourceLocReport jeeves-generator/src/source-loc.ts:145:13
+    143|     }
+    144|     if (!matchesPath(path, scope.backendPaths))
+    145|       throw new Error(`Unclassified source: ${path}. Declare it in bac…
+       |             ^
+    146|     const read = (files: ReturnType<typeof tree>) => {
+    147|       const entry = files.get(path);
+ ❯ countSnapshots jeeves-generator/integration/harness/rg-regeneration.ts:297:15
+ ❯ maintenanceReport jeeves-generator/integration/harness/rg-regeneration.ts:315:18
+ ❯ beforeStart jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:327:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:226:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts > RG24: catalog update retains accepted remote work and product data before process resumption
+Error: Timed out waiting for remote effect completed but response withheld; last observation: {"events":[{"phase":"prepare","key":"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0","from":"172.24.0.7","status":200},{"phase":"execute","key":"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0","from":"172.24.0.7","status":200},{"phase":"execute","key":"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0","from":"172.24.0.7","status":200},{"phase":"execute","key":"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0","from":"172.24.0.7","status":200},{"phase":"execute","key":"1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0","from":"172.24.0.7","status":200}],"acks":[],"ingress":0,"commits":[]}
+ ❯ poll jeeves-generator/integration/harness/process.ts:165:9
+    163|     );
+    164|   } while (performance.now() < deadline);
+    165|   throw new Error(`Timed out waiting for ${name}; last observation: ${…
+       |         ^
+    166| }
+    167|
+ ❯ beforeStart jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:412:7
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:367:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 skipped (2)
+      Tests  2 failed | 1 passed | 1 skipped (4)
+   Start at  00:19:51
+   Duration  304.04s (tests 100%)
+
+JSON report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-2/vitest.json
+JUNIT report written to /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-2/junit.xml

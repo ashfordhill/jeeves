@@ -1,0 +1,106 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 1,
+  "numFailedTestSuites": 1,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 5,
+  "numPassedTests": 1,
+  "numFailedTests": 2,
+  "numPendingTests": 2,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794983216868,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: unchanged-namespace legacy API migration succeeds in place only after handwritten repair",
+          "status": "failed",
+          "title": "RG24: unchanged-namespace legacy API migration succeeds in place only after handwritten repair",
+          "duration": 1157.6079009999999,
+          "failureMessages": [
+            "Error: Error: pnpm exec exit 1\nsrc/processes/echo-api.ts(48,9): error TS2739: Type '{ body: { mode: string | string[]; }; }' is missing the following properties from type 'Promise<ModuleResponse>': then, catch, [Symbol.toStringTag], finally\n\n    at Application.execute (/home/ash/github/jeeves/jeeves-generator/integration/harness/application.ts:95:13)\n    at /home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:51:5\n    at file:///home/ash/github/jeeves/node_modules/.pnpm/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@24.19.2_jsdom@29.1.1_@noble+hashes@2_b72d06d6de49ea9f9ac618588292c926/node_modules/vitest/dist/chunks/run.CQOUYP-x.js:2783:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "status": "skipped",
+          "title": "RG24: genuine legacy hooks refuse, migrate explicitly and survive consecutive public updates",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "status": "passed",
+          "title": "RG24: link/account public setting update preserves policy bodies, rows and session expiry promises",
+          "duration": 199556.00024999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "status": "failed",
+          "title": "RG24: catalog update retains accepted remote work and product data before process resumption",
+          "duration": 134507.633251,
+          "failureMessages": [
+            "Error: Error: pnpm --dir exit 1\n$ tsx src/v2/cli.ts /tmp/jeeves-system-aYtO9G/catalog-setting.json /tmp/jeeves-system-aYtO9G/setting-fresh\nnode:internal/fs/promises:1564\n  return await PromisePrototypeThen(\n         ^\n\nError: EEXIST: file already exists, mkdir '/tmp/jeeves-system-aYtO9G/setting-fresh'\n    at async mkdir (node:internal/fs/promises:1564:10)\n    at async exportNewDirectory (/home/ash/github/jeeves/jeeves-generator/src/export.ts:21:3)\n    at async <anonymous> (/home/ash/github/jeeves/jeeves-generator/src/v2/cli.ts:20:7) {\n  errno: -17,\n  code: 'EEXIST',\n  syscall: 'mkdir',\n  path: '/tmp/jeeves-system-aYtO9G/setting-fresh'\n}\n\nNode.js v24.21.0\n[ELIFECYCLE] Command failed with exit code 1.\nError: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL\n\n  × \"pnpm recursive run\" failed in /home/ash/github/jeeves/jeeves-generator\n\n\n    at Application.execute (/home/ash/github/jeeves/jeeves-generator/integration/harness/application.ts:95:13)\n    at adoptFresh (/home/ash/github/jeeves/jeeves-generator/integration/harness/rg-regeneration.ts:150:3)\n    at beforeStart (/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:563:21)\n    at withApplication (/home/ash/github/jeeves/jeeves-generator/integration/harness/application.ts:366:5)\n    at /home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts:467:3\n    at file:///home/ash/github/jeeves/node_modules/.pnpm/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@24.19.2_jsdom@29.1.1_@noble+hashes@2_b72d06d6de49ea9f9ac618588292c926/node_modules/vitest/dist/chunks/run.CQOUYP-x.js:2783:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794983217411,
+      "endTime": 1794983574133.6333,
+      "status": "failed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration-rg.system.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "status": "skipped",
+          "title": "B10: independent A/B TTL behavior and public regeneration retain owned code, runtime and durable data",
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794983216868,
+      "endTime": 1794983216868,
+      "status": "passed",
+      "message": "",
+      "name": "/home/ash/github/jeeves/jeeves-generator/integration/scenarios/regeneration.system.test.ts"
+    }
+  ]
+}

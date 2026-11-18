@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /tmp/jeeves-system-Ii23wa/link-setting.json /tmp/jeeves-system-Ii23wa/setting-fresh
+{
+  directory: '/tmp/jeeves-system-Ii23wa/setting-fresh',
+  files: 111,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 20
+}

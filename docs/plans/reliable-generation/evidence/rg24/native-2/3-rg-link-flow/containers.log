@@ -1,0 +1,204 @@
+app-items-worker-1  | 2026-11-18T06:22:08.839614547Z {"event":"probe","tile":"items-worker","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+app-edge-1          | 2026-11-18T06:21:30.314168632Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+identity-sign-in-1  | 2026-11-18T06:20:41.513600418Z Updating the configuration and installing your custom providers, if any. Please wait.
+app-edge-1          | 2026-11-18T06:21:30.316423972Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+app-edge-1          | 2026-11-18T06:21:30.316430798Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+local-postgres-1    | 2026-11-18T06:20:31.281591827Z The files belonging to this database system will be owned by user "postgres".
+identity-sign-in-1  | 2026-11-18T06:20:44.005258347Z 2026-11-18 06:20:44,003 WARN  [org.keycloak.common.Profile] (build-5) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+local-postgres-1    | 2026-11-18T06:20:31.281702016Z This user must also own the server process.
+identity-sign-in-1  | 2026-11-18T06:20:59.144686860Z 2026-11-18 06:20:59,144 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 13231ms
+identity-sign-in-1  | 2026-11-18T06:20:59.722123607Z Running the server in development mode. DO NOT use this configuration in production.
+identity-sign-in-1  | 2026-11-18T06:21:01.340836481Z 2026-11-18 06:21:00,200 INFO  [org.keycloak.url.HostnameV2ProviderFactory] (main) If hostname is specified, hostname-strict is effectively ignored
+identity-sign-in-1  | 2026-11-18T06:21:01.341516223Z 2026-11-18 06:21:00,442 WARN  [org.keycloak.models.sessions.infinispan.InfinispanStickySessionEncoderProviderFactory] (main) The option `shouldAttachRoute` is deprecated and will be removed in a future release. Disable it by setting `spi-sticky-session-encoder--infinispan--should-attach-route` to `false`
+cache-admission-1   | 2026-11-18T06:20:31.646656949Z 7:M 18 Nov 2026 06:20:31.646 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+app-edge-1          | 2026-11-18T06:21:30.343785579Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+app-items-worker-1  | 2026-11-18T06:22:08.840413387Z Application ready
+app-items-worker-1  | 2026-11-18T06:22:18.217255574Z {"level":"info","event":"drain-started"}
+local-postgres-1    | 2026-11-18T06:20:31.281705046Z
+app-browser-1       | 2026-11-18T06:22:09.692033479Z {"level":"info","event":"started","tile":"browser","module":"session","template":"browser-session","wiring":"mounted","checks":["protected schema/grants","HTTPS OIDC discovery; issuer outage refuses startup readiness/login"]}
+app-browser-1       | 2026-11-18T06:22:09.692594423Z Application ready
+app-browser-1       | 2026-11-18T06:22:16.365644863Z {"service":"browser","level":"info","event":"request-completed","requestId":"98ef3984-a682-4d0a-b37a-a9c1523b057c","correlationId":"98ef3984-a682-4d0a-b37a-a9c1523b057c","method":"GET","route":"/modules/session/login","status":302,"durationMs":11}
+app-browser-1       | 2026-11-18T06:22:16.477859271Z {"service":"browser","level":"info","event":"request-completed","requestId":"48664505-bd9b-4430-b8c9-a6702b95f4d0","correlationId":"48664505-bd9b-4430-b8c9-a6702b95f4d0","method":"GET","route":"/modules/session/callback","status":302,"durationMs":44}
+app-browser-1       | 2026-11-18T06:22:16.488460070Z {"service":"browser","level":"info","event":"request-completed","requestId":"facac38a-e082-4f33-ba13-d9ff68f9418a","correlationId":"facac38a-e082-4f33-ba13-d9ff68f9418a","method":"GET","route":"/modules/session/session","status":200,"durationMs":9}
+app-browser-1       | 2026-11-18T06:22:18.906008501Z {"level":"info","event":"drain-started"}
+app-browser-1       | 2026-11-18T06:22:18.906192495Z {"service":"browser","level":"info","event":"http-draining"}
+app-items-worker-1  | 2026-11-18T06:22:18.217510811Z {"level":"info","event":"admission-stopped"}
+app-items-worker-1  | 2026-11-18T06:22:18.217939239Z {"level":"info","event":"operations-cancelled"}
+app-items-worker-1  | 2026-11-18T06:22:18.218054540Z {"level":"info","event":"drain-completed"}
+app-items-api-1     | 2026-11-18T06:22:08.668468479Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+cache-records-1     | 2026-11-18T06:20:30.837425633Z 7:M 18 Nov 2026 06:20:30.837 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+cache-records-1     | 2026-11-18T06:20:30.837469600Z 7:M 18 Nov 2026 06:20:30.837 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-records-1     | 2026-11-18T06:20:30.837472025Z 7:M 18 Nov 2026 06:20:30.837 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-records-1     | 2026-11-18T06:20:30.837473594Z 7:M 18 Nov 2026 06:20:30.837 * Configuration loaded
+cache-records-1     | 2026-11-18T06:20:30.837975890Z 7:M 18 Nov 2026 06:20:30.837 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+app-items-api-1     | 2026-11-18T06:22:08.669442737Z {"event":"probe","tile":"items-api","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+cache-admission-1   | 2026-11-18T06:20:31.646701377Z 7:M 18 Nov 2026 06:20:31.646 * oO0OoO0OoO0Oo Valkey is starting oO0OoO0OoO0Oo
+cache-admission-1   | 2026-11-18T06:20:31.646703784Z 7:M 18 Nov 2026 06:20:31.646 * Valkey version=8.1.10, bits=64, commit=00000000, modified=1, pid=7, just started
+cache-admission-1   | 2026-11-18T06:20:31.646705371Z 7:M 18 Nov 2026 06:20:31.646 * Configuration loaded
+cache-admission-1   | 2026-11-18T06:20:31.646996190Z 7:M 18 Nov 2026 06:20:31.646 * Increased maximum number of open files to 10032 (it was originally set to 1024).
+cache-admission-1   | 2026-11-18T06:20:31.647001068Z 7:M 18 Nov 2026 06:20:31.646 * monotonic clock: POSIX clock_gettime
+cache-admission-1   | 2026-11-18T06:20:31.647475447Z 7:M 18 Nov 2026 06:20:31.647 * Running mode=standalone, port=6379.
+cache-records-1     | 2026-11-18T06:20:30.837981147Z 7:M 18 Nov 2026 06:20:30.837 * monotonic clock: POSIX clock_gettime
+cache-records-1     | 2026-11-18T06:20:30.838915015Z 7:M 18 Nov 2026 06:20:30.838 * Running mode=standalone, port=6379.
+cache-records-1     | 2026-11-18T06:20:30.839197838Z 7:M 18 Nov 2026 06:20:30.839 * Server initialized
+cache-records-1     | 2026-11-18T06:20:30.863448593Z 7:M 18 Nov 2026 06:20:30.863 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+cache-records-1     | 2026-11-18T06:20:30.909948170Z 7:M 18 Nov 2026 06:20:30.909 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-18T06:20:31.647721866Z 7:M 18 Nov 2026 06:20:31.647 * Server initialized
+cache-admission-1   | 2026-11-18T06:20:31.682221853Z 7:M 18 Nov 2026 06:20:31.682 * Creating AOF base file appendonly.aof.1.base.rdb on server start
+identity-sign-in-1  | 2026-11-18T06:21:01.347013190Z 2026-11-18 06:21:01,332 INFO  [org.infinispan.CONTAINER] (main) ISPN000974: Virtual threads support: enabled
+local-postgres-1    | 2026-11-18T06:20:31.281720258Z The database cluster will be initialized with locale "en_US.utf8".
+local-postgres-1    | 2026-11-18T06:20:31.281722404Z The default database encoding has accordingly been set to "UTF8".
+local-postgres-1    | 2026-11-18T06:20:31.281724378Z The default text search configuration will be set to "english".
+local-postgres-1    | 2026-11-18T06:20:31.281726344Z
+local-postgres-1    | 2026-11-18T06:20:31.281728147Z Data page checksums are disabled.
+local-postgres-1    | 2026-11-18T06:20:31.281730104Z
+local-postgres-1    | 2026-11-18T06:20:31.281732187Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+local-postgres-1    | 2026-11-18T06:20:31.288448938Z creating subdirectories ... ok
+local-postgres-1    | 2026-11-18T06:20:31.288562220Z selecting dynamic shared memory implementation ... posix
+local-postgres-1    | 2026-11-18T06:20:31.315735803Z selecting default "max_connections" ... 100
+local-postgres-1    | 2026-11-18T06:20:31.336487845Z selecting default "shared_buffers" ... 128MB
+local-postgres-1    | 2026-11-18T06:20:31.427076638Z selecting default time zone ... UTC
+local-postgres-1    | 2026-11-18T06:20:31.428259578Z creating configuration files ... ok
+local-postgres-1    | 2026-11-18T06:20:31.544970879Z running bootstrap script ... ok
+local-postgres-1    | 2026-11-18T06:20:31.764035567Z sh: locale: not found
+app-gateway-1       | 2026-11-18T06:22:09.318065093Z {"event":"probe","tile":"gateway","level":"info","client":"items-db","kind":"database","check":"SELECT 1","result":"ok"}
+local-postgres-1    | 2026-11-18T06:20:31.764108127Z 2026-11-18 06:20:31.764 UTC [35] WARNING:  no usable system locales were found
+local-postgres-1    | 2026-11-18T06:20:32.122265598Z performing post-bootstrap initialization ... ok
+local-postgres-1    | 2026-11-18T06:20:32.303118738Z syncing data to disk ... ok
+local-postgres-1    | 2026-11-18T06:20:32.303153463Z
+app-gateway-1       | 2026-11-18T06:22:09.352122065Z {"level":"info","event":"started","tile":"gateway","module":"gateway-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-gateway-1       | 2026-11-18T06:22:09.352747480Z Application ready
+app-gateway-1       | 2026-11-18T06:22:16.799157763Z {"service":"gateway","level":"info","event":"request-completed","requestId":"bc8a7b62-a417-4c6f-9b0a-13e411aa661e","correlationId":"bc8a7b62-a417-4c6f-9b0a-13e411aa661e","method":"POST","route":"/modules/forward","status":201,"durationMs":126}
+app-gateway-1       | 2026-11-18T06:22:17.016106749Z {"service":"gateway","level":"info","event":"request-completed","requestId":"84d0266c-8f0f-4c7a-9a1a-eb77e1a1df91","correlationId":"84d0266c-8f0f-4c7a-9a1a-eb77e1a1df91","method":"POST","route":"/modules/forward","status":201,"durationMs":31}
+cache-admission-1   | 2026-11-18T06:20:31.724980806Z 7:M 18 Nov 2026 06:20:31.724 * Creating AOF incr file appendonly.aof.1.incr.aof on server start
+cache-admission-1   | 2026-11-18T06:20:31.724995143Z 7:M 18 Nov 2026 06:20:31.724 * Ready to accept connections tcp
+cache-admission-1   | 2026-11-18T06:22:18.973078265Z 7:signal-handler (1794982938) Received SIGTERM scheduling shutdown...
+cache-admission-1   | 2026-11-18T06:22:19.033187059Z 7:M 18 Nov 2026 06:22:19.033 * User requested shutdown...
+cache-admission-1   | 2026-11-18T06:22:19.034124617Z 7:M 18 Nov 2026 06:22:19.033 * Calling fsync() on the AOF file.
+app-gateway-1       | 2026-11-18T06:22:17.220649350Z {"service":"gateway","level":"info","event":"request-failed","requestId":"39240e60-8c10-4b66-8af2-ff956fc6e9cf","correlationId":"39240e60-8c10-4b66-8af2-ff956fc6e9cf","method":"POST","route":"/modules/forward","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":6}
+app-browser-1       | 2026-11-18T06:22:18.906226372Z {"level":"info","event":"admission-stopped"}
+app-browser-1       | 2026-11-18T06:22:18.906431897Z {"level":"info","event":"operations-cancelled"}
+app-browser-1       | 2026-11-18T06:22:18.906902325Z {"service":"browser","level":"info","event":"http-drained"}
+app-browser-1       | 2026-11-18T06:22:18.907153434Z {"level":"info","event":"drain-completed"}
+identity-sign-in-1  | 2026-11-18T06:21:02.059616353Z 2026-11-18 06:21:02,059 INFO  [org.hibernate.orm.jdbc.batch] (JPA Startup Thread) HHH100501: Automatic JDBC statement batching enabled (maximum batch size 32)
+identity-sign-in-1  | 2026-11-18T06:21:02.091101088Z 2026-11-18 06:21:02,090 WARN  [org.keycloak.common.Profile] (main) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+cache-records-1     | 2026-11-18T06:20:30.909963932Z 7:M 18 Nov 2026 06:20:30.909 * Ready to accept connections tcp
+cache-records-1     | 2026-11-18T06:22:18.973132078Z 7:signal-handler (1794982938) Received SIGTERM scheduling shutdown...
+cache-records-1     | 2026-11-18T06:22:19.029266633Z 7:M 18 Nov 2026 06:22:19.029 * User requested shutdown...
+cache-records-1     | 2026-11-18T06:22:19.029286922Z 7:M 18 Nov 2026 06:22:19.029 * Calling fsync() on the AOF file.
+cache-records-1     | 2026-11-18T06:22:19.029347933Z 7:M 18 Nov 2026 06:22:19.029 * Saving the final RDB snapshot before exiting.
+cache-records-1     | 2026-11-18T06:22:19.071615665Z 7:M 18 Nov 2026 06:22:19.071 * DB saved on disk
+cache-records-1     | 2026-11-18T06:22:19.071632825Z 7:M 18 Nov 2026 06:22:19.071 # Valkey is now ready to exit, bye bye...
+app-items-api-1     | 2026-11-18T06:22:08.703036445Z {"level":"info","event":"cache","tile":"items-api","module":"record-reader","state":"available"}
+app-items-api-1     | 2026-11-18T06:22:08.722988205Z {"level":"info","event":"admission","tile":"items-api","module":"create-limit","state":"available"}
+app-items-api-1     | 2026-11-18T06:22:08.761581607Z {"level":"info","event":"started","tile":"items-api","module":"items-api-guard","template":"verified-identity","wiring":"mounted","checks":["sign-in Required on every module route"]}
+app-items-api-1     | 2026-11-18T06:22:08.761602103Z {"level":"info","event":"started","tile":"items-api","module":"record-reader","template":"positive-cache-read","wiring":"mounted","checks":["SELECT 1 on its source login"]}
+app-items-api-1     | 2026-11-18T06:22:08.761607973Z {"level":"info","event":"started","tile":"items-api","module":"create-limit","template":"rate-limiter","wiring":"mounted","checks":["PING on required admission cache"]}
+app-items-api-1     | 2026-11-18T06:22:08.762227527Z Application ready
+app-items-api-1     | 2026-11-18T06:22:16.797161050Z {"service":"items-api","level":"info","event":"request-completed","requestId":"28c943a4-6ca0-4d12-868e-8c8280799836","correlationId":"bc8a7b62-a417-4c6f-9b0a-13e411aa661e","method":"POST","route":"/internal/modules/create","status":201,"durationMs":72}
+app-items-api-1     | 2026-11-18T06:22:17.015360522Z {"service":"items-api","level":"info","event":"request-completed","requestId":"ebe6643e-d868-46d2-bac0-0aae3a7753cc","correlationId":"84d0266c-8f0f-4c7a-9a1a-eb77e1a1df91","method":"POST","route":"/internal/modules/create","status":201,"durationMs":28}
+app-items-api-1     | 2026-11-18T06:22:17.219442525Z {"service":"items-api","level":"info","event":"request-failed","requestId":"2a04ba19-413b-4311-bde9-0038a146b011","correlationId":"39240e60-8c10-4b66-8af2-ff956fc6e9cf","method":"POST","route":"/internal/modules/create","status":429,"code":"RATE_LIMITED","retryable":true,"durationMs":4}
+app-items-api-1     | 2026-11-18T06:22:18.217263383Z {"level":"info","event":"drain-started"}
+app-items-api-1     | 2026-11-18T06:22:18.217954234Z {"service":"items-api","level":"info","event":"http-draining"}
+app-items-api-1     | 2026-11-18T06:22:18.217959798Z {"level":"info","event":"admission-stopped"}
+app-items-api-1     | 2026-11-18T06:22:18.218407225Z {"level":"info","event":"operations-cancelled"}
+cache-admission-1   | 2026-11-18T06:22:19.034132417Z 7:M 18 Nov 2026 06:22:19.034 * Saving the final RDB snapshot before exiting.
+cache-admission-1   | 2026-11-18T06:22:19.088685308Z 7:M 18 Nov 2026 06:22:19.088 * DB saved on disk
+cache-admission-1   | 2026-11-18T06:22:19.088699510Z 7:M 18 Nov 2026 06:22:19.088 # Valkey is now ready to exit, bye bye...
+app-items-api-1     | 2026-11-18T06:22:18.218907050Z {"service":"items-api","level":"info","event":"http-drained"}
+app-items-api-1     | 2026-11-18T06:22:18.219232873Z {"level":"info","event":"drain-completed"}
+app-gateway-1       | 2026-11-18T06:22:18.925489218Z {"level":"info","event":"drain-started"}
+app-gateway-1       | 2026-11-18T06:22:18.925678009Z {"service":"gateway","level":"info","event":"http-draining"}
+app-gateway-1       | 2026-11-18T06:22:18.925687756Z {"level":"info","event":"admission-stopped"}
+app-gateway-1       | 2026-11-18T06:22:18.925723220Z {"level":"info","event":"operations-cancelled"}
+app-gateway-1       | 2026-11-18T06:22:18.926118998Z {"service":"gateway","level":"info","event":"http-drained"}
+app-gateway-1       | 2026-11-18T06:22:18.926349618Z {"level":"info","event":"drain-completed"}
+identity-sign-in-1  | 2026-11-18T06:21:02.689153990Z 2026-11-18 06:21:02,688 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
+identity-sign-in-1  | 2026-11-18T06:21:11.758836292Z 2026-11-18 06:21:11,758 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+identity-sign-in-1  | 2026-11-18T06:21:11.967969972Z 2026-11-18 06:21:11,967 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_390284, Site name: null, Cluster name: ISPN
+identity-sign-in-1  | 2026-11-18T06:21:12.163803836Z 2026-11-18 06:21:12,163 INFO  [org.keycloak.models.workflow.WorkflowsEventListenerFactory] (main) Workflow runner task scheduled: next execution at 18:21:12, then every PT12H
+identity-sign-in-1  | 2026-11-18T06:21:12.173141461Z 2026-11-18 06:21:12,172 INFO  [org.keycloak.exportimport.dir.DirImportProvider] (main) Importing from directory /opt/keycloak/bin/../data/import
+identity-sign-in-1  | 2026-11-18T06:21:12.282343627Z 2026-11-18 06:21:12,282 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
+identity-sign-in-1  | 2026-11-18T06:21:13.036640621Z 2026-11-18 06:21:13,036 INFO  [org.keycloak.exportimport.singlefile.SingleFileImportProvider] (main) Full importing from file /opt/keycloak/bin/../data/import/realm.json
+app-edge-1          | 2026-11-18T06:21:30.360908496Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+local-postgres-1    | 2026-11-18T06:20:32.303155852Z
+local-postgres-1    | 2026-11-18T06:20:32.303157701Z Success. You can now start the database server using:
+local-postgres-1    | 2026-11-18T06:20:32.303159504Z
+local-postgres-1    | 2026-11-18T06:20:32.303161163Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+local-postgres-1    | 2026-11-18T06:20:32.303162804Z
+local-postgres-1    | 2026-11-18T06:20:32.303124382Z initdb: warning: enabling "trust" authentication for local connections
+local-postgres-1    | 2026-11-18T06:20:32.303174463Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+local-postgres-1    | 2026-11-18T06:20:32.370645657Z waiting for server to start....2026-11-18 06:20:32.370 UTC [41] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T06:20:32.393637170Z 2026-11-18 06:20:32.393 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T06:20:32.456878554Z 2026-11-18 06:20:32.456 UTC [44] LOG:  database system was shut down at 2026-11-18 06:20:32 UTC
+local-postgres-1    | 2026-11-18T06:20:32.477271575Z 2026-11-18 06:20:32.477 UTC [41] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-18T06:20:32.520727621Z  done
+local-postgres-1    | 2026-11-18T06:20:32.520739019Z server started
+identity-sign-in-1  | 2026-11-18T06:21:13.895146139Z 2026-11-18 06:21:13,894 INFO  [org.keycloak.exportimport.util.ImportUtils] (main) Realm 'sign-in' imported
+identity-sign-in-1  | 2026-11-18T06:21:13.895166986Z 2026-11-18 06:21:13,895 INFO  [org.keycloak.services] (main) KC-SERVICES0030: Full model import requested. Strategy: IGNORE_EXISTING
+identity-sign-in-1  | 2026-11-18T06:21:13.895244271Z 2026-11-18 06:21:13,895 INFO  [org.keycloak.services] (main) KC-SERVICES0032: Import finished successfully
+identity-sign-in-1  | 2026-11-18T06:21:13.962724203Z 2026-11-18 06:21:13,962 INFO  [org.keycloak.services] (main) KC-SERVICES0077: Created temporary admin user with username admin
+identity-sign-in-1  | 2026-11-18T06:21:14.085975259Z 2026-11-18 06:21:14,085 INFO  [org.keycloak.services.resources.KeycloakApplication] (main) Bootstrap completed in 11.993000 seconds
+local-postgres-1    | 2026-11-18T06:20:32.536903835Z
+local-postgres-1    | 2026-11-18T06:20:32.536913952Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+local-postgres-1    | 2026-11-18T06:20:32.536915828Z
+local-postgres-1    | 2026-11-18T06:20:32.537450648Z waiting for server to shut down....2026-11-18 06:20:32.537 UTC [41] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-18T06:20:32.557179560Z 2026-11-18 06:20:32.557 UTC [41] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-18T06:20:32.559476261Z 2026-11-18 06:20:32.559 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+local-postgres-1    | 2026-11-18T06:20:32.559716034Z 2026-11-18 06:20:32.559 UTC [42] LOG:  shutting down
+local-postgres-1    | 2026-11-18T06:20:32.576669502Z 2026-11-18 06:20:32.576 UTC [42] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-18T06:20:32.704480208Z 2026-11-18 06:20:32.704 UTC [42] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.042 s, sync=0.014 s, total=0.145 s; sync files=2, longest=0.007 s, average=0.007 s; distance=0 kB, estimate=0 kB; lsn=0/14EF2C8, redo lsn=0/14EF2C8
+local-postgres-1    | 2026-11-18T06:20:32.709927662Z 2026-11-18 06:20:32.709 UTC [41] LOG:  database system is shut down
+local-postgres-1    | 2026-11-18T06:20:32.737682603Z  done
+local-postgres-1    | 2026-11-18T06:20:32.737697183Z server stopped
+local-postgres-1    | 2026-11-18T06:20:32.738525862Z
+local-postgres-1    | 2026-11-18T06:20:32.738534347Z PostgreSQL init process complete; ready for start up.
+local-postgres-1    | 2026-11-18T06:20:32.738536808Z
+app-edge-1          | 2026-11-18T06:21:30.361063048Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+app-edge-1          | 2026-11-18T06:21:30.361283137Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+app-edge-1          | 2026-11-18T06:21:30.363141852Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+app-edge-1          | 2026-11-18T06:21:30.364204883Z /docker-entrypoint.sh: Configuration complete; ready for start up
+identity-sign-in-1  | 2026-11-18T06:21:14.156495944Z 2026-11-18 06:21:14,156 INFO  [io.quarkus] (main) Keycloak 26.8.1 on JVM (powered by Quarkus 3.40.1) started in 14.871s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+identity-sign-in-1  | 2026-11-18T06:21:14.156528550Z 2026-11-18 06:21:14,156 INFO  [io.quarkus] (main) Profile dev activated.
+identity-sign-in-1  | 2026-11-18T06:21:14.156575682Z 2026-11-18 06:21:14,156 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, narayana-jta, opentelemetry, rest, rest-jackson, smallrye-context-propagation, smallrye-health, vertx]
+identity-sign-in-1  | 2026-11-18T06:22:16.013659306Z 2026-11-18 06:22:16,013 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client '[REDACTED]' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T06:22:16.159214692Z 2026-11-18 06:22:16,158 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client '[REDACTED]' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T06:22:16.449062805Z 2026-11-18 06:22:16,448 WARN  [org.keycloak.protocol.oidc.endpoints.TokenEndpoint.full-scope-allowed] (executor-thread-1) Client 'jeeves-browser-browser-session' in the realm 'sign-in' has 'Full scope allowed' switch enabled. This client switch is deprecated and will be removed in the future. Please update your client settings to disable the switch and configure needed roles, which this client application needs, to the client role scope
+identity-sign-in-1  | 2026-11-18T06:22:31.043230752Z 2026-11-18 06:22:31,042 INFO  [com.arjuna.ats.jbossatx] (Shutdown thread) ARJUNA032014: Stopping transaction recovery manager
+identity-sign-in-1  | 2026-11-18T06:22:31.050717461Z 2026-11-18 06:22:31,050 INFO  [io.quarkus] (Shutdown thread) Keycloak stopped in 1.021s
+local-postgres-1    | 2026-11-18T06:20:32.790733576Z 2026-11-18 06:20:32.790 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T06:20:32.790750699Z 2026-11-18 06:20:32.790 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1    | 2026-11-18T06:20:32.790753287Z 2026-11-18 06:20:32.790 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1    | 2026-11-18T06:20:32.828756947Z 2026-11-18 06:20:32.828 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T06:20:32.864938788Z 2026-11-18 06:20:32.864 UTC [55] LOG:  database system was shut down at 2026-11-18 06:20:32 UTC
+local-postgres-1    | 2026-11-18T06:20:32.885244053Z 2026-11-18 06:20:32.885 UTC [1] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-18T06:21:02.100135261Z 2026-11-18 06:21:02.100 UTC [107] ERROR:  relation "migration_model" does not exist at character 25
+local-postgres-1    | 2026-11-18T06:21:02.100168146Z 2026-11-18 06:21:02.100 UTC [107] STATEMENT:  SELECT ID, VERSION FROM MIGRATION_MODEL ORDER BY UPDATE_TIME DESC
+local-postgres-1    | 2026-11-18T06:21:02.638490908Z 2026-11-18 06:21:02.638 UTC [108] ERROR:  relation "public.databasechangeloglock" does not exist at character 22
+local-postgres-1    | 2026-11-18T06:21:02.638519799Z 2026-11-18 06:21:02.638 UTC [108] STATEMENT:  SELECT COUNT(*) FROM public.databasechangeloglock
+local-postgres-1    | 2026-11-18T06:22:06.739513318Z 2026-11-18 06:22:06.739 UTC [124] ERROR:  duplicate key value violates unique constraint "uk_b71cjlbenv945rb6gcon438at"
+local-postgres-1    | 2026-11-18T06:22:06.739565851Z 2026-11-18 06:22:06.739 UTC [124] DETAIL:  Key (realm_id, client_id)=(7fcc920a-6076-4b28-8bc7-a4edec727dd6, jeeves-browser-browser-session) already exists.
+local-postgres-1    | 2026-11-18T06:22:06.739583227Z 2026-11-18 06:22:06.739 UTC [124] STATEMENT:  insert into CLIENT (ALWAYS_DISPLAY_IN_CONSOLE,BASE_URL,BEARER_ONLY,CLIENT_AUTHENTICATOR_TYPE,CLIENT_ID,CONSENT_REQUIRED,CREATED_TIMESTAMP,DESCRIPTION,DIRECT_ACCESS_GRANTS_ENABLED,ENABLED,FRONTCHANNEL_LOGOUT,FULL_SCOPE_ALLOWED,IMPLICIT_FLOW_ENABLED,LAST_MODIFIED_TIMESTAMP,MANAGEMENT_URL,NAME,NODE_REREG_TIMEOUT,NOT_BEFORE,PROTOCOL,PUBLIC_CLIENT,REALM_ID,REGISTRATION_TOKEN,ROOT_URL,SECRET,SERVICE_ACCOUNTS_ENABLED,STANDARD_FLOW_ENABLED,SURROGATE_AUTH_REQUIRED,ID) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
+local-postgres-1    | 2026-11-18T06:22:31.609289968Z 2026-11-18 06:22:31.609 UTC [1] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-18T06:22:31.626205907Z 2026-11-18 06:22:31.626 UTC [1] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-18T06:22:31.628172773Z 2026-11-18 06:22:31.628 UTC [1] LOG:  background worker "logical replication launcher" (PID 58) exited with exit code 1
+local-postgres-1    | 2026-11-18T06:22:31.628830829Z 2026-11-18 06:22:31.628 UTC [53] LOG:  shutting down
+local-postgres-1    | 2026-11-18T06:22:31.646246403Z 2026-11-18 06:22:31.646 UTC [53] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-18T06:22:31.979076634Z 2026-11-18 06:22:31.978 UTC [53] LOG:  checkpoint complete: wrote 3396 buffers (20.7%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.088 s, sync=0.162 s, total=0.351 s; sync files=1608, longest=0.044 s, average=0.001 s; distance=17856 kB, estimate=17856 kB; lsn=0/265F580, redo lsn=0/265F580
+local-postgres-1    | 2026-11-18T06:22:31.993480138Z 2026-11-18 06:22:31.993 UTC [1] LOG:  database system is shut down
+local-postgres-1    | 2026-11-18T06:22:34.988148591Z
+local-postgres-1    | 2026-11-18T06:22:34.988181070Z PostgreSQL Database directory appears to contain a database; Skipping initialization
+local-postgres-1    | 2026-11-18T06:22:34.988184172Z
+local-postgres-1    | 2026-11-18T06:22:35.043434354Z 2026-11-18 06:22:35.043 UTC [1] LOG:  starting PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+local-postgres-1    | 2026-11-18T06:22:35.043486788Z 2026-11-18 06:22:35.043 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+local-postgres-1    | 2026-11-18T06:22:35.043499403Z 2026-11-18 06:22:35.043 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+local-postgres-1    | 2026-11-18T06:22:35.080566206Z 2026-11-18 06:22:35.080 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+local-postgres-1    | 2026-11-18T06:22:35.116694938Z 2026-11-18 06:22:35.116 UTC [29] LOG:  database system was shut down at 2026-11-18 06:22:31 UTC
+local-postgres-1    | 2026-11-18T06:22:35.136623307Z 2026-11-18 06:22:35.136 UTC [1] LOG:  database system is ready to accept connections
+local-postgres-1    | 2026-11-18T06:22:44.479466902Z 2026-11-18 06:22:44.479 UTC [1] LOG:  received fast shutdown request
+local-postgres-1    | 2026-11-18T06:22:44.497063674Z 2026-11-18 06:22:44.496 UTC [1] LOG:  aborting any active transactions
+local-postgres-1    | 2026-11-18T06:22:44.499140709Z 2026-11-18 06:22:44.499 UTC [1] LOG:  background worker "logical replication launcher" (PID 32) exited with exit code 1
+local-postgres-1    | 2026-11-18T06:22:44.499153333Z 2026-11-18 06:22:44.499 UTC [27] LOG:  shutting down
+local-postgres-1    | 2026-11-18T06:22:44.516029832Z 2026-11-18 06:22:44.515 UTC [27] LOG:  checkpoint starting: shutdown immediate
+local-postgres-1    | 2026-11-18T06:22:44.638918913Z 2026-11-18 06:22:44.638 UTC [27] LOG:  checkpoint complete: wrote 5 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.028 s, sync=0.028 s, total=0.140 s; sync files=3, longest=0.014 s, average=0.010 s; distance=0 kB, estimate=0 kB; lsn=0/265F5F8, redo lsn=0/265F5F8
+local-postgres-1    | 2026-11-18T06:22:44.644474348Z 2026-11-18 06:22:44.644 UTC [1] LOG:  database system is shut down

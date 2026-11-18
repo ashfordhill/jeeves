@@ -1,0 +1,7 @@
+{
+  "id": "gs-b296a6f3-41b1-4d88-8ba6-7b0215237edf",
+  "selected": ["regeneration"],
+  "outcome": "passed",
+  "elapsedMs": 201773,
+  "interruptedRunRecovery": "pnpm test:generated --cleanup /home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg24/native-4/run.json"
+}

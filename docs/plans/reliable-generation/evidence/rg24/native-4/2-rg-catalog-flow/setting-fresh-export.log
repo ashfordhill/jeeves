@@ -1,0 +1,8 @@
+$ tsx src/v2/cli.ts /tmp/jeeves-system-T5y6v7/catalog-setting.json /tmp/jeeves-system-T5y6v7/2-rg-catalog-flow-setting-fresh
+{
+  directory: '/tmp/jeeves-system-T5y6v7/2-rg-catalog-flow-setting-fresh',
+  files: 95,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 7
+}

@@ -1,0 +1,15 @@
+{
+  "directory": "/tmp/jeeves-system-T5y6v7/2-rg-catalog-flow",
+  "check": false,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 5,
+    "unchanged": 80,
+    "keep": 9
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "source": "owned/catalog-read.hooks.ts",
+    "destination": "src/modules/catalog-api/catalog-read.hooks.ts",
+    "role": "hooks",
+    "module": "catalog-read"
+  },
+  {
+    "source": "owned/catalog-writer.ts",
+    "destination": "src/modules/catalog-api/catalog-writer.ts",
+    "role": "stub",
+    "module": "catalog-writer"
+  },
+  {
+    "source": "owned/products.json",
+    "destination": "infra/postgres/catalog/products.json",
+    "role": "product"
+  },
+  {
+    "source": "owned/0001-initial.sql",
+    "destination": "infra/postgres/catalog/products/migrations/p_catalog_api_owner/0001-initial.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/read.sql",
+    "destination": "infra/postgres/catalog/products/queries/read.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/list.sql",
+    "destination": "infra/postgres/catalog/products/queries/list.sql",
+    "role": "product"
+  }
+]

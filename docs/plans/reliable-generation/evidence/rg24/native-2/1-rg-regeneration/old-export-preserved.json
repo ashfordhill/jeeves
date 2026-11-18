@@ -1,0 +1,13 @@
+{
+  "originalManifest": "0e25a973b2f2124f9ea69cbd34fd4aa59796bbaebd405b4ae4767b921b89dd0d",
+  "finalManifest": "0e25a973b2f2124f9ea69cbd34fd4aa59796bbaebd405b4ae4767b921b89dd0d",
+  "legacySql": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56",
+  "finalLegacySql": "89ea1fde2f2715470f8b8580831aa7370582627401586ac46ab50e9ee977fa56",
+  "allRefusalsReadOnly": true,
+  "explicitHandwrittenEditsOnly": [
+    "two hook bodies",
+    "minimal SQL receipt/declaration for refusal probes"
+  ],
+  "originalApplicationNotOverwritten": true,
+  "liveLegacyDatabaseConversionClaimed": false
+}

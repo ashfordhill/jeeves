@@ -1,0 +1,2 @@
+Error: pnpm exec exit 1
+src/processes/echo-api.ts(48,9): error TS2739: Type '{ body: { mode: string | string[]; }; }' is missing the following properties from type 'Promise<ModuleResponse>': then, catch, [Symbol.toStringTag], finally

@@ -1,0 +1,22 @@
+[
+  {
+    "fixture": "tiny",
+    "report": "native-4/1-rg-regeneration/in-place-hook-source-loc.json",
+    "exactRecount": true
+  },
+  {
+    "fixture": "link",
+    "report": "native-3/2-rg-link-flow/link-account-source-loc.json",
+    "exactRecount": true
+  },
+  {
+    "fixture": "catalog",
+    "report": "native-4/2-rg-catalog-flow/catalog-event-source-loc.json",
+    "exactRecount": true
+  },
+  {
+    "fixture": "cold",
+    "report": "native-2/2-rg-regeneration/migrated-catalog-source-loc.json",
+    "exactRecount": true
+  }
+]

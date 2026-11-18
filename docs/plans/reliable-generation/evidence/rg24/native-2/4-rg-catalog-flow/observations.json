@@ -1,0 +1,1100 @@
+[
+  {
+    "name": "all generated application containers healthy",
+    "at": "2026-11-18T06:24:20.162Z",
+    "value": [
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-app-callee-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-app-caller-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-app-edge-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-app-projector-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-identity-issuer-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-local-broker-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-local-postgres-1",
+        "status": "running",
+        "health": "healthy"
+      },
+      {
+        "name": "/gs-013295bb-fbed-41e7-9e83-4a0d3d2f7659-4-rg-provider-1",
+        "status": "running",
+        "health": "healthy"
+      }
+    ]
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='durable-before'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='durable-before'",
+    "result": ""
+  },
+  {
+    "sql": "SELECT effects FROM p_caller_owner.inbox WHERE id='durable-before'",
+    "result": "1"
+  },
+  {
+    "proxy": {
+      "events": [],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  },
+  {
+    "proxy": {
+      "events": [
+        {
+          "phase": "prepare",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        },
+        {
+          "phase": "execute",
+          "key": "1293d964ae8ee2688bdffce58968084b5ffae4cde4586a676201b09493dbf2b0",
+          "from": "172.24.0.7",
+          "status": 200
+        }
+      ],
+      "acks": [],
+      "ingress": 0,
+      "commits": []
+    }
+  }
+]

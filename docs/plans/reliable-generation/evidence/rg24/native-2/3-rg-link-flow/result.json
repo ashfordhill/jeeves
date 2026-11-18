@@ -1,0 +1,6 @@
+{
+  "fixture": "rg-link-flow",
+  "phase": "assertion",
+  "outcome": "failed",
+  "error": "Error: Unclassified source: .jeeves/generated/src/modules/items-api/create-limit.hooks.ts. Declare it in backendPaths or uiPaths."
+}

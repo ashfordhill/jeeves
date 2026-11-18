@@ -1,0 +1,185 @@
+{
+  "dataBefore": "{\"db\" : \"16401\", \"rel\" : \"16463\", \"rows\" : [{\"id\" : \"before-0\", \"marked\" : false, \"xmin\" : \"1249\"}, {\"id\" : \"before-1\", \"marked\" : false, \"xmin\" : \"1250\"}, {\"id\" : \"retained-rg24\", \"marked\" : true, \"xmin\" : \"1251\"}, {\"id\" : \"seed\", \"marked\" : false, \"xmin\" : \"764\"}]}",
+  "dataAfter": "{\"db\" : \"16401\", \"rel\" : \"16463\", \"rows\" : [{\"id\" : \"after-0\", \"marked\" : false, \"xmin\" : \"1291\"}, {\"id\" : \"after-1\", \"marked\" : false, \"xmin\" : \"1292\"}, {\"id\" : \"after-2\", \"marked\" : false, \"xmin\" : \"1293\"}, {\"id\" : \"before-0\", \"marked\" : false, \"xmin\" : \"1249\"}, {\"id\" : \"before-1\", \"marked\" : false, \"xmin\" : \"1250\"}, {\"id\" : \"retained-rg24\", \"marked\" : true, \"xmin\" : \"1251\"}, {\"id\" : \"seed\", \"marked\" : false, \"xmin\" : \"764\"}]}",
+  "sessionBefore": "[{\"row\" : \"a9f991d0de11eb3876b562066374303a\", \"absolute\" : \"2026-11-25T06:29:05.629771+00:00\", \"idle\" : 86400, \"lastSeen\" : \"2026-11-18T06:29:05.640288+00:00\"}]",
+  "sessionAfterRestartBeforeRequest": "[{\"row\" : \"a9f991d0de11eb3876b562066374303a\", \"absolute\" : \"2026-11-25T06:29:05.629771+00:00\", \"idle\" : 86400, \"lastSeen\" : \"2026-11-18T06:29:05.640288+00:00\"}]",
+  "sessionStatus": {
+    "status": 200
+  },
+  "policyPath": "src/modules/items-api/create-limit.hooks.ts",
+  "policySha256": "7e8e0ec6b85267d15a400d01edaace4b43b9958e6aac163b1d6915fc8ce8207a",
+  "runtimeBefore": {
+    "project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+    "ports": [35099, 35915, 33235],
+    "own": {
+      "src/modules/gateway/forward.ts": "51b44c3a4814a033cce5ad1951f0e41317f161ff07c35c5526a2626cf6120045",
+      "src/modules/gateway/published.ts": "6f3908f9cfc579b9e88e3aa32a1e7a3d2cac6d8bd598d5b2a6df87bae86de0c6",
+      "src/modules/items-api/create.ts": "eb9d796a0ce90110324a5a45c7f9cfe8c38c8234d2170a78a4f590510b2072e1",
+      "src/modules/items-api/slow.ts": "f062fe88748db81d60935c2ddf88be5f5bba06dd7986f4d341f00cd5d37428c6",
+      "src/modules/items-api/forbidden.ts": "97d8f8f7d4a29e726d019202f1499573362105da10816734aca3d7a4979625be",
+      "src/modules/items-api/read-record.ts": "9ce30100cd14238b760c713906e881ceb9eae136d18e4fb5aa202de7a6368cfe",
+      "src/modules/items-worker/worker-access.ts": "9c837e94da3d5dd7d540446208a262c42286c370bb28d11fe49afa66de1ecb2a",
+      "src/modules/items-api/record-reader.hooks.ts": "50e8db84a1124639bfa0732f4c5e43424d2d2ea490d5fe5ea65f2e70ddee80cb",
+      "src/modules/items-api/create-limit.hooks.ts": "7e8e0ec6b85267d15a400d01edaace4b43b9958e6aac163b1d6915fc8ce8207a",
+      "src/contracts/record.ts": "f021c158e088eb4b9369bd04d01c0c59d1acb761501ebef7deac672f315d80f5",
+      "infra/postgres/items-db/products.json": "e00cca507b205d6c3e74ed81ea252826f3e97e5dff19c1b8d3230346c9a619e0",
+      "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql": "a1820cce349b10a2fb7a08069e198673b8e1804dbd9a66e6878741ed516f7631",
+      "infra/postgres/items-db/products/commands/create.sql": "80e98a9bad3740704b0d8aaba2300ebb542384dc4e27aac79602d93ab82d799b",
+      "infra/postgres/items-db/products/commands/worker.sql": "c61cfb5412cf83aa9274fade4c0a7adb6a4a4f1c0d937b90252b6deb843488c4",
+      "infra/postgres/items-db/products/queries/read.sql": "090c61e32a6f1f9dc627637ed6de1f38875e4afecfe5570088210d7d1cc3068c",
+      "infra/postgres/items-db/products/queries/published.sql": "754116f11a7b73981789716e8568b2543e6c13732b9c7c074a467e8da2f47157",
+      "infra/postgres/items-db/products/queries/slow.sql": "5cc65e3af0e0c21ccb5d9ceb2e2a53268dc8b1bd8394a7890fd3c64e45b0e78c",
+      "src/modules/browser/navigate.ts": "c9783ab4f16dc4e2649d5a8cedf0d09462155ae2cde03a327f934522f314c760"
+    },
+    "runtime": {
+      ".runtime/local-setup.json": "5542e8d4efd3b4c4b88e300734a4f80290954609e270728f8c8e70c0a46a5507",
+      ".runtime/secrets/cache-admission": "2ae5e9246d8e9e31308017144bbf6f9bad56e2508f337eabcefba028d169cc58",
+      ".runtime/secrets/cache-records": "e1684387657a289927ebdc2840ec5ce6dfbcc3ee3a951a0fc6111d2f335e5f4d",
+      ".runtime/secrets/identity-admin-sign-in": "51d349ea264656bfd2c6df77100472d8ddc7a6d0067886301d7318b7aa80df24",
+      ".runtime/secrets/identity-owner-sign-in": "a8b4c0dbaaaae45883ba38ee05f36b258b8835ce4367851cacb10f1ae17e2380",
+      ".runtime/secrets/identity-sign-in": "847711e3ff08b187beaa76a04404b77310338ab8988a27239489eaea088fc76c",
+      ".runtime/secrets/owner-items-db": "4f129d91c7fe36e12989a6bc18ea537275e5f937033d6c657fd073e63bd60122",
+      ".runtime/secrets/owner-sessions": "0f4a36106f33d5284a66cb9d9f494ca4ea794ec06669a3414cf67f9f44a78194",
+      ".runtime/secrets/postgres-admin": "e9828ff217fc0dc32d24a2e46cf4a3097169f7117b025dbbf637514b301b8038",
+      ".runtime/secrets/product-items-db--gateway": "f74baf85fd396a6e054e31c8404c25db0d5b916f74384afe6f99987e04496b5d",
+      ".runtime/secrets/product-items-db--items-api": "4093520b397f99a23e025a15bbb5ea58135650c53d4c2a065c83ea29f73f7c9d",
+      ".runtime/secrets/product-items-db--items-worker": "ab210ddf95796c64e4d71d8f37a6fea13d9cf396c87eb03e6ba7e69a4c54760e",
+      ".runtime/secrets/product-sessions--browser": "a430b9ad61571f450535c3bb4393d81c1f354b83ac513786a19da9430fce5309",
+      ".runtime/secrets/sign-in.env": "3761003211eac94b3366a8da2af69a4e443b8beb19920c1b08e139532d213415",
+      ".runtime/secrets/sign-in.realm.json": "d6d0658d1a030d4437a5b4897b26a584c8105ca0270373f601214685d39a0ea8",
+      ".runtime/secrets/sql-items-db--gateway": "d0bc70da31629c55a7f1194ad3e5397084d5efc3dc3d2e2c4ba098a9ae790f2f",
+      ".runtime/secrets/sql-items-db--items-api": "65d97a78ea7ba382d14b4c6829eeb846799d50ce0ff31e7e15c6f9dfb451a708",
+      ".runtime/secrets/sql-items-db--items-worker": "3e9a72931d0a73c3171777c16eeec1686417209f49acdbcd505e33334c6b4ace",
+      ".runtime/secrets/sql-sessions--browser": "f273064d0e6de47c9249d3fd2eca7b78b2ec121e1e137df9e060287b71e8319c",
+      ".runtime/secrets/workload-jeeves-workload-browser": "20de5dca6bc87dde95ee4cde693e869f39ba4a3662145876f68a816aff61143b",
+      ".runtime/secrets/workload-jeeves-workload-gateway": "8b41ca596c2a664938b2b55d374f2ecdaa17fbdbe91c9cc0a80ac98d4e483438",
+      ".runtime/secrets/workload-jeeves-workload-items-api": "78ce4ed2ef78b28f9e7e98deab459727368619186a4bb31f688c0af6f612e2c7",
+      ".runtime/workload-contract.json": "d860d0dceef9cb949b9044d9fa4a2db0d222d98074f03e7a8342a783dd52264d"
+    },
+    "volumes": [
+      {
+        "name": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2_cache-admission",
+        "createdAt": "2026-11-18T00:27:15-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "d244f33c0128b3dffc43e38a37205d62ea24d57ba44e5f0077a1f1a35907e148",
+          "com.docker.compose.project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-admission"
+        }
+      },
+      {
+        "name": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2_cache-records",
+        "createdAt": "2026-11-18T00:27:15-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "d4dedc3597420f10157fabadb3c46a0db99de219550aeb6fa231a97fcf7c4b79",
+          "com.docker.compose.project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-records"
+        }
+      },
+      {
+        "name": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2_postgres-data",
+        "createdAt": "2026-11-18T00:27:15-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "ffb169322f58b76f49b8b696f9e9c64b6421eb4549afeb6cd87bdb5e03c67015",
+          "com.docker.compose.project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      }
+    ]
+  },
+  "runtimeAfter": {
+    "project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+    "ports": [35099, 35915, 33235],
+    "own": {
+      "src/modules/gateway/forward.ts": "51b44c3a4814a033cce5ad1951f0e41317f161ff07c35c5526a2626cf6120045",
+      "src/modules/gateway/published.ts": "6f3908f9cfc579b9e88e3aa32a1e7a3d2cac6d8bd598d5b2a6df87bae86de0c6",
+      "src/modules/items-api/create.ts": "eb9d796a0ce90110324a5a45c7f9cfe8c38c8234d2170a78a4f590510b2072e1",
+      "src/modules/items-api/slow.ts": "f062fe88748db81d60935c2ddf88be5f5bba06dd7986f4d341f00cd5d37428c6",
+      "src/modules/items-api/forbidden.ts": "97d8f8f7d4a29e726d019202f1499573362105da10816734aca3d7a4979625be",
+      "src/modules/items-api/read-record.ts": "9ce30100cd14238b760c713906e881ceb9eae136d18e4fb5aa202de7a6368cfe",
+      "src/modules/items-worker/worker-access.ts": "9c837e94da3d5dd7d540446208a262c42286c370bb28d11fe49afa66de1ecb2a",
+      "src/modules/items-api/record-reader.hooks.ts": "50e8db84a1124639bfa0732f4c5e43424d2d2ea490d5fe5ea65f2e70ddee80cb",
+      "src/modules/items-api/create-limit.hooks.ts": "7e8e0ec6b85267d15a400d01edaace4b43b9958e6aac163b1d6915fc8ce8207a",
+      "src/contracts/record.ts": "f021c158e088eb4b9369bd04d01c0c59d1acb761501ebef7deac672f315d80f5",
+      "infra/postgres/items-db/products.json": "e00cca507b205d6c3e74ed81ea252826f3e97e5dff19c1b8d3230346c9a619e0",
+      "infra/postgres/items-db/products/migrations/p_items_api_owner/0001-initial.sql": "a1820cce349b10a2fb7a08069e198673b8e1804dbd9a66e6878741ed516f7631",
+      "infra/postgres/items-db/products/commands/create.sql": "80e98a9bad3740704b0d8aaba2300ebb542384dc4e27aac79602d93ab82d799b",
+      "infra/postgres/items-db/products/commands/worker.sql": "c61cfb5412cf83aa9274fade4c0a7adb6a4a4f1c0d937b90252b6deb843488c4",
+      "infra/postgres/items-db/products/queries/read.sql": "090c61e32a6f1f9dc627637ed6de1f38875e4afecfe5570088210d7d1cc3068c",
+      "infra/postgres/items-db/products/queries/published.sql": "754116f11a7b73981789716e8568b2543e6c13732b9c7c074a467e8da2f47157",
+      "infra/postgres/items-db/products/queries/slow.sql": "5cc65e3af0e0c21ccb5d9ceb2e2a53268dc8b1bd8394a7890fd3c64e45b0e78c",
+      "src/modules/browser/navigate.ts": "c9783ab4f16dc4e2649d5a8cedf0d09462155ae2cde03a327f934522f314c760"
+    },
+    "runtime": {
+      ".runtime/local-setup.json": "5542e8d4efd3b4c4b88e300734a4f80290954609e270728f8c8e70c0a46a5507",
+      ".runtime/secrets/cache-admission": "2ae5e9246d8e9e31308017144bbf6f9bad56e2508f337eabcefba028d169cc58",
+      ".runtime/secrets/cache-records": "e1684387657a289927ebdc2840ec5ce6dfbcc3ee3a951a0fc6111d2f335e5f4d",
+      ".runtime/secrets/identity-admin-sign-in": "51d349ea264656bfd2c6df77100472d8ddc7a6d0067886301d7318b7aa80df24",
+      ".runtime/secrets/identity-owner-sign-in": "a8b4c0dbaaaae45883ba38ee05f36b258b8835ce4367851cacb10f1ae17e2380",
+      ".runtime/secrets/identity-sign-in": "847711e3ff08b187beaa76a04404b77310338ab8988a27239489eaea088fc76c",
+      ".runtime/secrets/owner-items-db": "4f129d91c7fe36e12989a6bc18ea537275e5f937033d6c657fd073e63bd60122",
+      ".runtime/secrets/owner-sessions": "0f4a36106f33d5284a66cb9d9f494ca4ea794ec06669a3414cf67f9f44a78194",
+      ".runtime/secrets/postgres-admin": "e9828ff217fc0dc32d24a2e46cf4a3097169f7117b025dbbf637514b301b8038",
+      ".runtime/secrets/product-items-db--gateway": "f74baf85fd396a6e054e31c8404c25db0d5b916f74384afe6f99987e04496b5d",
+      ".runtime/secrets/product-items-db--items-api": "4093520b397f99a23e025a15bbb5ea58135650c53d4c2a065c83ea29f73f7c9d",
+      ".runtime/secrets/product-items-db--items-worker": "ab210ddf95796c64e4d71d8f37a6fea13d9cf396c87eb03e6ba7e69a4c54760e",
+      ".runtime/secrets/product-sessions--browser": "a430b9ad61571f450535c3bb4393d81c1f354b83ac513786a19da9430fce5309",
+      ".runtime/secrets/sign-in.env": "3761003211eac94b3366a8da2af69a4e443b8beb19920c1b08e139532d213415",
+      ".runtime/secrets/sign-in.realm.json": "d6d0658d1a030d4437a5b4897b26a584c8105ca0270373f601214685d39a0ea8",
+      ".runtime/secrets/sql-items-db--gateway": "d0bc70da31629c55a7f1194ad3e5397084d5efc3dc3d2e2c4ba098a9ae790f2f",
+      ".runtime/secrets/sql-items-db--items-api": "65d97a78ea7ba382d14b4c6829eeb846799d50ce0ff31e7e15c6f9dfb451a708",
+      ".runtime/secrets/sql-items-db--items-worker": "3e9a72931d0a73c3171777c16eeec1686417209f49acdbcd505e33334c6b4ace",
+      ".runtime/secrets/sql-sessions--browser": "f273064d0e6de47c9249d3fd2eca7b78b2ec121e1e137df9e060287b71e8319c",
+      ".runtime/secrets/workload-jeeves-workload-browser": "20de5dca6bc87dde95ee4cde693e869f39ba4a3662145876f68a816aff61143b",
+      ".runtime/secrets/workload-jeeves-workload-gateway": "8b41ca596c2a664938b2b55d374f2ecdaa17fbdbe91c9cc0a80ac98d4e483438",
+      ".runtime/secrets/workload-jeeves-workload-items-api": "78ce4ed2ef78b28f9e7e98deab459727368619186a4bb31f688c0af6f612e2c7",
+      ".runtime/workload-contract.json": "d860d0dceef9cb949b9044d9fa4a2db0d222d98074f03e7a8342a783dd52264d"
+    },
+    "volumes": [
+      {
+        "name": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2_cache-admission",
+        "createdAt": "2026-11-18T00:27:15-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "d244f33c0128b3dffc43e38a37205d62ea24d57ba44e5f0077a1f1a35907e148",
+          "com.docker.compose.project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-admission"
+        }
+      },
+      {
+        "name": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2_cache-records",
+        "createdAt": "2026-11-18T00:27:15-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "d4dedc3597420f10157fabadb3c46a0db99de219550aeb6fa231a97fcf7c4b79",
+          "com.docker.compose.project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "cache-records"
+        }
+      },
+      {
+        "name": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2_postgres-data",
+        "createdAt": "2026-11-18T00:27:15-06:00",
+        "driver": "local",
+        "labels": {
+          "com.docker.compose.config-hash": "ffb169322f58b76f49b8b696f9e9c64b6421eb4549afeb6cd87bdb5e03c67015",
+          "com.docker.compose.project": "gs-f00b5e34-1551-4bb3-95a7-cbe6f2ee0848-2",
+          "com.docker.compose.version": "5.6.0",
+          "com.docker.compose.volume": "postgres-data"
+        }
+      }
+    ]
+  },
+  "beforeLimit": 2,
+  "afterLimit": 3,
+  "statusesA": [201, 201, 429],
+  "statusesB": [201, 201, 201, 429],
+  "labelsPreserveCapabilities": true,
+  "identityChangeRefused": true
+}
