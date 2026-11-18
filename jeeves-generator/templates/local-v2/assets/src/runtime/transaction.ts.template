@@ -98,11 +98,12 @@ async function executeTransaction<T>(
 
 /** The underlying transaction retains its connection through final COMMIT/ROLLBACK settlement.
  * A caller timeout never releases the connection or grants permission to retry its mutation. */
-export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>, options: {readOnly?: boolean; observe?: (actual: Promise<T>) => void} = {}): Promise<T> {
+export function transaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>, options: {readOnly?: boolean; maximumMs?: number; observe?: (actual: Promise<T>) => void} = {}): Promise<T> {
   assertDatabaseAllowed();
   return dependency(
     {
       mutation: !options.readOnly,
+      maximumMs: options.maximumMs,
       preserveDefinite: true,
       definite: (error) => {
         return (error as { outcome?: string })?.outcome === "definite-failure";

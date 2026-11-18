@@ -72,7 +72,14 @@ async function fixture() {
       await pending;
       await pg.exec("SET SESSION AUTHORIZATION runtime");
       return {
-        async query(sql: string, values?: unknown[]) {
+        async query(
+          sql: string | { text: string; values?: unknown[]; query_timeout?: number },
+          values?: unknown[],
+        ) {
+          if (typeof sql !== "string") {
+            values = sql.values;
+            sql = sql.text;
+          }
           if (denyLock && sql.includes("pg_try_advisory_xact_lock"))
             return { rows: [{ locked: false }], rowCount: 1 };
           const role =

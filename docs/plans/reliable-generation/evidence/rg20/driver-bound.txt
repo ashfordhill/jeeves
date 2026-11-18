@@ -1,0 +1,4 @@
+Actual pg per-query query_timeout5500 overrides pooled2500 default; timeout rejects the actual driver promise without a database connection
+(node:13409) DeprecationWarning: Client.queryQueue is deprecated and will be removed in pg@9.0.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Pinned driver 8.23.1

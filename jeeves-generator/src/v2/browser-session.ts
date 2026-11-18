@@ -32,6 +32,15 @@ CREATE TABLE jeeves.browser_logins (
 CREATE INDEX ON jeeves.browser_logins(namespace,expires_at);
 `,
 };
+/** Append-only refresh state;054 remains an immutable applied migration. */
+export const browserRefreshMigration = {
+  id: "055-jeeves-browser-refresh.sql",
+  sql: `ALTER TABLE jeeves.browser_sessions ADD COLUMN refresh_generation bigint NOT NULL DEFAULT 0;
+ALTER TABLE jeeves.browser_sessions ADD COLUMN refresh_uncertain boolean NOT NULL DEFAULT false;
+ALTER TABLE jeeves.browser_sessions ADD COLUMN refresh_attempt text;
+ALTER TABLE jeeves.browser_sessions ADD COLUMN refresh_attempt_until timestamptz;
+`,
+};
 export function browserSessionMount(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
@@ -97,7 +106,11 @@ export function browserSessionMount(
       },
     ],
     loops: [],
-    template: { selection: selection.id, template: "browser-session", level: "mounted" },
+    template: {
+      selection: selection.id,
+      template: "browser-session",
+      level: "mounted",
+    },
     startup: {
       module: lead.module,
       checks: [
@@ -108,7 +121,10 @@ export function browserSessionMount(
     service: { ...service(), sql: [state] },
     local: {
       logins: [{ resource: state, host: process.tile }],
-      migrations: [{ resource: state, ...browserSessionMigration }],
+      migrations: [browserSessionMigration, browserRefreshMigration].map((migration) => ({
+        resource: state,
+        ...migration,
+      })),
       grants: ["browser_sessions", "browser_logins"].map((relation) => ({
         resource: state,
         host: process.tile,

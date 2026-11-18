@@ -1,0 +1,29 @@
+valid accepted once; identity retained, no token returned by public routes
+omitted accepted once; identity retained, no token returned by public routes
+subject refused single POST; no credentials adopted
+workload refused single POST; no credentials adopted
+issuer unknown single POST; no credentials adopted
+audience unknown single POST; no credentials adopted
+signature unknown single POST; no credentials adopted
+expired unknown single POST; no credentials adopted
+invalid-grant refused single POST; no credentials adopted
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'unknown'
+- 'definite-failure'
+
+    at file:///home/ash/github/jeeves/docs/plans/reliable-generation/evidence/rg20/protocol.mjs:44:525 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'unknown',
+  expected: 'definite-failure',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

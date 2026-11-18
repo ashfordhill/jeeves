@@ -1,0 +1,20 @@
+valid accepted once; identity retained, no token returned by public routes
+omitted accepted once; identity retained, no token returned by public routes
+subject refused single POST; no credentials adopted
+workload refused single POST; no credentials adopted
+issuer unknown single POST; no credentials adopted
+audience unknown single POST; no credentials adopted
+signature unknown single POST; no credentials adopted
+expired unknown single POST; no credentials adopted
+invalid-grant refused single POST; no credentials adopted
+server definite-failure single POST; no credentials adopted
+limited definite-failure single POST; no credentials adopted
+client definite-failure single POST; no credentials adopted
+network unknown single POST; no credentials adopted
+malformed unknown single POST; no credentials adopted
+oversize unknown single POST; no credentials adopted
+short unknown single POST; no credentials adopted
+32 actual pending refreshes retain capacity after browser cancellation; no33rd POST
+actual settlement releases slots; recovery succeeds
+fixed3s SDK timeout returns unknown while actual POST remains counted
+Actual pinned openid-client6.8.9 refresh/JOSE6.2.13 proof passed { posts: 50 }

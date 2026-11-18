@@ -9,6 +9,7 @@ import { transaction, type TransactionPool } from "./transaction.ts";
 import { assertOperation, operation, withOperation } from "./operation.ts";
 import { periodic, type ProcessScope } from "./process.ts";
 import type { BrowserIssuer } from "./browser-oidc.ts";
+import { browserRefresh } from "./browser-refresh.ts";
 
 export interface BrowserConfiguration {
   issuer:string; clientId:string; clientSecret:string; callback:string; origin:string;
@@ -42,7 +43,6 @@ function cookie(request:FastifyRequest,name:string):string|undefined {
 }
 const equal = (a:string,b:string) => {const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length && timingSafeEqual(x,y);};
 const unsafe = (method:string) => !["GET","HEAD","OPTIONS"].includes(method);
-interface SessionRow {subject:string;email:string|null;name:string|null;cookie_hash:string;access_sealed:string|null}
 export function createBrowserSession(options:{namespace:string;module:string;scope?:ProcessScope;pool:TransactionPool;settings:BrowserConfiguration;issuer:BrowserIssuer}) {
   const {namespace,settings:s,pool,issuer}=options;
   const scope=options.scope;
@@ -59,6 +59,7 @@ export function createBrowserSession(options:{namespace:string;module:string;sco
   };
   const clear=(reply:FastifyReply,name:string)=>write(reply,name,"",0);
   const bind=(context:string)=>({scope:hash(JSON.stringify([namespace,authority])),context});
+  const coordinateRefresh=browserRefresh();
   const csrf=(value:string)=>s.keys.sign.sign("csrf",bind(`csrf:${hash(value)}:${s.origin}`));
   const guest=(request:FastifyRequest):string|undefined=>{
     const value=cookie(request,names.guest);
@@ -81,13 +82,13 @@ export function createBrowserSession(options:{namespace:string;module:string;sco
     try {supplied=cookie(request,names.session);} catch(error) {if(reply)clear(reply,names.session);throw error;}
     if (supplied===undefined) {const value=guest(request);return {signedIn:false,...(value?{guest:Object.freeze({id:hash(value)})}:{})};}
     if (!valid(supplied)) {if(reply)clear(reply,names.session);throw refused();}
+    const cookieHash=hash(supplied);
     const result=await transaction(pool,async tx=>{
-      const {rows}=await tx.query<SessionRow>(`UPDATE jeeves.browser_sessions SET last_seen_at=clock_timestamp()
+      const {rows}=await tx.query<{subject:string;email:string|null;name:string|null;access_sealed:string|null}>(`UPDATE jeeves.browser_sessions SET last_seen_at=clock_timestamp()
         WHERE namespace=$1 AND cookie_hash=$2 AND authority=$3 AND revoked_at IS NULL AND absolute_expires_at>clock_timestamp()
-        AND last_seen_at + idle_seconds * interval '1 second'>clock_timestamp() RETURNING subject,email,name,cookie_hash,access_sealed`,[namespace,hash(supplied!),authority]);
-      if (rows[0]?.access_sealed && s.keys.seal.open(rows[0].access_sealed,bind(`session:${hash(supplied!)}:access`))!==undefined) return rows[0];
-      // Expiry is irreversible, even if clocks later move backwards. Drop sealed issuer material.
-      await tx.query(`UPDATE jeeves.browser_sessions SET revoked_at=clock_timestamp(),access_sealed=NULL,refresh_sealed=NULL,id_sealed=NULL WHERE namespace=$1 AND cookie_hash=$2 AND revoked_at IS NULL`,[namespace,hash(supplied!)]);
+        AND last_seen_at + idle_seconds * interval '1 second'>clock_timestamp() RETURNING subject,email,name,access_sealed`,[namespace,cookieHash,authority]);
+      if(rows[0]?.access_sealed && s.keys.seal.open(rows[0].access_sealed,bind(`session:${cookieHash}:access`))!==undefined)return rows[0];
+      await tx.query(`UPDATE jeeves.browser_sessions SET revoked_at=clock_timestamp(),access_sealed=NULL,refresh_sealed=NULL,id_sealed=NULL WHERE namespace=$1 AND cookie_hash=$2 AND revoked_at IS NULL`,[namespace,cookieHash]);
       return null;
     });
     if (!result) {if(reply)clear(reply,names.session);throw refused();}
@@ -115,10 +116,22 @@ export function createBrowserSession(options:{namespace:string;module:string;sco
   return {
     ...guard,
     signIn:s.signIn,
+    /** Private generated token-availability boundary. Local identity lookup never needs refresh.
+     * No HTTP route or product capability exposes it; forwarding is not implemented here. */
+    async refresh(request:FastifyRequest){
+      assertOperation();
+      if(request.headers.authorization!==undefined)throw refused();
+      const value=cookie(request,names.session);
+      if(!valid(value))throw refused();
+      const cookieHash=hash(value);
+      const row=await coordinateRefresh({pool,namespace,authority,cookieHash,settings:s,issuer,binding:field=>bind(`session:${cookieHash}:${field}`)});
+      if(!row)throw refused();
+      return Object.freeze({signedIn:true,principal:Object.freeze({subject:row.subject,claims:Object.freeze({sub:row.subject,email:row.email,name:row.name})})});
+    },
     routes(open:HttpRoutes):HttpRoutes{return {route({handler,...route}){open.route({...route,async handler(request,reply){await protect(request,reply,s.signIn==="required");return handler.call(this,request,reply);}});}};},
     async start(){
       await transaction(pool,async tx=>{
-        await tx.query("SELECT namespace,authority,cookie_hash,subject,access_sealed,refresh_sealed,id_sealed,idle_seconds FROM jeeves.browser_sessions LIMIT 0");
+        await tx.query("SELECT namespace,authority,cookie_hash,subject,access_sealed,refresh_sealed,id_sealed,idle_seconds,refresh_generation,refresh_uncertain FROM jeeves.browser_sessions LIMIT 0");
         await tx.query("SELECT namespace,authority,state_hash,binding_hash,sealed,expires_at FROM jeeves.browser_logins LIMIT 0");
         const {rows}=await tx.query<{allowed:boolean}>(`SELECT bool_and(has_table_privilege(current_user,relation,privilege)) AS allowed FROM unnest(ARRAY['jeeves.browser_sessions','jeeves.browser_logins']) AS relation CROSS JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE']) AS privilege`);
         if(!rows[0]?.allowed)throw new Error("Missing browser session grants");
@@ -151,7 +164,7 @@ export function createBrowserSession(options:{namespace:string;module:string;sco
         if(!valid(state)||!valid(binding)||url.searchParams.getAll("state").length!==1)throw refused();
         const id=hash(state);
         const record=await transaction(pool,async tx=>{
-          const {rows}=await tx.query<{sealed:string;return_to:string}>(`DELETE FROM jeeves.browser_logins WHERE namespace=$1 AND state_hash=$2 AND binding_hash=$3 AND authority=$4 AND expires_at>clock_timestamp() RETURNING sealed,return_to`,[namespace,id,hash(binding),authority]);return rows[0];
+          const {rows}=await tx.query<{sealed:string;return_to:string;token_origin:Date|string}>(`DELETE FROM jeeves.browser_logins WHERE namespace=$1 AND state_hash=$2 AND binding_hash=$3 AND authority=$4 AND expires_at>clock_timestamp() RETURNING sealed,return_to,clock_timestamp() AS token_origin`,[namespace,id,hash(binding),authority]);return rows[0];
         });
         if(!record)throw refused();
         const plain=s.keys.seal.open(record.sealed,bind(`login:${id}`));
@@ -165,7 +178,7 @@ export function createBrowserSession(options:{namespace:string;module:string;sco
         const previous=cookie(request,names.session);
         await transaction(pool,async tx=>{
           if(previous!==undefined)await tx.query(`UPDATE jeeves.browser_sessions SET revoked_at=clock_timestamp(),access_sealed=NULL,refresh_sealed=NULL,id_sealed=NULL WHERE namespace=$1 AND cookie_hash=$2`,[namespace,hash(previous)]);
-          await tx.query(`INSERT INTO jeeves.browser_sessions(namespace,authority,cookie_hash,subject,email,name,idle_seconds,absolute_expires_at,access_sealed,refresh_sealed,id_sealed,access_expires_at) VALUES($1,$12,$2,$3,$4,$5,$6,clock_timestamp()+$7*interval '1 second',$8,$9,$10,CASE WHEN $11::double precision IS NULL THEN NULL ELSE clock_timestamp()+$11*interval '1 second' END)`,[namespace,cookieHash,identity.subject,identity.email,identity.name,s.idleSeconds,s.absoluteSeconds,access,refresh,idToken,identity.expiresIn,authority]);
+          await tx.query(`INSERT INTO jeeves.browser_sessions(namespace,authority,cookie_hash,subject,email,name,idle_seconds,absolute_expires_at,access_sealed,refresh_sealed,id_sealed,access_expires_at) VALUES($1,$12,$2,$3,$4,$5,$6,clock_timestamp()+$7*interval '1 second',$8,$9,$10,CASE WHEN $11::double precision IS NULL THEN NULL ELSE $13::timestamptz+$11*interval '1 second' END)`,[namespace,cookieHash,identity.subject,identity.email,identity.name,s.idleSeconds,s.absoluteSeconds,access,refresh,idToken,identity.expiresIn,authority,record.token_origin]);
         });
         clear(reply,names.guest);write(reply,names.session,value,s.absoluteSeconds);
         return reply.code(302).header("Location",safeReturnPath(record.return_to)).send();

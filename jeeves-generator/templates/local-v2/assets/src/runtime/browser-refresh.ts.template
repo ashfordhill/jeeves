@@ -1,0 +1,124 @@
+// Private exception: one bounded row-lock transaction may call the issuer. NEVER retry its callback.
+// A separate committed attempt marker survives rollback/crash of that issuer transaction.
+import { randomUUID } from "node:crypto";
+import { HttpError } from "./admission.ts";
+import { assertOperation, currentOperation, currentProcess, dependency, operation, OperationError, withOperation } from "./operation.ts";
+import { transaction, type TransactionPool } from "./transaction.ts";
+import type { BrowserConfiguration } from "./browser-session.ts";
+import type { BrowserIssuer } from "./browser-oidc.ts";
+
+export interface BrowserSessionRow {
+  subject:string; email:string|null; name:string|null; access_sealed:string|null;
+  refresh_sealed:string|null; id_sealed:string|null; refresh_generation:string;
+  refresh_uncertain:boolean; token_origin:Date|string; refresh_attempt:string|null; attempt_live:boolean; live:boolean; fresh:boolean;
+}
+export function browserRefresh() {
+  let pending=0;
+  return async (options:{pool:TransactionPool; namespace:string; authority:string; cookieHash:string; settings:BrowserConfiguration; issuer:BrowserIssuer; binding:(field:string)=>{scope:string;context:string}}):Promise<BrowserSessionRow|null> => {
+    assertOperation();
+    if(pending>=32)throw new OperationError("refused","SESSION_REFRESH_SATURATED");
+    const caller=currentOperation(),scope=currentProcess(),attempt=randomUUID();
+    const {pool,namespace,authority,cookieHash,settings:s,issuer,binding}=options;
+    const values=[namespace,cookieHash,authority];
+    const execute=async()=>{
+      const budget=operation({maximumMs:6500,signals:[scope?.signal]});
+      let expired=false;
+      const clients=new Set<(discard:boolean)=>void>(),actuals=new Set<Promise<unknown>>();
+      const hard=setTimeout(()=>{expired=true;for(const release of clients)release(true);},6500);hard.unref?.();
+      const boundedPool:TransactionPool={async connect(){
+        const client=await pool.connect();let released=false;
+        const release=(discard:boolean)=>{if(!released){released=true;clients.delete(release);client.release(discard);}};
+        clients.add(release);
+        if(expired||budget.context.signal.aborted){release(true);throw new OperationError("refused","SESSION_REFRESH_DEADLINE");}
+        return new Proxy(client,{get(target,key){if(key==="release")return release;
+          // Ordinary pools have query_timeout2500ms. Override ONLY this private checked-out
+          // transaction so that its4500ms row-lock wait is not cut off before the provider's3s.
+          if(key==="query")return (text:string,values?:unknown[])=>{const configuration={text,values,query_timeout:5500};return target.query(configuration);};
+          const value=Reflect.get(target,key);return typeof value==="function"?value.bind(target):value;}});
+      }};
+      try {return await withOperation(budget.context,async()=>{
+        // Repetition below is coordination ONLY, before issuer dispatch. The callback which
+        // actually calls the issuer returns immediately afterward and is never retried.
+        for(;;){
+          assertOperation();
+          let dispatched=false;
+          const result=await transaction(boundedPool,async tx=>{
+            await tx.query("SET LOCAL lock_timeout='4500ms'");
+            await tx.query("SET LOCAL statement_timeout='5000ms'");
+            await tx.query("SET LOCAL idle_in_transaction_session_timeout='5000ms'");
+            await tx.query("SELECT cookie_hash FROM jeeves.browser_sessions WHERE namespace=$1 AND cookie_hash=$2 FOR UPDATE",values.slice(0,2));
+            // Separate statement AFTER lock acquisition; no stale pre-wait snapshot/clock.
+            const read=()=>tx.query<BrowserSessionRow>(`SELECT subject,email,name,access_sealed,refresh_sealed,id_sealed,refresh_generation,refresh_uncertain,refresh_attempt,clock_timestamp() AS token_origin,
+              refresh_attempt_until>clock_timestamp() AS attempt_live,
+              revoked_at IS NULL AND authority=$3 AND absolute_expires_at>clock_timestamp() AND last_seen_at+idle_seconds*interval '1 second'>clock_timestamp() AS live,
+              access_expires_at>clock_timestamp()+interval '10 seconds' AS fresh
+              FROM jeeves.browser_sessions WHERE namespace=$1 AND cookie_hash=$2`,values);
+            const row=(await read()).rows[0];
+            const revoke=()=>tx.query(`UPDATE jeeves.browser_sessions SET revoked_at=COALESCE(revoked_at,clock_timestamp()),access_sealed=NULL,refresh_sealed=NULL,id_sealed=NULL,refresh_attempt=NULL,refresh_attempt_until=NULL WHERE namespace=$1 AND cookie_hash=$2`,values.slice(0,2));
+            if(!row)return {row:null};
+            const access=row.access_sealed?s.keys.seal.open(row.access_sealed,binding("access")):undefined;
+            if(!row.live||access===undefined){await revoke();return {row:null};}
+            if(row.refresh_uncertain && row.refresh_attempt!==attempt){
+              if((caller && (caller.signal.aborted||caller.remainingMs()<=0)))throw new OperationError("refused","CONTEXT_EXPIRED");
+              return row.refresh_attempt && row.attempt_live?{waiting:true}:{failure:new OperationError("unknown","SESSION_REFRESH_UNKNOWN")};
+            }
+            if(!row.refresh_uncertain && row.fresh)return {row};
+            const refresh=row.refresh_sealed?s.keys.seal.open(row.refresh_sealed,binding("refresh")):undefined;
+            if(!refresh){await revoke();return {row:null};}
+            if((caller && (caller.signal.aborted||caller.remainingMs()<=0))){
+              // A known pre-dispatch browser cancellation may clear ONLY its own attempt.
+              if(row.refresh_attempt===attempt)await tx.query("UPDATE jeeves.browser_sessions SET refresh_uncertain=false,refresh_attempt=NULL,refresh_attempt_until=NULL WHERE namespace=$1 AND cookie_hash=$2 AND refresh_attempt=$3",[namespace,cookieHash,attempt]);
+              return {failure:new OperationError("refused","CONTEXT_EXPIRED")};
+            }
+            if(!row.refresh_uncertain){
+              // COMMIT this marker before any token POST, then reacquire the same row lock.
+              // A crash in between conservatively requires reauthentication, even if no POST ran.
+              await tx.query("UPDATE jeeves.browser_sessions SET refresh_uncertain=true,refresh_attempt=$4,refresh_attempt_until=clock_timestamp()+interval '6500 milliseconds' WHERE namespace=$1 AND cookie_hash=$2 AND authority=$3",[...values,attempt]);
+              return {claimed:true};
+            }
+            let tokens:Awaited<ReturnType<BrowserIssuer["refresh"]>>;
+            try {dispatched=true;tokens=await issuer.refresh(refresh,row.subject);}
+            catch(error){
+              if(error instanceof HttpError && error.statusCode===401){await revoke();return {row:null};}
+              const unknown=!(error instanceof OperationError)||error.outcome==="unknown";
+              await tx.query("UPDATE jeeves.browser_sessions SET refresh_uncertain=$4,refresh_attempt=NULL,refresh_attempt_until=NULL WHERE namespace=$1 AND cookie_hash=$2 AND refresh_generation=$3 AND revoked_at IS NULL",[namespace,cookieHash,row.refresh_generation,unknown]);
+              return {failure:new OperationError(unknown?"unknown":"definite-failure",unknown?"SESSION_REFRESH_UNKNOWN":"IDENTITY_UNAVAILABLE")};
+            }
+            // Too-short successful grants cannot cause a refresh loop for queued waiters.
+            // Rotation may already have happened, so retain uncertainty rather than retrying.
+            if(!Number.isFinite(tokens.expiresIn)||tokens.expiresIn<=20||tokens.expiresIn>604800){
+              await tx.query("UPDATE jeeves.browser_sessions SET refresh_attempt=NULL,refresh_attempt_until=NULL WHERE namespace=$1 AND cookie_hash=$2 AND refresh_attempt=$3",[namespace,cookieHash,attempt]);
+              return {failure:new OperationError("unknown","SESSION_REFRESH_UNKNOWN")};
+            }
+            // Browser disconnect after dispatch cannot cancel recording received credentials.
+            // The original internal6500ms hard budget still includes UPDATE/COMMIT/rollback.
+            const current=(await read()).rows[0];
+            if(!current?.live||current.refresh_generation!==row.refresh_generation || current.refresh_attempt!==attempt || !current.access_sealed || s.keys.seal.open(current.access_sealed,binding("access"))===undefined){await revoke();return {row:null};}
+            const seal=(field:string,value:string|null)=>value===null?null:s.keys.seal.seal(value,binding(field));
+            // Anchor to store time observed BEFORE dispatch. No application clock or later
+            // UPDATE transport delay can extend this conservative absolute lifetime.
+            const expiresAt=new Date(new Date(row.token_origin).getTime()+tokens.expiresIn*1000);
+            const updated=await tx.query(`UPDATE jeeves.browser_sessions SET access_sealed=$4,refresh_sealed=$5,id_sealed=$6,access_expires_at=$7::timestamptz,refresh_generation=refresh_generation+1,refresh_uncertain=false,refresh_attempt=NULL,refresh_attempt_until=NULL,last_seen_at=clock_timestamp()
+              WHERE namespace=$1 AND cookie_hash=$2 AND authority=$3 AND revoked_at IS NULL AND refresh_generation=$8 AND refresh_attempt=$9 AND absolute_expires_at>clock_timestamp() AND last_seen_at+idle_seconds*interval '1 second'>clock_timestamp() RETURNING subject,email,name`,[...values,seal("access",tokens.access),seal("refresh",tokens.refresh??refresh),seal("id",tokens.id??(current.id_sealed?s.keys.seal.open(current.id_sealed,binding("id"))??null:null)),expiresAt,row.refresh_generation,attempt]);
+            if(!updated.rows[0]){await revoke();return {row:null};}
+            return {row:(await read()).rows[0]??null};
+          },{maximumMs:6500,observe(work){actuals.add(work);void work.finally(()=>actuals.delete(work)).catch(()=>{});}}).catch(error=>{
+            // Database certainty cannot undo an already dispatched provider rotation.
+            if(dispatched)throw new OperationError("unknown","SESSION_REFRESH_UNKNOWN");
+            throw error;
+          });
+          if(result.failure)throw result.failure;
+          if("row" in result)return result.row??null;
+          if(result.waiting)await new Promise<void>(resolve=>setTimeout(resolve,20));
+        }
+      });}finally{
+        // Returned timeout != actual completion. Capacity/watchdog stay until the actual driver
+        // promises settle. A hung connect retains a slot; a late connection is destroyed.
+        await Promise.allSettled(actuals);clearTimeout(hard);budget.close();
+      }
+    };
+    return dependency({mutation:true,maximumMs:7000,preserveDefinite:true},()=>{
+      pending++;return execute().finally(()=>{pending--;});
+    });
+  };
+}

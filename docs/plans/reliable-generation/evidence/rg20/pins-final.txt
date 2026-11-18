@@ -1,0 +1,12 @@
+frozen-v2 80 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/runtime/transaction.ts'
+]
+v2-module-design 87 unchanged paths; reviewed changes [
+  '.jeeves/extensions.md',
+  '.jeeves/manifest.json',
+  'src/runtime/transaction.ts'
+]
+stub-stack 60 unchanged paths; reviewed changes [ '.jeeves/extensions.md', '.jeeves/manifest.json' ]
+Reviewed pins written; only private transaction bound and extension guide changes; no dependency changes.

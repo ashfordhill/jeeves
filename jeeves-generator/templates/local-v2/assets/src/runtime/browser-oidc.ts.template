@@ -58,6 +58,40 @@ export function createBrowserIssuer(settings: BrowserConfiguration) {
       if (settings.audience) parameters.audience = settings.audience;
       return oidc.buildAuthorizationUrl(required(), parameters).href;
     },
+    async refresh(refreshToken:string,subject:string) {
+      return bounded(async()=>{
+        let tokens:Awaited<ReturnType<typeof oidc.refreshTokenGrant>>;
+        try {tokens=await oidc.refreshTokenGrant(required(),refreshToken);}
+        catch(error){
+          // The pinned SDK preserves a nonconforming HTTP status as its Response cause
+          // (oauth4webapi parses OAuth error bodies only for4xx). Known429/5xx is outage.
+          if(error instanceof oidc.ClientError && error.code==="OAUTH_RESPONSE_IS_NOT_CONFORM" && error.cause instanceof Response &&
+            (error.cause.status===429 || (error.cause.status>=500 && error.cause.status<=599))){
+            scope?.dependencyReady?.(health,false);
+            throw new OperationError("definite-failure","IDENTITY_UNAVAILABLE");
+          }
+          if(error instanceof oidc.ResponseBodyError){
+            if([400,401,403].includes(error.status)&&error.error==="invalid_grant")
+              throw Object.assign(new HttpError(401,"SIGN_IN_REQUIRED","Sign in to continue."),{outcome:"refused"});
+            // A well-formed OAuth refusal (including429/5xx/invalid_client) did not issue new
+            // tokens. Network/malformed/unfamiliar responses may have lost a successful rotation.
+            scope?.dependencyReady?.(health,false);
+            throw new OperationError("definite-failure","IDENTITY_UNAVAILABLE");
+          }
+          scope?.dependencyReady?.(health,false);
+          throw new OperationError("unknown","SESSION_REFRESH_UNKNOWN");
+        }
+        const claims=tokens.claims();
+        if(claims && (claims.sub!==subject || "jeeves_workload" in claims))
+          throw Object.assign(new HttpError(401,"SIGN_IN_REQUIRED","Sign in to continue."),{outcome:"refused"});
+        const material=(value:unknown)=>typeof value==="string"&&value.length>0&&Buffer.byteLength(value)<=16384;
+        if(!material(tokens.access_token) || (tokens.refresh_token!==undefined&&!material(tokens.refresh_token)) ||
+          (tokens.id_token!==undefined&&!material(tokens.id_token)) || !Number.isFinite(tokens.expires_in) || tokens.expires_in!<=20 || tokens.expires_in!>604800)
+          throw new OperationError("unknown","SESSION_REFRESH_UNKNOWN");
+        scope?.dependencyReady?.(health,true);
+        return {access:tokens.access_token,refresh:tokens.refresh_token??null,id:tokens.id_token??null,expiresIn:tokens.expires_in!};
+      },true);
+    },
     async exchange(url: URL, input:{state:string;nonce:string;verifier:string}) {
       try {
         const tokens = await bounded(async () => {

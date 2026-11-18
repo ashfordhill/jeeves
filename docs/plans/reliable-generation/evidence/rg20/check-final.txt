@@ -1,0 +1,191 @@
+$ pnpm lint && pnpm typecheck && pnpm test
+$ biome check --config-path=tooling/biome.config.json .
+jeeves-generator/templates/local-v2/assets/scripts/local.mjs:117:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    115 │   );
+    116 │ const save = () => {
+  > 117 │   writeFileSync(`${statePath}.tmp`, JSON.stringify(state, null, 2) + "\n", { mode: 0o600 });
+        │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    118 │   renameSync(`${statePath}.tmp`, statePath);
+    119 │ };
+
+  i Unsafe fix: Use a template literal.
+
+    115 115 │     );
+    116 116 │   const save = () => {
+    117     │ - ··writeFileSync(`${statePath}.tmp`,·JSON.stringify(state,·null,·2)·+·"\n",·{·mode:·0o600·});
+        117 │ + ··writeFileSync(`${statePath}.tmp`,·`${JSON.stringify(state,·null,·2)}\n`,·{·mode:·0o600·});
+    118 118 │     renameSync(`${statePath}.tmp`, statePath);
+    119 119 │   };
+
+
+jeeves-generator/src/v2/browser-session.test.ts:575:9 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    573 │     await expect(
+    574 │       run(() =>
+  > 575 │         callback!(
+        │         ^^^^^^^^^
+    576 │           {
+    577 │             url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+     573  573 │       await expect(
+     574  574 │         run(() =>
+     575      │ - ········callback!(
+          575 │ + ········callback?.(
+     576  576 │             {
+     577  577 │               url: `/modules/sign-in/callback?state=${state}&code=code`,
+
+
+jeeves-generator/src/v2/browser-session.test.ts:664:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    662 │     expect(calls).toBe(1);
+    663 │     expect(results.every((r) => (r as { signedIn: boolean }).signedIn)).toBe(true);
+  > 664 │     const row = (
+        │                 ^
+  > 665 │       await f.pg.query<{
+         ...
+  > 670 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 671 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    672 │     expect(Number(row.refresh_generation)).toBe(1);
+    673 │     expect(row.revoked_at).toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:710:19 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    708 │             },
+    709 │       );
+  > 710 │       const row = (
+        │                   ^
+  > 711 │         await f.pg.query<{
+         ...
+  > 715 │         }>("SELECT * FROM jeeves.browser_sessions")
+  > 716 │       ).rows[0]!;
+        │       ^^^^^^^^^^
+    717 │       if (kind === "definitive") {
+    718 │         expect(row.revoked_at).not.toBeNull();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:771:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    769 │       signedIn: true,
+    770 │     });
+  > 771 │     const row = (
+        │                 ^
+  > 772 │       await f.pg.query<{
+         ...
+  > 776 │       }>("SELECT * FROM jeeves.browser_sessions")
+  > 777 │     ).rows[0]!;
+        │     ^^^^^^^^^^
+    778 │     expect(row.access_sealed).toMatch(/^jke1.new\./);
+    779 │     expect(row.refresh_sealed).toMatch(/^jke1.new\./);
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1126:17 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1124 │     ).rejects.toBeDefined();
+    1125 │     f.pool.connect = connect;
+  > 1126 │     const row = (
+         │                 ^
+  > 1127 │       await f.pg.query<{
+          ...
+  > 1131 │       }>("SELECT refresh_uncertain,refresh_attempt,refresh_generation FROM jeeves.browser_sessions")
+  > 1132 │     ).rows[0]!;
+         │     ^^^^^^^^^^
+    1133 │     expect(row.refresh_uncertain).toBe(true);
+    1134 │     expect(row.refresh_attempt).toBeTruthy();
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1216:50 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1214 │     .update(JSON.stringify([f.settings.issuer, f.settings.clientId]))
+    1215 │     .digest("hex");
+  > 1216 │   const cookieHash = createHash("sha256").update(a.cookie.split("=")[1]!).digest("hex");
+         │                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+    1217 │   const binding = (field: string) => ({
+    1218 │     scope: createHash("sha256")
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1328:10 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1326 │   expect(expiry).toBeInstanceOf(Date);
+    1327 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1328 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │          ^^^^^^^
+    1329 │ });
+    1330 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1326 1326 │     expect(expiry).toBeInstanceOf(Date);
+    1327 1327 │     expect(providerObserved).toBeInstanceOf(Date);
+    1328      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1328 │ + ··expect(expiry?.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+    1329 1329 │   });
+    1330 1330 │
+
+
+jeeves-generator/src/v2/browser-session.test.ts:1328:49 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    1326 │   expect(expiry).toBeInstanceOf(Date);
+    1327 │   expect(providerObserved).toBeInstanceOf(Date);
+  > 1328 │   expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime() + 3600000);
+         │                                                 ^^^^^^^^^^^^^^^^^
+    1329 │ });
+    1330 │
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    1326 1326 │     expect(expiry).toBeInstanceOf(Date);
+    1327 1327 │     expect(providerObserved).toBeInstanceOf(Date);
+    1328      │ - ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved!.getTime()·+·3600000);
+         1328 │ + ··expect(expiry!.getTime()).toBeLessThanOrEqual(providerObserved?.getTime()·+·3600000);
+    1329 1329 │   });
+    1330 1330 │
+
+
+Checked 2159 files in 1017ms. No fixes applied.
+Found 8 warnings.
+Found 1 info.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+
+ Test Files  143 passed (143)
+      Tests  1327 passed (1327)
+   Start at  21:17:02
+   Duration  158.05s (tests 84%, import 12%, transform 3%, environment 2%)

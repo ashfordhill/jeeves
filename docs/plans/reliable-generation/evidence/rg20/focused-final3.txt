@@ -1,0 +1,39 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+stdout | src/v2/browser-session.test.ts > RG20 emitted refresh coordination > two independent replicas serialize before issuer dispatch and reuse the committed winner
+{"service":"browser","level":"info","event":"request-completed","requestId":"f1466d5e-d05f-4161-bc7e-1d974c4b14bc","correlationId":"f1466d5e-d05f-4161-bc7e-1d974c4b14bc","method":"GET","route":"/modules/sign-in/login","status":302,"durationMs":3}
+
+stdout | src/v2/browser-session.test.ts > RG20 emitted refresh coordination > two independent replicas serialize before issuer dispatch and reuse the committed winner
+{"service":"browser","level":"info","event":"request-completed","requestId":"2927e9bb-b8a1-465d-bf43-f8155947a1d9","correlationId":"2927e9bb-b8a1-465d-bf43-f8155947a1d9","method":"GET","route":"/modules/sign-in/callback","status":302,"durationMs":4}
+
+stdout | src/v2/browser-session.test.ts > RG20 emitted refresh coordination > two independent replicas serialize before issuer dispatch and reuse the committed winner
+{"service":"browser","level":"info","event":"http-draining"}
+
+stdout | src/v2/browser-session.test.ts > RG20 emitted refresh coordination > two independent replicas serialize before issuer dispatch and reuse the committed winner
+{"service":"browser","level":"info","event":"http-drained"}
+
+ ❯ |generator| src/v2/browser-session.test.ts (49 tests | 1 failed) 40478ms
+   ❯ RG20 emitted refresh coordination (12)
+     × two independent replicas serialize before issuer dispatch and reuse the committed winner 1005ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generator| src/v2/browser-session.test.ts > RG20 emitted refresh coordination > two independent replicas serialize before issuer dispatch and reuse the committed winner
+ReferenceError: sql is not defined
+ ❯ src/v2/browser-session.test.ts:677:42
+    675|     expect(row.revoked_at).toBeNull();
+    676|     expect(row.access_sealed).not.toContain(refreshTokens.access);
+    677|     expect(f.trace.some((q) => q.sql.includes("FOR UPDATE"))).toBe(tru…
+       |                                          ^
+    678|     expect(f.trace.some((q) => q.sql.includes("lock_timeout='4500ms'")…
+    679|   });
+ ❯ src/v2/browser-session.test.ts:677:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 48 passed (49)
+   Start at  21:22:46
+   Duration  41.39s (tests 98%, transform 1%, import 1%)

@@ -1,0 +1,85 @@
+valid accepted once; identity retained, no token returned by public routes
+omitted accepted once; identity retained, no token returned by public routes
+diagnostic subject {
+  name: 'Error',
+  code: 'SIGN_IN_REQUIRED',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+subject refused single POST; no credentials adopted
+diagnostic workload {
+  name: 'Error',
+  code: 'SIGN_IN_REQUIRED',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+workload refused single POST; no credentials adopted
+diagnostic issuer {
+  name: 'OperationError',
+  code: 'SESSION_REFRESH_UNKNOWN',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+issuer unknown single POST; no credentials adopted
+diagnostic audience {
+  name: 'OperationError',
+  code: 'SESSION_REFRESH_UNKNOWN',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+audience unknown single POST; no credentials adopted
+diagnostic signature {
+  name: 'OperationError',
+  code: 'SESSION_REFRESH_UNKNOWN',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+signature unknown single POST; no credentials adopted
+diagnostic expired {
+  name: 'OperationError',
+  code: 'SESSION_REFRESH_UNKNOWN',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+expired unknown single POST; no credentials adopted
+diagnostic invalid-grant {
+  name: 'Error',
+  code: 'SIGN_IN_REQUIRED',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+invalid-grant refused single POST; no credentials adopted
+diagnostic server {
+  name: 'OperationError',
+  code: 'SESSION_REFRESH_UNKNOWN',
+  status: undefined,
+  error: undefined,
+  cause: undefined
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'unknown'
+- 'definite-failure'
+
+    at file:///tmp/jeeves-rg20-sdk-diagnostic.mjs:44:832 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'unknown',
+  expected: 'definite-failure',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
