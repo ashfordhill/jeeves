@@ -1,0 +1,75 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:624721) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:624742) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:624882) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:624940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 3:24:53 AM [vite] (client) [console.warn] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+  ✘  1 [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:6:1 › WD08 reviews all live study views and themes without activating wires (3.0m)
+(node:629432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:72:1 › WD08 native SVG fan click and menu identify the visible optional board wire (1.6s)
+
+
+  1) [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:6:1 › WD08 reviews all live study views and themes without activating wires 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: apiRequestContext.delete: Test timeout of 180000ms exceeded.
+
+      64 |             console.log(`WD08 ${study}/${view}/${theme}: ${stats.legacyEdges} legacy edges, 0 wires, mouse/PNG/state checked`);
+      65 |           }
+    > 66 |         }
+         |          ^
+      67 |       } finally { await page.request.delete(`/api/projects/${id}`); }
+      68 |     }
+      69 |     expect(errors).toEqual([]);
+        at /tmp/jeeves-wd08-browser/review.spec.ts:66:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../tmp/jeeves-wd08-browser/results/review-WD08-reviews-all-li-6463a-es-without-activating-wires-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../tmp/jeeves-wd08-browser/results/review-WD08-reviews-all-li-6463a-es-without-activating-wires-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../../../tmp/jeeves-wd08-browser/results/review-WD08-reviews-all-li-6463a-es-without-activating-wires-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../../../tmp/jeeves-wd08-browser/results/review-WD08-reviews-all-li-6463a-es-without-activating-wires-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:72:1 › WD08 native SVG fan click and menu identify the visible optional board wire 
+
+    Error: page.evaluate: TypeError: createRoot is not a function
+        at eval (eval at evaluate (:311:30), <anonymous>:50:5)
+        at async <anonymous>:337:30
+        at eval (eval at evaluate (:311:30), <anonymous>:50:5)
+        at async <anonymous>:337:30
+        at /tmp/jeeves-wd08-browser/review.spec.ts:74:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../tmp/jeeves-wd08-browser/results/review-WD08-native-SVG-fan-23fbc-visible-optional-board-wire-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../tmp/jeeves-wd08-browser/results/review-WD08-native-SVG-fan-23fbc-visible-optional-board-wire-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../../../../tmp/jeeves-wd08-browser/results/review-WD08-native-SVG-fan-23fbc-visible-optional-board-wire-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../../../../tmp/jeeves-wd08-browser/results/review-WD08-native-SVG-fan-23fbc-visible-optional-board-wire-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:6:1 › WD08 reviews all live study views and themes without activating wires 
+    [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:72:1 › WD08 native SVG fan click and menu identify the visible optional board wire 

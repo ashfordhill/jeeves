@@ -1,0 +1,47 @@
+import {writeFile} from 'node:fs/promises';
+import ELK from '/home/ash/github/jeeves/jeeves/packages/board/node_modules/elkjs/lib/elk.bundled.js';
+import {createLayoutEngine} from '/home/ash/github/jeeves/jeeves/packages/board/src/layout/engine.ts';
+import {portOffset} from '/home/ash/github/jeeves/jeeves/packages/board/src/layout/elkGraph.ts';
+import {bandClashes} from '/home/ash/github/jeeves/jeeves/packages/board/src/layout/junctions.ts';
+import {laneShifts} from '/home/ash/github/jeeves/jeeves/packages/board/src/layout/lanes.ts';
+import {wireArt} from '/home/ash/github/jeeves/jeeves/packages/board/src/react/wirePath.ts';
+import {studioArchitectureExample,laneGraph} from '/home/ash/github/jeeves/jeeves/packages/spec/src/index.ts';
+import {laneLayoutInput} from '/home/ash/github/jeeves/jeeves/apps/web/src/canvas/laneLayout.ts';
+import {detailedView} from '/home/ash/github/jeeves/jeeves/apps/web/src/canvas/detailedView.ts';
+import {wireTone,assignWireSlots,wireStep} from '/home/ash/github/jeeves/jeeves/apps/web/src/canvas/wireColours.ts';
+import {it} from 'vitest';
+it('WD08 measures optional layouts without studio activation',async()=>{
+const rows=[];
+for (const study of ['tinyurl','marketplace','youtube']) {
+ const design=studioArchitectureExample(`studio-${study}`).design; const graph=laneGraph(design);
+ for (const view of ['simple','detailed']) {
+  const input=view==='simple'?laneLayoutInput(graph):detailedView(design,graph,id=>id);
+  const engine=createLayoutEngine(new ELK(),{debounceMs:0});
+  const before=await engine.request(input); const start=performance.now();
+  const layout=await engine.request({...input,lanes:true}); const timeMs=performance.now()-start;
+  const byId=new Map(input.tiles.map(t=>[t.id,t]));
+  const paths=input.lines.map(line=>{
+   const s=byId.get(line.source); const t=byId.get(line.target);
+   const sp=layout.positions[line.source]; const tp=layout.positions[line.target];
+   const port={x:sp.x+s.w,y:sp.y+portOffset(s,line.sourcePort)};
+   const entry={x:tp.x,y:tp.y+portOffset(t,line.targetPort)};
+   return {...line,port,entry,art:wireArt(layout.routes[line.id],port,entry,true)};
+  });
+  let sharedParallelRuns=0; const segments=Object.entries(layout.routes).flatMap(([id,route])=>route.slice(1).map((b,i)=>({id,a:route[i],b})));
+  for(let i=0;i<segments.length;i++)for(const o of segments.slice(i+1)){
+   const m=segments[i]; if(m.id===o.id)continue; const h=m.a.y===m.b.y;if(h!==(o.a.y===o.b.y))continue;
+   const across=p=>h?p.y:p.x,along=p=>h?p.x:p.y;
+   const overlap=Math.min(Math.max(along(m.a),along(m.b)),Math.max(along(o.a),along(o.b)))-Math.max(Math.min(along(m.a),along(m.b)),Math.min(along(o.a),along(o.b)));
+   if(Math.abs(across(m.a)-across(o.a))<8&&overlap>1)sharedParallelRuns++;
+  }
+  rows.push({study,view,timeMs,widthBefore:before.bounds.w,widthLanes:layout.bounds.w,crossingsBefore:bandClashes(before,input).crossings,crossingsLanes:bandClashes(layout,input).crossings,sharedParallelRuns,input:{tiles:input.tiles,lines:input.lines},layout,paths});
+  console.log(study,view,timeMs,sharedParallelRuns);
+ }
+}
+const crowdedInput={tiles:[{id:'a',w:128,h:128},{id:'b',w:128,h:128}],lines:Array.from({length:10},(_,i)=>({id:`l${i}`,source:'a',target:'b'}))};
+const crowded={key:'crowded',positions:{a:{x:0,y:0},b:{x:256,y:0}},routes:Object.fromEntries(crowdedInput.lines.map(l=>[l.id,[{x:128,y:64},{x:256,y:64}]])),chips:{},bounds:{x:0,y:0,w:384,h:128}};
+const crowdedYs=[...laneShifts(crowdedInput,crowded).values()].map(v=>64+v.target);
+console.log('Crowded target Y values',crowdedYs);
+await writeFile('/tmp/jeeves-wd08-browser/geometry.json',JSON.stringify({rows,crowdedYs},null,2));
+
+});

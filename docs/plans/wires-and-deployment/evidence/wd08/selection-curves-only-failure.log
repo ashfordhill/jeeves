@@ -1,0 +1,62 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |board| src/react/wireSelection.test.tsx (2 tests | 2 failed) 112ms
+   × click identifies a wire on its visible fan rather than a neighbouring raw lane 83ms
+   × contextMenu identifies a wire on its visible fan rather than a neighbouring raw lane 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |board| src/react/wireSelection.test.tsx > click identifies a wire on its visible fan rather than a neighbouring raw lane
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'upper' ]
+
+Number of calls: 0
+
+ ❯ src/react/wireSelection.test.tsx:111:50
+    109|     if (!hit) throw new Error("Missing wire hit target");
+    110|     fireEvent[action](hit, pointer);
+    111|     if (action === "click") expect(onSelectLine).toHaveBeenCalledWith(…
+       |                                                  ^
+    112|     else
+    113|       expect(onLineMenu).toHaveBeenCalledWith("upper", { x: pointer.cl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |board| src/react/wireSelection.test.tsx > contextMenu identifies a wire on its visible fan rather than a neighbouring raw lane
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'upper', { x: 479.5232, y: 392.96 } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "upper",
++   "middle",
+    {
+      "x": 479.5232,
+      "y": 392.96,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/react/wireSelection.test.tsx:113:26
+    111|     if (action === "click") expect(onSelectLine).toHaveBeenCalledWith(…
+    112|     else
+    113|       expect(onLineMenu).toHaveBeenCalledWith("upper", { x: pointer.cl…
+       |                          ^
+    114|     expect(container.querySelector(".board-line-chooser")).toBeNull();
+    115|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  2 failed | 87 passed (89)
+   Start at  03:20:40
+   Duration  1.81s (tests 50%, environment 23%, transform 14%, import 12%, worker 1%)
+
+    Isolate  11 workers spawned · ~150ms startup each (spawn + environment, per file)
+             at least ~263ms faster with isolate: false — reuses workers across files instead of one per file
+

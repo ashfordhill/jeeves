@@ -1,0 +1,80 @@
+{
+  "base": "0ea91d3406ca3c668534fa80c8e67d23fcd9fe11",
+  "allOriginalBoardTests": {
+    "jeeves/packages/board/src/graph/graph.test.ts": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "96a1c5c2128d49c650edd1c762c28a9cfe2a96b3af26c0a5f1671ce4dcee2101",
+      "unchangedWholeFile": true
+    },
+    "jeeves/packages/board/src/layout/branches.test.ts": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "b4db89c88c74685fe5388745862000940f771d57dd467d9a5d394d2c3d76f9e9",
+      "unchangedWholeFile": true
+    },
+    "jeeves/packages/board/src/layout/layout.test.ts": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "39aa4ffddd723ef2f4a34b90ead7183a5c8c918962438e38eeb6c3f044064fc8",
+      "unchangedWholeFile": false
+    },
+    "jeeves/packages/board/src/react/board.test.tsx": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "f2760347f949b7d946c5b0b785d6895e3555375bb5db1249fc08710c7a2044be",
+      "unchangedWholeFile": false
+    },
+    "jeeves/packages/board/src/react/camera.test.ts": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "bfc9a800b5496488117f3416d88dc34bf0a7b4e6e14a2811bb82584fd0bd67d1",
+      "unchangedWholeFile": true
+    },
+    "jeeves/packages/board/src/react/directionArrow.test.ts": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "e704c425f186aaaff3290aa428da6e28e6fdddc22039c7259404c3f5893826a4",
+      "unchangedWholeFile": true
+    },
+    "jeeves/packages/board/src/react/fan.test.ts": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "3c92e96c8a10267c91382710a1caf5ac69f77a0a7547a39778b9319b07e95e66",
+      "unchangedWholeFile": true
+    },
+    "jeeves/packages/board/src/react/lineGeometry.test.ts": {
+      "existingCasesFixturesAndAssertionsBytePreserved": true,
+      "baseSha256": "d31ca8f2267781c3cc87f502735419afebea42f609f9a19e9eed317fcc70912d",
+      "unchangedWholeFile": true
+    }
+  },
+  "wdOnlyCommittedPaths": [
+    "docs/handoff.md",
+    "docs/plans/wires-and-deployment/evidence/wd01/progress.md",
+    "docs/plans/wires-and-deployment/evidence/wd02/progress.md",
+    "docs/plans/wires-and-deployment/evidence/wd02/studies.json",
+    "docs/plans/wires-and-deployment/evidence/wd03/progress.md",
+    "docs/plans/wires-and-deployment/evidence/wd04/progress.md",
+    "docs/plans/wires-and-deployment/evidence/wd05/progress.md",
+    "docs/plans/wires-and-deployment/stopped/WD06.patch",
+    "docs/plans/wires-and-deployment/stopped/WD07.patch",
+    "jeeves/apps/web/src/canvas/laneLayout.test.ts",
+    "jeeves/apps/web/src/canvas/wireColours.test.ts",
+    "jeeves/apps/web/src/canvas/wireColours.ts",
+    "jeeves/apps/web/src/studio/preferences.test.ts",
+    "jeeves/apps/web/src/studio/preferences.ts",
+    "jeeves/packages/board/src/layout/align.ts",
+    "jeeves/packages/board/src/layout/bands.ts",
+    "jeeves/packages/board/src/layout/elkGraph.ts",
+    "jeeves/packages/board/src/layout/engine.ts",
+    "jeeves/packages/board/src/layout/index.ts",
+    "jeeves/packages/board/src/layout/lanes.test.ts",
+    "jeeves/packages/board/src/layout/lanes.ts",
+    "jeeves/packages/board/src/layout/layout.test.ts",
+    "jeeves/packages/board/src/layout/metrics.ts",
+    "jeeves/packages/board/src/layout/returns.ts",
+    "jeeves/packages/board/src/react/Board.tsx",
+    "jeeves/packages/board/src/react/BoardLine.tsx",
+    "jeeves/packages/board/src/react/board.css",
+    "jeeves/packages/board/src/react/board.test.tsx",
+    "jeeves/packages/board/src/react/wirePath.test.ts",
+    "jeeves/packages/board/src/react/wirePath.ts"
+  ],
+  "noDesignSchemaBlueprintChatOrDependencyChangesInWD": true,
+  "noE2ESourceChangesInLandedWD": true,
+  "studioActivationAndHoverAbsent": true
+}

@@ -1,0 +1,1188 @@
+{
+  "scope": "native SVG geometry and optional engine inputs only; no studio wire activation",
+  "cases": [
+    {
+      "study": "tinyurl",
+      "view": "simple",
+      "optionalLayoutMs": 102.78878600000007,
+      "widthBefore": 1024,
+      "widthLanes": 1136,
+      "crossingsBefore": 0,
+      "crossingsLanes": 0,
+      "rawParallelSharedRuns": 0,
+      "bodySamples": 1422,
+      "samplingAndNearestMs": [
+        34.799999952316284, 40.59999990463257, 41.30000019073486, 33.89999985694885,
+        31.799999952316284, 33.200000047683716, 30.59999990463257
+      ],
+      "medianSamplingAndNearestMs": 33.89999985694885,
+      "bodyThroughTiles": [],
+      "heads": [
+        {
+          "id": "@actor-download",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "@actor-upload",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "download-stats-api",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-redirect",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-shorten",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "stats-read",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000003,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "redirect-clicks",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "redirect-cache",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "redirect-db",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "click-events-analytics",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "analytics-write",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999997,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shorten-db",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        }
+      ],
+      "fanGapsBelow8OutsideDot": [
+        {
+          "a": "@actor-download",
+          "b": "@actor-upload",
+          "gap": 4.679107666015625,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-stats-api",
+          "b": "download-redirect",
+          "gap": 4.6791229248046875,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "redirect-clicks",
+          "b": "redirect-cache",
+          "gap": 4.180547438600792,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "redirect-cache",
+          "b": "redirect-db",
+          "gap": 4.180547438600792,
+          "arcDistanceFromDot": 12
+        }
+      ]
+    },
+    {
+      "study": "tinyurl",
+      "view": "detailed",
+      "optionalLayoutMs": 74.07944199999974,
+      "widthBefore": 1280,
+      "widthLanes": 1392,
+      "crossingsBefore": 1,
+      "crossingsLanes": 1,
+      "rawParallelSharedRuns": 0,
+      "bodySamples": 1622,
+      "samplingAndNearestMs": [
+        35.700000047683716, 33.89999985694885, 33.700000047683716, 37.10000014305115,
+        35.59999990463257, 32.40000009536743, 33.299999952316284
+      ],
+      "medianSamplingAndNearestMs": 33.89999985694885,
+      "bodyThroughTiles": [],
+      "heads": [
+        {
+          "id": "@actor-download",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "@actor-upload",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "download-stats-api",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-redirect",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-shorten",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "stats-read/stats-data",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000003,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "redirect-clicks/redirect-click-publisher",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "redirect-cache/redirect-cache-reader",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "redirect-db/redirect-data",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "click-events-analytics/analytics-click-consumer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "analytics-write/analytics-data",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999997,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "shorten-db/shorten-data",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        }
+      ],
+      "fanGapsBelow8OutsideDot": [
+        {
+          "a": "@actor-download",
+          "b": "@actor-upload",
+          "gap": 4.67913818359375,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-stats-api",
+          "b": "download-redirect",
+          "gap": 4.679107666015625,
+          "arcDistanceFromDot": 12
+        }
+      ]
+    },
+    {
+      "study": "marketplace",
+      "view": "simple",
+      "optionalLayoutMs": 93.1421019999998,
+      "widthBefore": 1280,
+      "widthLanes": 1376,
+      "crossingsBefore": 1,
+      "crossingsLanes": 1,
+      "rawParallelSharedRuns": 0,
+      "bodySamples": 3907,
+      "samplingAndNearestMs": [
+        85.40000009536743, 81.5, 81, 82.19999980926514, 86.20000004768372, 78.60000014305115,
+        78.39999985694885
+      ],
+      "medianSamplingAndNearestMs": 81.5,
+      "bodyThroughTiles": [],
+      "heads": [
+        {
+          "id": "@actor-download",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "@actor-upload",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "download-storefront",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-orders",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-image-cdn",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-shop",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-identity",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-payments",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-cart",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "storefront-search",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "orders-read",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "cdn-images",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shop-catalog",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shop-images",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shop-listings",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-prices",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-paid",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-write",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-stripe",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "cart-write",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "listings-indexer",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "paid-recorder",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "indexer-write",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "recorder-write",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.0499999999999092
+        }
+      ],
+      "fanGapsBelow8OutsideDot": [
+        {
+          "a": "@actor-download",
+          "b": "@actor-upload",
+          "gap": 4.6790771484375,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-storefront",
+          "b": "download-orders",
+          "gap": 4.180487904410528,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-orders",
+          "b": "download-image-cdn",
+          "gap": 4.18047312634873,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-shop",
+          "b": "upload-identity",
+          "gap": 4.040976689756321,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-shop",
+          "b": "upload-payments",
+          "gap": 6.865141105357429,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-identity",
+          "b": "upload-payments",
+          "gap": 2.96044921875,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-identity",
+          "b": "upload-cart",
+          "gap": 6.865141105357429,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-payments",
+          "b": "upload-cart",
+          "gap": 4.040976689756321,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "shop-catalog",
+          "b": "shop-images",
+          "gap": 5.5054931640625,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "shop-catalog",
+          "b": "shop-listings",
+          "gap": 2.794163728381422,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "shop-images",
+          "b": "shop-listings",
+          "gap": 2.794163728381422,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "payments-prices",
+          "b": "payments-paid",
+          "gap": 2.9148791635131373,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "payments-prices",
+          "b": "payments-write",
+          "gap": 4.816587213069708,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "payments-prices",
+          "b": "payments-stripe",
+          "gap": 7.537353515625,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "payments-paid",
+          "b": "payments-write",
+          "gap": 1.95068359375,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "payments-paid",
+          "b": "payments-stripe",
+          "gap": 4.816587213069708,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "payments-write",
+          "b": "payments-stripe",
+          "gap": 2.9148791635131373,
+          "arcDistanceFromDot": 12
+        }
+      ]
+    },
+    {
+      "study": "marketplace",
+      "view": "detailed",
+      "optionalLayoutMs": 94.4996930000002,
+      "widthBefore": 1568,
+      "widthLanes": 1664,
+      "crossingsBefore": 5,
+      "crossingsLanes": 4,
+      "rawParallelSharedRuns": 0,
+      "bodySamples": 4692,
+      "samplingAndNearestMs": [
+        87.70000004768372, 89.40000009536743, 93.09999990463257, 91.29999995231628, 87.5,
+        94.90000009536743, 89.40000009536743
+      ],
+      "medianSamplingAndNearestMs": 89.40000009536743,
+      "bodyThroughTiles": [],
+      "heads": [
+        {
+          "id": "@actor-download",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "@actor-upload",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "download-storefront",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-orders",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-image-cdn",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-shop",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-identity",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-payments",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-cart",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "storefront-search/storefront-query",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "orders-read/orders-reader",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "cdn-images",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shop-catalog/shop-writer",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -16.5,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shop-catalog/shop-publisher",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shop-images/shop-photos",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "shop-listings/shop-publisher",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-prices/payments-pricing",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 16.5,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-paid/payments-publisher",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-write/payments-records",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-write/payments-publisher",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "payments-stripe",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "cart-write/cart-repository",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "listings-indexer/indexer-consumer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "paid-recorder/recorder-consumer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "indexer-write/indexer-writer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "recorder-write/recorder-writer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.0499999999999092
+        }
+      ],
+      "fanGapsBelow8OutsideDot": [
+        {
+          "a": "@actor-download",
+          "b": "@actor-upload",
+          "gap": 4.6790771484375,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-storefront",
+          "b": "download-orders",
+          "gap": 4.180487904410528,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-orders",
+          "b": "download-image-cdn",
+          "gap": 4.180487904410528,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-shop",
+          "b": "upload-identity",
+          "gap": 4.040952915356839,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-shop",
+          "b": "upload-payments",
+          "gap": 6.865127111237286,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-identity",
+          "b": "upload-payments",
+          "gap": 2.96044921875,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-identity",
+          "b": "upload-cart",
+          "gap": 6.865127111237286,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-payments",
+          "b": "upload-cart",
+          "gap": 4.040952915356839,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "shop-catalog/shop-publisher",
+          "b": "shop-listings/shop-publisher",
+          "gap": 1.833251953125,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "payments-paid/payments-publisher",
+          "b": "payments-write/payments-publisher",
+          "gap": 2.96044921875,
+          "arcDistanceFromDot": 12
+        }
+      ]
+    },
+    {
+      "study": "youtube",
+      "view": "simple",
+      "optionalLayoutMs": 144.04253100000005,
+      "widthBefore": 1504,
+      "widthLanes": 1627,
+      "crossingsBefore": 1,
+      "crossingsLanes": 2,
+      "rawParallelSharedRuns": 0,
+      "bodySamples": 4763,
+      "samplingAndNearestMs": [
+        132, 135.70000004768372, 129, 129.39999985694885, 127.70000004768372, 129.5,
+        126.20000004768372
+      ],
+      "medianSamplingAndNearestMs": 129.39999985694885,
+      "bodyThroughTiles": [],
+      "heads": [
+        {
+          "id": "@actor-download",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "@actor-upload",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "download-watch",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-search",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-video-cdn",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-identity",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-service",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "watch-cache",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "watch-metadata",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "watch-counts-read",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.300000000000011,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "watch-views-publish",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "search-read",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "cdn-transcoded",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "views-counter",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "counter-write",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.199999999999989,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-publish",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-originals",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "jobs-transcoder",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "transcoder-read",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "transcoder-write",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "transcoder-publish",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "completions-handler",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "completions-indexer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "handler-metadata",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "indexer-write",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.0499999999999092
+        }
+      ],
+      "fanGapsBelow8OutsideDot": [
+        {
+          "a": "@actor-download",
+          "b": "@actor-upload",
+          "gap": 4.6790771484375,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-watch",
+          "b": "download-search",
+          "gap": 4.180547438600792,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-search",
+          "b": "download-video-cdn",
+          "gap": 4.180547438600792,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-identity",
+          "b": "upload-service",
+          "gap": 4.678955078125,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "watch-cache",
+          "b": "watch-counts-read",
+          "gap": 4.0411291130699585,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "watch-cache",
+          "b": "watch-views-publish",
+          "gap": 6.8651183980666035,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "watch-metadata",
+          "b": "watch-counts-read",
+          "gap": 6.8651183980666035,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "watch-metadata",
+          "b": "watch-views-publish",
+          "gap": 4.0411291130699585,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "watch-counts-read",
+          "b": "watch-views-publish",
+          "gap": 2.96026611328125,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-publish",
+          "b": "upload-originals",
+          "gap": 4.678955078125,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "transcoder-read",
+          "b": "transcoder-publish",
+          "gap": 4.1805778410765715,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "transcoder-write",
+          "b": "transcoder-publish",
+          "gap": 4.1805778410765715,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "completions-handler",
+          "b": "completions-indexer",
+          "gap": 2.96044921875,
+          "arcDistanceFromDot": 12
+        }
+      ]
+    },
+    {
+      "study": "youtube",
+      "view": "detailed",
+      "optionalLayoutMs": 421.67611399999987,
+      "widthBefore": 1920,
+      "widthLanes": 2043,
+      "crossingsBefore": 4,
+      "crossingsLanes": 3,
+      "rawParallelSharedRuns": 1,
+      "bodySamples": 6510,
+      "samplingAndNearestMs": [
+        156.89999985694885, 154.10000014305115, 160.39999985694885, 160.30000019073486,
+        162.09999990463257, 151.79999995231628, 151.60000014305115
+      ],
+      "medianSamplingAndNearestMs": 156.89999985694885,
+      "bodyThroughTiles": [],
+      "heads": [
+        {
+          "id": "@actor-download",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "@actor-upload",
+          "tipToFrameX": 3.5999999999999943,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999945
+        },
+        {
+          "id": "download-watch",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-search",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "download-video-cdn",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-identity",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-service",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "watch-cache/watch-cache-reader",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "watch-metadata/watch-details",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "watch-counts-read/watch-counts",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.199999999999989,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "watch-views-publish/watch-views",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "search-read/search-query",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "cdn-transcoded",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -16.5,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "views-counter/counter-consumer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "counter-write/counter-writer",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.300000000000011,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-publish/upload-jobs",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "upload-originals/upload-multipart",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": -8.200000000000045,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "jobs-transcoder/transcoder-consumer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "transcoder-read/transcoder-encoder",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "transcoder-write/transcoder-packager",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "transcoder-write/transcoder-thumbnails",
+          "tipToFrameX": 3.6000000000000227,
+          "tipToEntryY": 16.5,
+          "outlineTipGap": 1.050000000000023
+        },
+        {
+          "id": "transcoder-publish/transcoder-done",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "completions-handler/handler-consumer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "completions-indexer/indexer-consumer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 0,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "handler-metadata/handler-writer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.0499999999999092
+        },
+        {
+          "id": "indexer-write/indexer-writer",
+          "tipToFrameX": 3.599999999999909,
+          "tipToEntryY": 8.299999999999955,
+          "outlineTipGap": 1.0499999999999092
+        }
+      ],
+      "fanGapsBelow8OutsideDot": [
+        {
+          "a": "@actor-download",
+          "b": "@actor-upload",
+          "gap": 4.6790771484375,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-watch",
+          "b": "download-search",
+          "gap": 4.180547438600792,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "download-search",
+          "b": "download-video-cdn",
+          "gap": 4.180547438600792,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "upload-identity",
+          "b": "upload-service",
+          "gap": 4.678955078125,
+          "arcDistanceFromDot": 12
+        },
+        {
+          "a": "completions-handler/handler-consumer",
+          "b": "completions-indexer/indexer-consumer",
+          "gap": 4.678955078125,
+          "arcDistanceFromDot": 12
+        }
+      ]
+    }
+  ],
+  "crowdedIncomingYs": [0, 0, 0, 0, 12, 34, 56, 78, 100, 122]
+}

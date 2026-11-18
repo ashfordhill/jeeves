@@ -1,0 +1,69 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ❯ |board| src/react/wireSelection.test.tsx (2 tests | 2 failed) 80ms
+   × click identifies a wire on its visible fan rather than a neighbouring raw lane 62ms
+   × contextMenu identifies a wire on its visible fan rather than a neighbouring raw lane 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |board| src/react/wireSelection.test.tsx > click identifies a wire on its visible fan rather than a neighbouring raw lane
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'upper' ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "upper",
++   "middle",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/react/wireSelection.test.tsx:111:50
+    109|     if (!hit) throw new Error("Missing wire hit target");
+    110|     fireEvent[action](hit, pointer);
+    111|     if (action === "click") expect(onSelectLine).toHaveBeenCalledWith(…
+       |                                                  ^
+    112|     else
+    113|       expect(onLineMenu).toHaveBeenCalledWith("upper", { x: pointer.cl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |board| src/react/wireSelection.test.tsx > contextMenu identifies a wire on its visible fan rather than a neighbouring raw lane
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'upper', { x: 479.5232, y: 392.96 } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "upper",
++   "middle",
+    {
+      "x": 479.5232,
+      "y": 392.96,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/react/wireSelection.test.tsx:113:26
+    111|     if (action === "click") expect(onSelectLine).toHaveBeenCalledWith(…
+    112|     else
+    113|       expect(onLineMenu).toHaveBeenCalledWith("upper", { x: pointer.cl…
+       |                          ^
+    114|     expect(container.querySelector(".board-line-chooser")).toBeNull();
+    115|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  03:20:10
+   Duration  737ms (environment 51%, transform 22%, import 14%, tests 12%)
+

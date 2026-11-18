@@ -1,0 +1,21 @@
+{
+  "protectedByteModeAbsenceStatesVerified": 7268,
+  "protectedPathChanges": [],
+  "ownStartingModesPreserved": true,
+  "oldHandoffBytePrefixPreserved": true,
+  "resourceCounts": {
+    "containers": 42,
+    "networks": 9,
+    "volumes": 23,
+    "images": 43,
+    "projects": 2
+  },
+  "exactResourcesAndOriginalProjectRowsPreserved": true,
+  "ownProjectsRemaining": 0,
+  "e2ePortsFree": true,
+  "ownerPortsSamePids": true,
+  "startingHead": "e1c7f87863541029dc41450726b5d159d8bea560",
+  "primaryBranch": "main",
+  "rootReadmeSha256": "7cee84a454f220152e8c973b4c2062c603c82067f334ad628beeae0332c0aa40",
+  "noPriorEvidenceBaselineOrConfigEdit": true
+}

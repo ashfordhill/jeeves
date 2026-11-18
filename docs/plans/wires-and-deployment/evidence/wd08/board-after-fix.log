@@ -1,0 +1,12 @@
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+
+ Test Files  11 passed (11)
+      Tests  89 passed (89)
+   Start at  03:21:15
+   Duration  1.84s (tests 49%, environment 23%, transform 15%, import 12%, worker 1%)
+
+    Isolate  11 workers spawned · ~151ms startup each (spawn + environment, per file)
+             at least ~264ms faster with isolate: false — reuses workers across files instead of one per file
+

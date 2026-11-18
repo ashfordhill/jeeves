@@ -1,0 +1,30 @@
+[WebServer] $ tsx src/main.ts
+[WebServer] (node:630081) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:630100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] $ vite
+[WebServer] (node:630305) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:630363) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+WD08 tinyurl/Simple/light: 12 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 tinyurl/Simple/dark: 12 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 tinyurl/Detailed/light: 12 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 tinyurl/Detailed/dark: 12 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 marketplace/Simple/light: 24 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 marketplace/Simple/dark: 24 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 marketplace/Detailed/light: 26 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 marketplace/Detailed/dark: 26 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 youtube/Simple/light: 25 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 youtube/Simple/dark: 25 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 youtube/Detailed/light: 26 legacy edges, 0 wires, mouse/PNG/state checked
+WD08 youtube/Detailed/dark: 26 legacy edges, 0 wires, mouse/PNG/state checked
+  ✓  1 [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:7:1 › WD08 reviews all live study views and themes without activating wires (33.1s)
+  ✓  2 [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:72:1 › WD08 native SVG fan click and menu identify the visible optional board wire (1.6s)
+  ✓  3 [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:105:1 › WD08 inspects optional geometry with native SVG without enabling studio wires (4.9s)
+
+  3 passed (42.7s)

@@ -891,6 +891,25 @@ function Inner({
   });
 
   const routes = shown?.routes ?? {};
+  function selectionRoutes() {
+    if (!drawn.lines.some((line) => line.wire)) return routes;
+    const measured = { ...routes };
+    // Wire fans, gathers and rounded corners differ from the layout's polylines. Measure the
+    // same live path as the pointer band, so clicks and menus identify the visible wire.
+    for (const path of hostRef.current?.querySelectorAll<SVGPathElement>(".board-wire-fill") ??
+      []) {
+      const id = path.closest(".react-flow__edge")?.getAttribute("data-id");
+      if (!id || typeof path.getTotalLength !== "function") continue;
+      const length = path.getTotalLength();
+      if (!Number.isFinite(length) || length <= 0) continue;
+      const steps = Math.ceil(length / 2);
+      measured[id] = Array.from({ length: steps + 1 }, (_, i) => {
+        const point = path.getPointAtLength((i / steps) * length);
+        return { x: point.x, y: point.y };
+      });
+    }
+    return measured;
+  }
   const highlight = useMemo(() => new Set(highlighted), [highlighted]);
   const edges = shown
     ? lineEdges(drawn.lines, shown, selected, placed, highlight, selectedTileLines, hovered)
@@ -973,9 +992,12 @@ function Inner({
             onSelectTile(node.id);
           }}
           onEdgeClick={(event, edge) => {
-            const point = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
+            const point = rf.screenToFlowPosition(
+              { x: event.clientX, y: event.clientY },
+              drawn.lines.some((line) => line.wire) ? { snapToGrid: false } : undefined,
+            );
             const ids = oneLinePerGroup(
-              nearestLines(point, routes, 3 / rf.getZoom(), 22),
+              nearestLines(point, selectionRoutes(), 3 / rf.getZoom(), 22),
               (id) => drawn.lines.find((line) => line.id === id)?.group ?? id,
             );
             if (ids.length > 1) {
@@ -1004,8 +1026,11 @@ function Inner({
             // The lines are found as a click finds them. The selected line wins when it is among
             // them; on a stretch several lines share, the one under the pointer (drawn on top,
             // the hovered one in connect mode) comes before the list's first.
-            const point = rf.screenToFlowPosition({ x: event.clientX, y: event.clientY });
-            const ids = nearestLines(point, routes, 3 / rf.getZoom(), 22);
+            const point = rf.screenToFlowPosition(
+              { x: event.clientX, y: event.clientY },
+              drawn.lines.some((line) => line.wire) ? { snapToGrid: false } : undefined,
+            );
+            const ids = nearestLines(point, selectionRoutes(), 3 / rf.getZoom(), 22);
             const line =
               selected.line !== undefined && ids.includes(selected.line)
                 ? selected.line

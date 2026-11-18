@@ -1,0 +1,327 @@
+docs/plans/wires-and-deployment/evidence/wd08/board-after-fix.log:12: new blank line at EOF.
+docs/plans/wires-and-deployment/evidence/wd08/browser-harness-run2-failure.log:21: trailing whitespace.
++  1) [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:6:1 › WD08 reviews all live study views and themes without activating wires 
+docs/plans/wires-and-deployment/evidence/wd08/browser-harness-run2-failure.log:50: trailing whitespace.
++  2) [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:72:1 › WD08 native SVG fan click and menu identify the visible optional board wire 
+docs/plans/wires-and-deployment/evidence/wd08/browser-harness-run2-failure.log:74: trailing whitespace.
++    [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:6:1 › WD08 reviews all live study views and themes without activating wires 
+docs/plans/wires-and-deployment/evidence/wd08/browser-harness-run2-failure.log:75: trailing whitespace.
++    [chromium] › ../../../../tmp/jeeves-wd08-browser/review.spec.ts:72:1 › WD08 native SVG fan click and menu identify the visible optional board wire 
+docs/plans/wires-and-deployment/evidence/wd08/build.log:18: trailing whitespace.
++[plugin builtin:vite-reporter] 
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:6: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:12: trailing whitespace.
++    46 │ 
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:13: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:15: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:21: trailing whitespace.
++    46 46 │   
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:22: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:27: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:34: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:36: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:43: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:48: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:55: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:57: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:64: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:69: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:76: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:78: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:85: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:90: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:97: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:99: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:106: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:111: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:118: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:120: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:127: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:132: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:139: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:141: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:148: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:153: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:160: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:162: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:169: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:174: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:181: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:183: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:190: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:195: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:202: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:204: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:211: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:216: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:223: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:225: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:232: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:237: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:244: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:246: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:253: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:258: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:265: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:267: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:274: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:279: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:291: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:296: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:308: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:313: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:325: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:330: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:342: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:347: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:354: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:359: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:365: trailing whitespace.
++    1341 │ 
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:366: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:368: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:374: trailing whitespace.
++    1341 1341 │   
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:375: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:380: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:386: trailing whitespace.
++    1341 │ 
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:387: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:389: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:395: trailing whitespace.
++    1341 1341 │   
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:396: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-before-finite-guard.log:423: new blank line at EOF.
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:6: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:12: trailing whitespace.
++    46 │ 
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:13: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:15: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:21: trailing whitespace.
++    46 46 │   
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:22: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:27: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:34: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:36: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:43: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:48: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:55: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:57: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:64: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:69: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:76: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:78: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:85: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:90: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:97: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:99: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:106: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:111: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:118: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:120: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:127: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:132: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:139: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:141: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:148: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:153: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:160: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:162: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:169: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:174: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:181: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:183: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:190: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:195: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:202: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:204: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:211: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:216: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:223: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:225: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:232: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:237: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:244: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:246: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:253: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:258: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:265: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:267: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:274: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:279: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:291: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:296: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:308: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:313: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:325: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:330: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:342: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:347: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:354: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:359: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:365: trailing whitespace.
++    1341 │ 
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:366: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:368: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:374: trailing whitespace.
++    1341 1341 │   
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:375: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:380: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:386: trailing whitespace.
++    1341 │ 
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:387: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:389: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:395: trailing whitespace.
++    1341 1341 │   
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:396: trailing whitespace.
++  
+docs/plans/wires-and-deployment/evidence/wd08/check-final.log:423: new blank line at EOF.
+docs/plans/wires-and-deployment/evidence/wd08/e2e.log:3: trailing whitespace.
++ Container jeeves-postgres-1 Running 
+docs/plans/wires-and-deployment/evidence/wd08/e2e.log:4: trailing whitespace.
++ Container jeeves-postgres-1 Waiting 
+docs/plans/wires-and-deployment/evidence/wd08/e2e.log:5: trailing whitespace.
++ Container jeeves-postgres-1 Healthy 
+docs/plans/wires-and-deployment/evidence/wd08/geometry-harness-initial-failure.log:23: new blank line at EOF.
+docs/plans/wires-and-deployment/evidence/wd08/geometry-measurement.log:9: new blank line at EOF.
+docs/plans/wires-and-deployment/evidence/wd08/selection-curves-only-failure.log:62: new blank line at EOF.
+docs/plans/wires-and-deployment/evidence/wd08/selection-fail-first.log:69: new blank line at EOF.

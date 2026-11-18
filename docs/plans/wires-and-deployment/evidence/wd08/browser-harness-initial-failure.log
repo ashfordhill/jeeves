@@ -1,0 +1,30 @@
+(node:624031) Warning: Failed to load the ES module: /home/ash/github/jeeves/jeeves/playwright.config.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+/home/ash/github/jeeves/jeeves/playwright.config.ts:48
+      JEEVES_FAKE_MODEL_SCRIPT: (0, _nodeUrl.fileURLToPath)(new URL("./fixtures/chat/e2e-script.json", import.meta.url)),
+                                                                                                              ^^^^
+
+SyntaxError: Cannot use 'import.meta' outside a module
+    at wrapSafe (node:internal/modules/cjs/loader:1861:18)
+    at Module._compile (node:internal/modules/cjs/loader:1903:20)
+    at Object.<anonymous> (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.require (node:internal/modules/cjs/loader:1674:12)
+    at require (node:internal/modules/helpers:157:16)
+    at Object.<anonymous> (/tmp/jeeves-wd08-browser/config.ts:1:1)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object.<anonymous> (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.require (node:internal/modules/cjs/loader:1674:12)
+    at require (node:internal/modules/helpers:157:16)
+    at requireOrImport (/home/ash/github/jeeves/node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/lib/common/index.js:1083:18)
+    at loadUserConfig (/home/ash/github/jeeves/node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/lib/common/index.js:1268:52)
+    at loadConfig (/home/ash/github/jeeves/node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/lib/common/index.js:1275:28)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Object.loadConfigFromFile (/home/ash/github/jeeves/node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/lib/common/index.js:1490:10)
+    at runTests (/home/ash/github/jeeves/node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/lib/cli/testActions.js:46:18)
+    at _Command.<anonymous> (/home/ash/github/jeeves/node_modules/.pnpm/playwright@1.63.0/node_modules/playwright/lib/program.js:55:7)

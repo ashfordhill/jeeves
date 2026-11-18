@@ -19599,3 +19599,35 @@ workload settings the same way.
 - One explicit-path local stop commit follows: `WD07: stopped, TinyURL wires are not activated`.
   No root/owner studio/schema/blueprint/chat/generation/settings/template/dependency edit,
   branch/worktree/stash/delegation, paid/live call, push or deployment. Stop; no WD08.
+
+
+## 2026-11-18 — WD08 review of the wire canvas complete
+
+- Independently inventoried all 781 paths since owner plan `95d60ac`: 751 accepted RG23–26-only,
+  shared append-only handoff and 29 WD-only; actual implementation base is amended RG26 `0ea91d3`.
+  [Review](plans/wires-and-deployment/review.md) records findings first, every handoff rough edge,
+  decision-table dispositions and owner follow-ups. WD06/WD07 patches and source restoration stay intact.
+- Two fail-first Board regressions reproduced wrong wire identity at a visible fan, for click and
+  context menu. Optional wires now measure the actual SVG body in 2px steps and disable the inherited
+  32px pointer snap. Default routes/chooser behavior and all old cases/assertions/fixtures remain
+  unchanged; 89 board tests and an isolated native generic Board upper-fan mouse/menu proof pass.
+- Independent TinyURL/Marketplace/YouTube × Simple/Detailed × light/dark review passes legacy mouse,
+  real-PNG and unchanged design/blueprint checks; all 12 screenshots/six PNGs visually inspected.
+  Every live case has **0 wires**. No completed studio wire matrix, wire hover, slot-life reload or
+  resolved stopped YouTube wire click/export/inline-style failure is claimed; activation remains off.
+- Optional real-ELK/native-SVG probes found a 61px YouTube Detailed shared return at x816/y918–979
+  (Packager/Thumbnailer writes), synthetic fixed-height arrival collapse, prescribed close fans and
+  nominal 1.05px head gaps. These remain owner follow-ups. YouTube layout Simple/Detailed 144/422ms;
+  native click sampling medians 129/157ms (4,763/6,510 points), input-proportional, no worst-case bound.
+- Final `pnpm check` 149 files / 1,391 tests (177.21s), native E2E 87/87 (6.2m, both mouse rebuilds), web
+  build and native review 3/3 pass. Initial full check also passed; final repeat covers the later finite
+  SVG-length guard and new evidence formatting. Initial/intermediate regression and harness failures
+  are retained. Inherited 8 lint warnings / 12 infos and Vite chunk warning remain.
+- [Evidence](plans/wires-and-deployment/evidence/wd08/README.md): all 7,268 protected byte/mode/absence
+  states, own modes and old handoff prefix preserved; original 42 container triples / 9 networks /
+  23 volumes / 43 images and both old E2E rows match. Own projects 0, E2E ports free, owner 4300/4310
+  PIDs unchanged. Read-only RG21 audit passes with process-local Git7-digit abbreviation.
+- No old test, root/owner/original app/historical evidence, schema/blueprint/chat/generation/settings/
+  template/dependency change, new activation/design, later brief/unit, branch/worktree/stash/delegation,
+  unrelated cleanup, paid/live call, push or deployment. One explicit-path local commit follows:
+  `WD08: review of the wire canvas`. Stop here; no WD09.

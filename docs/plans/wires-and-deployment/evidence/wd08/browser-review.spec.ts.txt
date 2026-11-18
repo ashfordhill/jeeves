@@ -1,0 +1,140 @@
+import { writeFile, readFile } from "node:fs/promises";
+import { createStudy, showView, tile, clickLine, paperPoint, lines, expect, test } from "/home/ash/github/jeeves/jeeves/apps/web/e2e/studio.ts";
+import { exportPng } from "/home/ash/github/jeeves/jeeves/apps/web/e2e/export.ts";
+test.beforeAll(async({request})=>{ await request.delete("/api/projects/35c75778-e383-48e2-8c19-b05c3483b03c"); });
+const evidence = "/home/ash/github/jeeves/docs/plans/wires-and-deployment/evidence/wd08";
+
+test("WD08 reviews all live study views and themes without activating wires", async ({page}) => {
+  const results: object[] = [];
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(String(error)));
+  try {
+    for (const [study, label, lineId] of [
+      ["tinyurl", "TinyURL · extended study (design only)", "redirect-db"],
+      ["marketplace", "Marketplace · studio study", "shop-catalog"],
+      ["youtube", "YouTube · studio study", "cdn-transcoded"],
+    ]) {
+      const id = await createStudy(page, `E2E WD08 ${study}`, label);
+      try {
+        const before = { design: await (await page.request.get(`/api/projects/${id}/design`)).json(), blueprint: await (await page.request.get(`/api/projects/${id}/blueprint`)).json() };
+        for (const view of ["Simple", "Detailed"] as const) {
+          await showView(page, view);
+          let lightHash = "";
+          for (const theme of ["light", "dark"]) {
+            const wanted = page.getByRole("button", { name: "Dark mode", exact: true });
+            if ((await wanted.getAttribute("aria-pressed") === "true") !== (theme === "dark")) await wanted.click();
+            await expect(wanted).toHaveAttribute("aria-pressed", String(theme === "dark"));
+            await page.getByRole("button", {name:"Fit",exact:true}).click();
+            const paper = await paperPoint(page);
+            await page.mouse.click(paper.x, paper.y);
+            const stats = await page.locator(".board").evaluate(board => ({
+              rootTheme: document.documentElement.getAttribute("data-theme"),
+              legacyEdges: board.querySelectorAll(".react-flow__edge").length,
+              arrows: board.querySelectorAll(".board-line-arrow").length,
+              wires: board.querySelectorAll(".board-wire").length,
+              fills: board.querySelectorAll(".board-wire-fill").length,
+              dots: board.querySelectorAll(".board-tile-dot").length,
+              beadPaths: [...board.querySelectorAll("path")].filter(p => getComputedStyle(p).strokeDasharray === "0.01px, 12px").length,
+              legacyDashSegments: board.querySelectorAll(".board-line-dash").length,
+            }));
+            expect(stats.wires).toBe(0); expect(stats.fills).toBe(0); expect(stats.dots).toBe(0);
+            expect(stats.legacyEdges).toBeGreaterThan(0); expect(stats.arrows).toBe(stats.legacyEdges);
+            await tile(page, study === "tinyurl" ? "Redirect service" : study === "marketplace" ? "Shop service" : "Transcoder").click();
+            const highlighted = await page.locator('.board-line-arrow[style*="--board-select"]').count();
+            expect(highlighted).toBeGreaterThan(0);
+            await page.mouse.click(paper.x,paper.y);
+            // Choose an exposed path with the real mouse; Detailed can offer its retained chooser.
+            const matches = await lines(page).evaluateAll((edges,prefix)=>edges.map(e=>e.getAttribute("data-id")??"").filter(id=>id===prefix||id.startsWith(prefix+"/")),lineId);
+            if (!matches.length) throw new Error(`Missing review relationship ${study}/${lineId}`);
+            await clickLine(page,matches[0]);
+            expect(await page.locator(".studio-inspector .lane-connection-label").count()).toBeGreaterThan(0);
+            const stem = `${study}-${view.toLowerCase()}-${theme}`;
+            await page.screenshot({path:`${evidence}/${stem}.png`});
+            const exported = await exportPng(page);
+            if (theme === "light") {
+              lightHash = exported.details.image.sha256;
+              await writeFile(`${evidence}/${study}-${view.toLowerCase()}-export.png`,exported.png);
+            } else expect(exported.details.image.sha256).toBe(lightHash);
+            await page.mouse.move(paper.x,paper.y);
+            const unchanged = {design:await (await page.request.get(`/api/projects/${id}/design`)).json(),blueprint:await(await page.request.get(`/api/projects/${id}/blueprint`)).json()};
+            expect(unchanged).toEqual(before);
+            results.push({study, view, theme, ...stats, highlighted, legacyMouseSelection:true, exportHash:exported.details.image.sha256, exportLightAcrossThemes:theme === "dark" ? true : "light reference", unchangedDesignAndBlueprint:true, wireDecisionTable:"unavailable: WD06/07 stopped", screenshot:`${stem}.png`});
+            await writeFile(`${evidence}/browser-matrix.json`,JSON.stringify({results,errors},null,2)+"\n");
+            console.log(`WD08 ${study}/${view}/${theme}: ${stats.legacyEdges} legacy edges, 0 wires, mouse/PNG/state checked`);
+          }
+        }
+      } finally { await page.request.delete(`/api/projects/${id}`); }
+    }
+    expect(errors).toEqual([]);
+  } finally { await writeFile(`${evidence}/browser-matrix.json`,JSON.stringify({results,errors},null,2)+"\n"); }
+});
+
+test("WD08 native SVG fan click and menu identify the visible optional board wire", async ({page}) => {
+  await page.goto("/");
+  await page.evaluate(async () => {
+    const React = (await import("/node_modules/.vite/deps/react.js")).default;
+    const { createRoot } = (await import("/node_modules/.vite/deps/react-dom_client.js")).default;
+    const { Board } = await import("/@fs/home/ash/github/jeeves/jeeves/packages/board/src/react/Board.tsx");
+    const host = document.createElement("div");
+    host.id = "wd08-optional-board";
+    host.style.cssText = "position:fixed;inset:0;z-index:99999;background:#e8f4fa";
+    document.body.append(host);
+    const layout = {key:"fan",positions:{source:{x:0,y:0},target:{x:400,y:0}},routes:{upper:[{x:128,y:44},{x:400,y:44}],middle:[{x:128,y:64},{x:400,y:64}]},chips:{},bounds:{x:0,y:0,w:528,h:128}};
+    (window as any).wd08Calls = [];
+    createRoot(host).render(React.createElement(Board, {
+      tiles:["source","target"].map(id=>({id,w:128,h:128,shape:"rect",label:id,content:id})),
+      lines:["upper","middle"].map(id=>({id,source:"source",target:"target",dashed:false,directed:true,wire:()=>({light:"#cc5500",dark:"#ee9955"})})),
+      engine:{keyFor:()=>layout.key,get:()=>layout,request:async()=>layout},selected:{line:"middle"},mode:"select",
+      onSelectTile:()=>{},onSelectLine:(id:string)=>(window as any).wd08Calls.push(["click",id]),onLineMenu:(id:string)=>(window as any).wd08Calls.push(["menu",id]),onClear:()=>{}
+    }));
+  });
+  await expect(page.locator('#wd08-optional-board .board[data-board="ready"]')).toBeVisible();
+  const point = await page.locator('#wd08-optional-board .react-flow__edge[data-id="upper"] .board-wire-fill').evaluate((path:SVGPathElement) => {
+    const matrix = path.getScreenCTM(); if (!matrix) throw new Error("Missing matrix");
+    // Exact t=.4 on the emitted fan, checked against the native path's first arc.
+    const p = new DOMPoint(144.2144,56.96).matrixTransform(matrix);
+    return {x:p.x,y:p.y};
+  });
+  await page.mouse.click(point.x,point.y);
+  await page.mouse.click(point.x,point.y,{button:"right"});
+  expect(await page.evaluate(()=>(window as any).wd08Calls)).toEqual([["click","upper"],["menu","upper"]]);
+  await page.screenshot({path:`${evidence}/optional-board-native-selection.png`});
+  await writeFile(`${evidence}/optional-board-native-selection.json`,JSON.stringify({calls:await page.evaluate(()=>(window as any).wd08Calls),point,scope:"isolated generic Board fixture only; no studio activation or YouTube wire matrix"},null,2)+"\n");
+});
+
+test("WD08 inspects optional geometry with native SVG without enabling studio wires",async({page})=>{
+ await page.goto('/');
+ const data=JSON.parse(await readFile('/tmp/jeeves-wd08-browser/geometry.json','utf8'));
+ const metrics=await page.evaluate(async data=>{
+  const {nearestLines}=await import('/@fs/home/ash/github/jeeves/jeeves/packages/board/src/react/lineGeometry.ts');
+  const out=[];
+  for(const row of data.rows){
+   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+   svg.style.cssText='position:fixed;left:-100000px;top:0';document.body.append(svg);
+   const paths=row.paths.map(line=>{const path=document.createElementNS(svg.namespaceURI,'path') as SVGPathElement;path.setAttribute('d',line.art.body);svg.append(path);return {line,path};});
+   const timings=[];let routes:Record<string,{x:number,y:number}[]>={};let totalSamples=0;
+   for(let trial=0;trial<7;trial++){
+    const started=performance.now(); routes={};totalSamples=0;
+    for(const {line,path} of paths){const length=path.getTotalLength();if(!Number.isFinite(length)||length<=0)continue;const steps=Math.ceil(length/2); routes[line.id]=Array.from({length:steps+1},(_,i)=>{const p=path.getPointAtLength(i/steps*length);return {x:p.x,y:p.y};});totalSamples+=steps+1;}
+    const first=Object.values(routes)[0][4]??{x:0,y:0}; nearestLines(first,routes,3,22);timings.push(performance.now()-started);
+   }
+   const through=[];const heads=[];
+   for(const {line,path} of paths){
+    for(const tile of row.input.tiles){const at=row.layout.positions[tile.id];const p=routes[line.id].find(p=>p.x>at.x+.1&&p.x<at.x+tile.w-.1&&p.y>at.y+.1&&p.y<at.y+tile.h-.1);if(p)through.push({line:line.id,tile:tile.id,point:p});}
+    const head=line.art.head?.match(/^M ([-\d.]+) ([-\d.]+)/);if(head)heads.push({id:line.id,tipToFrameX:line.entry.x-Number(head[1]),tipToEntryY:Number(head[2])-line.entry.y,outlineTipGap:line.entry.x-Number(head[1])-5.1/2});
+   }
+   const sharedFanExamples=[];
+   // Same-source fans outside their shared 5.5px dot: compare a point 12px along each native path.
+   for(let i=0;i<paths.length;i++)for(const other of paths.slice(i+1)){
+    const mine=paths[i];if(mine.line.source!==other.line.source||mine.line.sourcePort!==other.line.sourcePort)continue;
+    const a=mine.path.getPointAtLength(12),b=other.path.getPointAtLength(12);const gap=Math.hypot(a.x-b.x,a.y-b.y);
+    if(gap<8)sharedFanExamples.push({a:mine.line.id,b:other.line.id,gap,arcDistanceFromDot:12});
+   }
+   out.push({study:row.study,view:row.view,optionalLayoutMs:row.timeMs,widthBefore:row.widthBefore,widthLanes:row.widthLanes,crossingsBefore:row.crossingsBefore,crossingsLanes:row.crossingsLanes,rawParallelSharedRuns:row.sharedParallelRuns,bodySamples:totalSamples,samplingAndNearestMs:timings,medianSamplingAndNearestMs:[...timings].sort((a,b)=>a-b)[3],bodyThroughTiles:through,heads,fanGapsBelow8OutsideDot:sharedFanExamples});
+   svg.remove();
+  }
+  return {scope:'native SVG geometry and optional engine inputs only; no studio wire activation',cases:out,crowdedIncomingYs:data.crowdedYs};
+ },data);
+ await writeFile(`${evidence}/geometry-review.json`,JSON.stringify(metrics,null,2)+'\n');
+ await writeFile(`${evidence}/optional-layouts.json`,JSON.stringify(data,null,2)+'\n');
+});
