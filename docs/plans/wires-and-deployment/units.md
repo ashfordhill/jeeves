@@ -1,8 +1,9 @@
 # Wires and deployment: lines as wire bundles, then what an export says about running it
 
-**Status:** planned 2026-11-17 from owner feedback and a signed-off preview. Not started. Part A
-(WD01–WD08) is exact and can run as soon as the reliable-generation plan's last unit (RG26) has
-landed. Part B (WD09–WD14) is decided but not yet exact: see its first paragraph.
+**Status:** planned 2026-11-17 from owner feedback and a signed-off preview. Not started. All
+fourteen units can run, in order, once the reliable-generation plan's last unit (RG26) has
+landed. Part A (WD01–WD08) gives exact edits. Part B (WD09–WD14) is written as that plan's units
+are: goal, work and acceptance.
 **Feedback record:** [HUMAN_FEEDBACK, 2026-11-17 — Overlapping lines are hard to trace](../../HUMAN_FEEDBACK.md)
 · [owner sketch](../../human-feedback/2026-11-17-line-ports-sketch.png)
 · [preview, third version](https://claude.ai/artifact/JFzs3rhb5xSMCEhzWTYwas)
@@ -13,9 +14,29 @@ until the owner says so.
 
 **Written from reading, not from running.** The planner read the files in the code map at commit
 `ecef0c2` and ran nothing. The code blocks below were not compiled. Fix a type or lint error
-without changing what the code does, and say so in the handoff. If a file no longer matches the
-"find" text of a step, or ELK refuses or ignores something a step relies on, stop, leave the diff
-in place and report: do not improvise another design.
+without changing what the code does, and say so in the handoff. If a step's "find" text has moved
+or changed shape, make the same change where the code now is and say so. Stop only when the
+design itself cannot work: ELK throws on or ignores what a step relies on, an existing board test
+would need an edit, or one of a unit's own stop conditions is met. Do not improvise another
+design.
+
+**When a unit stops.** The plan is meant to run unattended, so a stopped unit leaves the checkout
+clean for the next one:
+
+1. Save the unfinished work as `docs/plans/wires-and-deployment/stopped/WDnn.patch`
+   (`git diff` of the files this unit touched, plus any new files).
+2. Put back only the files this unit changed and remove only the files it created. Never reset
+   the checkout or touch another unit's files.
+3. Append a handoff entry headed `WDnn stopped`, with the reason and what was tried, and commit
+   the patch and the entry as `WDnn: stopped, <reason in a few words>`.
+
+What still runs after a stop:
+
+- WD01 to WD04 build on each other. If WD01, WD02 or WD03 stops, skip WD04, WD06 and WD07; WD05
+  still runs. If WD04 or WD05 stops, skip WD06 and WD07. WD08 reviews whatever ran.
+- Part B does not need Part A. WD09 to WD13 run whatever happened before them, and none needs
+  another to finish, except that WD10, WD11 and WD13 leave their contract line out if WD09
+  stopped. WD14 always runs.
 
 ## What the owner asked for
 
@@ -1146,100 +1167,224 @@ first, then fixes.
 
 # Part B — what an export says about running it
 
-**Not runnable yet.** These five units change the generator, which the reliable-generation plan
-is still changing (RG21–RG26 were not landed when this was written). The decisions below are
-made. After RG26 lands, the planner (not an executor) reads the generator as it then stands and
-replaces each outline with exact steps in this file, in one docs-only commit. The owner then
-starts WD09. An executor handed one of these units before that commit stops and says so.
+These five units change the generator. They are written the way the reliable-generation units
+are: a goal, the work, what must hold, and where to start reading. They run after that plan's
+last unit, on the generator as it then stands. Its shared documents still apply
+(`docs/plans/reliable-generation/README.md`, `contract.md` and `execution.md`): the boundaries,
+D2, D4, D6, D7, D10 and D11, and the rule that generated source is changed through templates and
+regenerated, never patched by hand. New fixture sources go under
+`field-projects/generator-system/fixtures/wd-*`.
 
-What the planner read on 15–17 November and must read again: `jeeves-generator/README.md`
-(extension API v4, v7, v8), `templates/local-v2/` runtime files for Postgres and idempotency,
-and the RG unit briefs. RG04 (health and request logs), RG09 (service identity), RG16 (scheduled
-tasks) and RG18 (consumer progress) had landed; RG12's brief says "No edge-trust/deployment
-project"; RG23 is a failure proof inside the generator's own tests.
+Entry points, read on 2026-11-17 at `ecef0c2`. Read them again; do not trust line numbers.
+
+- Processes and exposure: `jeeves-generator/src/v2/tile-processes.ts` (a public HTTP process gets
+  `edge: /api/<tile>/`) and `src/v2/http-wiring.ts`.
+- HTTP runtime: `templates/local-v2/assets/src/runtime/http.ts.template` (`/livez`, `/readyz`,
+  `/healthz`).
+- Postgres runtime: `postgres.ts.template` (`max: options.poolSize`, and `statement_timeout` as a
+  connection option), `idempotency.ts.template` (`sweepExpired` holds a session advisory lock),
+  `transaction.ts.template`.
+- Workload identity: `workload.ts.template` (`JEEVES_WORKLOAD_ISSUER`, `JEEVES_WORKLOAD_TOKEN_URL`,
+  `JEEVES_WORKLOAD_JWKS_URL` and a client secret).
+- Emitted scripts: `templates/local-v2/assets/scripts/` (`local.mjs`, `setup.mjs`, `status.mjs`,
+  `migrate.mjs` and others).
+- The exposure setting: `jeeves/packages/spec/src/studio-definitions.ts` (`settings.exposure`).
 
 Outside every unit here: provisioning, Terraform or Kubernetes output, sizing, provider names,
-alert rules, backups. The contract names what a deployment must provide; it does not provide it.
+alert rules and backups. The contract names what a deployment must provide; it does not provide it.
+
+When a decision below cannot be met exactly as written, take the nearest behaviour that still
+meets the unit's Acceptance, record the difference in the handoff, and continue. Stop only when
+Acceptance itself cannot be met without a new architectural choice.
 
 ## WD09 — The deployment contract
 
 **Goal:** every export says, in one file for tools and one page for people, what has to run and
 what each thing needs.
 
-- Two generated files: `deploy/contract.json` and `deploy/README.md`. Both are scaffold: never
-  edited by hand, replaced on update.
-- Per process (service or worker): name, kind, public or internal, the port it listens on, its
-  alive and ready paths, whether it must always have a copy running (it owns a schedule or a
-  consumer), the names of the environment values it reads (never their values), the stores it
-  uses and how, and the services it calls.
-- Per store: kind, whether it holds original data or can be rebuilt, and one sentence on what
-  stops working while it is gone.
-- The page has a list and a Mermaid flowchart of the same things. Each box in the chart links to
-  its section; each section links to the source folder.
-- The contract is built from the design and the template descriptors only. A hook or stub cannot
-  add to it in this unit.
-- Done when: the generator-system fixture's contract matches its design in a test, the page's
-  Mermaid parses, and `docs` say where the files are.
+**Work**
+
+- Emit two generated (scaffold) files in every export, `deploy/contract.json` and
+  `deploy/README.md`, built from the normalized design and the template descriptors: the same
+  data that already names processes, exposure, stores, bindings and environment values. A hook or
+  stub cannot add to them.
+- `contract.json` is `{ "version": 1, "processes": [], "stores": [], "identity": {} }`, every
+  array sorted by `id`, so one design always gives the same bytes.
+  - A process: `id`, `name`, `kind` (`service` or `worker`), `exposure` (`public` or `internal`),
+    `port` (HTTP only), `health` (`{ "live": "/livez", "ready": "/readyz" }` for HTTP),
+    `alwaysOn` (true when it hosts a scheduled task, a consumer or durable work), `env` (the names
+    of the environment values it reads, sorted, never a value), `uses` (`[{ "store", "access" }]`)
+    and `calls` (ids of the processes it calls).
+  - A store: `id`, `name`, `kind`, `role` (`rebuildable` for a cache and for a search index fed
+    from another store, else `original`) and `whenLost` (one sentence from a fixed table keyed by
+    kind and role).
+  - `identity`: the environment names the workload-identity runtime reads; left out when the
+    design has no service-to-service call.
+- `README.md`: one heading per process and per store with the same facts as a list and a link to
+  its source folder, then a Mermaid `flowchart LR` with one node per process and store, one arrow
+  per use and call (dashed when asynchronous), and a `click` line per node that links to its
+  heading.
+
+**Acceptance:** for one `wd-*` fixture, `contract.json` deep-equals an expectation written by
+hand from that fixture's design, not produced by the emitter. A test scans the emitted runtime:
+every `process.env` name it reads is in that process's `env`, and every name in `env` is read.
+Every node an arrow uses is declared and every `click` targets a heading that exists. `update:v2`
+treats both files as generated.
+
+**Emitted surface and checks:** the two files, their manifest entries, and a "Deployment
+contract" section in `jeeves-generator/README.md`. Standard checks.
+
+**Not included:** provider files, replica counts, secrets' values, a view in the studio.
+
+**Commit:** `WD09: emit a deployment contract with every export`
 
 ## WD10 — The front door's stamp
 
 **Goal:** a public service can refuse a request that did not come through the front door.
 
-- A setting on a service whose exposure is public: **Front door: Required | None**, default
-  Required. It ships with its schema, form, validation and blueprint output together.
-- Required: every request except the alive and ready paths must carry
-  `X-Edge-Stamp: v1.<unix seconds>.<hex HMAC-SHA256 of "<seconds>.<method>.<path>">`, at most 60
-  seconds old, made with `EDGE_STAMP_KEY`. `EDGE_STAMP_KEY_PREVIOUS` is also accepted, so a key
-  can be changed without a gap. A refused request gets 403 and one log line, with no detail in
-  the body. A service that is Required and has no key refuses to start.
-- The local stack gets a small front door that adds the stamp, so the check runs in tests.
-- The contract (WD09) lists the header, the two key names and the 60 seconds.
-- To confirm against the code: whether exports already have a local gateway to extend, and where
-  the HTTP contract (extension API v4) lets a check run before routing.
+**Work**
+
+- A setting `frontDoor` on tiles that have `exposure`, with values `required` and `none`, shown
+  only while exposure is public. A newly made public service starts as `required`. A saved design
+  without the field reads as `none`, so no existing diagram or export changes (D4). Schema,
+  form, validation, catalog, blueprint, generation and chat change together.
+- For a `required` process, every HTTP request except `/livez`, `/readyz`, `/healthz` and the
+  workload-authenticated `/internal/` routes must carry
+  `x-edge-stamp: v1.<unix seconds>.<hex>`, where `<hex>` is HMAC-SHA256 over
+  `<seconds>.<METHOD>.<path without query>`. It passes when the time is within 60 seconds of now
+  and the MAC matches under `JEEVES_EDGE_STAMP_KEY` or `JEEVES_EDGE_STAMP_KEY_PREVIOUS`, compared
+  in constant time. Anything else gets 403 with the standard error body and one log line holding
+  a reason code only. The check runs before routing, body parsing, rate limiting and sessions.
+- A `required` process without a key never becomes ready and says why at start.
+- The generated local edge adds the stamp to what it forwards to `required` services, with a key
+  the local setup generates.
+- The contract (WD09) gains, on such a process,
+  `"frontDoor": { "header", "keyEnv", "previousKeyEnv", "maxAgeSeconds" }`. If WD09 did not land,
+  leave this line out and say so.
+
+**Acceptance:** no header, an old or future time, a wrong MAC, and a right MAC for another method
+or path each get 403. A stamp under the current or the previous key passes. Health paths answer
+without one. Through the local edge a request succeeds; sent straight to the service's port it is
+refused. A `none` service behaves as before. Mouse and chat can both set it. An old saved design
+loads, and its export is byte-identical for that service.
+
+**Emitted surface and checks:** the runtime check, its settings and startup validation, the edge's
+stamping, docs (`docs/studio-settings.md`, `jeeves/CATALOG.md`, the generator README). Standard
+checks and mouse/chat parity.
+
+**Not included:** Cloudflare or Google configuration, mutual TLS, address allowlists.
+
+**Commit:** `WD10: public services can require the front door's stamp`
 
 ## WD11 — A database client that survives a pooler
 
-**Goal:** generated code works behind a transaction pooler and takes its pool size from outside.
+**Goal:** generated code works behind a transaction-mode connection pooler and takes its pool size
+from outside.
 
-- No statement may depend on a session lasting beyond one transaction: session advisory locks
-  become transaction locks or row locks, and per-session settings become `SET LOCAL` inside the
-  transaction or are dropped.
-- Pool size comes from `DB_POOL_MAX` at start, default 10, and is listed in the contract.
+**Work**
+
+- Nothing the emitted runtime does may depend on a database session lasting beyond one
+  transaction. `sweepExpired`'s session advisory lock becomes `pg_try_advisory_xact_lock` inside
+  the transaction that deletes. Any other session lock, `LISTEN`, named prepared statement,
+  temporary table or session-level `SET` gets the same treatment.
+- `statement_timeout` stops being a connection option. Every transaction the runtime opens starts
+  with `SET LOCAL statement_timeout`, and a single statement outside a transaction goes through
+  the same helper. The client-side `query_timeout` stays.
+- Pool size comes from `JEEVES_DB_POOL_MAX`, read once at start: a whole number from 1 to 100,
+  defaulting to today's value. An invalid value stops the process at start with a clear message.
+  The contract (WD09) lists the name.
 - No diagram setting: this is always on.
-- Done when: the fixture's tests pass with a transaction pooler in front of Postgres in the local
-  stack, two copies running.
-- To confirm against the code: on 15 November the session lock was in
-  `runtime/idempotency.ts` lines 166–176 and `statement_timeout` was a connection parameter at
-  `runtime/postgres.ts` line 50. RG10 and RG15 may have moved both.
 
-## WD12 — A failure drill and pipeline checks in every export
+**Acceptance:** a test scans the emitted runtime and finds none of `pg_advisory_lock(`,
+`pg_try_advisory_lock(`, `pg_advisory_unlock(`, `LISTEN ` or a `statement_timeout` connection
+option. Two sweepers racing delete each expired row once. The existing mechanism tests pass. In
+the integration harness, with a pinned PgBouncer in transaction mode between the processes and
+Postgres and two copies running, the RG23 suite's database cases pass. If the harness cannot add
+that container, write "pooler run: not run" and the reason in
+`docs/plans/wires-and-deployment/evidence/wd11.md` and keep everything else.
 
-**Goal:** the person who receives an export can prove it survives a failure, with one command.
+**Emitted surface and checks:** the Postgres, transaction and idempotency runtime, startup
+validation, the generator README. Standard checks plus the targeted integration run.
 
-- `scripts/drill.sh`: starts the local stack with two copies of every service and worker, then
-  for each store and the broker stops it, waits, starts it and checks that ready paths recover and
-  no message is lost or handled twice; then sends one message twice and checks it is handled
-  once. It prints one line per scenario and exits non-zero on the first failure.
-- `scripts/check.sh`: lint, types, tests, build, then the drill. One workflow file runs it on
-  push.
-- Both are scaffold. Scenarios come from the design: a store the design does not have gets none.
-- To confirm against the code: how much of RG23's failure proof can be emitted as is.
+**Not included:** providing a pooler, read replicas, per-query pool tuning.
 
-## WD13 — Platform identity, only if a gap is left
+**Commit:** `WD11: generated database access survives a transaction pooler`
 
-**Goal:** a service can take its identity from the platform it runs on, and picks up a changed
-credential without a restart.
+## WD12 — A failure drill and one check command in every export
 
-- First read RG09's contract (extension API v8). If a service already reads its credential again
-  when it changes and accepts a platform-issued token, this unit is a single line in the review
-  saying so, and no code.
-- Otherwise: the smallest change that does both, with no new diagram setting.
+**Goal:** whoever receives an export can prove it survives a failure with one command.
+
+**Work**
+
+- Emit `scripts/drill.mjs`, in the style of the other emitted scripts, and a package script
+  `drill`. It brings up the local stack with two copies of every service and worker, then runs
+  scenarios taken from the design:
+  - for each database, cache and broker: stop it; each process that uses it turns `/readyz` false
+    while `/livez` stays true; start it; `/readyz` returns within a stated bound and one ordinary
+    request succeeds;
+  - for each consumer: deliver one message twice; one effect is recorded.
+  It prints one line per scenario (`ok` or `FAILED`, and its name), exits 1 at the first failure
+  and always tears the stack down.
+- It uses only what an operator has: the health paths, the contract and the generated receipt or
+  progress surfaces. Add no test-control route to production code.
+- Emit package scripts `check` (lint, types, tests, build) and `check:all` (`check`, then
+  `drill`), and one workflow, `.github/workflows/check.yml`, that runs `check` on push and
+  `check:all` when started by hand.
+- Where RG23's harness already has a helper the drill needs, emit a copy with the export. An
+  export never imports from the Jeeves repository.
+
+**Acceptance:** the drill passes on both `rg-*` fixtures. A fixture variant whose hook keeps
+`/readyz` true while its database is down makes the drill fail and name that scenario. A design
+without a broker emits no broker scenario. After a run, pass or fail, no container is left.
+
+**Emitted surface and checks:** the two scripts, the package scripts, the workflow, the generator
+README. Standard checks plus one drill run per fixture.
+
+**Not included:** load tests, faults other than stop and start, anything that needs a cloud
+account or a secret.
+
+**Commit:** `WD12: every export ships a failure drill and a check command`
+
+## WD13 — A workload secret that can change without a restart
+
+**Goal:** a rotated workload secret takes effect without restarting the service.
+
+**Work**
+
+- Read the workload-identity runtime first. If it already reads its secret again whenever it asks
+  for a new token, change no code: write one line saying so in the handoff and commit only that.
+- Otherwise add `JEEVES_WORKLOAD_SECRET_FILE`, a path. When it is set, the file is read each time
+  a new token is requested, so a changed secret is used at the next refresh. The existing way of
+  giving the secret keeps working. The contract (WD09) lists the new name.
+- Do not add provider metadata-server tokens. Say in the contract's identity section that the
+  issuer is whatever answers the token and key endpoints.
+
+**Acceptance:** with a fake issuer, changing the file between two token requests makes the second
+use the new secret. An unreadable file fails that request the way an issuer error does and does
+not stop the process. The existing form is unchanged.
+
+**Emitted surface and checks:** the workload runtime and its settings, the generator README.
+Standard checks.
+
+**Not included:** provider-specific identity, key generation, a secrets manager.
+
+**Commit:** `WD13: a workload secret can be rotated from a file`
 
 ## WD14 — Final review
 
-As WD08, for WD09–WD13 and for the plan as a whole: the ledger, the decisions row by row, the
-contract checked against a real export, and whether Part A's review follow-ups were dealt with.
-Findings go in `review.md`.
+As WD08, for WD09–WD13 and for the plan as a whole. Read every handoff entry and the combined
+diff since this plan's commit, and anything under `docs/plans/wires-and-deployment/stopped/`.
+
+1. The ledger of rough edges and stopped units, and what became of each.
+2. Each unit's Acceptance, checked against a fresh export of one fixture: open
+   `deploy/contract.json` and `deploy/README.md` and compare them with the design by hand.
+3. Whether Part A's follow-ups in `review.md` were dealt with.
+4. Fix a defect only with a test that fails first. Record anything larger in `review.md`. Grow
+   no feature.
+5. End `review.md` with a short list for the owner: what ran, what stopped and why, and what
+   needs a decision.
+
+**Commit:** `WD14: final review of wires and deployment`
 
 ## Not in this plan
 
