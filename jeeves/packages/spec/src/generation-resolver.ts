@@ -736,7 +736,7 @@ export function resolveGeneration(
       report(
         "CONFIG_INVALID",
         [...base, "target"],
-        "Webhook HMAC ingress is incompatible with a Required user Auth guard; use a separate Service.",
+        "Webhook ingress is incompatible with a Required user Auth guard; use a separate Service.",
       );
     if (
       ["browser-session", "scheduled-task", "webhook-receiver"].includes(selection.binding.kind) &&
@@ -982,7 +982,10 @@ export function resolveGeneration(
       const value =
         typeof rawValue === "string" || typeof rawValue === "number" ? rawValue : undefined;
       if (value === undefined && !rule.required) return;
-      const paths = source?.value !== undefined ? [source.path] : [];
+      const paths =
+        source && (source.value !== undefined || rule.input === "webhook.signatureFormat")
+          ? [source.path]
+          : [];
       if (source) remember(source.path);
       if (rule.mirror)
         for (const component of traced(

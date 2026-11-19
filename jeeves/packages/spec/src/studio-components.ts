@@ -108,9 +108,12 @@ export const studioBrowserSessionSettingsSchema = z
   });
 
 /** Every kind is a strict object; omitted optional numbers mean "unspecified", never zero. */
+export const webhookSignatureFormatSchema = z.enum(["jeeves", "stripe"]);
+export const webhookBodyLimitSchema = z.enum(["1024", "16384", "65536", "262144"]);
 export const studioWebhookReceiverSettingsSchema = z.strictObject({
   kind: z.literal("webhook-receiver"),
-  bodyLimitBytes: z.enum(["1024", "16384", "65536"]),
+  signatureFormat: webhookSignatureFormatSchema.optional(),
+  bodyLimitBytes: webhookBodyLimitSchema,
   replayWindowSeconds: bounded(studioComponentLimits.replayWindowSeconds),
 });
 export const studioScheduledTaskSettingsSchema = z.strictObject({
@@ -559,6 +562,9 @@ const label = (value: string) =>
     primary: "Primary",
     replica: "Replica",
     jwt: "JWT",
+    jeeves: "Jeeves",
+    stripe: "Stripe",
+    "262144": "256 KiB",
     session: "Session",
     required: "Required",
     optional: "Optional",
@@ -701,7 +707,7 @@ export const studioComponentDefinitions: {
   "webhook-receiver": component("webhook-receiver", {
     name: "Webhook receiver",
     description:
-      "Authenticates the generic Jeeves HMAC envelope before decoding and durably accepts events for fenced background processing.",
+      "Verifies Jeeves or Stripe signatures and durably accepts the event before replying.",
     summary: "Checks the sender’s signature and saves the message before replying.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
@@ -714,7 +720,8 @@ export const studioComponentDefinitions: {
     generation: lead("webhook-receiver"),
     targets: ["database", "application"],
     fields: [
-      select("bodyLimitBytes", "Body limit", ["1024", "16384", "65536"]),
+      select("signatureFormat", "Signature format", webhookSignatureFormatSchema.options),
+      select("bodyLimitBytes", "Body limit", webhookBodyLimitSchema.options),
       integer(
         "replayWindowSeconds",
         "Signature window",

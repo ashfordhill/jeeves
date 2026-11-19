@@ -1,0 +1,34 @@
+[
+  {
+    "source": "owned/mapping.ts",
+    "destination": "src/modules/payment-inbox/verified-payment-event.mapping.hooks.ts",
+    "role": "hooks",
+    "module": "verified-payment-event"
+  },
+  {
+    "source": "owned/work.ts",
+    "destination": "src/modules/payment-inbox/verified-payment-event.ts",
+    "role": "hooks",
+    "module": "verified-payment-event"
+  },
+  {
+    "source": "owned/products.json",
+    "destination": "infra/postgres/billing/products.json",
+    "role": "product"
+  },
+  {
+    "source": "owned/0001-initial.sql",
+    "destination": "infra/postgres/billing/products/migrations/p_payment_inbox_owner/0001-initial.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/apply_subscription.sql",
+    "destination": "infra/postgres/billing/products/commands/apply_subscription.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/record_subscription_event.sql",
+    "destination": "infra/postgres/billing/products/commands/record_subscription_event.sql",
+    "role": "product"
+  }
+]

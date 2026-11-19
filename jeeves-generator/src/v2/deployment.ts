@@ -1,4 +1,4 @@
-import type { NormalizedGeneration } from "@jeeves/spec";
+import { generationLocalIdentity, type NormalizedGeneration } from "@jeeves/spec";
 import { jsonFile, refuse } from "../json.ts";
 import { auth0Prefix, auth0Workload, auth0WorkloadEnvironment } from "./auth0.ts";
 import { stubClients } from "./client-wiring.ts";
@@ -6,6 +6,7 @@ import { httpMounts } from "./http-wiring.ts";
 import { endpointId, localEndpoints, type V2LocalContribution } from "./local-contract.ts";
 import { loopMounts } from "./loop-wiring.ts";
 import { v2Compare } from "./registry.ts";
+import { isStripeWebhook, stripeSdkVersion, stripeSecretName } from "./stripe-webhook.ts";
 
 type Service = NonNullable<V2LocalContribution["services"]>[number];
 /** The foundation's actual selected resources and runtime credentials, never hook declarations. */
@@ -140,7 +141,14 @@ function environment(model: NormalizedGeneration, runtime: Runtime) {
       );
     }
     if (selection.binding.kind === "webhook-receiver")
-      names.push(secretVariable(`JEEVES_WEBHOOK_${endpointId(module)}_KEYS`), "SECRET_DIR");
+      names.push(
+        secretVariable(
+          isStripeWebhook(selection)
+            ? stripeSecretName(module)
+            : `JEEVES_WEBHOOK_${endpointId(module)}_KEYS`,
+        ),
+        "SECRET_DIR",
+      );
   }
   // A write-capable stub may opt into secret-bearing replay. The ring is read only then.
   if (
@@ -250,6 +258,21 @@ export function deploymentFiles(
           (u, i, all) => all.findIndex((v) => v.store === u.store && v.access === u.access) === i,
         )
         .sort((a, b) => v2Compare(`${a.store}/${a.access}`, `${b.store}/${b.access}`));
+      const stripeWebhooks = selections.filter(isStripeWebhook).map((selection) => {
+        const module = generationLocalIdentity(selection.module?.component ?? selection.id).local;
+        const path = `/modules/${module}`;
+        const name = stripeSecretName(module);
+        return {
+          method: "POST",
+          path,
+          ...(process?.exposure === "public" && { edgePath: `/api/${service.host}${path}` }),
+          secretFileEnv: secretVariable(name),
+          secretFileName: name.toLowerCase().replaceAll("_", "-"),
+          bodyLimitBytes: Number(selection.inputs["webhook.bodyLimitBytes"]),
+          replayWindowSeconds: Number(selection.inputs["webhook.replayWindowSeconds"]),
+          completedRetentionDays: 35,
+        };
+      });
       return {
         id: service.host,
         name: process?.name ?? service.host,
@@ -285,6 +308,7 @@ export function deploymentFiles(
             maxAgeSeconds: 60,
           },
         }),
+        ...(stripeWebhooks.length > 0 && { stripeWebhooks }),
         env: environment(model, runtime),
         uses,
         calls: unique(service.calls ?? []),
@@ -415,6 +439,10 @@ export function deploymentFiles(
             "- Front door: require x-edge-stamp v1 HMAC-SHA256 over seconds.METHOD.path (without query), within ±60 seconds; configure JEEVES_EDGE_STAMP_KEY and optionally JEEVES_EDGE_STAMP_KEY_PREVIOUS. Exact health paths and compiled workload-authenticated internal routes retain their own authentication. The stamp grants no user or workload authority.",
           ]
         : []),
+      ...(p.stripeWebhooks ?? []).map(
+        (hook) =>
+          `- Stripe snapshot webhook. Register the exact HTTPS POST ${code(hook.edgePath ?? hook.path)} through the front door${hook.edgePath ? "" : " on the internal service's ingress mapping"}. Forward the original body and Stripe-Signature header. Bind that endpoint's private signing secret in ${code(hook.secretFileEnv)} or mount ${code(hook.secretFileName)} under SECRET_DIR. Customer authentication is independent. The body limit is ${hook.bodyLimitBytes} bytes and signature window is ±${hook.replayWindowSeconds} seconds. Completed IDs are retained for ${hook.completedRetentionDays} days. The verifier uses Stripe SDK ${stripeSdkVersion}.`,
+      ),
       `- alwaysOn: ${p.alwaysOn}`,
       `- Environment names: ${list(p.env)}`,
       `- Uses: ${p.uses.length ? p.uses.map((u) => `${code(u.store)} (${code(u.access)})`).join(", ") : "none"}`,

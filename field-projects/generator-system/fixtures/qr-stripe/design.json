@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 3,
+  "revision": 7,
+  "elements": [
+    {
+      "id": "payment-inbox",
+      "name": "Payment inbox",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "billing",
+      "name": "Billing",
+      "classification": {
+        "kind": "Data store"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "payment-inbox-billing",
+      "kind": "uses-database",
+      "from": {
+        "element": "payment-inbox"
+      },
+      "to": {
+        "element": "billing"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Subscription notice intake",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "payment-inbox",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "frontDoor": "required",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "billing",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "payment-inbox"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "payment-inbox-billing",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "verified-payment-event",
+          "host": "payment-inbox",
+          "name": "Webhook receiver",
+          "settings": {
+            "kind": "webhook-receiver",
+            "signatureFormat": "stripe",
+            "bodyLimitBytes": "262144",
+            "replayWindowSeconds": 60
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "verified-payment-event-billing",
+          "from": "verified-payment-event",
+          "to": {
+            "kind": "element",
+            "id": "billing",
+            "via": "payment-inbox-billing"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "provider-entry",
+          "lane": "upload",
+          "element": "payment-inbox"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "upload",
+          "name": "Produce"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "verified-payment-event",
+        "target": {
+          "kind": "component",
+          "component": "verified-payment-event",
+          "host": "payment-inbox"
+        },
+        "template": {
+          "id": "webhook-receiver",
+          "version": "0.1.0",
+          "sha256": "e62566dba466a52da0278679441bd7c70586c0513583dcaca700b146fb7a7198"
+        },
+        "binding": {
+          "kind": "webhook-receiver",
+          "state": {
+            "resource": "billing",
+            "connection": "payment-inbox-billing"
+          }
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "payment-inbox-owner",
+        "name": "Payment inbox"
+      }
+    ],
+    "roles": [
+      {
+        "element": "payment-inbox",
+        "owner": "payment-inbox-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "billing",
+        "authority": "payment-inbox-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      }
+    ],
+    "grants": [
+      {
+        "role": "payment-inbox",
+        "resource": "billing",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "subscription_events",
+              "operations": ["SELECT", "INSERT"]
+            },
+            {
+              "name": "subscriptions",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            }
+          ],
+          "views": []
+        }
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "payment-inbox-billing",
+        "access": "read-write"
+      }
+    ]
+  }
+}

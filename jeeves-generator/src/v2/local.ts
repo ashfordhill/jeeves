@@ -21,6 +21,7 @@ import {
   type V2TemplateFile,
   v2Compare,
 } from "./registry.ts";
+import { isStripeWebhook, withStripeSdk } from "./stripe-webhook.ts";
 
 type Resource = {
   id: string;
@@ -225,6 +226,12 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       ...(selection.roleSourcePath ? [selection.roleSourcePath] : []),
     ]);
     if (selection.identity) provenance(selection.identity.sourcePaths);
+    if (isStripeWebhook(selection))
+      provenance(
+        context.settings.find(
+          (s) => s.selection === selection.id && s.input === "webhook.signatureFormat",
+        )?.sourcePaths ?? [],
+      );
     if (selection.identity && selection.identity.provider !== "auth0")
       identityIds.add(generationLocalIdentity(selection.identity.element).local);
     for (const binding of selection.resources) {
@@ -1435,6 +1442,12 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   // `update:v2` keeps its files, putting the template's new ones under `.jeeves/generated/`.
   // `pnpm-workspace.yaml` holds its pnpm settings: `allowBuilds` (QG09).
   const packageManifests = new Set(["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]);
+  const stripePackages = model.selections.some(isStripeWebhook)
+    ? withStripeSdk(
+        context.asset(`${assets}package.json`),
+        context.asset(`${assets}pnpm-lock.yaml`),
+      )
+    : undefined;
   for (const path of [
     "package.json",
     "pnpm-lock.yaml",
@@ -1461,18 +1474,20 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   ]) {
     const emitted = file(
       path,
-      path === "scripts/local.mjs" && model.processes
-        ? gateOnProcesses(context.asset(`${assets}${path}`))
-        : path === "scripts/setup.mjs" && stampHosts.length
-          ? new TextDecoder()
-              .decode(context.asset(`${assets}${path}`))
-              .replace(
-                "  const values = {};",
-                '  writeFileSync(".runtime/secrets/edge-stamp.env", "JEEVES_EDGE_STAMP_KEY=" + randomBytes(32).toString("hex") + "\\n", { mode: 0o600, flag: "wx" });\n  const values = {};',
-              )
-          : path === "scripts/migrate.mjs" && model.processes
-            ? migrateWithProducts(context.asset(`${assets}${path}`))
-            : context.asset(`${assets}${path}`),
+      stripePackages && (path === "package.json" || path === "pnpm-lock.yaml")
+        ? stripePackages[path]
+        : path === "scripts/local.mjs" && model.processes
+          ? gateOnProcesses(context.asset(`${assets}${path}`))
+          : path === "scripts/setup.mjs" && stampHosts.length
+            ? new TextDecoder()
+                .decode(context.asset(`${assets}${path}`))
+                .replace(
+                  "  const values = {};",
+                  '  writeFileSync(".runtime/secrets/edge-stamp.env", "JEEVES_EDGE_STAMP_KEY=" + randomBytes(32).toString("hex") + "\\n", { mode: 0o600, flag: "wx" });\n  const values = {};',
+                )
+            : path === "scripts/migrate.mjs" && model.processes
+              ? migrateWithProducts(context.asset(`${assets}${path}`))
+              : context.asset(`${assets}${path}`),
     );
     files.push(
       packageManifests.has(path) ? { ...emitted, ownership: "generated-extension" } : emitted,

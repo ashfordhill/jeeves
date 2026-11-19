@@ -52,10 +52,6 @@ type StoredDefinition = Definition<unknown, Record<string, unknown>>;
 const definitions = new WeakMap<object, StoredDefinition>();
 // Private ingress classification: generic public work cannot choose this namespace domain.
 const webhookInboxes = new WeakSet<object>();
-export function protectWebhookInbox(work: object) {
-  if (!definitions.has(work)) throw new Error("Invalid webhook work engine");
-  webhookInboxes.add(work);
-}
 export function durableWorkNamespace(resource: string, owner: string, work: object, module: string) {
   const definition = definitions.get(work);
   if (!definition) throw new Error("Invalid durable work engine");
@@ -113,6 +109,22 @@ function pure<T>(effect: () => T): T {
 export function defineDurableWork<Input, Dependencies extends object>(
   definition: Definition<Input, Dependencies>,
 ): DurableWork<Input, Dependencies> {
+  return defineWork(definition, false);
+}
+/** Only the generated receiver may select the 35-day provider inbox retention. */
+export function defineWebhookInbox<Input, Dependencies extends object>(
+  definition: Definition<Input, Dependencies>,
+): DurableWork<Input, Dependencies> {
+  if (definition.retentionSeconds !== 604800 && definition.retentionSeconds !== 3024000)
+    throw new Error("Invalid webhook retention");
+  const work = defineWork(definition, true);
+  webhookInboxes.add(work);
+  return work;
+}
+function defineWork<Input, Dependencies extends object>(
+  definition: Definition<Input, Dependencies>,
+  webhook: boolean,
+): DurableWork<Input, Dependencies> {
   const fields = [
     "database",
     "id",
@@ -153,7 +165,7 @@ export function defineDurableWork<Input, Dependencies extends object>(
     definition.version > 1000000 ||
     !Number.isSafeInteger(definition.retentionSeconds) ||
     definition.retentionSeconds < 60 ||
-    definition.retentionSeconds > 604800 ||
+    definition.retentionSeconds > (webhook ? 3024000 : 604800) ||
     !Number.isSafeInteger(definition.maxAttempts) ||
     definition.maxAttempts < 1 ||
     definition.maxAttempts > 20 ||

@@ -17,7 +17,7 @@ import {
   tile,
 } from "./studio.ts";
 
-test("RG17 connects and configures authenticated webhook ingress by mouse with blueprint/export parity", async ({
+test("connects a webhook receiver and configures Stripe with blueprint and export parity by mouse", async ({
   page,
   tinyurl,
 }, testInfo) => {
@@ -79,7 +79,13 @@ test("RG17 connects and configures authenticated webhook ingress by mouse with b
       .click();
     const inspector = page.locator(".studio-inspector");
     await expect(inspector.locator(".lane-module-status")).toHaveText("GeneratedWebhook receiver");
-    await inspector.getByLabel("Body limit", { exact: true }).selectOption("16384");
+    const format = inspector.getByLabel("Signature format", { exact: true });
+    await expect(format).toHaveValue("jeeves");
+    await format.selectOption({ label: "Stripe" });
+    await expect
+      .poll(async () => JSON.stringify(await design(page, id)))
+      .toContain('"signatureFormat":"stripe"');
+    await inspector.getByLabel("Body limit", { exact: true }).selectOption({ label: "256 KiB" });
     await inspector.getByLabel("Signature window (seconds)", { exact: true }).fill("60");
     await inspector.getByLabel("Name", { exact: true }).click();
     await expect
@@ -93,7 +99,8 @@ test("RG17 connects and configures authenticated webhook ingress by mouse with b
     const blueprint = await (
       await page.request.get(`/api/projects/${id}/blueprint?version=3`)
     ).json();
-    expect(JSON.stringify(blueprint)).toContain('"bodyLimitBytes":"16384"');
+    expect(JSON.stringify(blueprint)).toContain('"signatureFormat":"stripe"');
+    expect(JSON.stringify(blueprint)).toContain('"bodyLimitBytes":"262144"');
     expect(JSON.stringify(blueprint)).toContain('"replayWindowSeconds":60');
     await page.getByRole("button", { name: "Pointer", exact: true }).click();
     await addModuleFrom(page, tile(page, "Events API"), "Auth guard");
@@ -110,6 +117,9 @@ test("RG17 connects and configures authenticated webhook ingress by mouse with b
     await page.getByRole("button", { name: "Preview scaffold", exact: true }).click();
     const result = await (await preview).json();
     expect(result.report.findings).toEqual([]);
+    expect(result.report.settings).toContainEqual(
+      expect.objectContaining({ input: "webhook.signatureFormat", value: "stripe" }),
+    );
     const process = result.report.processes.tiles.find(
       (p: { tile: string }) => p.tile === "events-api",
     );

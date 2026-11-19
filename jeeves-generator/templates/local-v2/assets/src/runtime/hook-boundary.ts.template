@@ -45,6 +45,9 @@ export function bindFavoritesHooks(hooks: { eligible(itemId: string): boolean })
 
 /** Finite JSON DTO validation precedes serialization and every credential/network dispatch. */
 export function jsonBody(value: unknown): string | undefined {
+  return jsonDto(value, 65536, 16384);
+}
+function jsonDto(value: unknown, maxBytes: number, maxStringBytes: number): string | undefined {
   if (value === undefined) return undefined;
   const ancestors = new Set<object>();
   let nodes = 0;
@@ -54,9 +57,9 @@ export function jsonBody(value: unknown): string | undefined {
   };
   const add = (length: number) => {
     bytes += length;
-    if (bytes > 65536) refuse();
+    if (bytes > maxBytes) refuse();
   };
-  const string = (text: string, max = 16384) => {
+  const string = (text: string, max = maxStringBytes) => {
     if (Buffer.byteLength(text) > max) refuse();
     add(Buffer.byteLength(JSON.stringify(text)));
   };
@@ -121,7 +124,14 @@ export function jsonBody(value: unknown): string | undefined {
 /** One transport-independent JSON value: no shared references, signed zero or object-order variants.
  * Undefined root remains absent; nested undefined/accessors/non-DTOs refuse in jsonBody first. */
 export function normalizedJsonDto(value: unknown): unknown {
-  const json = jsonBody(value);
+  return normalize(value, 65536, 16384);
+}
+/** Only authenticated provider input may exceed the ordinary DTO byte limit. */
+export function normalizedStripeWebhookInput(value: unknown): unknown {
+  return normalize(value, 262144, 262144);
+}
+function normalize(value: unknown, maxBytes: number, maxStringBytes: number): unknown {
+  const json = jsonDto(value, maxBytes, maxStringBytes);
   if (json === undefined) return undefined;
   const ordered = (item: unknown): unknown => {
     if (Array.isArray(item)) return item.map(ordered);

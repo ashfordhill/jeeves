@@ -5,7 +5,12 @@ import type { GenerationResourceKind } from "./generation.ts";
 import { type GenerationBindingKind, generationTemplates } from "./generation-catalog.ts";
 import type { ExactContractRef } from "./operation-records.ts";
 import type { DeclaredAccess } from "./ownership.ts";
-import { type StudioComponentKind, studioComponentKinds } from "./studio-components.ts";
+import {
+  type StudioComponentKind,
+  studioComponentKinds,
+  webhookBodyLimitSchema,
+  webhookSignatureFormatSchema,
+} from "./studio-components.ts";
 import type { StudioKind } from "./studio-model.ts";
 
 /** Finite capability metadata; no code, schema expressions or executable values. */
@@ -538,10 +543,22 @@ export const generationCapabilities = freezeRecord({
     [
       ...host,
       rule(
+        "webhook.signatureFormat",
+        "component",
+        "signatureFormat",
+        choice(...webhookSignatureFormatSchema.options),
+        "webhook-receiver.signatureFormat",
+        {
+          component: "webhook-receiver",
+          default: "jeeves",
+          userNeed: "Choose the signature format the sender uses.",
+        },
+      ),
+      rule(
         "webhook.bodyLimitBytes",
         "component",
         "bodyLimitBytes",
-        choice("1024", "16384", "65536"),
+        choice(...webhookBodyLimitSchema.options),
         "webhook-receiver.bodyLimitBytes",
         {
           component: "webhook-receiver",

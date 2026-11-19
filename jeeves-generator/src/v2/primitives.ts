@@ -4,6 +4,7 @@ import { type ClientSection, stubClients } from "./client-wiring.ts";
 import { durableKinds } from "./durability.ts";
 import { frontDoorHttp, hasFrontDoor } from "./front-door.ts";
 import { type V2Emitter, v2Compare } from "./registry.ts";
+import { isStripeWebhook } from "./stripe-webhook.ts";
 
 const assets = "jeeves-generator/templates/local-v2/assets/src/runtime/";
 const clientLibraries: Record<ClientSection, string[]> = {
@@ -93,6 +94,8 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       }
       if (model.selections.some((s) => s.binding.kind === "webhook-receiver"))
         add(["webhook"], ["generation", "processes"]);
+      for (const selection of model.selections.filter(isStripeWebhook))
+        add(["stripe-webhook"], selection.sourcePath);
       if (model.selections.some((s) => s.binding.kind === "browser-session"))
         add(
           [

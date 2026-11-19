@@ -286,6 +286,18 @@ export function privateWebhookVerifier(module: string) {
   } catch { throw new Error(`Invalid setting ${name}`); }
 }
 
+/** One Stripe endpoint signing secret, read in the process configuration pass. */
+export function privateStripeWebhookSecret(module: string): string {
+  if (!/^[a-z][a-z0-9-]{0,63}$/.test(module)) throw new Error("Invalid webhook receiver");
+  const name = `JEEVES_WEBHOOK_${module.toUpperCase().replaceAll("-", "_")}_STRIPE_SECRET`;
+  try {
+    const secret = readFile(name, true)?.toString("utf8");
+    if (!secret || !/^whsec_[A-Za-z0-9_-]{16,250}$/.test(secret))
+      throw new Error("Invalid endpoint secret");
+    return secret;
+  } catch { throw new Error(`Invalid setting ${name}`); }
+}
+
 /** Private browser credentials: no material or handles enter product settings. */
 export function privateBrowserCredentials(module:string) {
   if(!/^[a-z][a-z0-9-]{0,63}$/.test(module))throw new Error("Invalid browser module");

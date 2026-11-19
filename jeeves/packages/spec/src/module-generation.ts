@@ -345,7 +345,7 @@ function matchLead(view: ModuleView, plan: LeadPlan, refuse: (message: string) =
           .some((c) => c.settings.kind === "auth-guard" && c.settings.signIn !== "optional")
       )
         refuse(
-          "Webhook HMAC ingress is incompatible with a Required user Auth guard; use a separate Service.",
+          "Webhook ingress is incompatible with a Required user Auth guard; use a separate Service.",
         );
       const state = dependency(view.linksOf(lead, "state")[0]);
       if (!state) needs.push("a writable database connected to its state slot");

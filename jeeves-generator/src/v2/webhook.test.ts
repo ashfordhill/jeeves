@@ -4,6 +4,7 @@ import { createRequire, stripTypeScriptTypes } from "node:module";
 import { Readable } from "node:stream";
 import { pathToFileURL } from "node:url";
 import {
+  applyOperations,
   buildSupportedAuthoringCommand,
   createStudioComponentSettings,
   designGeneration,
@@ -474,6 +475,21 @@ describe("RG17 generic verified webhook inbox", () => {
 });
 
 describe("RG17 installed authoring and emitted boundaries", () => {
+  it("keeps 35-day retention private to the selected webhook work engine", () => {
+    expect(() =>
+      durable.defineDurableWork({
+        database: "db",
+        id: "ordinary-work",
+        version: 1,
+        retentionSeconds: 3024000,
+        maxAttempts: 4,
+        integration: null,
+        validate: (input: unknown) => input,
+        async complete() {},
+      }),
+    ).toThrow("Invalid durable work declaration");
+  });
+
   it("refuses Required-user composition through normal authoring and raw source before clients open", () => {
     const design = webhookDesign();
     const registry = loadLocalV2Registry();
@@ -500,7 +516,7 @@ describe("RG17 installed authoring and emitted boundaries", () => {
     );
   });
 
-  it("consumes both settings, stable module identity and private processor without a public verifier/replay route", () => {
+  it("defaults a missing format and keeps the generic verifier, package files and private processor", () => {
     const design = webhookDesign();
     const selection = designGeneration(design)?.selections.find((s) => s.id === "receive-events");
     if (!selection) throw Error("Missing receiver");
@@ -509,11 +525,25 @@ describe("RG17 installed authoring and emitted boundaries", () => {
     const resolved = resolveGeneration(design, registry.installed);
     expect(resolved.findings).toEqual([]);
     expect(normalGenerationControls(design, registry.installed).map((r) => r.input)).toEqual(
-      expect.arrayContaining(["webhook.bodyLimitBytes", "webhook.replayWindowSeconds"]),
+      expect.arrayContaining([
+        "webhook.bodyLimitBytes",
+        "webhook.replayWindowSeconds",
+        "webhook.signatureFormat",
+      ]),
     );
     const bundle = assembleV2({ designJson: JSON.stringify(design) }, registry);
     const source = (path: string) =>
       new TextDecoder().decode(bundle.files.find((f) => f.path === path)?.bytes);
+    expect(bundle.report.settings).toContainEqual(
+      expect.objectContaining({
+        input: "webhook.signatureFormat",
+        value: "jeeves",
+        origin: "descriptor-default",
+      }),
+    );
+    expect(source("package.json")).not.toContain('"stripe"');
+    expect(source("src/runtime/stripe-webhook.ts")).toBe("");
+    expect(source("src/processes/events-api.ts")).toContain("privateWebhookVerifier");
     expect(source("src/processes/events-api.ts")).toContain('module: "receive-events"');
     expect(source("src/processes/events-api.ts")).toContain("startDurableWork");
     expect(source("src/processes/events-api.ts")).not.toContain("stubRoutes");
@@ -530,5 +560,60 @@ describe("RG17 installed authoring and emitted boundaries", () => {
       "work_records",
     );
     expect(source("infra/local.json")).toContain("product-event-state--events-api");
+  });
+
+  it("emits Stripe only for its selection and binds signed ingress by stable module ID", () => {
+    const source = webhookDesign();
+    const registry = loadLocalV2Registry();
+    const edited = applyOperations(
+      source,
+      buildSupportedAuthoringCommand(
+        source,
+        {
+          type: "editComponent",
+          component: "receive-events",
+          settings: {
+            kind: "webhook-receiver",
+            signatureFormat: "stripe",
+            bodyLimitBytes: "262144",
+            replayWindowSeconds: 30,
+          },
+        },
+        registry.installed,
+      ).ops,
+    );
+    if (!edited.ok) throw Error("Stripe authoring refused");
+    const selection = designGeneration(edited.design)?.selections.find(
+      (s) => s.id === "receive-events",
+    );
+    if (!selection) throw Error("Missing receiver");
+    selection.id = "aliased-selection";
+    const bundle = assembleV2({ designJson: JSON.stringify(edited.design) }, registry);
+    const file = (path: string) =>
+      new TextDecoder().decode(bundle.files.find((row) => row.path === path)?.bytes);
+    expect(bundle.report.findings).toEqual([]);
+    expect(JSON.parse(file("package.json")).dependencies.stripe).toBe("23.1.0");
+    expect(file("pnpm-lock.yaml")).toContain("stripe@23.1.0");
+    expect(file("src/runtime/stripe-webhook.ts")).toContain("Stripe.webhooks.constructEvent");
+    expect(file("infra/postgres/event-state/056-jeeves-stripe-retention.sql")).toContain(
+      "retention_seconds = 3024000",
+    );
+    expect(file("src/processes/events-api.ts")).toContain(
+      'privateStripeWebhookVerifier("receive-events")',
+    );
+    expect(file("src/processes/events-api.ts")).toContain('webhookReceivers["aliased-selection"]');
+    expect(file("src/extension-api/index.ts")).not.toContain("privateStripeWebhook");
+    expect(JSON.parse(file("deploy/contract.json")).processes[0].stripeWebhooks).toEqual([
+      {
+        method: "POST",
+        path: "/modules/receive-events",
+        edgePath: "/api/events-api/modules/receive-events",
+        secretFileEnv: "JEEVES_SECRET_JEEVES_WEBHOOK_RECEIVE_EVENTS_STRIPE_SECRET_FILE",
+        secretFileName: "jeeves-webhook-receive-events-stripe-secret",
+        bodyLimitBytes: 262144,
+        replayWindowSeconds: 30,
+        completedRetentionDays: 35,
+      },
+    ]);
   });
 });

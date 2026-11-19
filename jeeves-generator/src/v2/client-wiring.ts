@@ -32,6 +32,7 @@ import {
 } from "./local-contract.ts";
 import { moduleEntryName, moduleStubPaths, stubProperties } from "./module-stubs.ts";
 import { type V2ProcessReport, v2Compare } from "./registry.ts";
+import { isStripeWebhook } from "./stripe-webhook.ts";
 
 const clients = "../runtime/module-clients.ts";
 const guardPath = "../runtime/tile-guard.ts";
@@ -155,6 +156,18 @@ CREATE INDEX IF NOT EXISTS work_tickets_expiry ON jeeves.work_tickets(expires_at
 REVOKE ALL ON jeeves.work_tickets FROM PUBLIC;
 `,
 } as const;
+/** Append-only: Stripe checks out a longer retention on its protected inbox rows. */
+const stripeWebhookRetentionMigration = {
+  id: "056-jeeves-stripe-retention.sql",
+  sql: `ALTER TABLE jeeves.work_records
+  DROP CONSTRAINT work_records_retention_seconds_check,
+  ADD CONSTRAINT work_records_retention_seconds_check
+  CHECK (CASE WHEN retention_seconds = 3024000
+    THEN (namespace::jsonb ->> 2) IS NOT DISTINCT FROM 'webhook-v1' AND jsonb_array_length(namespace::jsonb) = 5
+    ELSE retention_seconds BETWEEN 60 AND 604800
+  END);
+`,
+} as const;
 /** A writing tile's login on the idempotency records (QL04). */
 export const idempotencyGrant = (resource: string, host: string) => ({
   resource,
@@ -238,7 +251,7 @@ export function stubClients(
   const sections = new Set<ClientSection>();
   const stubs = process.stubs.flatMap((stub) => {
     const selection = selections.find((item) => item.id === stub.selection);
-    return selection?.module ? [{ stub, module: selection.module }] : [];
+    return selection?.module ? [{ stub, module: selection.module, selection }] : [];
   });
   if (!stubs.length) return { sections };
   const { stores } = stubStores(process, selections);
@@ -257,7 +270,7 @@ export function stubClients(
   const declarations: string[] = [];
   const settingReads: string[] = [];
   const localChecks: string[] = [];
-  for (const { stub, module } of stubs) {
+  for (const { stub, module, selection } of stubs) {
     const id = generationLocalIdentity(module.component).local;
     const alias = `${pascal(id)}Dependencies`;
     const files = moduleStubPaths(process.tile, module.component);
@@ -274,9 +287,10 @@ export function stubClients(
     settingReads.push(`configuredSettings[${text(id)}] = ${read}`);
     types.push(`  ${text(id)}: ${alias};`);
     const properties = stubProperties(module, stub.role === "loop").filter((item) => !item.input);
+    const webhookFormat = isStripeWebhook(selection) ? ', "stripe"' : "";
     const workValue =
       stub.role === "webhook-receiver"
-        ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork)`
+        ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork${webhookFormat})`
         : `(${pascal(id)}Module as { durableWork?: unknown }).durableWork`;
     const workDatabases = properties
       .filter((item) => item.type === "DatabaseReadWriter")
@@ -311,7 +325,7 @@ export function stubClients(
         });
         imports.push({ from: "../runtime/webhook.ts", name: "webhookWorkEngine" });
         localChecks.push(
-          `validateWebhookBinding((${pascal(id)}Module as { durableWork?: unknown }).durableWork, ${JSON.stringify(workDatabases)}, ${JSON.stringify(properties.filter((item) => item.type === "ServiceTarget").map((item) => item.property))});`,
+          `validateWebhookBinding((${pascal(id)}Module as { durableWork?: unknown }).durableWork, ${JSON.stringify(workDatabases)}, ${JSON.stringify(properties.filter((item) => item.type === "ServiceTarget").map((item) => item.property))}${webhookFormat});`,
         );
       }
       if (stub.role === "scheduled-task") {
@@ -593,6 +607,15 @@ export function stubClients(
     imports.push({ from: tileProcess, name: "brokerState" });
   const provisioned = stores.filter((store) => !store.unsupported);
   const written = stores.filter(writesDatabase);
+  const stripeResources = new Set(
+    stubs
+      .filter(({ selection }) => isStripeWebhook(selection))
+      .flatMap(({ selection }) =>
+        selection.resources
+          .filter((resource) => resource.field === "state")
+          .map((resource) => resource.identity.local),
+      ),
+  );
   const receiptResources = new Set(
     process.stubs
       .filter((stub) => stub.role === "loop")
@@ -678,9 +701,8 @@ export function stubClients(
             (item) => item.type === "DatabaseReadWriter",
           ),
         )
-        .map(({ module, stub }) => {
+        .map(({ module, stub, selection }) => {
           const id = generationLocalIdentity(module.component).local;
-          const selection = selections.find((s) => s.id === stub.selection);
           const start =
             module.kind === "scheduled-task" && selection?.binding.kind === "scheduled-task"
               ? `await startScheduledTask`
@@ -690,7 +712,7 @@ export function stubClients(
             : "";
           const engine =
             stub.role === "webhook-receiver"
-              ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork)`
+              ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork${isStripeWebhook(selection) ? ', "stripe"' : ""})`
               : `(${pascal(id)}Module as { durableWork?: unknown }).durableWork`;
           return `${start}(${engine}, dependencies[${text(id)}], scope, (event, fields) => failure(event, new Error(event), fields)${interval});\nstartReceiptConsumer((${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, dependencies[${text(id)}], scope);`;
         }),
@@ -726,6 +748,7 @@ export function stubClients(
                 localOperationMigration,
                 durableWorkMigration,
                 ...(receiptResources.has(store.element) ? [consumerReceiptMigration] : []),
+                ...(stripeResources.has(store.resource) ? [stripeWebhookRetentionMigration] : []),
               ].map((migration) => ({
                 resource: store.resource,
                 ...migration,

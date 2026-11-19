@@ -181,6 +181,6 @@ describe("WD10 front door", () => {
           legacy.files.find((f) => f.path === "src/runtime/http.ts")?.bytes ?? new Uint8Array(),
         )
         .digest("hex"),
-    ).toBe("59f11ece27c6a698449e395b11d92a820a9e207f2f63469c9909680ce5fe0a46");
+    ).toBe("7d2053132cfb51fca55ca482eabbdfaf790b76ec899ac3f543a7d54c9e73fb0f");
   });
 });

@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "namespaces": [
+    {
+      "schema": "p_payment_inbox_owner",
+      "migrations": [
+        {
+          "version": "0001",
+          "file": "infra/postgres/billing/products/migrations/p_payment_inbox_owner/0001-initial.sql"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "schema": "p_payment_inbox_owner",
+      "name": "subscription_events"
+    },
+    {
+      "schema": "p_payment_inbox_owner",
+      "name": "subscriptions"
+    }
+  ],
+  "views": [],
+  "operations": [
+    {
+      "name": "record_subscription_event",
+      "module": "verified-payment-event",
+      "host": "payment-inbox",
+      "kind": "command",
+      "file": "infra/postgres/billing/products/commands/record_subscription_event.sql",
+      "parameters": 4,
+      "relations": [
+        {
+          "schema": "p_payment_inbox_owner",
+          "name": "subscription_events",
+          "operations": ["insert", "select"]
+        }
+      ]
+    },
+    {
+      "name": "apply_subscription",
+      "module": "verified-payment-event",
+      "host": "payment-inbox",
+      "kind": "command",
+      "file": "infra/postgres/billing/products/commands/apply_subscription.sql",
+      "parameters": 3,
+      "relations": [
+        {
+          "schema": "p_payment_inbox_owner",
+          "name": "subscriptions",
+          "operations": ["insert", "select", "update"]
+        }
+      ]
+    }
+  ]
+}

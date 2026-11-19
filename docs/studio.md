@@ -1658,7 +1658,7 @@ Worker interchangeable remote authority.
 
 ### Authenticated webhook ingestion (RG17)
 
-A **Webhook receiver** module in a Service uses writable owned database state and Runnable processes. Its Service owns a lifecycle-driven durable processor; no queue is required. The separate mapper receives only authenticated bounded JSON, and the operation receives scoped product commands. Required user Auth guards in the same Service refuse composition. The receiver supports only the documented generic Jeeves HMAC protocol. A 202 follows durable acceptance; completion and bounded retry happen later. Changed raw bytes under one identity refuse409. See the exact envelope and retention limits in [RG17 evidence](plans/reliable-generation/evidence/rg17/README.md).
+A **Webhook receiver** module in a Service uses writable owned database state and Runnable processes. Its Service runs the durable processor as part of its own lifecycle. Choose the sender's **Signature format** in Detailed view. Jeeves uses its signing ring and Stripe uses the endpoint secret. Keep customer routes that require sign-in in a separate Service. The mapper receives authenticated bounded JSON and the processing hook receives scoped product commands. The receiver commits the inbox record before returning 202. Changed raw bytes under one retained event ID return 409. [Jeeves protocol](plans/reliable-generation/evidence/rg17/README.md) · [Stripe receiver](../jeeves-generator/README.md#stripe-webhook-receiver)
 
 Event counter’s **Maximum replay delay (seconds)** sets how late a repeat delivery can arrive, up to seven days.
 The generated worker keeps receipt identity independent of aggregation dates and commits its

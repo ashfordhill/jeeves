@@ -13,6 +13,7 @@ import {
 } from "@jeeves/spec";
 import { pointerPart } from "../json.ts";
 import type { V2Emitter, V2Gap, V2TemplateFile } from "./registry.ts";
+import { isStripeWebhook } from "./stripe-webhook.ts";
 
 type Slot = NormalizedStubModule["slots"][number];
 type Connection = Slot["connections"][number];
@@ -119,7 +120,7 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
               ),
             ) +
             (selections.some((s) => s.binding.kind === "webhook-receiver")
-              ? `\n/** Compiled authenticated receiver limits. */\nexport const webhookReceivers = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "webhook-receiver").map((s) => [s.id, { bodyLimitBytes: Number(s.inputs["webhook.bodyLimitBytes"]), replayWindowSeconds: Number(s.inputs["webhook.replayWindowSeconds"]) }])))} as const;\n`
+              ? `\n/** Compiled authenticated receiver limits. */\nexport const webhookReceivers = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "webhook-receiver").map((s) => [s.id, { ...(isStripeWebhook(s) && { signatureFormat: "stripe" }), bodyLimitBytes: Number(s.inputs["webhook.bodyLimitBytes"]), replayWindowSeconds: Number(s.inputs["webhook.replayWindowSeconds"]) }])))} as const;\n`
               : "") +
             (selections.some((s) => s.binding.kind === "scheduled-task")
               ? `\n/** Compiled intervals; protected work retry and fence policy stays private. */\nexport const scheduledTasks = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "scheduled-task").map((s) => [s.id, { intervalSeconds: s.inputs["task.intervalSeconds"] }])))} as const;\n`

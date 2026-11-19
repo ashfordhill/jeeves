@@ -12,6 +12,7 @@ import { favoritesBounds, favoritesSchema } from "./favorites.ts";
 import type { V2LocalContribution } from "./local-contract.ts";
 import { moduleEntryName, moduleHooksPath, moduleStubPaths } from "./module-stubs.ts";
 import type { V2TemplateFile } from "./registry.ts";
+import { isStripeWebhook } from "./stripe-webhook.ts";
 import { ownedUploadPersistence } from "./upload-state.ts";
 
 export type Lead = NonNullable<NormalizedProcess["templates"][number]["lead"]>;
@@ -1167,7 +1168,7 @@ const templates: Record<
   "rate-limiter": rateLimiterMount,
 };
 
-/** Generated HMAC ingress; Required-user host compositions refuse before mounting. */
+/** Generated signed ingress; Required-user host compositions refuse before mounting. */
 function webhookMount(
   process: NormalizedProcess,
   selection: NormalizedGenerationSelection,
@@ -1177,16 +1178,19 @@ function webhookMount(
   if (!module) throw new Error("Webhook module required");
   const id = generationLocalIdentity(module.component).local;
   const name = `${camel(id)}Webhook`;
+  const verification = isStripeWebhook(selection)
+    ? { from: "../runtime/stripe-webhook.ts", name: "privateStripeWebhookVerifier" }
+    : { from: "../runtime/settings.ts", name: "privateWebhookVerifier" };
   const from = `../modules/${generationLocalIdentity(process.tile).local}/${id}`;
   return {
     imports: [
       { from: "../runtime/webhook.ts", name: "webhookRoutes" },
       { from: "../modules/dependencies.ts", name: "webhookReceivers" },
-      { from: "../runtime/settings.ts", name: "privateWebhookVerifier" },
+      verification,
       { from: `${from}.ts`, name: `durableWork as ${name}Work` },
       { from: `${from}.mapping.hooks.ts`, name: `mapEvent as ${name}Map` },
     ],
-    validation: [`const ${name}Verify = privateWebhookVerifier(${text(id)});`],
+    validation: [`const ${name}Verify = ${verification.name}(${text(id)});`],
     setup: [],
     configure: [
       `webhookRoutes({ routes: ${guard ? "open" : "routes"}, module: ${text(id)}, dependencies: dependencies[${text(id)}], work: ${name}Work, map: ${name}Map, verify: ${name}Verify, ...webhookReceivers[${text(selection.id)}] });`,

@@ -80,6 +80,34 @@ end the Auth0 browser session. Keep app credentials and the shared key ring in p
 local Compose stack uses those externally supplied bindings for Auth0 and provisions Keycloak
 resources only for Keycloak selections. [Auth0 token validation](https://auth0.com/docs/secure/tokens/access-tokens/validate-access-tokens) · [Refresh rotation](https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation)
 
+## Stripe webhook receiver
+
+Select Stripe as the Webhook receiver’s **Signature format**, choose a **Body limit** up to 256 KiB
+and set a **Signature window** of 30 to 300 seconds. The export installs Stripe SDK 23.1.0 for that
+selection and lists the exact POST route and signing secret file in `deploy/contract.json`.
+Register an HTTPS Stripe snapshot event endpoint at that path. A stamped public service uses its
+normal trusted front door, which preserves the original request body and Stripe-Signature header.
+The endpoint does not require a customer session. The generated verifier uses one separate signing
+secret for each receiver. For `verified-payment-event` mount the file
+`jeeves-webhook-verified-payment-event-stripe-secret` in `SECRET_DIR` or set
+`JEEVES_SECRET_JEEVES_WEBHOOK_VERIFIED_PAYMENT_EVENT_STRIPE_SECRET_FILE` to its absolute path.
+
+Invalid signatures return 400 and oversized bodies return 413. The SDK authenticates the original
+bytes, and the timestamp must also be within the window on the receiver's clock in either direction.
+The pure product mapper projects the authenticated event to bounded work data while preserving the
+signed ID and type. The protected database transaction stores that identity and a SHA-256 of the
+original bytes before the receiver returns 202. A duplicate can receive the same 202 after a restart
+or on a second copy. Different bytes presented under the retained ID return 409. The scoped
+processing hook owns the subscription policy. Completed IDs remain for 35 days, and failed records
+remain for operator repair. The Jeeves format remains the default, with its private key ring and
+seven-day completed retention.
+
+If updating an existing export to select Stripe, merge its generated dependency additions into the
+application-owned package and lock files. Drain unresolved inbox work and reconcile retained event
+identities before changing a deployed receiver's signature format. See the
+[Stripe signature and redelivery contract](https://docs.stripe.com/events/manage-webhook-endpoints#signature-errors)
+and the [generator evidence](../docs/plans/qrwty-v2-generator/evidence/stripe/README.md).
+
 ## Front-door stamp
 
 Public runnable HTTP tiles can set `frontDoor: "required" | "none"`. Normal new tiles store

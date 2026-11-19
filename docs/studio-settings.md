@@ -650,7 +650,7 @@ unfinished accepted work; changing the handler/version/identity needs explicit m
 
 ### Webhook receiver (RG17)
 
-The Service-only **Webhook receiver** exposes **Body limit** (`bodyLimitBytes`: string choice `1024`, `16384`, `65536`; default `65536`) and **Signature window** (`replayWindowSeconds`:30–300; default300). Inspector/chat/blueprint and generated receiver limits use these same values. HMAC-SHA256 is the fixed installed protocol; no provider/verifier/ACK/retry setting is offered. The private RG08 ring is configured through a secret file, outside the diagram and product settings. Required user guards refuse this host combination. [Protocol, secret filename and retention](plans/reliable-generation/evidence/rg17/README.md).
+The Service-only **Webhook receiver** exposes **Signature format** (`signatureFormat`), **Body limit** (`bodyLimitBytes`) and **Signature window** (`replayWindowSeconds`). Choose Jeeves or Stripe. If the saved format is absent, the receiver uses Jeeves. The raw byte choices are `1024`, `16384`, `65536` (default) and `262144` (256 KiB). The signature window is 30–300 seconds (default 300) in either direction. Inspector, chat, blueprint and generated receiver use the same values. Configure the Jeeves signing ring or Stripe endpoint signing secret through private deployment files. A Service that requires user sign-in cannot host the receiver. [Jeeves protocol](plans/reliable-generation/evidence/rg17/README.md) · [Stripe receiver](../jeeves-generator/README.md#stripe-webhook-receiver)
 
 ### Consumer receipts (RG18)
 

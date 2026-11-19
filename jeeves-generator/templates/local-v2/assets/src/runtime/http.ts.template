@@ -12,7 +12,7 @@ declare module "fastify" {
   }
 }
 
-export type HttpBodyLimit = 1024 | 16384 | 65536 | 1048576;
+export type HttpBodyLimit = 1024 | 16384 | 65536 | 262144 | 1048576;
 /** Generated declarations only. Raw routes receive bytes as body, with no JSON decoding, so
  * later signature verification can precede decoding. This does not authenticate a webhook. */
 export interface HttpRoutes {
@@ -190,7 +190,7 @@ export async function createHttpService(options: {
   await options.configure({
     route({ handler, rawBody = false, bodyLimit = 65536, ...route }) {
       if (["/healthz", "/readyz", "/livez"].includes(route.url)) throw new Error("Reserved health route");
-      if (![1024, 16384, 65536, 1048576].includes(bodyLimit) || typeof rawBody !== "boolean")
+      if (![1024, 16384, 65536, 262144, 1048576].includes(bodyLimit) || typeof rawBody !== "boolean")
         throw new Error("Invalid HTTP body declaration");
       app.route({ ...route, bodyLimit, config: { rawBody }, handler(request, reply) {
         // Private test adapters can invoke a handler directly; real Fastify always begins in onRequest.

@@ -1,0 +1,28 @@
+import { isUtf8 } from "node:buffer";
+import Stripe from "stripe";
+import { HttpError } from "./admission.ts";
+import { privateStripeWebhookSecret } from "./settings.ts";
+
+export function privateStripeWebhookVerifier(module: string) {
+  const secret = privateStripeWebhookSecret(module);
+  return (signature: unknown, body: Uint8Array, window: number) => {
+    const refuse = () => new HttpError(400, "WEBHOOK_AUTHENTICATION", "Webhook authentication refused.");
+    // Stripe's SDK decodes UTF-8 before computing the MAC. Ensure that step preserves every byte.
+    if (typeof signature !== "string" || signature.length > 4096 || !isUtf8(body) ||
+      (body[0] === 0xef && body[1] === 0xbb && body[2] === 0xbf))
+      throw refuse();
+    const times = signature.split(",").filter(part => part.startsWith("t="));
+    const timestamp = times[0]?.slice(2);
+    const receivedAt = Date.now();
+    if (times.length !== 1 || !timestamp || !/^[1-9][0-9]{0,11}$/.test(timestamp) ||
+      Math.abs(Math.floor(receivedAt / 1000) - Number(timestamp)) > window)
+      throw refuse();
+    let event: Stripe.Event;
+    try {
+      event = Stripe.webhooks.constructEvent(body, signature, secret, window, undefined, receivedAt);
+    } catch { throw refuse(); } // SDK errors contain the signature and payload.
+    if (event?.object !== "event" || typeof event.id !== "string" || typeof event.type !== "string")
+      throw new HttpError(400, "WEBHOOK_EVENT", "Invalid webhook event.");
+    return event;
+  };
+}
