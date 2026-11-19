@@ -1,0 +1,13 @@
+Thu Nov 19 22:23:10 UTC 2026
+cbb8f5ed72d5e37f323a27b12f863761611f8a5c
+Identity provider auth0
+Description Auth0 issues the tokens that identify users and services.
+Signature format stripe
+Body limit 262144
+Description Verifies Stripe's signature and saves the payment notice before replying.
+Maximum replay delay (days) 31
+Keep counted IDs (days) 35
+Keep daily totals (months) 13
+Description Deletes expired daily totals and breakdowns even when no new clicks arrive. The click consumer expires counted IDs separately.
+Saved f742d1a4-d195-4418-b30f-a0cc15851ecf 10 2f4b134a8c61b296c5f48be90ec95472c86373cfc7151fefbcf3901d89663d1c 2335d52c44d27b42690cf05ee0a419c75f100e52e776fd7c403f102d1ff6f243 Original revision 6
+Thu Nov 19 22:23:27 UTC 2026

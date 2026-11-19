@@ -1,0 +1,23 @@
+Thu Nov 19 22:29:31 UTC 2026
+cbb8f5ed72d5e37f323a27b12f863761611f8a5c
+$ tsx src/v2/cli.ts /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/../reviewed-default-identity.json /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/old-reviewed-repaired
+{
+  directory: '/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/old-reviewed-repaired',
+  files: 152,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 24
+}
+$ tsx src/v2/cli.ts /home/ash/github/jeeves/field-projects/generator-system/fixtures/activity/design.json /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/old-counter-repaired
+{
+  directory: '/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/old-counter-repaired',
+  files: 86,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 5
+}
+old-reviewed files: 152 changed payloads: ['.jeeves/report.json', 'src/runtime/module-clients.ts'] manifest SHA-256: ccd0a4eea0efc58b244f06f0c99426bead50fe8e63c6b240ddf4a3970ecf832b
+Absent options kept Keycloak and generic Jeeves verification, and never emitted a compiled day or calendar policy.
+old-counter files: 86 changed payloads: ['.jeeves/report.json'] manifest SHA-256: 1dc5d710ebca32e3869f0dc73d3e009bab0ef3898d039740796424dc7c55f584
+The older Event counter compiles the seven-day horizon and completed retention.
+Thu Nov 19 22:29:32 UTC 2026

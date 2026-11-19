@@ -1,0 +1,92 @@
+Thu Nov 19 21:56:28 UTC 2026
+$ pnpm --filter @jeeves/generator test:generated --suite=rg-mechanisms '--test-name=link/account sessions' --artifacts=/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-keycloak
+$ tsx integration/run.ts --suite=rg-mechanisms '--test-name=link/account sessions' --artifacts=/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-keycloak
+Generated system suites: rg-mechanisms; artifacts: /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-keycloak
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generated-system| jeeves-generator/integration/scenarios/rg-mechanisms.system.test.ts (2 tests | 1 skipped) 207445ms
+   ✓ RG23: link/account sessions compose with foundation mechanisms in independent processes 207443ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 1 skipped (2)
+   Start at  15:56:29
+   Duration  207.76s (tests 100%)
+
+JSON report written to /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-keycloak/vitest.json
+JUNIT report written to /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-keycloak/junit.xml
+
+Thu Nov 19 22:00:23 UTC 2026
+$ pnpm --filter @jeeves/generator test:generated --suite=qr-stripe '--test-name=legacy|generic' --artifacts=/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-webhook
+$ tsx integration/run.ts --suite=qr-stripe '--test-name=legacy|generic' --artifacts=/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-webhook
+Generated system suites: qr-stripe; artifacts: /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-webhook
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ✓ |generated-system| jeeves-generator/integration/scenarios/qr-stripe.system.test.ts (2 tests | 1 skipped) 52861ms
+   ✓ QR Stripe: older absent format still uses generic Jeeves verification and seven days 52860ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 1 skipped (2)
+   Start at  16:00:24
+   Duration  53.09s (tests 100%)
+
+JSON report written to /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-webhook/vitest.json
+JUNIT report written to /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-webhook/junit.xml
+
+Thu Nov 19 22:01:21 UTC 2026
+$ pnpm --filter @jeeves/generator test:generated --suite=core --test-name=B01: --artifacts=/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-counter
+$ tsx integration/run.ts --suite=core --test-name=B01: --artifacts=/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-counter
+Generated system suites: core; artifacts: /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-counter
+Error: pnpm exec exit 1
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+ ↓ |generated-system| jeeves-generator/integration/scenarios/core-delivery.system.test.ts (3 tests | 3 skipped)
+ ❯ |generated-system| jeeves-generator/integration/scenarios/core.system.test.ts (1 test | 1 failed) 1875ms
+   × B01: edge publication commits exactly one counter increment and a matching receipt 1874ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |generated-system| jeeves-generator/integration/scenarios/core.system.test.ts > B01: edge publication commits exactly one counter increment and a matching receipt
+Error: Error: pnpm build exit 1
+$ pnpm check:extensions && tsc -p tsconfig.json
+$ node scripts/check-extensions.mjs
+src/modules/activity-api/submit.ts: forbidden private cross-service import ../entry.ts
+src/modules/counter/increment.hooks.ts: forbidden private runtime import ../../runtime/event-counter.ts
+src/modules/totals-api/read-total.ts: forbidden private cross-service import ../entry.ts
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.
+
+ ❯ Application.execute jeeves-generator/integration/harness/application.ts:95:13
+     93|       const clean = (await sanitizer(this.directory))(String(error));
+     94|       await writeFile(join(this.stack.artifacts, `${name}.log`), clean…
+     95|       throw new Error(clean);
+       |             ^
+     96|     }
+     97|   }
+ ❯ setupApplication jeeves-generator/integration/harness/application.ts:323:3
+ ❯ withApplication jeeves-generator/integration/harness/application.ts:366:5
+ ❯ jeeves-generator/integration/scenarios/core.system.test.ts:6:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 skipped (2)
+      Tests  1 failed | 3 skipped (4)
+   Start at  16:01:22
+   Duration  2.09s (tests 95%, transform 3%, import 1%)
+
+JSON report written to /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-counter/vitest.json
+JUNIT report written to /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/legacy-counter/junit.xml
+
+[ELIFECYCLE] Command failed with exit code 1.
+Error: ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL
+
+  × "pnpm recursive run" failed in /home/ash/github/jeeves/jeeves-generator
+
+[ELIFECYCLE] Command failed with exit code 1.
+Thu Nov 19 22:01:28 UTC 2026
+Keycloak 0
+Generic webhook 0
+Event counter 1

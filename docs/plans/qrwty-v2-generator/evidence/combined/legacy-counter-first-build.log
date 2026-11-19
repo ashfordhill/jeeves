@@ -1,0 +1,8 @@
+Error: pnpm build exit 1
+$ pnpm check:extensions && tsc -p tsconfig.json
+$ node scripts/check-extensions.mjs
+src/modules/activity-api/submit.ts: forbidden private cross-service import ../entry.ts
+src/modules/counter/increment.hooks.ts: forbidden private runtime import ../../runtime/event-counter.ts
+src/modules/totals-api/read-total.ts: forbidden private cross-service import ../entry.ts
+[ELIFECYCLE] Command failed with exit code 1.
+[ELIFECYCLE] Command failed with exit code 1.

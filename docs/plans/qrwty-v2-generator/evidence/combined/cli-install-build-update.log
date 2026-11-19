@@ -1,0 +1,62 @@
+Thu Nov 19 22:22:56 UTC 2026
+cbb8f5ed72d5e37f323a27b12f863761611f8a5c
+v24.21.0
+12.16.1
+$ tsx src/v2/cli.ts /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/design.json /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/cli-repaired
+{
+  directory: '/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/cli-repaired',
+  files: 153,
+  applicationComplete: false,
+  findings: 0,
+  requiredGaps: 24
+}
+✓ Lockfile passes supply-chain policies (verified 1h ago)
+Lockfile is up to date, resolution step is skipped
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/ash/.local/share/pnpm/store/v11
+  Virtual store is at:             node_modules/.pnpm
+Packages: +191
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 191, reused 191, downloaded 0, added 191, done
+
+dependencies:
++ @aws-sdk/client-s3 3.1156.0
++ @aws-sdk/s3-request-presigner 3.1156.0
++ @google-cloud/pubsub 6.3.2
++ @opensearch-project/opensearch 3.9.0
++ amqplib 2.2.0
++ fastify 5.12.7
++ hls.js 1.7.3
++ jose 6.2.13
++ openid-client 6.8.9
++ pg 8.23.1
++ redis 6.3.0
++ stripe 23.1.0
++ zod 4.5.4
+
+devDependencies:
++ @types/node 24.19.2
++ @types/pg 8.23.1
++ typescript 7.0.2
+
+Done in 505ms using pnpm v12.16.1
+$ pnpm check:extensions && tsc -p tsconfig.json
+$ node scripts/check-extensions.mjs
+Extension boundaries passed (API v8; cooperative misuse check; no hostile-code sandbox). Hook completeness and runtime behavior are not assessed.
+$ tsx src/v2/update-cli.ts /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/design.json /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/cli-repaired --check
+{
+  "directory": "/tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/cli-repaired",
+  "check": true,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 152,
+    "keep": 0
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}
+Thu Nov 19 22:23:00 UTC 2026
