@@ -5,6 +5,11 @@ queue. Current behavior is documented in the [studio guide](../studio.md),
 [generator guide](../../jeeves-generator/README.md) and [template gaps](../template-gaps.md).
 Earlier plans and evidence remain preserved below.
 
+## QRWTY v2
+
+- The generator work is ready to assign to a coordinator. Its three implementation units cover Auth0, native Stripe notifications and configurable click retention. A fresh reviewer verifies the combined export. [Generator plan](qrwty-v2-generator/units.md) · [Copyable coordinator prompt](qrwty-v2-generator/coordinator-prompt.md)
+- The field build follows that handoff. It uses the reviewed diagram, measures the finished backend, compares shared behavior with the frozen v1 B implementation and rehearses deploy readiness locally. The lower-cost model experiment is a separate future study. [QRWTY v2 build and evaluation](../field-projects/qrwty/v2-build-plan.md)
+
 ## Current handback and final review
 
 - [Reliable generation](reliable-generation/README.md): **RG01–RG26 accepted**, through amended
@@ -38,8 +43,8 @@ unfinished outlines have no execution authority unless the owner selects them ag
 | [QRWTY lessons](qrwty-lessons/units.md) | QL01 folded into QG09; QL02–05 implemented. Unimplemented QL06–14 are superseded by RG08, RG02–04, RG15–16, RG05/13, RG09, RG19–21 and RG14/25 as mapped [here](reliable-generation/evidence.md#disposition-of-unimplemented-plans). No remaining QL queue. |
 | QG36–39 remnants | QG36 configuration parity absorbed by RG02; QG37 declarations implemented in QL05 and tightened in RG02/08. Diagram-level arbitrary setting names were not added. QG38/39 versioned SQL/grants replaced by RG06/07. No old unit is silently relabelled executed. |
 
-Stripe/provider packs, account erasure/sagas, managed credential refresh, cloud adapters and other
-unfinished suggestions remain deferred choices, not approved follow-on units. The explicit WD
-authorization above is the exception to this inactive-old-queue rule. QRWTY was not re-diagrammed,
-rebuilt or deployed during RG; its frozen evaluations and original drain assessment remain
-historical evidence, with the correction linked from the [handback](reliable-generation/owner-handback.md).
+The newer QRWTY plan above specifies the Stripe receiver and Auth0 work. Broader provider packs,
+account erasure/sagas, managed credential refresh and cloud adapters remain deferred choices.
+The Wires and deployment work had its own owner authorization. The frozen QRWTY evaluations
+and original drain assessment remain historical evidence, with the correction linked from the
+[handback](reliable-generation/owner-handback.md).

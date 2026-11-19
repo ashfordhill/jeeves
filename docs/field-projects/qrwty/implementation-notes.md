@@ -1,6 +1,6 @@
 # QRWTY follow-up
 
-The [saved project](http://127.0.0.1:4300/?project=8994962f-abc4-4903-a609-616d9c8b7409#/design) uses today's installed templates. The three changes below are proposed work for the generator.
+The [saved project](http://127.0.0.1:4300/?project=8994962f-abc4-4903-a609-616d9c8b7409#/design) uses today's installed templates. The three changes below are specified for the generator. [Execution units](../../plans/qrwty-v2-generator/units.md) · [Coordinator prompt](../../plans/qrwty-v2-generator/coordinator-prompt.md)
 
 ## Sign in once with Auth0
 
