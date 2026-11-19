@@ -56,8 +56,8 @@ const fake: Calls = { calls: [], endpoints: [], transports: [], connections: [] 
 const check = `
   const fake = globalThis.moduleClientsFake;
   const record = (...call) => fake.calls.push(call);
-  const outcome = async (what, value) => {
-    record(what);
+  const outcome = async (what, value, ...details) => {
+    record(what, ...details);
     if (fake.hang && fake.fail === what) return new Promise(() => {});
     if (fake.fail === what) throw new Error(what + " refused");
     return value;
@@ -139,7 +139,7 @@ const fakes: Record<string, string> = {
         record("topic", name, options);
         return {
           exists: () => outcome("exists", [fake.pubsub?.exists ?? true]),
-          getMetadata: () => outcome("topic metadata", [{}]),
+          getMetadata: (options) => outcome("topic metadata", [{}], options),
           publishMessage: (message) => {
             record("publishMessage", Buffer.from(message.data).toString(), message.attributes);
             return fake.pubsub?.publish ? fake.pubsub.publish() : Promise.resolve("1");
@@ -2158,7 +2158,7 @@ describe("emitted pubsubPublisher: a stub's Pub/Sub topic (QG07)", () => {
           "grpc.max_reconnect_backoff_ms": 2000,
         },
       ],
-      ["topic", "visits", { gaxOpts: { timeout: 2000, retry: null, maxRetries: 0 } }],
+      ["topic", "visits", { gaxOpts: { timeout: 2000, retry: null } }],
       ["exists"],
     ]);
     expect(lines).toEqual([
@@ -3064,7 +3064,10 @@ describe("RG03 emitted dependency contexts and uncertain effects", () => {
     fake.fail = undefined;
     await vi.advanceTimersByTimeAsync(5000);
     expect(app.scope.dependenciesReady()).toBe(true);
-    expect(fake.calls.filter(([name]) => name === "topic metadata")).toHaveLength(2);
+    expect(fake.calls.filter(([name]) => name === "topic metadata")).toEqual([
+      ["topic metadata", { timeout: 2000, retry: null }],
+      ["topic metadata", { timeout: 2000, retry: null }],
+    ]);
     expect(fake.calls.filter(([name]) => name === "publishMessage")).toHaveLength(0);
     await app.close();
   });

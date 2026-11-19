@@ -1,0 +1,17 @@
+app-click-processor-1  | 2026-11-19T22:03:52.475402494Z {"event":"probe","tile":"click-processor","level":"info","client":"analytics","kind":"database","check":"SELECT 1","result":"ok"}
+app-click-processor-1  | 2026-11-19T22:03:52.495354838Z {"event":"probe","tile":"click-processor","level":"info","client":"analytics","kind":"database","check":"SELECT 1","result":"ok"}
+app-click-processor-1  | 2026-11-19T22:03:52.558509283Z {"event":"probe","tile":"click-processor","level":"info","client":"click-events--click-processor--aggregate-click","kind":"queue","check":"the Pub/Sub subscription exists","result":"ok"}
+app-click-processor-1  | 2026-11-19T22:03:52.558983842Z {"level":"info","event":"broker","tile":"click-processor","what":"broker consume click-events--click-processor--aggregate-click","state":"available"}
+app-click-processor-1  | 2026-11-19T22:03:52.570445741Z Application ready
+app-click-processor-1  | 2026-11-19T22:03:57.560556267Z /app/node_modules/.pnpm/google-gax@6.14.0/node_modules/google-gax/build/src/gax.js:207
+app-click-processor-1  | 2026-11-19T22:03:57.560593940Z             retry.backoffSettings.maxRetries = options.maxRetries;
+app-click-processor-1  | 2026-11-19T22:03:57.560596799Z                   ^
+app-click-processor-1  | 2026-11-19T22:03:57.560598891Z
+app-click-processor-1  | 2026-11-19T22:03:57.560601100Z TypeError: Cannot read properties of null (reading 'backoffSettings')
+app-click-processor-1  | 2026-11-19T22:03:57.560603237Z     at CallSettings.merge (/app/node_modules/.pnpm/google-gax@6.14.0/node_modules/google-gax/build/src/gax.js:207:19)
+app-click-processor-1  | 2026-11-19T22:03:57.560605320Z     at Object.invokeCall [as getSubscription] (/app/node_modules/.pnpm/google-gax@6.14.0/node_modules/google-gax/build/src/createApiCall.js:93:37)
+app-click-processor-1  | 2026-11-19T22:03:57.560609702Z     at SubscriberClient.getSubscription (/app/node_modules/.pnpm/@google-cloud+pubsub-api@0.7.0/node_modules/@google-cloud/pubsub-api/build/src/v1/subscriber_client.js:403:14)
+app-click-processor-1  | 2026-11-19T22:03:57.560611875Z     at /app/node_modules/.pnpm/@google-cloud+pubsub@6.3.2/node_modules/@google-cloud/pubsub/build/src/pubsub.js:663:34
+app-click-processor-1  | 2026-11-19T22:03:57.560614048Z     at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+app-click-processor-1  | 2026-11-19T22:03:57.560616131Z
+app-click-processor-1  | 2026-11-19T22:03:57.560618025Z Node.js v24.21.0

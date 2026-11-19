@@ -1,0 +1,33 @@
+  ! This diagnostic was derived from an internal Biome error. Potential bug, please report it if necessary.
+
+
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 21.
+Checked 2699 files in 817ms. No fixes applied.
+Found 8 warnings.
+Found 12 infos.
+$ pnpm -r --no-bail typecheck
+jeeves/packages/board typecheck$ tsc -p .
+jeeves/packages/providers typecheck$ tsc -p .
+jeeves/packages/board typecheck: Done
+jeeves/packages/spec typecheck$ tsc -p .
+jeeves/packages/providers typecheck: Done
+jeeves/packages/spec typecheck: Done
+jeeves/apps/web typecheck$ tsc -p .
+jeeves-generator typecheck$ tsc -p .
+jeeves-generator typecheck: Done
+jeeves/apps/server typecheck$ tsc -p .
+jeeves/apps/web typecheck: Done
+jeeves/apps/server typecheck: Done
+$ vitest run --config tooling/vitest.config.ts
+
+ RUN  v5.0.0 /home/ash/github/jeeves
+
+
+ Test Files  155 passed (155)
+      Tests  1446 passed (1446)
+   Start at  16:12:15
+   Duration  176.56s (tests 81%, import 14%, environment 3%, transform 3%)
+
+    Isolate  155 workers spawned · ~257ms startup each (spawn + environment, per file)
+             at least ~9.71s faster with isolate: false — reuses workers across files instead of one per file

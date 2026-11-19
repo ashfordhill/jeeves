@@ -1,0 +1,16 @@
+$ tsx src/v2/update-cli.ts /tmp/jeeves-qrwty-v2-generator.0uTNh1QO/reviewer/design.json /tmp/jeeves-pubsub-repair.zRO4o6Tz/export --check
+{
+  "directory": "/tmp/jeeves-pubsub-repair.zRO4o6Tz/export",
+  "check": true,
+  "refused": [],
+  "counts": {
+    "create": 0,
+    "replace": 0,
+    "unchanged": 152,
+    "keep": 0
+  },
+  "keepChanged": [],
+  "override": [],
+  "remove": [],
+  "orphan": []
+}

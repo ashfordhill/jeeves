@@ -719,7 +719,7 @@ const fakeSdk = `import { EventEmitter } from "node:events";
         name,
         options,
         isOpen: true,
-        getMetadata: () => { fake.calls.push(["metadata", name]); return fake.metadata?.() ?? Promise.resolve([{}]); },
+        getMetadata: (options) => { fake.calls.push(["metadata", name, options]); return fake.metadata?.() ?? Promise.resolve([{}]); },
         exists: () => (fake.calls.push(["exists", name]), fake.exists()),
         close: async () => {
           fake.calls.push(["close subscription", name]);
@@ -872,7 +872,11 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
     pubsubFake.metadata = async () => [{}];
     await vi.advanceTimersByTimeAsync(5000);
     expect(unavailable.size).toBe(0);
-    expect(pubsubFake.calls.filter((call) => call[0] === "metadata")).toHaveLength(2);
+    const metadata = pubsubFake.calls.filter((call) => call[0] === "metadata");
+    expect(metadata).toEqual([
+      ["metadata", "visits--visit-worker", { timeout: 2000, retry: null }],
+      ["metadata", "visits--visit-worker", { timeout: 2000, retry: null }],
+    ]);
     for (const stop of stops) stop();
     await consumer.close();
     await vi.advanceTimersByTimeAsync(10000);
@@ -890,11 +894,7 @@ describe("emitted Pub/Sub stub loops (QG08)", () => {
           "grpc.max_reconnect_backoff_ms": 2000,
         },
       ],
-      [
-        "topic",
-        "visits--visit-worker.failed",
-        { gaxOpts: { timeout: 2000, retry: null, maxRetries: 0 } },
-      ],
+      ["topic", "visits--visit-worker.failed", { gaxOpts: { timeout: 2000, retry: null } }],
       ["exists", "visits--visit-worker"],
       ["stream", "visits--visit-worker"],
     ]);

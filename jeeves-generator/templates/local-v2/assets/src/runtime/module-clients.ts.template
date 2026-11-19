@@ -558,6 +558,8 @@ const pubsubProject = (value: string) =>
  * outstanding in a process. */
 const pubsubDeadlineMs = 2000;
 const pubsubOutstanding = 1000;
+// GAX disables unary RPC retries with `retry: null`. A retry limit needs a retry policy to edit.
+const pubsubRpcOptions = { timeout: pubsubDeadlineMs, retry: null };
 /** Every Pub/Sub client's gRPC channel tries a lost connection again after 500 ms, doubling to at
  * most 2000 ms (gRPC's own maximum is 120 s), so it reconnects soon after Pub/Sub is back (QG09). */
 const pubsubChannel = {
@@ -596,7 +598,7 @@ export async function pubsubPublisher(
     projectId: pubsubProjectId(),
     ...pubsubChannel,
   });
-  const topic = client.topic(binding.topic, { gaxOpts: { timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 } });
+  const topic = client.topic(binding.topic, { gaxOpts: pubsubRpcOptions });
   const outstanding = new Set<Promise<unknown>>();
   let closed = false;
   scope.own(async () => {
@@ -613,7 +615,7 @@ export async function pubsubPublisher(
     },
     scope.signal,
   );
-  probeDependency(scope, topic, () => topic.getMetadata({ timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 }));
+  probeDependency(scope, topic, () => topic.getMetadata(pubsubRpcOptions));
   return {
     publish(message, options) {
       if (closed) return Promise.reject(new OperationError("refused", "PUBLISHER_CLOSED"));
@@ -705,7 +707,7 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
       flowControl: { maxMessages: options.concurrency, allowExcessMessages: false },
       minAckDeadline: Duration.from({ seconds: 60 }),
     });
-  const failedTopic = client.topic(options.failedQueue, { gaxOpts: { timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 } });
+  const failedTopic = client.topic(options.failedQueue, { gaxOpts: pubsubRpcOptions });
   const answers = async (subscription: Subscription) => {
     const [exists] = await subscription.exists();
     if (!exists) throw new Error(`Pub/Sub subscription ${options.queue} not found`);
@@ -891,7 +893,7 @@ async function pubsubConsumer(log: ProbeLog, options: LoopConsumerOptions): Prom
   report("available");
   probeDependency(consumerScope, client, async () => {
     if (!current || current.lost) throw Error("Subscriber unavailable");
-    await current.subscription.getMetadata({ timeout: pubsubDeadlineMs, retry: null, maxRetries: 0 });
+    await current.subscription.getMetadata(pubsubRpcOptions);
     if (!closing && current && !current.lost && current.subscription.isOpen) report("available");
   });
   return { close, closed };
