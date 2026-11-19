@@ -13,7 +13,7 @@ its tile, selects it (the [module catalog](#components-c3)); there is no feature
 and designs that attached the video feature stay readable and exportable. Product codecs, routes,
 projections and service composition remain custom work after generation. Historical YouTube declarations
 remain readable; their product implementations are not installed. Useful normal settings include HTTP deadline/admission, adjustable worker concurrency, cache TTL/freshness/exposure,
-Rate limiter limit/window, Scheduled task interval, webhook body/signature limits, receipt delivery
+Rate limiter limit/window, Scheduled task interval and calendar retention, webhook body/signature limits, receipt delivery
 horizon and Browser session policy (detailed below),
 SQL pool/statement limits on a bound Data access or a Lifecycle writer (Favorites' items Data
 access too), an Auth guard's Sign-in (Required or Optional), and with Runnable processes on a
@@ -648,10 +648,10 @@ knowledge of every possible dependency failure.
 
 ### Scheduled reconciliation
 
-`scheduled-task` (**Scheduled task**, gear icon) is an installed module in Service and Worker.
+`scheduled-task` (**Scheduled task**, gear icon) is an installed module in Service and Worker. A writable owned state link and declared product DELETE grant allow its optional calendar cleanup cutoff.
 It leads the `scheduled-task` binding when its **state** slot names writable owned PostgreSQL;
 its optional **target** and **workload** slots retain the existing authenticated durable-work
-integration contract. **Interval** is the sole normal setting (1–604800 seconds, default 60).
+integration contract. **Interval** sets the cadence (1–604800 seconds, default 60).
 Generated lifecycle mounts admit database-time ticks independently of HTTP/messages, coalescing
 missed intervals with one unfinished tick across copies. Product completion remains a scoped
 handler scaffold. Failed/unknown work halts admission; completed retention is fixed at seven days.
@@ -662,8 +662,7 @@ still takes message work from a queue/topic. Logical ownership and exact grants 
 
 `webhook-receiver` (**Webhook receiver**, inbox icon) is installed in Service only, with writable owned PostgreSQL state and Runnable processes. It generates bounded raw ingress, private verification, a pure mapper and an opaque durable processing declaration. Choose Jeeves HMAC or the Stripe SDK, a body limit up to 256 KiB and a signature window. Protected 052 records support durable acceptance, fenced processing and completed-only cleanup. Completed IDs are retained for seven days with Jeeves and 35 days with Stripe. A Required-user guard blocks composition on the same host. [Jeeves protocol](../docs/plans/reliable-generation/evidence/rg17/README.md) · [Stripe receiver](../jeeves-generator/README.md#stripe-webhook-receiver)
 
-On Event counter, **Maximum replay delay (seconds)** accepts 1–604800. The counter keeps a counted event’s ID for seven days after completion, using the database clock. Stable event IDs span aggregation dates. Standalone Event consumer stubs
-with owned state can opt into the checked receipt/scoped-product declaration; legacy void handlers
+On Event counter, **Maximum replay delay (seconds)** accepts 1–604800. The counter keeps a counted event’s ID for seven days after completion, using the database clock. Stable event IDs span aggregation dates. Standalone Event consumer stubs can select replay and receipt periods in days when connected to a channel and writable owned PostgreSQL state. The checked receipt declaration applies the selected policy with scoped product commands. Legacy void handlers
 keep durable progress unknown. Cleanup and heartbeat run independently of arrivals. Internal
 quarantine commands require receipt support and refuse unknown effects; Pub/Sub retry/ACK policy
 is preserved and automatic Pub/Sub quarantine requeue remains unavailable.

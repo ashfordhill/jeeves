@@ -13,6 +13,7 @@ export const implementedSuites = [
   "rg-mechanisms",
   "qr-auth0",
   "qr-stripe",
+  "qr-retention",
 ];
 
 /** Selected suites that contributed no scenario file to a run (a missing file is not a pass). */

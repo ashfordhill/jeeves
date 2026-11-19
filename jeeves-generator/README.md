@@ -108,6 +108,25 @@ identities before changing a deployed receiver's signature format. See the
 [Stripe signature and redelivery contract](https://docs.stripe.com/events/manage-webhook-endpoints#signature-errors)
 and the [generator evidence](../docs/plans/qrwty-v2-generator/evidence/stripe/README.md).
 
+## Click receipt and calendar retention
+
+A standalone Event consumer with a channel and writable owned PostgreSQL state can set its
+maximum replay delay to 1–31 days and keep counted IDs for 1–35 days. The receipt must last
+through the replay window. When either is selected, the other defaults to seven days of replay
+or 35 days of receipts. The checked `defineReceiptConsumer` declaration uses those values and
+passes the effective policy in seconds to its mapper. Leave both settings absent to keep the
+existing declaration and legacy loop behavior. Event counter keeps its seven-day receipts.
+A receipt and registered aggregate commands commit together. Changing the policy cannot shorten
+a receipt already committed. Match broker and archive retention to the original replay window
+and preserve IDs on redelivery. Product code validates event age when its contract calls for it.
+
+A Scheduled task with writable owned state and a product DELETE grant can select
+**Keep daily totals (months)**. Its `validate` function preserves `cutoffDay` and
+`keepDailyTotalsMonths` from the accepted tick. Use the UTC cutoff in registered product SQL,
+for example `WHERE day < $1::date`, so a row on the boundary survives. The generator owns the
+database clock, calendar arithmetic and durable tick. The product owns the schema and deletion.
+`intervalSeconds` controls cadence independently. [Retention evidence](../docs/plans/qrwty-v2-generator/evidence/retention/README.md)
+
 ## Front-door stamp
 
 Public runnable HTTP tiles can set `frontDoor: "required" | "none"`. Normal new tiles store

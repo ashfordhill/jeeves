@@ -76,6 +76,26 @@ test("RG18 edits the receipt delivery horizon by mouse and exports guarded consu
       await page.request.get(`/api/projects/${id}/blueprint?version=3`)
     ).json();
     expect(JSON.stringify(blueprint)).toContain('"deliveryHorizonSeconds":86400');
+    await expect(inspector.getByLabel("Keep counted IDs (days)", { exact: true })).toHaveCount(0);
+    await page
+      .locator('.board .lane-container-row[data-module="apply-item"]')
+      .getByRole("button")
+      .first()
+      .click();
+    await inspector.getByLabel("Maximum replay delay (days)", { exact: true }).fill("31");
+    await inspector.getByLabel("Name", { exact: true }).click();
+    await expect
+      .poll(async () => JSON.stringify(await design(page, id)))
+      .toContain('"replayDays":31');
+    await inspector.getByLabel("Keep counted IDs (days)", { exact: true }).fill("35");
+    await inspector.getByLabel("Name", { exact: true }).click();
+    await expect
+      .poll(async () => JSON.stringify(await design(page, id)))
+      .toContain('"receiptDays":35');
+    await page.screenshot({
+      path: testInfo.outputPath("mouse-consumer-retention.png"),
+      fullPage: true,
+    });
     await page.getByRole("button", { name: "Generate project", exact: true }).click();
     const preview = page.waitForResponse((r) =>
       r.url().endsWith("/experimental-generation/preview"),

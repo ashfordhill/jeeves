@@ -6,6 +6,7 @@ import { httpMounts } from "./http-wiring.ts";
 import { endpointId, localEndpoints, type V2LocalContribution } from "./local-contract.ts";
 import { loopMounts } from "./loop-wiring.ts";
 import { v2Compare } from "./registry.ts";
+import { receiptPolicy } from "./retention.ts";
 import { isStripeWebhook, stripeSdkVersion, stripeSecretName } from "./stripe-webhook.ts";
 
 type Service = NonNullable<V2LocalContribution["services"]>[number];
@@ -273,6 +274,32 @@ export function deploymentFiles(
           completedRetentionDays: 35,
         };
       });
+      const receiptConsumers = selections.flatMap((selection) => {
+        const policy = receiptPolicy(selection);
+        const module = selection.module?.component;
+        if (!policy || !module) return [];
+        const stub = process?.stubs.find((item) => item.selection === selection.id);
+        return [
+          {
+            module,
+            ...policy,
+            channels: unique(stub?.consumes?.map((channel) => channel.element) ?? []),
+          },
+        ];
+      });
+      const calendarCleanups = selections.flatMap((selection) => {
+        const months = selection.inputs["task.keepDailyTotalsMonths"];
+        const module = selection.module?.component;
+        if (typeof months !== "number" || !module) return [];
+        return [
+          {
+            module,
+            intervalSeconds: Number(selection.inputs["task.intervalSeconds"]),
+            keepDailyTotalsMonths: months,
+            cutoffTimeZone: "UTC",
+          },
+        ];
+      });
       return {
         id: service.host,
         name: process?.name ?? service.host,
@@ -309,6 +336,8 @@ export function deploymentFiles(
           },
         }),
         ...(stripeWebhooks.length > 0 && { stripeWebhooks }),
+        ...(receiptConsumers.length > 0 && { receiptConsumers }),
+        ...(calendarCleanups.length > 0 && { calendarCleanups }),
         env: environment(model, runtime),
         uses,
         calls: unique(service.calls ?? []),
@@ -442,6 +471,14 @@ export function deploymentFiles(
       ...(p.stripeWebhooks ?? []).map(
         (hook) =>
           `- Stripe snapshot webhook. Register the exact HTTPS POST ${code(hook.edgePath ?? hook.path)} through the front door${hook.edgePath ? "" : " on the internal service's ingress mapping"}. Forward the original body and Stripe-Signature header. Bind that endpoint's private signing secret in ${code(hook.secretFileEnv)} or mount ${code(hook.secretFileName)} under SECRET_DIR. Customer authentication is independent. The body limit is ${hook.bodyLimitBytes} bytes and signature window is ±${hook.replayWindowSeconds} seconds. Completed IDs are retained for ${hook.completedRetentionDays} days. The verifier uses Stripe SDK ${stripeSdkVersion}.`,
+      ),
+      ...(p.receiptConsumers ?? []).map(
+        (consumer) =>
+          `- Keep counted IDs for ${consumer.retentionSeconds / 86_400} days in ${code(consumer.module)}. Configure broker and archive replay on ${list(consumer.channels)} to cover ${consumer.deliveryHorizonSeconds / 86_400} days from original delivery, including retries and repair delays. Preserve event IDs. Local emulation does not establish archive durability.`,
+      ),
+      ...(p.calendarCleanups ?? []).map(
+        (task) =>
+          `- Calendar cleanup ${code(task.module)} checks every ${task.intervalSeconds} seconds. The accepted tick passes a database-time UTC cutoff ${task.keepDailyTotalsMonths} calendar months back. Registered application SQL decides which rows to delete.`,
       ),
       `- alwaysOn: ${p.alwaysOn}`,
       `- Environment names: ${list(p.env)}`,

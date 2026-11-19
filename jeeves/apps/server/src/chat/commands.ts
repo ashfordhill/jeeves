@@ -464,7 +464,7 @@ function mergeSettings(
       throw new Error(`${name} has no editable setting "${key}". ${available()}`);
     }
     if (raw === null) {
-      if (!control.process)
+      if (!control.process && !control.canClear)
         throw new Error(
           `${key} can't be cleared on ${name}; give it ${supportedText(control.supported)}.`,
         );

@@ -290,7 +290,8 @@ export async function setupApplication(
                       hook.selection === module?.selection && hook.file === attachment.destination,
                   ),
                 ) ||
-                (module?.kind === "webhook-receiver" &&
+                (module &&
+                  ["scheduled-task", "webhook-receiver"].includes(module.kind) &&
                   module.files.includes(attachment.destination) &&
                   !attachment.destination.endsWith(".slots.ts"))
               : attachment.role === "sql"

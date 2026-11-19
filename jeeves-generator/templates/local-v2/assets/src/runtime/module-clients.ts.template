@@ -27,6 +27,7 @@ import { periodic } from "./process.ts";
 import { bindLocalOperation, localOperationDefinition, sweepWorkTickets } from "./local-operation.ts";
 import { bindDurableWork, durableWorkDefinition, durableWorkNamespace } from "./durable-work.ts";
 import { receiptConsumerDefinition, bindReceiptConsumer } from "./receipt-consumer.ts";
+import type { ReceiptRetention } from "./receipts.ts";
 import { privateReplayKeys } from "./settings.ts";
 import { prepareProductOperations } from "./product-operations.ts";
 // @database-import-end
@@ -371,7 +372,7 @@ async function idempotentCall<Body>(
   }
 }
 /** Public product SQL uses separate credentials, retaining credential scope in the RG02 key. */
-export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown; work?: unknown; receipt?: unknown; owner?: string}) {
+export function prepareProductDatabase(binding: {tile: string; resource: string; module: string; property?: string; writable?: boolean; operation?: unknown; work?: unknown; receipt?: unknown; receiptPolicy?: ReceiptRetention; owner?: string}) {
   const maximum = productDatabases.find((row) => row.resource === binding.resource);
   const login = productLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);
   if (!maximum || !login) throw new Error("No scoped product SQL binding");
@@ -380,7 +381,7 @@ export function prepareProductDatabase(binding: {tile: string; resource: string;
   const operations = prepareProductOperations(maximum, binding);
   const local = localOperationDefinition(binding.operation, binding.property ?? "", binding.writable ?? false);
   const work = durableWorkDefinition(binding.work, binding.property ?? "", binding.writable ?? false);
-  const receipt = receiptConsumerDefinition(binding.receipt, binding.property ?? "", binding.writable ?? false);
+  const receipt = receiptConsumerDefinition(binding.receipt, binding.property ?? "", binding.writable ?? false, binding.receiptPolicy);
   const namespace = work && durableWorkNamespace(binding.resource, binding.owner ?? binding.tile, work.work, binding.module);
   const keys = local?.definition.secret ? privateReplayKeys() : undefined;
   const runtimeLogin = localLogins.find((row) => row.resource === binding.resource && row.host === binding.tile);

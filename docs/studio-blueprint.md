@@ -331,7 +331,7 @@ and the handler scaffold separately from runtime evidence. No synthetic queue is
 Event counter settings include `deliveryHorizonSeconds`; the normalized selection consumes it as
 `receipt.deliveryHorizonSeconds`, and its process config passes the value with fixed seven-day
 retention to the counter. Event consumer has an optional writable owned `state` connection. A
-standalone consumer remains an application stub; exporting `receiptConsumer = defineReceiptConsumer`
+standalone consumer carries saved `replayDays` and `receiptDays` on its module settings. A Scheduled task carries optional `keepDailyTotalsMonths` alongside `intervalSeconds`. Blueprint values describe declared policy. The standalone application stub exports `receiptConsumer = defineReceiptConsumer`
 opts its existing delivery loop into generated receipt/scoped-product processing. Blueprint state
 connections and precise product declarations remain authoritative. This adds no public admin route.
 

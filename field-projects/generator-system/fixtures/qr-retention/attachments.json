@@ -1,0 +1,49 @@
+[
+  {
+    "source": "owned/aggregate.ts",
+    "destination": "src/modules/click-processor/aggregate-click.ts",
+    "role": "stub",
+    "module": "aggregate-click"
+  },
+  {
+    "source": "owned/cleanup.ts",
+    "destination": "src/modules/click-processor/retention-sweep.ts",
+    "role": "hooks",
+    "module": "retention-sweep"
+  },
+  {
+    "source": "owned/products.json",
+    "destination": "infra/postgres/analytics/products.json",
+    "role": "product"
+  },
+  {
+    "source": "owned/0001-initial.sql",
+    "destination": "infra/postgres/analytics/products/migrations/p_click_processor_owner/0001-initial.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/increment_day.sql",
+    "destination": "infra/postgres/analytics/products/commands/increment_day.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/increment_breakdown.sql",
+    "destination": "infra/postgres/analytics/products/commands/increment_breakdown.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/delete_days.sql",
+    "destination": "infra/postgres/analytics/products/commands/delete_days.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/delete_breakdowns.sql",
+    "destination": "infra/postgres/analytics/products/commands/delete_breakdowns.sql",
+    "role": "product"
+  },
+  {
+    "source": "owned/record_sweep.sql",
+    "destination": "infra/postgres/analytics/products/commands/record_sweep.sql",
+    "role": "product"
+  }
+]

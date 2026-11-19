@@ -8,6 +8,7 @@ import type { DeclaredAccess } from "./ownership.ts";
 import {
   type StudioComponentKind,
   studioComponentKinds,
+  studioComponentLimits,
   webhookBodyLimitSchema,
   webhookSignatureFormatSchema,
 } from "./studio-components.ts";
@@ -42,6 +43,33 @@ export type GenerationValue = string | number;
 export type GenerationSupportedValues =
   | { values: readonly GenerationValue[] }
   | { integer: { min: number; max: number } };
+export const generationRetentionSettings = {
+  "event-consumer": [
+    {
+      setting: "replayDays",
+      input: "consumer.replayDays",
+      supported: { integer: studioComponentLimits.replayDays },
+      consumer: "module-stub.receipt-retention",
+      userNeed: "Declare the maximum replay delay the broker and archive must cover.",
+    },
+    {
+      setting: "receiptDays",
+      input: "consumer.receiptDays",
+      supported: { integer: studioComponentLimits.receiptDays },
+      consumer: "module-stub.receipt-retention",
+      userNeed: "Choose how long completed event IDs prevent another count.",
+    },
+  ],
+  "scheduled-task": [
+    {
+      setting: "keepDailyTotalsMonths",
+      input: "task.keepDailyTotalsMonths",
+      supported: { integer: studioComponentLimits.keepDailyTotalsMonths },
+      consumer: "scheduled-task.utc-cutoff",
+      userNeed: "Choose the UTC calendar window passed to the registered cleanup commands.",
+    },
+  ],
+} as const;
 export type GenerationSettingRule = {
   input: string;
   setting: string;

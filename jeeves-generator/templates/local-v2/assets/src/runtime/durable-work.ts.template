@@ -387,8 +387,9 @@ export function createWorkStore(options: {
     async checkSchedule() {
       return storage(pool, checkSchedule, { readOnly: true });
     },
-    async schedule(intervalSeconds: number): Promise<"failed" | "unknown" | undefined> {
+    async schedule(intervalSeconds: number, keepDailyTotalsMonths?: number): Promise<"failed" | "unknown" | undefined> {
       validateInterval(intervalSeconds);
+      validateCalendarMonths(keepDailyTotalsMonths);
       // A caller timeout does not release an actual database/transport slot.
       if (active.size) return;
       return storage(pool, async (tx) => {
@@ -407,18 +408,48 @@ export function createWorkStore(options: {
         const pendingState = pending.rows[0]?.state;
         if (pendingState)
           return pendingState === "failed" || pendingState === "unknown" ? pendingState : undefined;
-        const { rows } = await tx.query<{ tick: string }>(
-          "SELECT floor(extract(epoch FROM clock_timestamp())/$1::int)::bigint::text AS tick",
-          [intervalSeconds],
+        const { rows } = await tx.query<{ tick: string; cutoff_day?: string }>(
+          keepDailyTotalsMonths === undefined
+            ? "SELECT floor(extract(epoch FROM clock_timestamp())/$1::int)::bigint::text AS tick"
+            : `WITH now AS (SELECT clock_timestamp() AS instant)
+               SELECT floor(extract(epoch FROM instant)/$1::int)::bigint::text AS tick,
+                 to_char((instant AT TIME ZONE 'UTC')::date - make_interval(months => $2::int), 'YYYY-MM-DD') AS cutoff_day
+               FROM now`,
+          keepDailyTotalsMonths === undefined
+            ? [intervalSeconds]
+            : [intervalSeconds, keepDailyTotalsMonths],
         );
         const tick = rows[0]?.tick;
         if (!tick || !/^[0-9]+$/.test(tick)) throw new Error("Invalid database interval identity");
-        const input = pure(() => definition.validate({ tick, intervalSeconds }));
+        const key = `s:${intervalSeconds}:${tick}`;
+        const calendar = keepDailyTotalsMonths === undefined
+          ? undefined
+          : { keepDailyTotalsMonths, cutoffDay: rows[0]?.cutoff_day };
+        if (calendar) {
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(calendar.cutoffDay ?? ""))
+            throw new Error("Invalid database UTC cutoff");
+          // A completed calendar tick keeps the original input as time and settings change.
+          const existing = await tx.query(
+            "SELECT 1 FROM jeeves.work_records WHERE namespace=$1 AND scope_key='{}' AND work_key=$2",
+            [namespace, key],
+          );
+          if (existing.rows.length) return;
+        }
+        const input = pure(() => {
+          const value = definition.validate({ tick, intervalSeconds, ...calendar });
+          if (calendar) {
+            const result = value as Partial<typeof calendar> | null;
+            if (result?.cutoffDay !== calendar.cutoffDay ||
+              result?.keepDailyTotalsMonths !== calendar.keepDailyTotalsMonths)
+              throw new Error("Scheduled cleanup validation must preserve the compiled UTC cutoff");
+          }
+          return value;
+        });
         const remote = definition.integration
           ? pure(() => definition.integration!.map(input as Readonly<unknown>))
           : null;
         if (definition.integration && remote === undefined) throw new WorkError("WORK_INPUT");
-        await insert(tx, "{}", `s:${intervalSeconds}:${tick}`, input, remote);
+        await insert(tx, "{}", key, input, remote);
       });
     },
     get idle() {
@@ -774,6 +805,7 @@ export function startDurableWork(
   scope: ProcessScope,
   log: (event: string, fields: WorkLogFields) => void,
   intervalSeconds?: number,
+  keepDailyTotalsMonths?: number,
 ) {
   if (work === undefined) return;
   const definition = definitions.get(work as object);
@@ -795,7 +827,7 @@ export function startDurableWork(
       try {
         await withOperation(execution.context, async () => {
           if (intervalSeconds !== undefined) {
-            const halted = await binding.store.schedule(intervalSeconds);
+            const halted = await binding.store.schedule(intervalSeconds, keepDailyTotalsMonths);
             if (halted)
               log(`scheduled task halted ${halted}`, {
                 operation: definition!.id,
@@ -844,6 +876,10 @@ function validateInterval(intervalSeconds: number) {
   if (!Number.isSafeInteger(intervalSeconds) || intervalSeconds < 1 || intervalSeconds > 604800)
     throw new Error("Scheduled interval must be 1..604800 seconds");
 }
+function validateCalendarMonths(months: number | undefined) {
+  if (months !== undefined && (!Number.isSafeInteger(months) || months < 1 || months > 120))
+    throw new Error("Keep daily totals must be 1..120 calendar months");
+}
 /** Private generated validation: no timer methods or lease controls enter the extension API. */
 export function validateScheduledTaskBinding(work: unknown, properties: readonly string[]) {
   validateDurableWorkBinding(work, properties);
@@ -860,8 +896,10 @@ export async function startScheduledTask(
   scope: ProcessScope,
   log: (event: string, fields: WorkLogFields) => void,
   intervalSeconds: number,
+  keepDailyTotalsMonths?: number,
 ) {
   validateInterval(intervalSeconds);
+  validateCalendarMonths(keepDailyTotalsMonths);
   const definition = definitions.get(work as object);
   validateScheduledTaskBinding(work, definition ? [definition.database] : []);
   const handle = Object.getOwnPropertyDescriptor(dependencies, definition!.database)?.value;
@@ -873,5 +911,5 @@ export async function startScheduledTask(
   } finally {
     execution.close();
   }
-  startDurableWork(work, dependencies, scope, log, intervalSeconds);
+  startDurableWork(work, dependencies, scope, log, intervalSeconds, keepDailyTotalsMonths);
 }

@@ -12,8 +12,9 @@ export interface ReceiptRetention {
 }
 export function validateReceiptRetention(policy: ReceiptRetention): void {
   if (![policy.deliveryHorizonSeconds, policy.retentionSeconds].every(Number.isSafeInteger) ||
-    policy.deliveryHorizonSeconds < 1 || policy.retentionSeconds < policy.deliveryHorizonSeconds ||
-    policy.retentionSeconds > 2592000) throw new Error("Insufficient or invalid receipt retention");
+    policy.deliveryHorizonSeconds < 1 || policy.deliveryHorizonSeconds > 2678400 ||
+    policy.retentionSeconds < policy.deliveryHorizonSeconds ||
+    policy.retentionSeconds > 3024000) throw new Error("Insufficient or invalid receipt retention");
 }
 export class ReceiptConflict extends Error {
   readonly code = "RECEIPT_IDENTITY_CONFLICT";

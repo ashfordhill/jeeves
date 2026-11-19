@@ -636,7 +636,8 @@ module. Public eligible-record HTTP exposure remains supported.
 
 ### Scheduled task (RG16)
 
-A Scheduled task in a Service or Worker has one normal setting: **Interval (seconds)**, 1–604800
+**Keep daily totals (months)** is optional and accepts 1–120 when the task has a writable owned PostgreSQL state link and a declared product DELETE grant. The accepted tick supplies a database-time UTC cutoff to registered application commands.
+A Scheduled task in a Service or Worker supports **Interval (seconds)**, 1–604800
 (default 60). It requires a **state** link to a writable PostgreSQL database and Runnable
 processes. Missing state leaves an explicit handler scaffold; incompatible owner/write access
 refuses the connection. Worker ownership is declared with **shareOwner**, never inferred from a
@@ -658,10 +659,10 @@ Event counter exposes **Maximum replay delay (seconds)** (`deliveryHorizonSecond
 The declared maximum includes original delivery, retries, quarantine/operator delay and subsequent delivery together. Generated counter receipts
 retain identity for seven days after database-time completion. Dates and aggregation destinations
 never scope receipt identity. A repeat with different effect-relevant data conflicts.
-Retention, cleanup batches, heartbeat and ACK controls are generated internals, without inspector
+Counter retention, cleanup batches, heartbeat and ACK controls are generated internals without inspector
 fields. A standalone Event consumer can connect optional writable owned **state** and declare a
-scoped `receiptConsumer` in its application module; declared retention must cover its delivery
-horizon and is at most 30 days. Event counter's seven-day policy is distinct from that public declaration.
+scoped `receiptConsumer` in its application module. **Maximum replay delay (days)** accepts 1–31 and **Keep counted IDs (days)** accepts 1–35. Selecting either uses seven days of replay or 35 days of receipts for its omitted partner. Clearing both leaves the old code configuration active. Declared retention must cover its delivery
+horizon and is at most 35 days. Event counter's seven-day policy is distinct from that public declaration.
 See [the emitted extension contract](plans/reliable-generation/evidence/rg18/protocol.md).
 
 ### Browser session (RG19)

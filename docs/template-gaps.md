@@ -34,7 +34,7 @@ Found in the 2026-11-12 review. Each is a fixed policy inside a template.
 | Limit | Status |
 | --- | --- |
 | The cache read turns its cache off for the life of the process after one stalled cache call | Fixed in PF07 |
-| The event counter keeps one receipt row per event for ever | Fixed in RG18: seven-day completed receipts, bounded idle cleanup and declared delivery horizon. Standalone checked consumers declare retention covering their horizon, up to30 days; no forever dedupe. |
+| The event counter keeps one receipt row per event for ever | Fixed in RG18: seven-day completed receipts, bounded idle cleanup and declared delivery horizon. Standalone checked consumers can declare up to 31 days of replay and 35 days of receipts. The broker and archive must cover the selected period. |
 | The outbox relay sends at most 10 rows about once a second | Open |
 | A process that loses its broker exits and is not restarted | Fixed in BR01 |
 | Host names are compiled into the export for local Compose | Fixed in QG06: endpoints come from the environment; values are deployment |
@@ -199,7 +199,7 @@ No QRWTY rebuild, live legacy namespace conversion or rolling mixed-version proo
 | Product requirement | Installed boundary and proposed treatment |
 | --- | --- |
 | Stripe-signed bodies up to 256 KiB and 35 days of completed-event deduplication | The generic receiver verifies Jeeves HMAC envelopes up to 64 KiB and keeps completed work seven days. The proposed edge adapter verifies Stripe, then signs a bounded canonical event. The billing owner must retain its own event ID and digest. [Payment ingress](field-projects/qrwty/README.md#where-generation-ends) |
-| Pub/Sub replay for 31 days with 35-day click receipts | The counter retains seven days and the checked consumer supports at most 30. The proposal keeps an Event consumer stub and an explicit atomic receipt/aggregate requirement. The longer window needs a compatible mechanism and replay evidence. [Click processing](field-projects/qrwty/README.md#where-generation-ends) |
+| Pub/Sub replay for 31 days with 35-day click receipts | Unit 3 supports 31-day replay with 35-day checked receipts and a product-owned UTC cleanup query. The Event counter still retains seven days. QRWTY must supply its event mapping, registered aggregate and cleanup commands, and deployment retention for the broker and archive. [Click processing](field-projects/qrwty/README.md#where-generation-ends) |
 | Auth0 browser login and service calls | Auth0 is a generated Identity choice. The deployment contract lists tenant, audience, callback and private credential bindings. The real-tenant proof awaits designated Auth0 application and user access. [Auth0 verification](plans/qrwty-v2-generator/evidence/auth0/README.md) |
 
 The Webhook receiver now verifies Stripe snapshot events directly. The generated inbox retains completed IDs for 35 days. Checkout, reconciliation and subscription policy remain application work. Click consumer and cleanup retention settings remain open. [Stripe generator evidence](plans/qrwty-v2-generator/evidence/stripe/README.md) · [Owner’s implementation notes](field-projects/qrwty/implementation-notes.md)

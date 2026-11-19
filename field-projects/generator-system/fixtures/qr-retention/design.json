@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 3,
+  "revision": 13,
+  "elements": [
+    {
+      "id": "redirect",
+      "name": "Redirect",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "click-events",
+      "name": "Click events",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "click-processor",
+      "name": "Click processor",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics",
+      "classification": {
+        "kind": "Data store"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "publish-clicks",
+      "kind": "depends-on",
+      "from": {
+        "element": "redirect"
+      },
+      "to": {
+        "element": "click-events"
+      },
+      "planned": {
+        "label": "Publishes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "process-clicks",
+      "kind": "depends-on",
+      "from": {
+        "element": "click-events"
+      },
+      "to": {
+        "element": "click-processor"
+      },
+      "planned": {
+        "label": "Consumes",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "click-processor-analytics",
+      "kind": "uses-database",
+      "from": {
+        "element": "click-processor"
+      },
+      "to": {
+        "element": "analytics"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Click retention fixture",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "redirect",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "click-events",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "work-queue",
+            "provider": "unspecified"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "redirect"
+          }
+        },
+        {
+          "element": "click-processor",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "analytics",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "click-processor"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "publish-clicks",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "process-clicks",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "click-processor-analytics",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "aggregate-click",
+          "host": "click-processor",
+          "name": "Event consumer",
+          "settings": {
+            "kind": "event-consumer",
+            "replayDays": 31,
+            "receiptDays": 35
+          }
+        },
+        {
+          "id": "retention-sweep",
+          "host": "click-processor",
+          "name": "Scheduled task",
+          "settings": {
+            "kind": "scheduled-task",
+            "intervalSeconds": 60,
+            "keepDailyTotalsMonths": 13
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "aggregate-click-click-events",
+          "from": "aggregate-click",
+          "to": {
+            "kind": "element",
+            "id": "click-events",
+            "via": "process-clicks"
+          }
+        },
+        {
+          "id": "aggregate-click-analytics",
+          "from": "aggregate-click",
+          "to": {
+            "kind": "element",
+            "id": "analytics",
+            "via": "click-processor-analytics"
+          }
+        },
+        {
+          "id": "retention-sweep-analytics",
+          "from": "retention-sweep",
+          "to": {
+            "kind": "element",
+            "id": "analytics",
+            "via": "click-processor-analytics"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "open-link",
+          "lane": "download",
+          "element": "redirect"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Consume"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "aggregate-click",
+        "target": {
+          "kind": "component",
+          "component": "aggregate-click",
+          "host": "click-processor"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "retention-sweep",
+        "target": {
+          "kind": "component",
+          "component": "retention-sweep",
+          "host": "click-processor"
+        },
+        "template": {
+          "id": "scheduled-task",
+          "version": "0.1.0",
+          "sha256": "cab15eb42e4a1e885afe656d3f4f5f98c1e839c6c618a5fb2fed8f76fc5ccbbf"
+        },
+        "binding": {
+          "kind": "scheduled-task",
+          "state": {
+            "resource": "analytics",
+            "connection": "click-processor-analytics"
+          }
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "click-processor-owner",
+        "name": "Click processor"
+      }
+    ],
+    "roles": [
+      {
+        "element": "click-processor",
+        "owner": "click-processor-owner",
+        "kind": "worker"
+      }
+    ],
+    "resources": [
+      {
+        "element": "analytics",
+        "authority": "click-processor-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      }
+    ],
+    "grants": [
+      {
+        "role": "click-processor",
+        "resource": "analytics",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "daily",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "breakdowns",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "sweeps",
+              "operations": ["SELECT", "INSERT"]
+            }
+          ],
+          "views": []
+        }
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "click-processor-analytics",
+        "access": "read-write"
+      }
+    ]
+  }
+}

@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { normalizedJsonDto } from "./hook-boundary.ts";
 import { withLocalPolicy, operation, withOperation, withProcess } from "./operation.ts";
 import { productMutation, type ScopedCommands, type CommandFactory } from "./product-mutation.ts";
-import { createReceipts, ReceiptConflict, validateReceiptRetention } from "./receipts.ts";
+import { createReceipts, ReceiptConflict, validateReceiptRetention, type ReceiptRetention } from "./receipts.ts";
 import { durableIdentity } from "./durable-sql.ts";
 import { NonRetryable, unreachable } from "./delivery.ts";
 import { transaction, type TransactionPool, type Tx } from "./transaction.ts";
@@ -12,38 +12,46 @@ import { periodic, type ProcessScope } from "./process.ts";
 export interface ReceiptEvent { readonly id: string; readonly payload: unknown; }
 declare const receiptBrand: unique symbol;
 export interface ReceiptConsumer<Dependencies> { readonly [receiptBrand]: Dependencies; }
-interface Definition {
+type Definition = {
   database: string;
-  deliveryHorizonSeconds: number;
-  retentionSeconds: number;
-  map(input: unknown, messageId: string): ReceiptEvent;
+  map(input: unknown, messageId: string, policy: Readonly<ReceiptRetention>): ReceiptEvent;
   complete(event: ReceiptEvent, commands: ScopedCommands): Promise<void>;
-}
+} & (ReceiptRetention | { deliveryHorizonSeconds?: never; retentionSeconds?: never });
 const definitions = new WeakMap<object, Readonly<Definition>>();
 const bindings = new WeakMap<object, { definition: Readonly<Definition>; run(message: { body: Uint8Array; messageId?: string }): Promise<void>; start(scope: ProcessScope): void }>();
 export function defineReceiptConsumer<Dependencies>(definition: Definition & { database: keyof Dependencies & string }): ReceiptConsumer<Dependencies> {
-  if (!definition || Object.keys(definition).sort().join() !== "complete,database,deliveryHorizonSeconds,map,retentionSeconds" ||
+  if (!definition || !["complete,database,map", "complete,database,deliveryHorizonSeconds,map,retentionSeconds"].includes(Object.keys(definition).sort().join()) ||
     Object.values(Object.getOwnPropertyDescriptors(definition)).some(p => !("value" in p)) ||
     typeof definition.database !== "string" || !definition.database || typeof definition.map !== "function" ||
     typeof definition.complete !== "function") throw Error("Invalid receipt consumer declaration");
-  validateReceiptRetention(definition);
+  if ("deliveryHorizonSeconds" in definition) validateReceiptRetention(definition as ReceiptRetention);
   const value = Object.freeze({}) as ReceiptConsumer<Dependencies>;
   definitions.set(value, Object.freeze({ ...definition }));
   return value;
 }
-export function receiptConsumerDefinition(value: unknown, property: string, writable: boolean) {
+function effectivePolicy(definition: Readonly<Definition>, compiled?: ReceiptRetention) {
+  const deliveryHorizonSeconds = compiled?.deliveryHorizonSeconds ?? definition.deliveryHorizonSeconds;
+  const retentionSeconds = compiled?.retentionSeconds ?? definition.retentionSeconds;
+  if (deliveryHorizonSeconds === undefined || retentionSeconds === undefined)
+    throw Error("Declare replay and receipt periods in Studio or provide both legacy seconds values");
+  const policy = { deliveryHorizonSeconds, retentionSeconds };
+  validateReceiptRetention(policy);
+  return Object.freeze(policy);
+}
+export function receiptConsumerDefinition(value: unknown, property: string, writable: boolean, compiled?: ReceiptRetention) {
   if (value === undefined) return undefined;
   const definition = value && typeof value === "object" ? definitions.get(value) : undefined;
   if (!definition) throw Error("Invalid receipt consumer declaration");
   if (definition.database !== property) return undefined;
   if (!writable) throw Error("Receipt consumer requires writable owned state");
-  return { value: value as object, definition };
+  return { value: value as object, definition, policy: effectivePolicy(definition, compiled) };
 }
-export function validateReceiptConsumerBinding(value: unknown, databases: readonly string[], loop: boolean) {
-  if (value === undefined) return;
+export function validateReceiptConsumerBinding(value: unknown, databases: readonly string[], loop: boolean, compiled?: ReceiptRetention) {
+  if (value === undefined && !compiled) return;
   const definition = value && typeof value === "object" ? definitions.get(value) : undefined;
   if (!definition || !loop || !databases.includes(definition.database))
-    throw Error("Receipt consumer requires a delivery loop and writable owned state");
+    throw Error("Receipt policy requires defineReceiptConsumer on a delivery loop with writable owned state");
+  effectivePolicy(definition, compiled);
 }
 /** One actual transaction slot stays occupied after the caller deadline, through rollback/release. */
 export async function receiptTransaction<T>(pool: TransactionPool, effect: (tx: Tx) => Promise<T>): Promise<T> {
@@ -54,12 +62,12 @@ export async function receiptTransaction<T>(pool: TransactionPool, effect: (tx: 
 export function bindReceiptConsumer(handle: object, declared: NonNullable<ReturnType<typeof receiptConsumerDefinition>>, options: {
   namespace: string; consumerId: string; pool: TransactionPool; productRole: string; commands: CommandFactory;
 }) {
-  const { definition } = declared;
+  const { definition, policy } = declared;
   const namespace = durableIdentity(options.namespace), consumerId = durableIdentity(options.consumerId), workerId = randomUUID();
   const receipts = createReceipts({ schema: "jeeves", table: "consumer_receipts" }, {
     payload: input => normalizedJsonDto(input) as ReceiptEvent,
     result: input => { if (input !== true) throw Error("Invalid receipt result"); return true; },
-  }, definition);
+  }, policy);
   let inFlight = 0;
   let state: "running" | "storage-unavailable" | "unknown" | "stopped" = "running";
   let started = false;
@@ -79,7 +87,7 @@ export function bindReceiptConsumer(handle: object, declared: NonNullable<Return
         if (!message.messageId || message.body.byteLength > 65536) throw Error("Invalid envelope");
         const input = normalizedJsonDto(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(message.body)));
         const mapped = withLocalPolicy(() => {
-          const value: unknown = definition.map(input, durableIdentity(message.messageId!));
+          const value: unknown = definition.map(input, durableIdentity(message.messageId!), policy);
           if (value instanceof Promise) {
             void value.catch(() => {});
             throw Error("Asynchronous receipt mapping is unsupported");

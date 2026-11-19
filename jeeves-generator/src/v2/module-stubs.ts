@@ -1,6 +1,7 @@
 import {
   generationCapabilities,
   generationLocalIdentity,
+  generationRetentionSettings,
   generationTemplates,
   type NormalizedGeneration,
   type NormalizedGenerationSelection,
@@ -13,6 +14,7 @@ import {
 } from "@jeeves/spec";
 import { pointerPart } from "../json.ts";
 import type { V2Emitter, V2Gap, V2TemplateFile } from "./registry.ts";
+import { receiptPolicy } from "./retention.ts";
 import { isStripeWebhook } from "./stripe-webhook.ts";
 
 type Slot = NormalizedStubModule["slots"][number];
@@ -94,22 +96,39 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
               consumer: rule.consumer,
               outputPaths: [dependenciesPath],
             })),
+            ...generationRetentionSettings["scheduled-task"].map(({ input, consumer }) => ({
+              input,
+              consumer,
+              outputPaths: [dependenciesPath],
+            })),
           ],
         },
         {
           ref: generationTemplates["module-stub"].ref,
           consumers: [
             { input: "binding", consumer: "module-stub", outputPaths: [dependenciesPath] },
+            ...generationRetentionSettings["event-consumer"].map(({ input, consumer }) => ({
+              input,
+              consumer,
+              outputPaths: [dependenciesPath],
+            })),
           ],
         },
       ],
     },
-    render: ({ model, asset }) => {
+    render: ({ model, settings, asset }) => {
       const selections = model.selections.filter((s) =>
         ["module-stub", "scheduled-task", "webhook-receiver"].includes(s.binding.kind),
       );
       if (!selections.length && !model.selections.some((s) => s.binding.kind === "browser-session"))
         return { files: [] };
+      const receipts = selections.flatMap((selection) => {
+        const policy = receiptPolicy(selection);
+        return policy ? [[selection.id, policy] as const] : [];
+      });
+      const retentionSources = settings
+        .filter((setting) => setting.canClear && setting.origin === "source")
+        .flatMap((setting) => setting.sourcePaths.map(pointer));
       const files: V2TemplateFile[] = [
         {
           path: dependenciesPath,
@@ -123,10 +142,13 @@ export function createLocalModuleStubs(sourcePaths: readonly string[]): V2Emitte
               ? `\n/** Compiled authenticated receiver limits. */\nexport const webhookReceivers = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "webhook-receiver").map((s) => [s.id, { ...(isStripeWebhook(s) && { signatureFormat: "stripe" }), bodyLimitBytes: Number(s.inputs["webhook.bodyLimitBytes"]), replayWindowSeconds: Number(s.inputs["webhook.replayWindowSeconds"]) }])))} as const;\n`
               : "") +
             (selections.some((s) => s.binding.kind === "scheduled-task")
-              ? `\n/** Compiled intervals; protected work retry and fence policy stays private. */\nexport const scheduledTasks = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "scheduled-task").map((s) => [s.id, { intervalSeconds: s.inputs["task.intervalSeconds"] }])))} as const;\n`
+              ? `\n/** Compiled intervals; protected work retry and fence policy stays private. */\nexport const scheduledTasks = ${JSON.stringify(Object.fromEntries(selections.filter((s) => s.binding.kind === "scheduled-task").map((s) => [s.id, { intervalSeconds: s.inputs["task.intervalSeconds"], keepDailyTotalsMonths: s.inputs["task.keepDailyTotalsMonths"] }])))} as const;\n`
+              : "") +
+            (receipts.length
+              ? `\n/** Compiled replay windows and receipt lifetimes for checked event consumers. */\nexport const receiptConsumers = ${JSON.stringify(Object.fromEntries(receipts))} as const;\n`
               : ""),
           ownership: "generated-scaffold",
-          sourcePaths: selections.map((s) => pointer(s.sourcePath)),
+          sourcePaths: [...selections.map((s) => pointer(s.sourcePath)), ...retentionSources],
         },
         {
           path: settingsPath,
@@ -289,6 +311,8 @@ function stubFiles(
   }[],
 ) {
   const scheduled = selection.binding.kind === "scheduled-task";
+  const calendar = selection.inputs["task.keepDailyTotalsMonths"] !== undefined;
+  const checked = receiptPolicy(selection) !== undefined;
   const webhook = selection.binding.kind === "webhook-receiver";
   const route = role === "route";
   const loop = role === "loop";
@@ -422,7 +446,9 @@ function stubFiles(
           'import { defineDurableWork, declareSettings } from "../../extension-api/index.ts";',
           `import type { Dependencies } from "./${file(paths.slots)}";`,
           "export const settings = declareSettings({});",
-          "type Tick = { tick: string; intervalSeconds: number };",
+          calendar
+            ? "type Tick = { tick: string; intervalSeconds: number; cutoffDay?: string; keepDailyTotalsMonths?: number };"
+            : "type Tick = { tick: string; intervalSeconds: number };",
           "/** Keep id/version stable while work is unfinished. Interval is compiled separately. */",
           "export const durableWork = defineDurableWork<Tick, Dependencies>({",
           `  database: ${JSON.stringify(properties.find((p) => p.slot.id === "state")?.property)},`,
@@ -431,7 +457,12 @@ function stubFiles(
           "  validate(input) {",
           "    const tick = input as Tick;",
           '    if (!tick || typeof tick.tick !== "string" || !/^[0-9]+$/.test(tick.tick) || !Number.isInteger(tick.intervalSeconds) || tick.intervalSeconds < 1 || tick.intervalSeconds > 604800) throw new Error("Invalid tick");',
-          "    return { tick: tick.tick, intervalSeconds: tick.intervalSeconds };",
+          ...(calendar
+            ? [
+                '    if (tick.cutoffDay !== undefined && (!/^\\d{4}-\\d{2}-\\d{2}$/.test(tick.cutoffDay) || !Number.isInteger(tick.keepDailyTotalsMonths))) throw new Error("Invalid calendar cutoff");',
+                "    return { tick: tick.tick, intervalSeconds: tick.intervalSeconds, ...(tick.cutoffDay !== undefined && { cutoffDay: tick.cutoffDay, keepDailyTotalsMonths: tick.keepDailyTotalsMonths }) };",
+              ]
+            : ["    return { tick: tick.tick, intervalSeconds: tick.intervalSeconds };"]),
           "  },",
           "/** Reconcile current product state with registered commands. This transaction may run again; no network, SQL, lease or timer handles. */",
           "  async complete(tick, commands, caller, remote) {",
@@ -440,36 +471,60 @@ function stubFiles(
           "});",
           "",
         ].join("\n")
-      : [
-          `// ${named} in ${line(module.hostName)}: ${line(description)}`,
-          "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
-          ...(route
-            ? ['import type { ModuleRequest, ModuleResponse } from "../../extension-api/index.ts";']
-            : []),
-          ...(loop ? ['import type { ModuleMessage } from "../../extension-api/index.ts";'] : []),
-          `import type { Dependencies } from "./${file(paths.slots)}";`,
-          'import { declareSettings } from "../../extension-api/index.ts";',
-          "",
-          "/** The settings this module reads: text(), integer(), url(), signingKeys(purpose) or sealingKeys(purpose);",
-          " * optional(kind) for an optional one. Signing/sealing handles keep private ring files internal;",
-          " * bind every value to trusted scope and context. Protected credentials stay generated. */",
-          "export const settings = declareSettings({});",
-          "",
-          ...(route
-            ? [
-                `/** Answers any method on /modules/${generationLocalIdentity(module.component).local} and every path below it. */`,
-                `export async function ${entry}(dependencies: Dependencies, request: ModuleRequest): Promise<ModuleResponse> {`,
-              ]
-            : loop
+      : checked
+        ? [
+            "// @jeeves-extension: operation",
+            `// ${named}: record each event ID and its product effect atomically.`,
+            'import { declareSettings, defineReceiptConsumer } from "../../extension-api/index.ts";',
+            'import type { ModuleMessage } from "../../extension-api/index.ts";',
+            `import type { Dependencies } from "./${file(paths.slots)}";`,
+            "export const settings = declareSettings({});",
+            "export const receiptConsumer = defineReceiptConsumer<Dependencies>({",
+            `  database: ${JSON.stringify(properties.find((p) => p.slot.id === "state")?.property)},`,
+            "  map(input, messageId, policy) {",
+            '    throw new Error("Not implemented: validate and map the event");',
+            "  },",
+            "  async complete(event, commands) {",
+            '    throw new Error("Not implemented: record the event with registered commands");',
+            "  },",
+            "});",
+            `export async function ${entry}(dependencies: Dependencies, message: ModuleMessage): Promise<void> {`,
+            '  throw new Error("Not implemented: record the event using the receipt declaration");',
+            "}",
+            "",
+          ].join("\n")
+        : [
+            `// ${named} in ${line(module.hostName)}: ${line(description)}`,
+            "// Write the module here. Export never overwrites your edits: export afresh and carry them over.",
+            ...(route
               ? [
-                  '/** Handles each message from the queues it consumes. "Not implemented" sends the message to its queue\'s .failed; any other error is retried. */',
-                  `export async function ${entry}(dependencies: Dependencies, message: ModuleMessage): Promise<void> {`,
+                  'import type { ModuleRequest, ModuleResponse } from "../../extension-api/index.ts";',
                 ]
-              : [`export async function ${entry}(dependencies: Dependencies): Promise<void> {`]),
-          `  throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
-          "}",
-          "",
-        ].join("\n");
+              : []),
+            ...(loop ? ['import type { ModuleMessage } from "../../extension-api/index.ts";'] : []),
+            `import type { Dependencies } from "./${file(paths.slots)}";`,
+            'import { declareSettings } from "../../extension-api/index.ts";',
+            "",
+            "/** The settings this module reads: text(), integer(), url(), signingKeys(purpose) or sealingKeys(purpose);",
+            " * optional(kind) for an optional one. Signing/sealing handles keep private ring files internal;",
+            " * bind every value to trusted scope and context. Protected credentials stay generated. */",
+            "export const settings = declareSettings({});",
+            "",
+            ...(route
+              ? [
+                  `/** Answers any method on /modules/${generationLocalIdentity(module.component).local} and every path below it. */`,
+                  `export async function ${entry}(dependencies: Dependencies, request: ModuleRequest): Promise<ModuleResponse> {`,
+                ]
+              : loop
+                ? [
+                    '/** Handles each message from the queues it consumes. "Not implemented" sends the message to its queue\'s .failed; any other error is retried. */',
+                    `export async function ${entry}(dependencies: Dependencies, message: ModuleMessage): Promise<void> {`,
+                  ]
+                : [`export async function ${entry}(dependencies: Dependencies): Promise<void> {`]),
+            `  throw new Error(${JSON.stringify(`Not implemented: ${module.name}`)});`,
+            "}",
+            "",
+          ].join("\n");
   const linkPaths = module.slots.flatMap((slot) =>
     slot.connections.map((c) => pointer(c.sourcePath)),
   );

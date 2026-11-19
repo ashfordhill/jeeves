@@ -29,6 +29,7 @@ import {
 } from "./http-wiring.ts";
 import { pubsubSubscription, stubPubsub, subscriberQueue } from "./local-contract.ts";
 import { moduleEntryName, moduleStubPaths, stubProperties } from "./module-stubs.ts";
+import { receiptPolicy } from "./retention.ts";
 
 const tileLoop = "../runtime/tile-loop.ts";
 const tileSearch = "../runtime/tile-search.ts";
@@ -790,6 +791,11 @@ function stubLoops(
   const stubPropertiesForReceipt = stub.stores?.some(
     (store) => store.kind === "database" && store.access !== "read",
   );
+  const policy = receiptPolicy(selection) ? `receiptConsumers[${text(selection.id)}]` : undefined;
+  const policyImport = policy
+    ? 'import { receiptConsumers } from "../modules/dependencies.ts";\n'
+    : "";
+  const argument = policy ? `, ${policy}` : "";
   const templated = generationTemplateQueues(selections);
   // Which loops consume a Pub/Sub topic, in the order of `loops`.
   const pubsub = (stub.consumes ?? []).map((queue) =>
@@ -849,7 +855,7 @@ function stubLoops(
             sourcePaths: [pointer(selection.sourcePath)],
             content: `/** Internal explicit requeue, under the existing worker credentials. */
 import * as Module from "../modules/${process.tile}/${id}.ts";
-import { validateReceiptConsumerBinding } from "../runtime/receipt-consumer.ts";
+${policyImport}import { validateReceiptConsumerBinding } from "../runtime/receipt-consumer.ts";
 import { createProcessLifecycle } from "../runtime/process.ts";
 import { operation, withOperation, dependency } from "../runtime/operation.ts";
 ${pubsub[offset] ? "" : 'import { brokerBinding } from "../runtime/module-clients.ts";'}
@@ -861,7 +867,7 @@ validateReceiptConsumerBinding(declaration, ${JSON.stringify(
               stubProperties(module, true)
                 .filter((p) => p.type === "DatabaseReadWriter")
                 .map((p) => p.property),
-            )}, true);
+            )}, true${argument});
 if (!declaration) throw Error("UNGUARDED_REQUEUE_UNSUPPORTED");
 ${
   pubsub[offset]
@@ -885,7 +891,7 @@ await lifecycle.close();`
             content: `/** Internal bounded observation under this process's precise framework login.
  * Creates no worker heartbeat and never marks a stopped consumer as live. */
 import * as Module from "../modules/${process.tile}/${id}.ts";
-import { receiptConsumerDefinition } from "../runtime/receipt-consumer.ts";
+${policyImport}import { receiptConsumerDefinition } from "../runtime/receipt-consumer.ts";
 import { createProcessLifecycle } from "../runtime/process.ts";
 import { operation, withOperation } from "../runtime/operation.ts";
 import { prepareProductDatabase } from "../runtime/module-clients.ts";
@@ -915,15 +921,15 @@ const candidates = ${JSON.stringify(
                   };
                 }),
             )};
-const selected = candidates.find(binding => receiptConsumerDefinition(declaration,binding.property,true));
+const selected = candidates.find(binding => receiptConsumerDefinition(declaration,binding.property,true${argument}));
 if (!selected) throw Error("RECEIPT_STATUS_BINDING_UNAVAILABLE");
-const prepared = prepareProductDatabase({...selected,receipt:declaration});
+const prepared = prepareProductDatabase({...selected,receipt:declaration${policy ? `,receiptPolicy:${policy}` : ""}});
 if (!prepared.receipt || !prepared.runtimeLogin) throw Error("RECEIPT_STATUS_BINDING_UNAVAILABLE");
 const configuration = {...prepared.configuration,login:prepared.runtimeLogin};
 const lifecycle = createProcessLifecycle({mark:()=>{}});
 await lifecycle.start(async scope => {
   const db = createPostgres(configuration); db.on("error",()=>{}); scope.own(()=>db.end());
-  const receipts = createReceipts({schema:"jeeves",table:"consumer_receipts"},{payload:input=>input,result:input=>input},prepared.receipt!.definition);
+  const receipts = createReceipts({schema:"jeeves",table:"consumer_receipts"},{payload:input=>input,result:input=>input},prepared.receipt!.policy);
   const execution = operation({maximumMs:5000,signals:[scope.signal]});
   try {console.log(JSON.stringify(await withOperation(execution.context,()=>transaction(db,tx=>receipts.status(tx,${text(module.component)}),{readOnly:true}))));}
   finally {execution.close();}

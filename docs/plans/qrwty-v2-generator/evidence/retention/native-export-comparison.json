@@ -1,0 +1,8 @@
+{
+  "nativeRun": "native-final",
+  "comparison": "public CLI export after Studio default PostgreSQL eligibility repair",
+  "manifestRecords": 79,
+  "identicalFilePayloads": 78,
+  "changedFilePayloads": [".jeeves/report.json"],
+  "manifestAndReportHaveUpdatedProvenance": true
+}

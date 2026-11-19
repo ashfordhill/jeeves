@@ -33,6 +33,7 @@ import {
   generationProcessSettingKinds,
   generationProcessSettings,
   generationProcessShapes,
+  generationRetentionSettings,
   generationStubQueueProvider,
   sessionForwardingRefusal,
 } from "./generation-support.ts";
@@ -44,11 +45,12 @@ import {
   ownershipFindings,
   type ProductAccess,
 } from "./ownership.ts";
-import type {
-  StudioComponent,
-  StudioComponentKind,
-  StudioComponentTargetKind,
-  StudioModuleSlot,
+import {
+  receiptDayDefaults,
+  type StudioComponent,
+  type StudioComponentKind,
+  type StudioComponentTargetKind,
+  type StudioModuleSlot,
 } from "./studio-components.ts";
 import { type StudioStoreAccess, studioStoreAccess } from "./studio-links.ts";
 import { type StudioKind, studioDefinitionStatus } from "./studio-model.ts";
@@ -69,6 +71,7 @@ export type GenerationSettingDecision = {
   consumer: string;
   outputPaths: string[];
   status: "supported" | "fixed" | "unsupported" | "missing";
+  canClear?: true;
   userNeed?: string;
   normalControl: boolean;
 };
@@ -1327,6 +1330,103 @@ export function resolveGeneration(
   const processes = generation.processes
     ? normalizedProcesses(design, normalized, settings)
     : undefined;
+  for (const component of studio?.components ?? []) {
+    const kind = component.settings.kind;
+    if (kind !== "event-consumer" && kind !== "scheduled-task") continue;
+    const rules = generationRetentionSettings[kind];
+    const values =
+      component.settings.kind === "event-consumer"
+        ? [component.settings.replayDays, component.settings.receiptDays]
+        : [component.settings.keepDailyTotalsMonths];
+    const selected = normalized.find((item) => item.module?.component === component.id);
+    const process = processes?.find((item) => item.tile === component.host);
+    const stub = process?.stubs.find((item) => item.module === component.id);
+    const template =
+      selected && installed.templates.find((item) => sameContractRef(item.ref, selected.template));
+    const ownedState = selected?.module?.slots.find((slot) => slot.id === "state")?.connections[0]
+      ?.target;
+    const resource = ownedState?.kind === "element" ? ownedState.element : undefined;
+    const stateStore = stub?.stores?.find((store) => store.element === resource);
+    const grant = ownership.grants.find(
+      (item) => item.role === component.host && item.resource === resource,
+    );
+    const access =
+      ownedState?.kind === "element"
+        ? ownership.dependencies.find((item) => item.connection === ownedState.connection)
+        : undefined;
+    const usable =
+      stateStore?.kind === "database" &&
+      ["unspecified", "postgresql"].includes(stateStore.engine ?? "unspecified") &&
+      ["unspecified", "self-hosted"].includes(stateStore.provider) &&
+      stateStore.access !== "read" &&
+      stateStore.boundary !== "published-read" &&
+      grant &&
+      access &&
+      accessAllows(grant.access, "read-write") &&
+      accessAllows(access.access, "read-write") &&
+      (kind === "event-consumer"
+        ? selected?.binding.kind === "module-stub" && stub?.role === "loop"
+        : selected?.binding.kind === "scheduled-task" &&
+          stub?.role === "scheduled-task" &&
+          grant.product?.tables.some((table) => table.operations.includes("DELETE")));
+    const configured = values.some((value) => value !== undefined);
+    const effective =
+      kind === "event-consumer"
+        ? [values[0] ?? receiptDayDefaults.replayDays, values[1] ?? receiptDayDefaults.receiptDays]
+        : values;
+    const path = componentPath(component.id);
+    for (const [index, rule] of rules.entries()) {
+      const source = [...path, rule.setting];
+      const consumer = template?.consumers.find(
+        (item) =>
+          item.input === rule.input &&
+          item.consumer === rule.consumer &&
+          item.outputPaths.length > 0 &&
+          item.outputPaths.every(safeOutputPath),
+      );
+      if (!usable || !selected) {
+        if (values[index] !== undefined)
+          report(
+            "CONFIG_INVALID",
+            source,
+            kind === "event-consumer"
+              ? "Receipt retention requires a standalone Event consumer connected to a channel and writable owned PostgreSQL state."
+              : "Daily-total retention requires a runnable Scheduled task with writable owned PostgreSQL state and a declared product DELETE grant.",
+          );
+        continue;
+      }
+      if (!runtimeInstalled || !installed.processes || !consumer) {
+        if (template && values[index] !== undefined)
+          report(
+            "NEEDS_TEMPLATE",
+            [...selected.sourcePath, "template"],
+            "The installed template does not consume this retention setting.",
+          );
+        continue;
+      }
+      const value = configured ? effective[index] : undefined;
+      if (value !== undefined) selected.inputs[rule.input] = value;
+      settings.push({
+        selection: selected.id,
+        input: rule.input,
+        sourcePaths: [source],
+        origin:
+          values[index] !== undefined
+            ? "source"
+            : value !== undefined
+              ? "descriptor-default"
+              : "missing",
+        ...(value !== undefined && { value }),
+        supported: rule.supported,
+        consumer: rule.consumer,
+        outputPaths: [...consumer.outputPaths],
+        status: "supported",
+        userNeed: rule.userNeed,
+        canClear: true,
+        normalControl: true,
+      });
+    }
+  }
   const model: NormalizedGeneration = {
     version: 1,
     extensionApi: structuredClone(generationExtensionApi),

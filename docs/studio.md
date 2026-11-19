@@ -1639,7 +1639,7 @@ they do not continually revalidate every administrator change. Shutdown cancels 
 tracks active work and ignores late readiness restoration. Readiness is a bounded observation,
 not instantaneous knowledge of every failure.
 
-Scheduled task modules run in either Service or Worker using the common durable-work lifecycle.
+Scheduled task modules run in either Service or Worker using the common durable-work lifecycle. A task with a product DELETE grant can pass a UTC calendar-month cutoff to its registered cleanup commands.
 Adding a Worker from a lane creates its Scheduled task and enables Runnable processes; adding a
 Worker after a queue keeps the message-consumer workflow. Connect the task's state slot to its
 owned writable database. **Interval (seconds)** sets how often to check for work. Each job decides which records are due. A separate Worker joins
@@ -1662,7 +1662,7 @@ A **Webhook receiver** module in a Service uses writable owned database state an
 
 Event counter’s **Maximum replay delay (seconds)** sets how late a repeat delivery can arrive, up to seven days.
 The generated worker keeps receipt identity independent of aggregation dates and commits its
-increment before ACK. A standalone Event consumer may connect optional owned state; its checked
+increment before ACK. A standalone Event consumer may connect optional owned state and set the replay and receipt windows in days. Its checked
 receipt declaration maps immutable events and invokes registered product commands. Independent
 maintenance reports heartbeat, durable progress, unknown broker backlog and bounded cleanup
 backlog separately. Generated internal operations inspect counter state and explicitly requeue a

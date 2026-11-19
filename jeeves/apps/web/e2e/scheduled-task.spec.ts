@@ -25,7 +25,21 @@ test("RG16 edits both task intervals and connects a queue-free timer Worker by m
   await expect(tile(page, "Redirect service")).toBeVisible();
   const id = await createStudy(page, "E2E RG16 schedules", "blank");
   try {
-    const source = scheduledDesign();
+    const initial = scheduledDesign();
+    const access = applyOperations(
+      initial,
+      buildStudioCommand(initial, {
+        type: "setDatabaseAccess",
+        role: "maintenance-worker",
+        database: "state",
+        product: {
+          tables: [{ name: "items", operations: ["SELECT", "UPDATE", "DELETE"] }],
+          views: [],
+        },
+      }).ops,
+    );
+    if (!access.ok) throw Error("fixture product access");
+    const source = access.design;
     const link = source.architecture?.studio?.componentConnections?.find(
       (c) => c.from === "maintenance-worker-scheduled-task" && c.to.id === "state",
     );
@@ -77,6 +91,16 @@ test("RG16 edits both task intervals and connects a queue-free timer Worker by m
         .poll(async () => JSON.stringify(await design(page, id)))
         .toContain(`"intervalSeconds":${interval}`);
       await expect(inspector.getByLabel("Retries", { exact: true })).toHaveCount(0);
+      const months = inspector.getByLabel("Keep daily totals (months)", { exact: true });
+      if (module === "maintenance-worker-scheduled-task") {
+        await months.fill("13");
+        await inspector.getByLabel("Name", { exact: true }).click();
+        await expect
+          .poll(async () => JSON.stringify(await design(page, id)))
+          .toContain('"keepDailyTotalsMonths":13');
+      } else {
+        await expect(months).toHaveCount(0);
+      }
     }
     await page.screenshot({
       path: testInfo.outputPath("mouse-task-controls.png"),
@@ -86,6 +110,7 @@ test("RG16 edits both task intervals and connects a queue-free timer Worker by m
       await page.request.get(`/api/projects/${id}/blueprint?version=3`)
     ).json();
     expect(JSON.stringify(blueprint)).toContain('"intervalSeconds":300');
+    expect(JSON.stringify(blueprint)).toContain('"keepDailyTotalsMonths":13');
     await page.getByRole("button", { name: "Generate project", exact: true }).click();
     const preview = page.waitForResponse((r) =>
       r.url().endsWith("/experimental-generation/preview"),

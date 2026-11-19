@@ -103,7 +103,14 @@ async function scheduledFixture(
         work_key: string;
         work_id: string;
         state: string;
-        input: { value: { intervalSeconds: number; tick: string } };
+        input: {
+          value: {
+            intervalSeconds: number;
+            tick: string;
+            cutoffDay?: string;
+            keepDailyTotalsMonths?: number;
+          };
+        };
         expires_at: Date;
       }>(
         "SELECT work_key,work_id,state,input,expires_at FROM jeeves.work_records ORDER BY created_at,work_key",
@@ -127,6 +134,31 @@ async function scheduledFixture(
 }
 
 describe("RG16 database-time scheduled reconciliation", () => {
+  it("persists the UTC calendar cutoff at admission and preserves it through recovery and setting changes", async () => {
+    const f = await scheduledFixture();
+    const at = (instant: string) => Math.floor(Date.parse(instant) / 1000);
+    f.clock(at("2027-12-31T23:59:00Z"));
+    await f.pg.exec("SET TIME ZONE 'Pacific/Kiritimati'");
+    await Promise.all([f.store.schedule(60, 13), f.other.schedule(60, 13)]);
+    const [first] = await f.records();
+    expect(first?.input.value).toMatchObject({
+      intervalSeconds: 60,
+      keepDailyTotalsMonths: 13,
+      cutoffDay: "2026-11-30",
+    });
+    f.clock(at("2028-01-01T00:00:00Z"));
+    await f.other.schedule(60, 12);
+    expect((await f.records()).map((row) => row.input.value.cutoffDay)).toEqual(["2026-11-30"]);
+    await f.other.runBatch(() => {});
+    await f.store.schedule(60, 12);
+    await f.store.runBatch(() => {});
+    await f.other.schedule(60, 13);
+    expect((await f.records()).map((row) => row.input.value.cutoffDay)).toEqual([
+      "2026-11-30",
+      "2027-01-01",
+    ]);
+    await expect(f.store.schedule(60, 121)).rejects.toThrow("calendar months");
+  });
   it("competing copies dedupe a database tick despite different process clocks; completed retention cannot reopen the current interval", async () => {
     const f = await scheduledFixture();
     vi.useFakeTimers({ toFake: ["Date"] });

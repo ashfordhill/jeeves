@@ -191,8 +191,8 @@ export function buildSupportedAuthoringCommand(
   for (const key of changed) {
     const control = controls.find((control) => control.sourcePaths[0]?.at(-1) === key);
     const value = next[key];
-    // A tile setting only its process consumes may be cleared: the process runs the initial one.
-    if (control?.process && value === undefined) continue;
+    // Clearing an optional setting restores the template or process default.
+    if ((control?.process || control?.canClear) && value === undefined) continue;
     if (
       !control ||
       !("values" in control.supported

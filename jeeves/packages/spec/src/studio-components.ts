@@ -24,6 +24,9 @@ export const studioComponentLimits = {
   intervalSeconds: { min: 1, max: 604_800 },
   replayWindowSeconds: { min: 30, max: 300 },
   deliveryHorizonSeconds: { min: 1, max: 604_800 },
+  replayDays: { min: 1, max: 31 },
+  receiptDays: { min: 1, max: 35 },
+  keepDailyTotalsMonths: { min: 1, max: 120 },
   rateLimit: { min: 1, max: 1_000_000 },
   windowSeconds: { min: 1, max: 604_800 },
   l1MaxEntries: { min: 1, max: 10_000_000 },
@@ -41,6 +44,8 @@ export const studioComponentLimits = {
   statementTimeoutMs: { min: 1, max: 300_000 },
 } as const;
 const bounded = ({ min, max }: { min: number; max: number }) => z.int().min(min).max(max);
+/** Selecting either day setting opts into the compiled policy. */
+export const receiptDayDefaults = { replayDays: 7, receiptDays: 35 } as const;
 
 export const studioComponentKinds = [
   "browser-session",
@@ -119,6 +124,7 @@ export const studioWebhookReceiverSettingsSchema = z.strictObject({
 export const studioScheduledTaskSettingsSchema = z.strictObject({
   kind: z.literal("scheduled-task"),
   intervalSeconds: bounded(studioComponentLimits.intervalSeconds),
+  keepDailyTotalsMonths: bounded(studioComponentLimits.keepDailyTotalsMonths).optional(),
 });
 export const studioRateLimiterSettingsSchema = z.strictObject({
   kind: z.literal("rate-limiter"),
@@ -179,14 +185,28 @@ export const studioEventPublisherSettingsSchema = z.strictObject({
   /** Enabled requires the host to depend on a database; validation reports a readiness gap. */
   outbox: switchSchema,
 });
-export const studioEventConsumerSettingsSchema = z.strictObject({
-  kind: z.literal("event-consumer"),
-  concurrency: bounded(studioComponentLimits.concurrency).optional(),
-  batchSize: bounded(studioComponentLimits.batchSize).optional(),
-  retryLimit: bounded(studioComponentLimits.retryLimit).optional(),
-  /** Queue element ID; graph validation requires a queue that is not the source queue. */
-  deadLetterQueue: idSchema.optional(),
-});
+export const studioEventConsumerSettingsSchema = z
+  .strictObject({
+    kind: z.literal("event-consumer"),
+    concurrency: bounded(studioComponentLimits.concurrency).optional(),
+    batchSize: bounded(studioComponentLimits.batchSize).optional(),
+    retryLimit: bounded(studioComponentLimits.retryLimit).optional(),
+    /** Queue element ID; graph validation requires a queue that is not the source queue. */
+    deadLetterQueue: idSchema.optional(),
+    replayDays: bounded(studioComponentLimits.replayDays).optional(),
+    receiptDays: bounded(studioComponentLimits.receiptDays).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (
+      (value.replayDays ?? receiptDayDefaults.replayDays) >
+      (value.receiptDays ?? receiptDayDefaults.receiptDays)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["receiptDays"],
+        message: "Keep counted IDs for at least as many days as the maximum replay delay.",
+      });
+  });
 export const studioDataAccessSettingsSchema = z.strictObject({
   kind: z.literal("data-access"),
   poolSize: bounded(studioComponentLimits.poolSize).optional(),
@@ -754,6 +774,13 @@ export const studioComponentDefinitions: {
         "s",
         "How often to check for work. After downtime, the task runs once to catch up.",
       ),
+      integer(
+        "keepDailyTotalsMonths",
+        "Keep daily totals",
+        L.keepDailyTotalsMonths,
+        "months",
+        "Passes a UTC calendar cutoff to this task's registered cleanup commands.",
+      ),
     ],
   }),
   "rate-limiter": component("rate-limiter", {
@@ -873,6 +900,20 @@ export const studioComponentDefinitions: {
       integer("concurrency", "Concurrency", L.concurrency),
       integer("batchSize", "Batch size", L.batchSize, "events"),
       integer("retryLimit", "Retry limit", L.retryLimit, "attempts"),
+      integer(
+        "replayDays",
+        "Maximum replay delay",
+        L.replayDays,
+        "days",
+        "The broker and archive must cover this window. Defaults to seven days when only receipt retention is set.",
+      ),
+      integer(
+        "receiptDays",
+        "Keep counted IDs",
+        L.receiptDays,
+        "days",
+        "Keep receipts at least as long as the replay window. Defaults to 35 days when only replay delay is set.",
+      ),
       {
         path: "settings.deadLetterQueue",
         label: "Dead-letter queue",

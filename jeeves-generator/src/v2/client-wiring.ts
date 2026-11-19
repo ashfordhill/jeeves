@@ -32,6 +32,7 @@ import {
 } from "./local-contract.ts";
 import { moduleEntryName, moduleStubPaths, stubProperties } from "./module-stubs.ts";
 import { type V2ProcessReport, v2Compare } from "./registry.ts";
+import { receiptPolicy } from "./retention.ts";
 import { isStripeWebhook } from "./stripe-webhook.ts";
 
 const clients = "../runtime/module-clients.ts";
@@ -288,6 +289,10 @@ export function stubClients(
     types.push(`  ${text(id)}: ${alias};`);
     const properties = stubProperties(module, stub.role === "loop").filter((item) => !item.input);
     const webhookFormat = isStripeWebhook(selection) ? ', "stripe"' : "";
+    const receipt = receiptPolicy(selection)
+      ? `receiptConsumers[${text(selection.id)}]`
+      : undefined;
+    if (receipt) imports.push({ from: "../modules/dependencies.ts", name: "receiptConsumers" });
     const workValue =
       stub.role === "webhook-receiver"
         ? `webhookWorkEngine((${pascal(id)}Module as { durableWork?: unknown }).durableWork${webhookFormat})`
@@ -302,7 +307,7 @@ export function stubClients(
       });
       imports.push({ from: "../runtime/receipt-consumer.ts", name: "startReceiptConsumer" });
       localChecks.push(
-        `validateReceiptConsumerBinding((${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, ${JSON.stringify(workDatabases)}, ${stub.role === "loop"});`,
+        `validateReceiptConsumerBinding((${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, ${JSON.stringify(workDatabases)}, ${stub.role === "loop"}${receipt ? `, ${receipt}` : ""});`,
       );
     } else
       localChecks.push(
@@ -458,7 +463,7 @@ export function stubClients(
               section: "database",
               name: "productDatabaseClient",
               call: `await productDatabaseClient(scope, probe, preparedProduct[${text(`product:${target.element}:${module.component}`)}])`,
-              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation, work: ${workValue}, receipt: (${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, owner: ${text(process.productAccess?.find((entry) => entry.resource === store.element)?.owner ?? process.tile)} })`,
+              prepare: `prepareProductDatabase({ tile: config.tile, resource: ${text(store.resource)}, module: ${text(module.component)}, property: ${text(property)}, writable: ${type === "DatabaseReadWriter"}, operation: (${pascal(id)}Module as { localOperation?: unknown }).localOperation, work: ${workValue}, receipt: (${pascal(id)}Module as { receiptConsumer?: unknown }).receiptConsumer, owner: ${text(process.productAccess?.find((entry) => entry.resource === store.element)?.owner ?? process.tile)}${receipt ? `, receiptPolicy: ${receipt}` : ""} })`,
               check: {
                 name: "databaseEndpoint",
                 call: `databaseEndpoint(${text(store.resource)})`,
@@ -708,7 +713,7 @@ export function stubClients(
               ? `await startScheduledTask`
               : "startDurableWork";
           const interval = start.startsWith("await")
-            ? `, scheduledTasks[${text(stub.selection)}].intervalSeconds`
+            ? `, scheduledTasks[${text(stub.selection)}].intervalSeconds${selection.inputs["task.keepDailyTotalsMonths"] !== undefined ? `, scheduledTasks[${text(stub.selection)}].keepDailyTotalsMonths` : ""}`
             : "";
           const engine =
             stub.role === "webhook-receiver"
