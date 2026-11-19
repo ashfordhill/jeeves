@@ -87,7 +87,7 @@ describe("moduleMenuGroups", () => {
     expect(custom?.items[0]).toMatchObject({
       kind: "custom",
       name: "Custom",
-      description: "Your own logic, in an empty, typed file for you to fill in.",
+      description: "Holds the application code you write for this step.",
       generation: "stub",
       icon: expect.any(String),
     });
@@ -134,7 +134,7 @@ describe("ModuleAddButton", () => {
     const data = screen.getByRole("menuitem", { name: "Data access" });
     expect(data.dataset.family).toBe("data");
     const described = document.getElementById(data.getAttribute("aria-describedby") ?? "");
-    expect(described?.textContent).toBe("Building block. Reads and writes one database.");
+    expect(described?.textContent).toBe("Building block. Runs queries on a connected database.");
     const dot = (name: string) =>
       screen.getByRole("menuitem", { name }).querySelector(".lane-generation-dot");
     expect(

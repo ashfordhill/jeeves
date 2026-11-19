@@ -256,3 +256,11 @@ updates; preserve images. [Full earlier record](HUMAN_FEEDBACK.archive-2026-11-0
 - **Resolution:** a [preview](https://claude.ai/artifact/CJAcHYup1FphraHB435THE) redraws QRWTY with the studio's own tile faces and layout engine and nine groups of choices: outline, colour set, what takes the colour, shades, thickness, arrowhead, where arrows land, how they come in, corners. The owner replies with a code such as `1b 2b 3a 4b 5a 6a 7b 8c 9a`. Nothing in the studio has changed.
 - **Decision update (2026-11-18, after the preview):** the owner picked `1c 2a 3a 4a 5c 6a 7a 8b 9a`: an outline in the wire's own colour, darker; today's colours and shades; bold wires; today's arrowhead, landing and corners; arrivals straight in. Also: light paper a little darker, wires picked out from the tile or module under the pointer (not from the wire), and the arrow pointer, not a hand, over tiles.
 - **Resolution update (2026-11-18):** `Wires: own-colour outline, bold, straight arrivals, tile hover` does all of it; light paper is `#e0eef6`, in exports too. Named-port arrowheads now overlap by their outlines (12px apart, 14.5px tall).
+
+## 2026-11-18 — QRWTY inspector and template review
+
+[Redirect connections](human-feedback/2026-11-18-qrwty-redirect-connections.png) · [Link API connections](human-feedback/2026-11-18-qrwty-link-api-connections.png)
+
+- **Problem** — The cache looked write-only, the connection rows read backwards, and SQL controls on processes obscured the design. Identity, cache and timer labels did not explain what they controlled.
+- **Decision** — Rewrite the proposed diagram and Studio wording. Specify Auth0, native Stripe notifications and configurable retention for later implementation.
+- **Resolution** — `Clarify the QRWTY diagram and Studio inspector` updates the saved project and inspector. The three generator changes are [specified here](field-projects/qrwty/implementation-notes.md).

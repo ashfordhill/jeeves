@@ -52,7 +52,7 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
     for (const api of ["sign-in", "no-such-api", "owner-jobs", "owner-worker"])
       expect(() =>
         buildStudioCommand(source, { type: "shareOwner", worker: "owner-worker", api }),
-      ).toThrow("Choose a Worker and an API tile");
+      ).toThrow("Choose the worker and the API that owns its data");
     expect(canonicalJson(source)).toBe(before);
     const accepted = buildStudioCommand(source, {
       type: "shareOwner",
@@ -98,7 +98,7 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
         worker: "visit-worker",
         api: "stats-api",
       }),
-    ).toThrow(/conflicting owners/);
+    ).toThrow(/already has data owned elsewhere/);
     expect(() =>
       buildStudioCommand(design, {
         type: "setDatabaseAccess",
@@ -109,7 +109,7 @@ describe("RG06 explicit logical ownership and emitted SQL", () => {
           views: [],
         },
       }),
-    ).toThrow(/Another logical owner/);
+    ).toThrow(/Only the database owner/);
     const invalid = structuredClone(designOwnership(design));
     const reader = invalid.grants.find(
       (grant) => grant.role === "stats-api" && grant.resource === "links-db",

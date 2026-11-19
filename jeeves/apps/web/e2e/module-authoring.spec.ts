@@ -184,7 +184,7 @@ test("adds compatible module kinds to a Service and Worker and refuses a Require
     await expect(moduleMenu(page)).toBeInViewport({ ratio: 1 });
     await expect(
       moduleMenu(page).getByRole("menuitem", { name: "Data access", exact: true }),
-    ).toContainText("Reads and writes one database.");
+    ).toContainText("Runs queries on a connected database.");
     // Cancelled: nothing is added.
     await page.keyboard.press("Escape");
     await expect(moduleMenu(page)).toHaveCount(0);
@@ -943,8 +943,8 @@ test("with Runnable processes on, a stub tile's Options show what its process ru
     await tile(page, "Microservice").click();
     await addModule(page, "Microservice", "Rate limiter");
     await inspector(page).getByRole("button", { name: "Back to Microservice" }).click();
-    const timeout = inspector(page).getByLabel("Request timeout", { exact: true });
-    const limit = inspector(page).getByLabel("Concurrency limit", { exact: true });
+    const timeout = inspector(page).getByLabel("Request timeout (milliseconds)", { exact: true });
+    const limit = inspector(page).getByLabel("Concurrency limit (requests)", { exact: true });
     // Off, a stub tile's process limits are no control.
     await expect(timeout).toHaveCount(0);
     const generate = page.getByRole("button", { name: "Generate project", exact: true });
@@ -967,7 +967,9 @@ test("with Runnable processes on, a stub tile's Options show what its process ru
     await tile(page, "Worker service").click();
     const concurrency = inspector(page).getByLabel("Concurrency", { exact: true });
     await expect(concurrency).toHaveAttribute("placeholder", "1");
-    await expect(inspector(page).getByLabel("Request timeout", { exact: true })).toHaveCount(0);
+    await expect(
+      inspector(page).getByLabel("Request timeout (milliseconds)", { exact: true }),
+    ).toHaveCount(0);
     // The process runs the tile's value, listed with its origin.
     await generate.click();
     const result = page.waitForResponse((response) =>

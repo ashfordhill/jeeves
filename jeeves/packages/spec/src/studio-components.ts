@@ -103,7 +103,7 @@ export const studioBrowserSessionSettingsSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["idleSeconds"],
-        message: "Idle expiry must not exceed absolute expiry.",
+        message: "Sign out after inactivity must not exceed absolute expiry.",
       });
   });
 
@@ -496,7 +496,10 @@ export type StudioModuleGeneration =
 export type StudioComponentDefinition<K extends StudioComponentKind = StudioComponentKind> = {
   kind: K;
   name: string;
+  /** Stable default in exported stub files. */
   description: string;
+  /** Short explanation used by the Studio and chat. */
+  summary: string;
   /** Typical third-party implementation; design intent, not an installed template. */
   thirdParty: readonly string[];
   /** Browser apps host only client-safe components. */
@@ -521,6 +524,13 @@ export type StudioComponentDefinition<K extends StudioComponentKind = StudioComp
 
 const label = (value: string) =>
   ({
+    "immutable-positive": "No, the value stays the same",
+    versioned: "Yes, keep the newest version",
+    "in-process": "Only inside this service",
+    http: "Also through an HTTP endpoint",
+    "1024": "1 KiB",
+    "16384": "16 KiB",
+    "65536": "64 KiB",
     "token-bucket": "Token bucket",
     "sliding-window": "Sliding window",
     ip: "IP address",
@@ -641,10 +651,14 @@ function deepFreeze<T>(value: T): T {
 }
 function component<K extends StudioComponentKind>(
   kind: K,
-  metadata: Omit<StudioComponentDefinition<K>, "kind" | "defaults" | "runtimeSupport">,
+  metadata: Omit<
+    StudioComponentDefinition<K>,
+    "kind" | "defaults" | "runtimeSupport" | "summary"
+  > & { summary?: string },
 ): StudioComponentDefinition<K> {
   return deepFreeze({
     ...metadata,
+    summary: metadata.summary ?? metadata.description,
     slots: metadata.slots.some((slot) => slot.id === "workload")
       ? metadata.slots
       : [...metadata.slots, slot("workload", ["identity"], "verify", "optional")],
@@ -662,6 +676,7 @@ export const studioComponentDefinitions: {
     name: "Browser session",
     description:
       "OIDC code+PKCE sign-in, secure cookie sessions and CSRF on declared owned state. Invalid supplied cookies refuse. Private coordinated refresh and request-scoped calls to declared matching-Identity bearer-guard service operations keep credentials out of hooks.",
+    summary: "Signs people in, keeps their browser session and refreshes it across service copies.",
     thirdParty: ["openid-client", "PostgreSQL"],
     browserHost: false,
     hosts: ["service"],
@@ -671,15 +686,15 @@ export const studioComponentDefinitions: {
     targets: ["identity", "database"],
     fields: [
       select("signIn", "Sign-in", ["required", "optional"]),
-      integer("idleSeconds", "Idle expiry", { min: 60, max: 86400 }, "s"),
-      integer("absoluteSeconds", "Absolute expiry", { min: 60, max: 604800 }, "s"),
-      select("guestContext", "Guest cookie context", ["disabled", "enabled"]),
+      integer("idleSeconds", "Sign out after inactivity", { min: 60, max: 86400 }, "s"),
+      integer("absoluteSeconds", "Maximum session length", { min: 60, max: 604800 }, "s"),
+      select("guestContext", "Remember guest visitors", ["disabled", "enabled"]),
       select(
         "offlineAccess",
-        "Request offline access",
+        "Refresh the login automatically",
         ["disabled", "enabled"],
         "Options",
-        "Stores sealed refresh material only. Refresh remains unavailable.",
+        "Asks the sign-in provider for a refresh token and stores it encrypted on the server.",
       ),
     ],
   }),
@@ -687,6 +702,7 @@ export const studioComponentDefinitions: {
     name: "Webhook receiver",
     description:
       "Authenticates the generic Jeeves HMAC envelope before decoding and durably accepts events for fenced background processing.",
+    summary: "Checks the sender’s signature and saves the message before replying.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
     hosts: ["service"],
@@ -704,7 +720,7 @@ export const studioComponentDefinitions: {
         "Signature window",
         L.replayWindowSeconds,
         "s",
-        "Maximum past or future timestamp difference. Generic Jeeves HMAC only.",
+        "How far the signed message time may differ from the server clock.",
       ),
     ],
   }),
@@ -712,6 +728,7 @@ export const studioComponentDefinitions: {
     name: "Scheduled task",
     description:
       "Reconciles current state at a database-time interval, with durable fenced completion and missed ticks coalesced.",
+    summary: "Runs a job on a schedule. One copy handles the job when several copies are running.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
     hosts: ["service", "worker"],
@@ -728,7 +745,7 @@ export const studioComponentDefinitions: {
         "Interval",
         L.intervalSeconds,
         "s",
-        "Missed intervals coalesce to one current reconciliation tick. Accepted work continues when this interval changes.",
+        "How often to check for work. After downtime, the task runs once to catch up.",
       ),
     ],
   }),
@@ -736,6 +753,7 @@ export const studioComponentDefinitions: {
     name: "Rate limiter",
     description:
       "Atomically limits each trusted key in a shared rolling window. Requires a cache and Required sign-in.",
+    summary: "Limits how many requests each signed-in user can make across all service copies.",
     thirdParty: ["Valkey"],
     browserHost: false,
     hosts: anyHost,
@@ -751,6 +769,7 @@ export const studioComponentDefinitions: {
   "cache-reader": component("cache-reader", {
     name: "Cache reader",
     description: "Reads from a cache before the database.",
+    summary: "Checks the cache first. If an entry is missing or too old, loads a fresh copy.",
     thirdParty: ["Redis", "Memcached"],
     browserHost: false,
     hosts: anyHost,
@@ -762,14 +781,15 @@ export const studioComponentDefinitions: {
     generation: lead("positive-cache-read"),
     targets: ["cache"],
     fields: [
-      select("freshness", "Freshness", ["immutable-positive", "versioned"]),
-      select("transport", "Exposure", ["http", "in-process"]),
-      integer("l2TtlSeconds", "Shared cache TTL", L.l2TtlSeconds, "s"),
+      select("freshness", "Can cached records change?", ["immutable-positive", "versioned"]),
+      select("transport", "How is this reader called?", ["http", "in-process"]),
+      integer("l2TtlSeconds", "Cache lifetime", L.l2TtlSeconds, "s"),
     ],
   }),
   "id-generator": component("id-generator", {
     name: "ID generator",
     description: "Allocates unique short identifiers.",
+    summary: "Creates short, unique IDs.",
     thirdParty: ["PostgreSQL", "Redis"],
     browserHost: false,
     hosts: anyHost,
@@ -802,6 +822,7 @@ export const studioComponentDefinitions: {
   "event-publisher": component("event-publisher", {
     name: "Event publisher",
     description: "Publishes events.",
+    summary: "Sends messages to a channel.",
     thirdParty: ["Kafka", "Amazon SQS", "Redis Streams"],
     browserHost: false,
     hosts: anyHost,
@@ -829,6 +850,7 @@ export const studioComponentDefinitions: {
   "event-consumer": component("event-consumer", {
     name: "Event consumer",
     description: "Consumes events.",
+    summary: "Processes messages from a channel.",
     thirdParty: ["Kafka", "Amazon SQS", "Redis Streams"],
     browserHost: false,
     hosts: anyHost,
@@ -857,6 +879,7 @@ export const studioComponentDefinitions: {
   "data-access": component("data-access", {
     name: "Data access",
     description: "Reads and writes one database.",
+    summary: "Runs queries on a connected database.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
     hosts: anyHost,
@@ -897,6 +920,7 @@ export const studioComponentDefinitions: {
   "auth-guard": component("auth-guard", {
     name: "Auth guard",
     description: "Verifies caller credentials against an identity provider.",
+    summary: "Checks a user’s sign-in token before handling a request.",
     thirdParty: ["Identity service"],
     browserHost: true,
     hosts: anyHost,
@@ -910,7 +934,7 @@ export const studioComponentDefinitions: {
         "Sign-in",
         authSignInSchema.options,
         "Options",
-        "Optional: a caller without a token is anonymous.",
+        "Optional lets guests through. A supplied token must always be valid.",
       ),
       select("credential", "Credential", authCredentialSchema.options),
     ],
@@ -941,6 +965,7 @@ export const studioComponentDefinitions: {
   custom: component("custom", {
     name: "Custom",
     description: "Your own logic, in an empty, typed file for you to fill in.",
+    summary: "Holds the application code you write for this step.",
     thirdParty: [],
     browserHost: true,
     hosts: anyHost,
@@ -1007,6 +1032,7 @@ export const studioComponentDefinitions: {
   "video-encoder": component("video-encoder", {
     name: "Video encoder",
     description: "Encodes a video into streamable renditions.",
+    summary: "Converts a video into versions people can stream.",
     thirdParty: ["FFmpeg"],
     browserHost: false,
     hosts: ["worker"],
@@ -1043,6 +1069,8 @@ export const studioComponentDefinitions: {
   "event-counter": component("event-counter", {
     name: "Event counter",
     description: "Counts stable event identities within the declared delivery horizon.",
+    summary:
+      "Counts an event once when the same message arrives more than once inside the replay window.",
     thirdParty: ["PostgreSQL"],
     browserHost: false,
     hosts: ["worker"],
@@ -1053,10 +1081,10 @@ export const studioComponentDefinitions: {
     fields: [
       integer(
         "deliveryHorizonSeconds",
-        "Delivery horizon",
+        "Maximum replay delay",
         L.deliveryHorizonSeconds,
         "s",
-        "Maximum delivery or replay delay; receipts retain seven days after completion.",
+        "Include time spent retrying or waiting for repair. The counter remembers counted events for seven days.",
       ),
     ],
   }),

@@ -9,8 +9,11 @@
 import {
   type DesignDocument,
   designBlueprintV3,
+  designGeneration,
+  designOwnership,
   LANE_ACTOR,
   type LaneGraph,
+  moduleSlots,
   type StudioComponent,
   type StudioKind,
   studioComponentDefinitions,
@@ -30,33 +33,60 @@ import { GenerationDot, ModuleAddButton, type ModuleAdding } from "./ModuleMenu.
 import { HumanFigure } from "./tiles/HumanFigure.tsx";
 import { WarningList } from "./Warnings.tsx";
 
-/** A blueprint connection's store access or channel use, as one word on its row. */
 const lineWords = {
-  write: "writes",
-  read: "reads",
-  publish: "publishes",
-  consume: "consumes",
+  write: "writes to",
+  read: "reads from",
+  "read-write": "reads and writes",
+  publish: "publishes to",
+  consume: "receives messages from",
+  cache: "reads and refills",
+  fallback: "reads from",
+  choose: "chooses",
+  call: "calls",
 } as const;
-const wordsByDesign = new WeakMap<DesignDocument, ReadonlyMap<string, string>>();
+type ConnectionUse = keyof typeof lineWords;
+const usesByDesign = new WeakMap<DesignDocument, ReadonlyMap<string, ConnectionUse>>();
 
-/**
- * Each line's word from the blueprint's connections (`access`, else `channelUse`), by connection
- * ID, worked out once per design. A line it has no word for (a call, an entry, the user's line to
- * an action) reads "calls". Blueprint v3's connections are v2's; v2 refuses a schema-3 design with
- * explicit declarations, so they are read from v3.
- */
-export function connectionWords(design: DesignDocument): ReadonlyMap<string, string> {
-  let words = wordsByDesign.get(design);
-  if (!words) {
-    words = new Map(
-      designBlueprintV3(design).connections.flatMap((item) => {
-        const use = item.access ?? item.channelUse;
-        return item.source === "design" && use ? [[item.id, lineWords[use]] as const] : [];
-      }),
-    );
-    wordsByDesign.set(design, words);
+/** Saved permissions and linked cache readers give more detail than a legacy writer designation. */
+export function connectionUses(design: DesignDocument): ReadonlyMap<string, ConnectionUse> {
+  const cached = usesByDesign.get(design);
+  if (cached) return cached;
+  const uses = new Map<string, ConnectionUse>();
+  for (const item of designBlueprintV3(design).connections) {
+    const use = item.channelUse ?? item.access;
+    if (item.source === "design" && use) uses.set(item.id, use);
   }
-  return words;
+  for (const { connection, access } of designOwnership(design).dependencies)
+    uses.set(connection, access);
+  for (const { binding } of designGeneration(design)?.selections ?? [])
+    if (binding.kind === "positive-cache-read") uses.set(binding.cache.connection, "cache");
+
+  // A source shared with another operation can also be queried directly.
+  const studio = design.architecture?.studio;
+  const loaders = new Set<string>();
+  for (const reader of studio?.components ?? []) {
+    if (reader.settings.kind !== "cache-reader") continue;
+    const slots = moduleSlots(design, reader.id);
+    const loader = slots.find(({ slot }) => slot.id === "loader")?.links[0]?.target;
+    const cache = slots.find(({ slot }) => slot.id === "cache")?.links[0];
+    if (loader && "module" in loader && cache) {
+      loaders.add(loader.module);
+      const link = studio?.componentConnections?.find((link) => link.id === cache.id);
+      if (link?.to.kind === "element") uses.set(link.to.via, "cache");
+    }
+  }
+  const sources = new Map<string, string[]>();
+  for (const link of studio?.componentConnections ?? []) {
+    if (link.to.kind !== "element") continue;
+    const callers = sources.get(link.to.via) ?? [];
+    callers.push(link.from);
+    sources.set(link.to.via, callers);
+  }
+  for (const [line, users] of sources)
+    if (uses.get(line) === "read" && users.every((id) => loaders.has(id)))
+      uses.set(line, "fallback");
+  usesByDesign.set(design, uses);
+  return uses;
 }
 
 /**
@@ -93,11 +123,7 @@ export function LaneNodeIcon({
 export const hasLines = (graph: LaneGraph, id: string) =>
   graph.edges.some((edge) => edge.source === id || edge.target === id);
 
-/**
- * A tile's or an action's lines as rows, incoming first, each in the board's order: From or To,
- * the other end's icon, its name and kind, and at the right what the line does (`connectionWords`).
- * A row is one button; a click calls `onJump` with the other end's ID.
- */
+/** Each row reads from sender to receiver. The button opens the other end of the line. */
 export function ConnectionList({
   design,
   graph,
@@ -111,41 +137,50 @@ export function ConnectionList({
   name: (id: string) => string;
   onJump: (to: string) => void;
 }) {
-  const words = connectionWords(design);
+  const uses = connectionUses(design);
+  const lookupOrder = (line: string) => {
+    switch (uses.get(line)) {
+      case "cache":
+        return 0;
+      case "fallback":
+        return 1;
+      default:
+        return 2;
+    }
+  };
   const rows = [
-    ...graph.edges
-      .filter((edge) => edge.target === id)
-      .map((edge) => ({ line: edge.id, way: "From", other: edge.source })),
+    ...graph.edges.filter((edge) => edge.target === id),
     ...graph.edges
       .filter((edge) => edge.source === id)
-      .map((edge) => ({ line: edge.id, way: "To", other: edge.target })),
+      .sort((a, b) => lookupOrder(a.id) - lookupOrder(b.id)),
   ];
   return (
     <ul className="lane-connection-list" aria-label="Connections">
-      {rows.map(({ line, way, other }) => {
+      {rows.map(({ id: line, source, target }) => {
+        const other = source === id ? target : source;
         const node = graph.nodes.find((item) => item.id === other);
-        const kind = node?.action
-          ? "Action"
-          : node?.kind
-            ? studioDefinitions[node.kind].name
-            : undefined;
-        const word = words.get(line) ?? "calls";
+        const kind = node?.action ? "Action" : node?.kind && studioDefinitions[node.kind].name;
+        const use = uses.get(line) ?? (source === LANE_ACTOR ? "choose" : "call");
+        const verb = lineWords[use];
+        const when = use === "fallback" ? " when the cache has no fresh copy" : "";
+        const [subject, object] = use === "consume" ? [target, source] : [source, target];
         return (
           <li key={line}>
             <button
               type="button"
               className="lane-connection"
               data-line={line}
-              aria-label={`${way} ${name(other)}${kind ? `, ${kind}` : ""}: ${word}`}
+              aria-label={`${name(subject)} ${verb} ${name(object)}${when}`}
+              title={`Open ${name(other)}${kind ? ` (${kind})` : ""}`}
               onClick={() => onJump(other)}
             >
-              <span className="lane-connection-way">{way}</span>
               <LaneNodeIcon graph={graph} id={other} size={18} className="lane-connection-icon" />
-              <span className="lane-connection-name">
-                {name(other)}
-                {kind ? <small> · {kind}</small> : null}
+              <span>
+                {subject === other ? <strong>{name(subject)}</strong> : name(subject)}
+                {` ${verb} `}
+                {object === other ? <strong>{name(object)}</strong> : name(object)}
+                {when}
               </span>
-              <small className="lane-connection-word">{word}</small>
             </button>
           </li>
         );
@@ -313,10 +348,10 @@ export function TileInspector({
         }
         connections={
           <>
-            <DatabaseAccess projectId={projectId} design={design} tile={id} />
             {hasLines(graph, id) ? (
               <ConnectionList design={design} graph={graph} id={id} name={nameOf} onJump={onJump} />
             ) : null}
+            <DatabaseAccess key={id} projectId={projectId} design={design} tile={id} />
           </>
         }
         modules={

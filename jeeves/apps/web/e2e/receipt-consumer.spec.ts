@@ -63,7 +63,7 @@ test("RG18 edits the receipt delivery horizon by mouse and exports guarded consu
       .click();
     const inspector = page.locator(".studio-inspector");
     await expect(inspector.locator(".lane-module-status")).toHaveText("GeneratedEvent counter");
-    await inspector.getByLabel("Delivery horizon", { exact: true }).fill("86400");
+    await inspector.getByLabel("Maximum replay delay (seconds)", { exact: true }).fill("86400");
     await inspector.getByLabel("Name", { exact: true }).click();
     await expect
       .poll(async () => JSON.stringify(await design(page, id)))

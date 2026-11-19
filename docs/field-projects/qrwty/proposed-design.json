@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "revision": 1,
+  "revision": 4,
   "architecture": {
     "studio": {
       "version": 1,
@@ -338,7 +338,7 @@
           "id": "browser-session",
           "host": "session-api",
           "name": "Browser session",
-          "description": "One OIDC code and PKCE login, guest context, secure cookies, CSRF, revocation and coordinated refresh. Idle limit 24 hours, absolute limit seven days.",
+          "description": "Signs visitors in, keeps their login between requests and refreshes it when needed. Guests can also use this service.",
           "settings": {
             "kind": "browser-session",
             "signIn": "optional",
@@ -352,7 +352,7 @@
           "id": "session-api-api-forwarding",
           "host": "session-api",
           "name": "Browser routes",
-          "description": "Map public routes and guest proof to bounded product DTOs. Forward the verified session only to declared callees. Account deletion needs durable progress and separate authority for later steps.",
+          "description": "Sends browser requests to Link, Account or Billing API. Proves which service is calling and passes on the signed-in user when there is one.",
           "settings": {
             "kind": "custom"
           }
@@ -361,7 +361,7 @@
           "id": "link-api-sign-in",
           "host": "link-api",
           "name": "Verify user",
-          "description": "Allow guest create and reports. Invalid credentials are refused. Owned mutations and moderation separately require the verified subject or operator permission.",
+          "description": "Accepts guests and checks any user token supplied. Changing an owned link also requires permission from its owner.",
           "settings": {
             "kind": "auth-guard",
             "credential": "jwt",
@@ -372,7 +372,7 @@
           "id": "link-api-link-operations",
           "host": "link-api",
           "name": "Create, claim & edit",
-          "description": "Recover account replay before admission, reputation and billing. Create, claim and edit in owner transactions. Guest claim proof, sealed guest replay and pseudonymous admission remain product policy.",
+          "description": "Creates and edits links and lets guests claim them. Returns the original result when a completed request is retried.",
           "settings": {
             "kind": "custom"
           }
@@ -381,7 +381,7 @@
           "id": "link-api-abuse-and-moderation",
           "host": "link-api",
           "name": "Reports & moderation",
-          "description": "Rate-limit guest reports using a trusted pseudonymous address key. Only authorized operators change link state. An abuse report alone never disables a link.",
+          "description": "Accepts abuse reports. Only an authorized moderator can block or unblock a link.",
           "settings": {
             "kind": "custom"
           }
@@ -390,7 +390,7 @@
           "id": "account-api-sign-in",
           "host": "account-api",
           "name": "Verify user",
-          "description": "Require a verified account subject on these private operations.",
+          "description": "Requires a valid user login before returning account information.",
           "settings": {
             "kind": "auth-guard",
             "credential": "jwt",
@@ -401,7 +401,7 @@
           "id": "account-api-my-links",
           "host": "account-api",
           "name": "My links",
-          "description": "List only the verified owner's links and usage. Bind the cursor to that subject and order by creation time and ID.",
+          "description": "Lists the signed-in person's links, newest first.",
           "settings": {
             "kind": "data-access",
             "readRouting": "primary"
@@ -411,7 +411,7 @@
           "id": "account-api-link-analytics",
           "host": "account-api",
           "name": "Analytics & export",
-          "description": "Check ownership, finite entitlement validity, export quota and pipeline freshness. Query daily counts and paid breakdowns. Product code renders bounded CSV and distinguishes delayed data from zero.",
+          "description": "Checks who owns the link and what their plan allows. Returns click counts or prepares a CSV download.",
           "settings": {
             "kind": "custom"
           }
@@ -420,7 +420,7 @@
           "id": "billing-api-sign-in",
           "host": "billing-api",
           "name": "Verify user",
-          "description": "Require a verified account subject on these private operations.",
+          "description": "Requires a valid user login for customer billing and plan requests.",
           "settings": {
             "kind": "auth-guard",
             "credential": "jwt",
@@ -431,7 +431,7 @@
           "id": "billing-api-customer-billing",
           "host": "billing-api",
           "name": "Plans & checkout",
-          "description": "Read the account's plan. Start provider Checkout or portal only on a mutation. A lost provider reply needs reconciliation with a stable request identity. Status reads do no background work.",
+          "description": "Shows the customer's plan or starts checkout. Opening the billing page does not start a payment.",
           "settings": {
             "kind": "custom"
           }
@@ -440,7 +440,7 @@
           "id": "billing-api-entitlements",
           "host": "billing-api",
           "name": "Entitlements",
-          "description": "Issue grants valid at most 60 seconds and atomically spend the export allowance for the verified subject. Restrict callers to Link API and Account API in the product operation.",
+          "description": "Tells Link and Account API which features a customer can use. Records each successful use of an export allowance.",
           "settings": {
             "kind": "custom"
           }
@@ -449,7 +449,7 @@
           "id": "billing-reconciliation",
           "host": "billing-api",
           "name": "Reconcile payments",
-          "description": "Every minute, select due inbox events and stuck checkouts under a fence. A nightly sweep is product policy. Fetching Stripe state needs an adapter outside the scheduled SQL completion.",
+          "description": "Checks for payment notices and unfinished checkouts on a schedule, even when nobody opens the billing page.",
           "settings": {
             "kind": "scheduled-task",
             "intervalSeconds": 60
@@ -459,7 +459,7 @@
           "id": "verified-payment-event",
           "host": "payment-inbox",
           "name": "Verified payment event",
-          "description": "Accept only the normalized Jeeves HMAC envelope from the Stripe adapter. Durably queue before 202. The completion hook records a unique provider event in the billing ledger for downstream reconciliation.",
+          "description": "Saves a payment notice before replying. Today QRWTY's edge must check Stripe's signature and sign the message for Jeeves.",
           "settings": {
             "kind": "webhook-receiver",
             "bodyLimitBytes": "65536",
@@ -470,7 +470,7 @@
           "id": "redirect-service-resolve-and-redirect",
           "host": "redirect-service",
           "name": "Resolve & record click",
-          "description": "GET uses the versioned route, waits for durable Pub/Sub acceptance, rechecks state, deadline and expiry, then sends 302. A missing or uncertain ACK returns 503 without Location. HEAD publishes nothing.",
+          "description": "Finds the destination, waits for the click to be saved, then checks the link is still valid before redirecting. A HEAD request records no click.",
           "settings": {
             "kind": "custom"
           }
@@ -479,7 +479,7 @@
           "id": "route-reader",
           "host": "redirect-service",
           "name": "Route cache",
-          "description": "Read an eligible versioned route by host and slug. Clamp validity to the original lookup and link expiry. No negative entries.",
+          "description": "Looks for a recent destination in Hot routes. On a miss, calls Route lookup and saves the result for the next visitor.",
           "settings": {
             "kind": "cache-reader",
             "pattern": "cache-aside",
@@ -492,7 +492,7 @@
           "id": "route-source",
           "host": "redirect-service",
           "name": "Route lookup",
-          "description": "Load the canonical route version, state, destination and expiry from published.link_routes.",
+          "description": "Reads the latest destination, status and expiry from Links when the cache needs a fresh copy.",
           "settings": {
             "kind": "data-access",
             "poolSize": 10,
@@ -504,7 +504,7 @@
           "id": "analytics-worker-click-aggregator",
           "host": "analytics-worker",
           "name": "Aggregate clicks",
-          "description": "Consume Pub/Sub messages. Commit one receipt and aggregate effect per click ID, then ACK. QRWTY needs 31-day replay and 35-day receipts. The installed receipt window is shorter. Supply quarantine and backlog policy.",
+          "description": "Saves the click ID and updates its count together. A second copy of the same message leaves the count alone.",
           "settings": {
             "kind": "event-consumer"
           }
@@ -513,7 +513,7 @@
           "id": "analytics-retention",
           "host": "analytics-worker",
           "name": "Retention sweep",
-          "description": "Expire bounded batches on a timer even when the channel is idle. Keep click receipts 35 days and aggregates 13 months. Use last commit, heartbeat and broker lag separately when reporting freshness.",
+          "description": "Deletes click IDs older than 35 days and daily totals older than 13 months. Runs even when no new clicks arrive.",
           "settings": {
             "kind": "scheduled-task",
             "intervalSeconds": 60
@@ -550,7 +550,7 @@
             "via": "session-api-identity"
           },
           "slot": "workload",
-          "label": "Workload identity"
+          "label": "Identifies the calling service"
         },
         {
           "id": "session-api-api-forwarding-link-api",
@@ -596,7 +596,7 @@
             "id": "identity",
             "via": "link-api-identity"
           },
-          "label": "User token issuer"
+          "label": "Checks the user token"
         },
         {
           "id": "link-api-sign-in-identity-workload",
@@ -607,7 +607,7 @@
             "via": "link-api-identity"
           },
           "slot": "workload",
-          "label": "Workload identity"
+          "label": "Identifies the calling service"
         },
         {
           "id": "link-api-link-operations-links",
@@ -653,7 +653,7 @@
             "id": "identity",
             "via": "account-api-identity"
           },
-          "label": "User token issuer"
+          "label": "Checks the user token"
         },
         {
           "id": "account-api-sign-in-identity-workload",
@@ -664,7 +664,7 @@
             "via": "account-api-identity"
           },
           "slot": "workload",
-          "label": "Workload identity"
+          "label": "Identifies the calling service"
         },
         {
           "id": "account-api-my-links-links",
@@ -710,7 +710,7 @@
             "id": "identity",
             "via": "billing-api-identity"
           },
-          "label": "User token issuer"
+          "label": "Checks the user token"
         },
         {
           "id": "billing-api-sign-in-identity-workload",
@@ -721,7 +721,7 @@
             "via": "billing-api-identity"
           },
           "slot": "workload",
-          "label": "Workload identity"
+          "label": "Identifies the calling service"
         },
         {
           "id": "billing-api-customer-billing-billing",
@@ -804,7 +804,7 @@
             "id": "hot-routes",
             "via": "redirect-service-hot-routes"
           },
-          "label": "Caches versioned routes"
+          "label": "Reads and refills the cache"
         },
         {
           "id": "route-source-links",
@@ -877,7 +877,7 @@
     },
     "system": {
       "name": "QRWTY",
-      "description": "Open a short link or QR code without signing in. Guests create and claim links. Accounts manage destinations, moderation, analytics and paid plans. A GET redirects only after a durable click acknowledgement. The browser, redirect and payment callback have separate entry points. Stripe's native verification and the trusted admission key belong at QRWTY's edge. The diagram selects the installed Keycloak issuer for this proposal."
+      "description": "QRWTY turns long URLs into short links and QR codes. Anyone can open a link. Creators can manage destinations, see clicks and pay for more features."
     },
     "nodes": [
       {
@@ -896,7 +896,7 @@
         "id": "stripe-sender",
         "kind": "external-system",
         "name": "Stripe",
-        "description": "Sends signed payment notifications to QRWTY's provider adapter at the edge."
+        "description": "Sends a signed notice when a payment or subscription changes."
       }
     ],
     "relationships": [
@@ -918,7 +918,7 @@
         "id": "stripe-callback",
         "from": "stripe-sender",
         "to": "system",
-        "description": "The edge verifies the native Stripe signature and forwards a separately signed, canonical event to Payment inbox.",
+        "description": "QRWTY checks Stripe's signature, then sends the verified notice to Stripe event inbox.",
         "container": "payment-inbox"
       }
     ]
@@ -930,7 +930,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "One same-origin entry for guest and account requests. Browser session owns login, cookies, CSRF and refresh. Browser routes call only declared operations on Links, Accounts and Billing."
+      "description": "Takes requests from the browser. Guests can create links. Signed-in users can manage links, view clicks and pay."
     },
     {
       "id": "identity",
@@ -938,7 +938,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "Installed Keycloak issuer for the proposal. Only Browser API starts user sign-in. Callees verify the user token and authenticate the calling workload separately. QRWTY's deployed Auth0 integration needs a provider decision."
+      "description": "Issues the tokens that identify users and services. This diagram uses Keycloak. QRWTY uses Auth0 in staging."
     },
     {
       "id": "sessions",
@@ -946,7 +946,7 @@
       "classification": {
         "kind": "Data store"
       },
-      "description": "Private session, revocation and refresh state. Browser API owns this database. Guest claim and account erasure policies remain product work."
+      "description": "Keeps browser logins so a user stays signed in when a different copy of Browser API handles the next request."
     },
     {
       "id": "link-api",
@@ -954,7 +954,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "Sole authority for routes, claims, abuse decisions and creation quotas. Replay committed requests first. Guest admission uses the Links transaction and a trusted pseudonymous key supplied through the browser boundary."
+      "description": "Creates and edits short links, handles claims and abuse reports, and limits how often a guest can create a link."
     },
     {
       "id": "account-api",
@@ -962,7 +962,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "Signed-in list and analytics reads through named published views. Scope by verified owner. Ask Billing for short-lived entitlements and export allowance. Ordinary reads never change the subscription."
+      "description": "Shows people their own links and click counts. Checks their plan before showing paid reports or exporting a file."
     },
     {
       "id": "billing-api",
@@ -970,7 +970,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "Private customer and entitlement operations. Requires a verified user and calling workload. Owns subscription and quota state. A scheduled task picks up due reconciliation independently of status reads."
+      "description": "Starts checkout, tracks subscriptions and tells other services what a customer's plan allows."
     },
     {
       "id": "links",
@@ -978,7 +978,7 @@
       "classification": {
         "kind": "Data store"
       },
-      "description": "PostgreSQL source for routes, claims, moderation and exact account quotas. Redirect can query link_routes only. Account API reads owned_links and account_usage."
+      "description": "Stores short links, destinations and their owners. Redirect can look up a destination. Only Link API can change it."
     },
     {
       "id": "reputation-api",
@@ -986,7 +986,7 @@
       "classification": {
         "kind": "External system"
       },
-      "description": "Product adapter for Google's URL reputation check on new links. A failed check defers creation. Existing short links do not call this provider."
+      "description": "Google checks new destinations for unsafe URLs before QRWTY accepts them."
     },
     {
       "id": "redirect-service",
@@ -994,7 +994,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "Public GET and HEAD. Read a versioned route from cache or the restricted route view. On eligible GET wait for Pub/Sub acknowledgement and recheck validity before 302. HEAD records no click."
+      "description": "Looks in Hot routes first. If the route is missing or too old, looks it up in Links. Records a click before sending the visitor on."
     },
     {
       "id": "hot-routes",
@@ -1002,7 +1002,7 @@
       "classification": {
         "kind": "Data store"
       },
-      "description": "Positive route projection in Valkey. Use the route version and an absolute validity of at most 30 seconds from the authoritative lookup. A cache hit cannot extend that deadline."
+      "description": "Keeps recently used destinations for up to 30 seconds. Reading one again does not extend its expiry."
     },
     {
       "id": "click-events",
@@ -1010,7 +1010,7 @@
       "classification": {
         "kind": "Data store"
       },
-      "description": "Google Cloud Pub/Sub on the redirect path. The publisher waits for durable acceptance. Analytics consumes at least once. QRWTY requires 31-day replay. The archive subscription is a deployment integration."
+      "description": "Holds click messages until Click processor can count them. This project uses Google Cloud Pub/Sub."
     },
     {
       "id": "analytics-worker",
@@ -1018,7 +1018,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "Consume Pub/Sub clicks. Commit the event ID and aggregate together before ACK. Maintain the 35-day deduplication ledger, quarantine and freshness. A timer handles retention even when no clicks arrive."
+      "description": "Counts each click once, even if the message arrives twice. Removes old records on a schedule."
     },
     {
       "id": "analytics",
@@ -1026,7 +1026,7 @@
       "classification": {
         "kind": "Data store"
       },
-      "description": "PostgreSQL click receipts, daily aggregates, breakdowns, quarantine and progress. Click processor writes. Account API reads only the four published reporting views."
+      "description": "Stores click counts and the IDs already counted. Account API can read reports. Click processor writes them."
     },
     {
       "id": "billing",
@@ -1034,7 +1034,7 @@
       "classification": {
         "kind": "Data store"
       },
-      "description": "One billing domain with two credentials. Payment inbox can insert normalized Stripe events. Billing API owns customer, entitlement, quota and reconciliation changes. The product event ID remains unique for 35 days after success."
+      "description": "Stores subscriptions, usage and payment notices. The inbox can add a notice. Only Billing API can change a subscription."
     },
     {
       "id": "stripe-api",
@@ -1042,7 +1042,7 @@
       "classification": {
         "kind": "External system"
       },
-      "description": "Outbound Checkout, portal, subscription and reconciliation calls need a Stripe adapter. Incoming test-mode events follow the separate Payment inbox path through QRWTY's signature-verifying edge."
+      "description": "Hosts checkout and the customer portal. Sends payment updates back to QRWTY."
     },
     {
       "id": "payment-inbox",
@@ -1050,7 +1050,7 @@
       "classification": {
         "kind": "Application"
       },
-      "description": "Machine ingress. QRWTY's edge verifies Stripe's signature over the original bytes, then signs a bounded event for the Jeeves Webhook receiver. Acknowledge Stripe only after durable acceptance. No customer or browser routes."
+      "description": "Receives payment notices from Stripe. Replies after saving each notice so a retry or a restart won't lose it."
     }
   ],
   "connections": [

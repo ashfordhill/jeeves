@@ -77,7 +77,7 @@ export function moduleMenuGroups(
     const items = group.kinds
       .filter((kind) => kinds.includes(kind))
       .map((kind): ModuleMenuItem => {
-        const { name, description } = studioComponentDefinitions[kind];
+        const { name, summary: description } = studioComponentDefinitions[kind];
         return {
           kind,
           name,

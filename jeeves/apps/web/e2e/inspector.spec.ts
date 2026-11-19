@@ -140,8 +140,8 @@ test("the system page: Name, Description, then warnings; an action lists its lin
         .evaluateAll((rows) => rows.map((row) => row.getAttribute("aria-label"))),
     )
     .toEqual([
-      "From User: calls",
-      "To Stats API, Microservice: calls",
-      "To Redirect service, Microservice: calls",
+      "User chooses Open link",
+      "Open link calls Stats API",
+      "Open link calls Redirect service",
     ]);
 });

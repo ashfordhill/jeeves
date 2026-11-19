@@ -702,7 +702,7 @@ describe("module derivation", () => {
     const last = commands.at(-1);
     if (!last) throw new Error();
     expect(refusal(runAll(design, commands.slice(0, -1)), last)).toBe(
-      "Metadata database has multiple writers. Choose Share logical owner with API (shareOwner) explicitly before connecting a worker; unrelated owners are never merged.",
+      "Metadata database has multiple writers. Under Database ownership, choose the API that owns the worker’s data (shareOwner) before connecting it.",
     );
   });
 

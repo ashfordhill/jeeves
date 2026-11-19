@@ -39,11 +39,15 @@ test("RG13 selects freshness/exposure and connects a callable cache read by mous
       .getByRole("button", { name: "Open Preview reader in Preview API", exact: true })
       .click();
     const inspector = page.locator(".studio-inspector");
-    await expect(inspector.getByLabel("Freshness", { exact: true })).toHaveValue(
+    await expect(inspector.getByLabel("Can cached records change?", { exact: true })).toHaveValue(
       "immutable-positive",
     );
-    await inspector.getByLabel("Freshness", { exact: true }).selectOption("versioned");
-    await inspector.getByLabel("Exposure", { exact: true }).selectOption("in-process");
+    await inspector
+      .getByLabel("Can cached records change?", { exact: true })
+      .selectOption("versioned");
+    await inspector
+      .getByLabel("How is this reader called?", { exact: true })
+      .selectOption("in-process");
     await expect(inspector.getByLabel("L1 TTL", { exact: true })).toHaveCount(0);
     await expect
       .poll(async () => JSON.stringify(await design(page, id)))
@@ -113,9 +117,11 @@ test("RG22 refuses unsupported HTTP reader edit atomically by mouse", async ({
       .getByRole("button", { name: "Open record-reader in Items API", exact: true })
       .click();
     const inspector = page.locator(".studio-inspector");
-    await expect(inspector.getByLabel("Exposure", { exact: true })).toHaveValue("in-process");
+    await expect(inspector.getByLabel("How is this reader called?", { exact: true })).toHaveValue(
+      "in-process",
+    );
     const before = await design(page, id);
-    await inspector.getByLabel("Exposure", { exact: true }).selectOption("http");
+    await inspector.getByLabel("How is this reader called?", { exact: true }).selectOption("http");
     await expect(page.getByRole("alert")).toContainText(
       "Change not saved: HTTP Cache reader exposure on an internal service has no workload-authenticated template adapter; select in-process and call it through an authenticated route module.",
     );
@@ -125,7 +131,9 @@ test("RG22 refuses unsupported HTTP reader edit atomically by mouse", async ({
       fullPage: true,
     });
     await page.getByRole("button", { name: "Discard", exact: true }).click();
-    await expect(inspector.getByLabel("Exposure", { exact: true })).toHaveValue("in-process");
+    await expect(inspector.getByLabel("How is this reader called?", { exact: true })).toHaveValue(
+      "in-process",
+    );
     expect(await design(page, id)).toEqual(before);
     await page.getByRole("button", { name: "Generate project", exact: true }).click();
     const preview = page.waitForResponse((r) =>

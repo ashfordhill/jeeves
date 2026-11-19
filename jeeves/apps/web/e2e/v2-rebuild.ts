@@ -150,7 +150,7 @@ export const V2_VALUES: readonly [string, string | undefined, string, number][] 
   ["Watch API", undefined, "Concurrency limit", 2000],
   ["Watch API", "Video details reader", "Pool size", 50],
   ["Watch API", "Video details reader", "Statement timeout", 500],
-  ["Metadata cache", undefined, "TTL", 3601],
+  ["Metadata cache", undefined, "Cache lifetime", 3601],
   ["View counter", undefined, "Concurrency", 8],
 ];
 
@@ -382,7 +382,10 @@ export async function connectModules(
       );
       const api = (await saved(page, id)).elements.find((item) => item.name === "Upload API");
       if (!api) throw new Error("Upload API missing");
-      await inspector(page).getByLabel("Share logical owner with API").selectOption(api.id);
+      const choice = inspector(page).getByLabel("Who owns this worker’s data?");
+      if (!(await choice.isVisible()))
+        await click(inspector(page).getByText("Database ownership", { exact: true }), log);
+      await choice.selectOption(api.id);
       await expect
         .poll(async () => {
           const design = await saved(page, id);
@@ -443,7 +446,7 @@ export async function setValues(page: Page, values: readonly Value[], log: Gestu
         inspector(page).getByRole("button", { name: `Open ${module}`, exact: true }),
         log,
       );
-    const input = inspector(page).getByLabel(label, { exact: true });
+    const input = inspector(page).getByLabel(new RegExp(`^${label}(?: \\(.*\\))?$`));
     if ((await input.evaluate((element) => element.tagName)) === "SELECT") {
       // A native select's list is drawn outside the page, so the script picks the option as the
       // list would: a click on the select and one on the option.

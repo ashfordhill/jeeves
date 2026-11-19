@@ -1182,9 +1182,7 @@
   margin-bottom: 4px;
 }
 
-/* A tile's or an action's Connections, as the UI refresh preview draws them: one row per line,
-   incoming first; From or To, the other end's icon, its name and kind, and at the right what the
-   line does. Each row is a button that selects the other end. */
+/* A complete sentence per relationship. The icon and bold name identify the button's destination. */
 .lane-connection-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1197,7 +1195,7 @@
 .lane-connection {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -1223,31 +1221,23 @@
   outline-offset: 1px;
 }
 
-.lane-connection-way {
-  width: 34px;
-  color: var(--ink-soft);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
 .lane-connection-icon {
   display: flex;
   justify-content: center;
   width: 18px;
 }
 
-.lane-connection-name {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.lane-connection > span:last-child {
+  font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
-.lane-connection small {
-  color: var(--ink-soft);
-  font-size: 11.5px;
+.studio-db-access {
+  margin-top: 8px;
+}
+
+.studio-db-access summary {
+  cursor: pointer;
   font-weight: 700;
 }
 

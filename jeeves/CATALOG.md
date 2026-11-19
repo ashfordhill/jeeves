@@ -379,7 +379,7 @@ by the mouse and chat through `buildSupportedAuthoringCommand`:
 | Command | What it does |
 | --- | --- |
 | `addModule` | A module of `kind` in `host`, named after its kind and numbered when taken ("Data access 2", ID `shorten-data-access-2`), unless `id`, `name` and `description` are given; a given name with no `id` gives the ID `<host>-<slug(name)>`. `editComponent` changes the label and preserves the ID. A kind the tile can't hold is refused ("Video encoder can't go in Watch API; it goes in a worker."). A schema-2 design is upgraded to schema 3 with an empty generation for the local runtime. |
-| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; Custom/Data access `slot: "admission"` targets a complete Rate limiter in the same tile, exposing checked `admit({})`. Custom/standalone Data access `slot: "read"` targets a complete Cache reader and exposes checked `read({key})` with freshness metadata; the reader's Exposure controls its optional HTTP adapter. Other installed-template adapters, including cross-process Favorites/cache reads, remain gaps. A filled slot must be disconnected first. |
+| `connectModule` | Fills a `slot` with `target` `{tile}`, through the host's own link to it (a consume slot's runs from the queue). With no such link it adds the one the lane rules give, or is refused as `linkTiles` would be. For a Cache reader, `slot: "loader"`, and for Favorites, `slot: "items"`, target `{module}`, a Data access in the same tile. Custom's `slot: "call"` targets a complete Favorites module in the same tile; the exact checked contracts expose typed add/remove/check/list handles with stable targets. No extra HTTP route is mounted; Custom/Data access `slot: "admission"` targets a complete Rate limiter in the same tile, exposing checked `admit({})`. Custom/standalone Data access `slot: "read"` targets a complete Cache reader and exposes checked `read({key})` with freshness metadata; the reader's **How is this reader called?** control selects its optional HTTP endpoint. Other installed-template adapters, including cross-process Favorites/cache reads, remain gaps. A filled slot must be disconnected first. |
 | `disconnectModule` | Removes one module `link`; the tiles' link stays. |
 | `removeModule` | Removes the `module` and its links. A module a tile-level binding names (v2's Creator check) can't be removed. |
 
@@ -556,8 +556,7 @@ The canvas shows canonical process tiles directly, without owner cards, role/dep
 expansion/collapse actions or fallback narration. The existing lane layout receives the canonical
 graph; view interaction changes no contracts. **Export diagram → Source & diagnostics** shows
 ownership/access read-only, with the saved source and its JSON download; its owner buttons select a
-logical owner for chat. Normal forms contain identity, useful installed settings, a worker's explicit **Share logical owner
-with API** choice, and exact database product access. `shareOwner` and `setDatabaseAccess` are
+logical owner for chat. Normal forms contain identity, useful installed settings, a worker's **Database ownership** choice, and the **Access for** sections on each database tile. `shareOwner` and `setDatabaseAccess` are
 shared mouse/chat commands. Same-owner product modules share a declared setup-owned namespace;
 process credentials remain distinct, application roles receive no DDL, and newly published views
 grant nothing by default. Conflicting owner connections refuse atomically. Extension API v7
@@ -618,7 +617,7 @@ one of those to compose new-work admission. Saved raw unconsumed part links also
 
 RG13 installs `cache-reader.read@1` on the existing Cache reader lead. Custom and standalone Data
 access can connect their optional **read** slot to a complete reader in the same tile. Parts cannot
-consume it. Freshness is explicitly immutable-positive or versioned; Exposure is HTTP or in-process.
+consume it. **Can cached records change?** selects immutable-positive or versioned records. **How is this reader called?** selects an HTTP endpoint or a call inside the service.
 Only these and shared TTL are ordinary controls. HTTP retains its record body with absolute
 validity/version headers; in-process returns immutable record/freshness/version/validity/source
 metadata and adds no endpoint. Registered source SELECTs have a compiled read-only module binding
@@ -663,8 +662,7 @@ still takes message work from a queue/topic. Logical ownership and exact grants 
 
 `webhook-receiver` (**Webhook receiver**, inbox icon) is installed in Service only, with writable owned PostgreSQL state and Runnable processes. It generates bounded raw ingress, private generic HMAC verification, pure mapping scaffold and an opaque durable processing declaration. Protected052 records provide accept/store/process, recovery/fencing and completed-only retention; no separate inbox framework or provider SDK is added. Two normal controls set body bytes and signature window. Required-user host guards refuse composition. [Exact generic protocol and limits](../docs/plans/reliable-generation/evidence/rg17/README.md).
 
-Event counter consumes a declared 1–604800s delivery horizon and keeps completed receipts for seven
-days using store time. Stable event IDs span aggregation dates. Standalone Event consumer stubs
+On Event counter, **Maximum replay delay (seconds)** accepts 1–604800. The counter keeps a counted event’s ID for seven days after completion, using the database clock. Stable event IDs span aggregation dates. Standalone Event consumer stubs
 with owned state can opt into the checked receipt/scoped-product declaration; legacy void handlers
 keep durable progress unknown. Cleanup and heartbeat run independently of arrivals. Internal
 quarantine commands require receipt support and refuse unknown effects; Pub/Sub retry/ACK policy

@@ -33,83 +33,94 @@ export function DatabaseAccess({
     }
   };
   const name = (id: string) => design.elements.find((item) => item.id === id)?.name ?? id;
-  const databases = design.connections.filter(
-    (link) =>
-      link.from.element === tile &&
-      studio?.elements.some(
-        (item) => item.element === link.to.element && item.settings.kind === "database",
-      ),
-  );
   if (
     design.schemaVersion !== 3 ||
     idsPinned(design) ||
     !hasModuleSelections(design) ||
-    (kind !== "worker" && !databases.length)
+    (kind !== "worker" && kind !== "database")
   )
     return null;
+  const database = studio?.elements.find((item) => item.element === tile);
+  const resource = ownership.resources.find((item) => item.element === tile);
+  const ownerTile = database?.owner?.kind === "element" ? database.owner.id : undefined;
+  const ownerOf = (id: string | undefined) =>
+    ownership.roles.find((role) => role.element === id)?.owner;
+  const readers = [
+    ...new Set(
+      design.connections
+        .filter((link) => link.to.element === tile)
+        .map((link) => link.from.element),
+    ),
+  ];
   return (
     <section aria-label="Database ownership and access">
       {kind === "worker" ? (
-        <div className="studio-form-field">
-          <label htmlFor={`shared-owner-${tile}`}>Share logical owner with API</label>
-          <select
-            id={`shared-owner-${tile}`}
-            value={ownership.roles.find((role) => role.element === tile)?.sharedWith ?? ""}
-            onChange={(event) => {
-              if (event.currentTarget.value)
-                void apply({
-                  type: "shareOwner",
-                  worker: tile,
-                  api: event.currentTarget.value,
-                });
-            }}
-          >
-            <option value="" disabled>
-              Independent owner
-            </option>
-            {studio?.elements
-              .filter((item) => sharedOwnerApiKinds.some((kind) => kind === item.settings.kind))
-              .map((item) => (
-                <option key={item.element} value={item.element}>
-                  {name(item.element)}
-                </option>
-              ))}
-          </select>
-        </div>
-      ) : null}
-      {databases.map((link) => (
-        <RelationAccess
-          key={`${link.to.element}-${design.revision}`}
-          database={link.to.element}
-          name={name(link.to.element)}
-          product={
-            ownership.grants.find(
-              (grant) => grant.role === tile && grant.resource === link.to.element,
-            )?.product
-          }
-          save={(product) =>
-            apply({
-              type: "setDatabaseAccess",
-              role: tile,
-              database: link.to.element,
-              product,
-            })
-          }
-        />
-      ))}
+        <details className="studio-db-access">
+          <summary>Database ownership</summary>
+          <div className="studio-form-field">
+            <label htmlFor={`shared-owner-${tile}`}>Who owns this worker’s data?</label>
+            <select
+              id={`shared-owner-${tile}`}
+              value={ownership.roles.find((role) => role.element === tile)?.sharedWith ?? ""}
+              onChange={(event) =>
+                void apply({ type: "shareOwner", worker: tile, api: event.currentTarget.value })
+              }
+            >
+              <option value="" disabled>
+                This worker
+              </option>
+              {studio?.elements
+                .filter((item) => sharedOwnerApiKinds.some((kind) => kind === item.settings.kind))
+                .map((item) => (
+                  <option key={item.element} value={item.element}>
+                    Share with {name(item.element)}
+                  </option>
+                ))}
+            </select>
+            <small>
+              Share with an API when both need to update the same data. Each keeps its own database
+              permissions.
+            </small>
+          </div>
+        </details>
+      ) : (
+        readers.map((role) => {
+          const roleOwner = ownerOf(role);
+          const ownTables = resource
+            ? resource.kind === "source" && roleOwner === resource.authority
+            : role === ownerTile || (!!roleOwner && roleOwner === ownerOf(ownerTile));
+          return (
+            <details key={role} className="studio-db-access">
+              <summary>Access for {name(role)}</summary>
+              <RelationAccess
+                key={design.revision}
+                fieldId={`${tile}-${role}`}
+                ownTables={ownTables}
+                product={
+                  ownership.grants.find((grant) => grant.role === role && grant.resource === tile)
+                    ?.product
+                }
+                save={(product) =>
+                  apply({ type: "setDatabaseAccess", role, database: tile, product })
+                }
+              />
+            </details>
+          );
+        })
+      )}
       {error ? <p role="alert">{error}</p> : null}
     </section>
   );
 }
 
 function RelationAccess({
-  database,
-  name,
+  fieldId,
+  ownTables,
   product,
   save,
 }: {
-  database: string;
-  name: string;
+  fieldId: string;
+  ownTables: boolean;
   product?: ProductAccess;
   save: (product: ProductAccess) => Promise<void>;
 }) {
@@ -120,7 +131,12 @@ function RelationAccess({
   const [view, setView] = useState("");
   return (
     <fieldset>
-      <legend>{name} product access</legend>
+      <legend>Database permissions</legend>
+      <p>
+        {ownTables
+          ? "Choose which existing tables and views this service can use."
+          : "This service can read named views published by the database owner."}
+      </p>
       <ul>
         {product?.tables.map((item) => (
           <li key={item.name}>
@@ -131,49 +147,53 @@ function RelationAccess({
           <li key={name}>published.{name}: SELECT</li>
         ))}
       </ul>
-      <label htmlFor={`product-table-${database}`}>Product table</label>
+      {ownTables ? (
+        <>
+          <label htmlFor={`product-table-${fieldId}`}>Table name</label>
+          <input
+            id={`product-table-${fieldId}`}
+            value={table}
+            onChange={(event) => setTable(event.currentTarget.value)}
+            placeholder="items"
+          />
+          <div>
+            {(["SELECT", "INSERT", "UPDATE", "DELETE"] as const).map((operation) => (
+              <label key={operation}>
+                <input
+                  type="checkbox"
+                  checked={operations.includes(operation)}
+                  onChange={(event) =>
+                    setOperations(
+                      event.currentTarget.checked
+                        ? [...operations, operation]
+                        : operations.filter((item) => item !== operation),
+                    )
+                  }
+                />
+                {operation}
+              </label>
+            ))}
+          </div>
+          <button
+            type="button"
+            disabled={!table || !operations.length}
+            onClick={() =>
+              void save({
+                tables: [
+                  ...(product?.tables.filter((item) => item.name !== table) ?? []),
+                  { name: table, operations },
+                ],
+                views: product?.views ?? [],
+              })
+            }
+          >
+            Save table access
+          </button>
+        </>
+      ) : null}
+      <label htmlFor={`product-view-${fieldId}`}>Published view</label>
       <input
-        id={`product-table-${database}`}
-        value={table}
-        onChange={(event) => setTable(event.currentTarget.value)}
-        placeholder="items"
-      />
-      <div>
-        {(["SELECT", "INSERT", "UPDATE", "DELETE"] as const).map((operation) => (
-          <label key={operation}>
-            <input
-              type="checkbox"
-              checked={operations.includes(operation)}
-              onChange={(event) =>
-                setOperations(
-                  event.currentTarget.checked
-                    ? [...operations, operation]
-                    : operations.filter((item) => item !== operation),
-                )
-              }
-            />
-            {operation}
-          </label>
-        ))}
-      </div>
-      <button
-        type="button"
-        disabled={!table || !operations.length}
-        onClick={() =>
-          void save({
-            tables: [
-              ...(product?.tables.filter((item) => item.name !== table) ?? []),
-              { name: table, operations },
-            ],
-            views: product?.views ?? [],
-          })
-        }
-      >
-        Save table access
-      </button>
-      <label htmlFor={`product-view-${database}`}>Published view</label>
-      <input
-        id={`product-view-${database}`}
+        id={`product-view-${fieldId}`}
         value={view}
         onChange={(event) => setView(event.currentTarget.value)}
         placeholder="visible_items"
@@ -195,10 +215,6 @@ function RelationAccess({
           Clear product access
         </button>
       ) : null}
-      <p>
-        Exact table operations and named views only. Product access excludes template implementation
-        tables.
-      </p>
     </fieldset>
   );
 }

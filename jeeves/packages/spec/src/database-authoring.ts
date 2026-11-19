@@ -71,7 +71,7 @@ export function databaseAuthoring(
       kind(command.worker) !== "worker" ||
       !sharedOwnerApiKinds.some((api) => api === kind(command.api))
     )
-      throw new Error("Choose a Worker and an API tile to share a logical owner.");
+      throw new Error("Choose the worker and the API that owns its data.");
     const api = role(command.api);
     const worker = role(command.worker);
     if (
@@ -86,7 +86,7 @@ export function databaseAuthoring(
         ))
     )
       throw new Error(
-        `${name(command.worker)} already owns other state. Sharing would merge conflicting owners; nothing was changed.`,
+        `${name(command.worker)} already has data owned elsewhere. Choose an API only if both own the same data.`,
       );
     worker.owner = api.owner;
     worker.sharedWith = api.element;
@@ -123,7 +123,7 @@ export function databaseAuthoring(
     const foreign = runtime.owner !== resource.authority;
     if (foreign && command.product.tables.length)
       throw new Error(
-        "Another logical owner may read only named published views. Choose Share logical owner explicitly for an API's worker before connecting owned state.",
+        "Only the database owner can grant access to tables. Other services can read named published views.",
       );
     if (command.product.tables.length) {
       if (resource.kind !== "source")

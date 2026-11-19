@@ -1,11 +1,9 @@
-// A tile's and an action's Connections: one row per line, incoming first, each with From or To, the
-// other end's name and kind, and what the line does in the blueprint's words; a click on a row
-// jumps to the other end.
+// Connection sentences follow the actual direction of each action. Clicking a row opens its other endpoint.
 import { designBlueprint, laneGraph, studioArchitectureExample } from "@jeeves/spec";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { laneNodeName } from "./LaneCanvas.tsx";
-import { ConnectionList, connectionWords } from "./TileInspector.tsx";
+import { ConnectionList, connectionUses } from "./TileInspector.tsx";
 
 afterEach(cleanup);
 
@@ -23,24 +21,26 @@ describe("ConnectionList", () => {
       <ConnectionList design={design} graph={graph} id="redirect" name={name} onJump={vi.fn()} />,
     );
     expect(rows()).toEqual([
-      "From Open link, Action: calls",
-      "To Click events, Message channel: publishes",
-      "To URL cache, Cache: writes",
-      "To URL database, Database: reads",
+      "Open link calls Redirect service",
+      "Redirect service reads and refills URL cache",
+      "Redirect service reads from URL database when the cache has no fresh copy",
+      "Redirect service publishes to Click events",
     ]);
-    const first = screen.getAllByRole("button")[0];
-    expect(first?.querySelector(".lane-connection-way")?.textContent).toBe("From");
-    expect(first?.querySelector(".lane-connection-name")?.textContent).toBe("Open link · Action");
-    expect(first?.querySelector(".lane-connection-word")?.textContent).toBe("calls");
+    expect(screen.getAllByRole("button")[0]?.querySelector("strong")?.textContent).toBe(
+      "Open link",
+    );
   });
 
   it("a click on a row calls jump with the other tile's ID", () => {
     const jump = vi.fn();
     render(<ConnectionList design={design} graph={graph} id="shorten" name={name} onJump={jump} />);
-    expect(rows()).toEqual(["From Shorten, Action: calls", "To URL database, Database: writes"]);
-    fireEvent.click(screen.getByRole("button", { name: "To URL database, Database: writes" }));
+    expect(rows()).toEqual([
+      "Shorten calls Shorten service",
+      "Shorten service writes to URL database",
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Shorten service writes to URL database" }));
     expect(jump).toHaveBeenCalledExactlyOnceWith("url-db");
-    fireEvent.click(screen.getByRole("button", { name: "From Shorten, Action: calls" }));
+    fireEvent.click(screen.getByRole("button", { name: "Shorten calls Shorten service" }));
     expect(jump).toHaveBeenLastCalledWith("@upload");
   });
 
@@ -49,27 +49,38 @@ describe("ConnectionList", () => {
       <ConnectionList design={design} graph={graph} id="@download" name={name} onJump={vi.fn()} />,
     );
     expect(rows()).toEqual([
-      "From User: calls",
-      "To Stats API, Microservice: calls",
-      "To Redirect service, Microservice: calls",
+      "User chooses Open link",
+      "Open link calls Stats API",
+      "Open link calls Redirect service",
     ]);
     cleanup();
     render(
       <ConnectionList design={design} graph={graph} id="analytics" name={name} onJump={vi.fn()} />,
     );
     expect(rows()).toEqual([
-      "From Click events, Message channel: consumes",
-      "To Analytics store, Database: writes",
+      "Analytics worker receives messages from Click events",
+      "Analytics worker writes to Analytics store",
     ]);
   });
 });
 
-describe("connectionWords", () => {
+describe("connectionUses", () => {
+  it("describes a database as a cache fallback only when all its callers are loaders", () => {
+    const shared = structuredClone(design);
+    shared.architecture?.studio?.componentConnections?.push({
+      id: "another-lookup",
+      from: "redirect-responder",
+      to: { kind: "element", id: "url-db", via: "redirect-db" },
+    });
+    expect(connectionUses(shared).get("redirect-cache")).toBe("cache");
+    expect(connectionUses(shared).get("redirect-db")).toBe("read");
+  });
+
   it("reads a schema-3 design's words too, which blueprint v2 refuses", () => {
     const foundation = studioArchitectureExample("studio-tinyurl-foundation").design;
     expect(() => designBlueprint(foundation)).toThrow(/Blueprint v2 cannot represent/);
-    expect(connectionWords(foundation).get("resolve-cache")).toBe("reads");
+    expect(connectionUses(foundation).get("resolve-cache")).toBe("read-write");
     // Worked out once per design.
-    expect(connectionWords(foundation)).toBe(connectionWords(foundation));
+    expect(connectionUses(foundation)).toBe(connectionUses(foundation));
   });
 });

@@ -266,7 +266,7 @@ changes generated adapters, not diagram schema or blueprint eligibility. See the
 [generated HTTP contract](../jeeves-generator/README.md#generated-http-contract-extension-api-v4).
 
 
-RG06 database permissions use the existing `ownership` records. `roles[].sharedWith` explicitly
+The database tile’s **Access for** sections edit each connected service’s permissions in the existing `ownership` records. Studio uses the declared read/write access in its connection sentences. A wired Cache reader identifies the cache it reads and fills. `roles[].sharedWith` explicitly
 names the API role sharing its logical owner with a worker. `resources[].productNamespace: "owner"`
 persists the owner-scoped product-state decision. Clearing grants keeps that namespace; a named-view
 audience alone leaves legacy namespaces unchanged. `grants[].product.tables[]` names

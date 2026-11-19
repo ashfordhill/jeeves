@@ -611,11 +611,7 @@ this order:
    unchanged. A saved number outside its bound (an older design) still opens: its own field shows
    the value and the reason, and only that field shows until a value in range is saved
    ([settings](studio-settings.md#normal-feature-configuration)).
-4. **Connections**, when the tile has any line: one row per line, incoming first, each a button:
-   a small **From** or **To**, the other end's icon, its name and kind, and at the right what the
-   line does, in the blueprint's words (its connection's store access, else its channel use):
-   writes, reads, publishes or consumes, and calls for anything else (a request, an entry, the
-   user's line to an action).
+4. **Connections** lists sentences such as “Browser API calls Link API” and “Redirect reads and refills Hot routes.” Read them as relationships. The order does not describe a request. The cache reader's source is marked as a fallback when only its loader uses that connection. The bold endpoint opens when clicked.
 5. **Modules**, when the tile has modules or can hold them: a stack of cards drawn as the module
    menu draws them, in the colours of the kind's group, each one button ("Open <module>"): its
    name and, at the right, a pill with the dot and word for what its kind generates in the tile
@@ -678,7 +674,7 @@ saved and never sent to chat.
   retired video or YouTube feature preset stays readable, editable and exportable.
 - An action: its lane icon and name, then its warnings, **Name** (the word on its tile, at most 24
   characters; it autosaves like a tile's name) and its **Lane** (read-only), then
-  **Connections**, as a tile's: From the user, then To each tile its entries reach. Its entries
+  **Connections** lists the user choosing the action, then each tile the action calls. Its entries
   are the lines drawn from it; an action with none has a warning.
 - A lane entry (its line): its action, then the **lane row**: download and upload as icons (the
   name is the tooltip), the current one filled yellow. Clicking the other moves the entry to that
@@ -751,13 +747,8 @@ open (Export diagram, a removal's confirmation, Choose relationship) they do not
 
 ## Logical owners, roles and access
 
-Module commands derive template ownership; generation reads it. A worker inspector's **Share
-logical owner with API** explicitly assigns the worker to an API owner before connecting shared
-owned state. It keeps separate process logins and refuses conflicting owned state atomically.
-New multi-writer template connections require that explicit choice; saved matching owners remain
-readable. The process inspector's database product access controls declare table names with
-SELECT/INSERT/UPDATE/DELETE and named published views. They compile exact grants, with no blanket
-view or default grants. Same-owner modules use the declared `p_<owner ID>` product namespace,
+On a worker, open **Database ownership**. **This worker** means it owns its data. Select an API when the two need to update the same data. They keep separate database logins. A worker that already owns conflicting data cannot join the API.
+On a database tile, expand **Access for** a service or worker to review and edit its permissions. Only a member of the database owner can request operations on private tables. Other services can read named published views. These permissions are applied when the project is generated. Same-owner modules use the declared `p_<owner ID>` product namespace,
 created before module SQL runs. Template implementation tables remain outside product access.
 Application logins receive no product DDL authority or migration credential.
 **Export diagram → Source & diagnostics** shows it read-only, with the saved source. Removal
@@ -1609,8 +1600,7 @@ one of those to compose new-work admission. Saved raw unconsumed part links also
 RG13 adds a **read** connection from Custom or a standalone Data access to a complete Cache reader
 in the same tile. Its generated handle exposes `read({key})`; the product operation must call it.
 A template part has no standalone operation and cannot consume that connection. The reader's
-ordinary controls are Freshness (`immutable-positive` or `versioned`), Exposure (`http` or
-`in-process`) and shared TTL. Older absent values preserve immutable HTTP behavior; saved unsupported
+controls ask **Can cached records change?** and **How is this reader called?** Select a fixed value or the newest version, and choose whether to add an HTTP endpoint. **Cache lifetime (seconds)** sets the maximum time a copy is kept. Older absent values preserve immutable HTTP behavior; saved unsupported
 L1/negative/read-through settings remain readable and refuse generation. An in-process reader adds
 no reader endpoint. HTTP explicitly keeps its record body and supplies freshness/version/absolute
 validity headers; callable results supply those facts as immutable metadata. Versioned source
@@ -1652,7 +1642,7 @@ not instantaneous knowledge of every failure.
 Scheduled task modules run in either Service or Worker using the common durable-work lifecycle.
 Adding a Worker from a lane creates its Scheduled task and enables Runnable processes; adding a
 Worker after a queue keeps the message-consumer workflow. Connect the task's state slot to its
-owned writable database, and set its interval in the inspector or chat. A separate Worker joins
+owned writable database. **Interval (seconds)** sets how often to check for work. Each job decides which records are due. A separate Worker joins
 an API's logical owner explicitly before sharing product writes, with its own precise credentials.
 
 The generated task module is the product handler scaffold. Its `durableWork` declaration has a
@@ -1670,7 +1660,7 @@ Worker interchangeable remote authority.
 
 A **Webhook receiver** module in a Service uses writable owned database state and Runnable processes. Its Service owns a lifecycle-driven durable processor; no queue is required. The separate mapper receives only authenticated bounded JSON, and the operation receives scoped product commands. Required user Auth guards in the same Service refuse composition. The receiver supports only the documented generic Jeeves HMAC protocol. A 202 follows durable acceptance; completion and bounded retry happen later. Changed raw bytes under one identity refuse409. See the exact envelope and retention limits in [RG17 evidence](plans/reliable-generation/evidence/rg17/README.md).
 
-Event counter's Delivery horizon declares how long deliveries may repeat (up to seven days).
+Event counter’s **Maximum replay delay (seconds)** sets how late a repeat delivery can arrive, up to seven days.
 The generated worker keeps receipt identity independent of aggregation dates and commits its
 increment before ACK. A standalone Event consumer may connect optional owned state; its checked
 receipt declaration maps immutable events and invokes registered product commands. Independent

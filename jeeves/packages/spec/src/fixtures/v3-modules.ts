@@ -217,7 +217,7 @@ export const V3_VALUES: readonly V3Value[] = [
     label: "Statement timeout",
     value: 500,
   },
-  { tile: "Hot metadata", key: "ttlSeconds", label: "TTL", value: 3601 },
+  { tile: "Hot metadata", key: "ttlSeconds", label: "Cache lifetime", value: 3601 },
   { tile: "View counter", key: "concurrency", label: "Concurrency", value: 8 },
   { tile: "Watch API", module: "Viewer check", key: "signIn", label: "Sign-in", value: "optional" },
 ];

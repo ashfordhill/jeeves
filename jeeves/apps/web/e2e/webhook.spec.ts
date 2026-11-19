@@ -80,7 +80,7 @@ test("RG17 connects and configures authenticated webhook ingress by mouse with b
     const inspector = page.locator(".studio-inspector");
     await expect(inspector.locator(".lane-module-status")).toHaveText("GeneratedWebhook receiver");
     await inspector.getByLabel("Body limit", { exact: true }).selectOption("16384");
-    await inspector.getByLabel("Signature window", { exact: true }).fill("60");
+    await inspector.getByLabel("Signature window (seconds)", { exact: true }).fill("60");
     await inspector.getByLabel("Name", { exact: true }).click();
     await expect
       .poll(async () => JSON.stringify(await design(page, id)))

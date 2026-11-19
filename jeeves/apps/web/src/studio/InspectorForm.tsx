@@ -2,6 +2,7 @@ import {
   buildStudioCommand,
   containerClassification,
   type DesignDocument,
+  moduleLinkSlot,
   moduleStatus,
   normalSettingFields,
   type StudioComponentDefinition,
@@ -138,10 +139,12 @@ function DraftField({
   const error = draft.errors[field.path];
   const inputId = `${idPrefix}-${field.path}`;
   const errorId = `${inputId}-error`;
+  const helpText = help && field.help;
   const common = {
     id: inputId,
     "aria-invalid": !!error,
-    "aria-describedby": error ? errorId : undefined,
+    "aria-describedby":
+      [error && errorId, helpText && `${inputId}-help`].filter(Boolean).join(" ") || undefined,
     onBlur: () => void formDrafts.flush(draft.key),
   };
   // An optional setting left empty is unspecified (absent), never an empty string or zero.
@@ -150,9 +153,14 @@ function DraftField({
   const change = (next: unknown) =>
     formDrafts.change(draft.key, { [field.path]: empty && next === "" ? undefined : next });
   const description = descriptions.has(field.path);
+  const unit = "unit" in field ? field.unit : undefined;
+  const unitLabel = unit === "s" ? "seconds" : unit === "ms" ? "milliseconds" : unit;
   return (
     <div className={className ? `studio-form-field ${className}` : "studio-form-field"}>
-      <label htmlFor={inputId}>{description ? "Description" : field.label}</label>
+      <label htmlFor={inputId}>
+        {description ? "Description" : field.label}
+        {unitLabel ? ` (${unitLabel})` : ""}
+      </label>
       {field.control === "text" ? (
         description ? (
           <DescriptionBox
@@ -224,8 +232,11 @@ function DraftField({
           {error}
         </span>
       ) : null}
-      {"unit" in field && field.unit ? <small>{field.unit}</small> : null}
-      {help && field.help ? <small className="studio-field-help">{field.help}</small> : null}
+      {helpText ? (
+        <small id={`${inputId}-help`} className="studio-field-help">
+          {helpText}
+        </small>
+      ) : null}
     </div>
   );
 }
@@ -289,6 +300,15 @@ function ComponentDraftForm({
     component.settings.kind
   ] as StudioComponentDefinition;
   const visual = studioComponentVisuals[component.settings.kind];
+  const workload = studio?.componentConnections?.find(
+    (link) => link.from === id && moduleLinkSlot(design, link)?.id === "workload",
+  );
+  const userCheck = studio?.components?.find(
+    (item) =>
+      item.host === component.host &&
+      (item.settings.kind === "browser-session" || item.settings.kind === "auth-guard"),
+  );
+  const issuer = workload && design.elements.find((item) => item.id === workload.to.id);
   const settings = draftSettings(entry.values) as Partial<StudioComponentSettings>;
   const controls = normalSettingFields(design, installed, { component: id });
   const editable = (field: StudioComponentField) =>
@@ -359,6 +379,14 @@ function ComponentDraftForm({
         ) : null}
       </header>
       {description ? draftField(description) : null}
+      {issuer ? (
+        <p className="studio-field-help">
+          {issuer.name} identifies this service on internal calls.
+          {userCheck && userCheck.id !== id
+            ? ` ${userCheck.name} sets whether a person must sign in.`
+            : ""}
+        </p>
+      ) : null}
       {options.length ? (
         <section aria-labelledby={`${idPrefix}-options`}>
           <h3 id={`${idPrefix}-options`} className="lane-inspector-section">

@@ -71,7 +71,7 @@ test("RG16 edits both task intervals and connects a queue-free timer Worker by m
         .click();
       const inspector = page.locator(".studio-inspector");
       await expect(inspector.locator(".lane-module-status")).toHaveText("GeneratedScheduled task");
-      await inspector.getByLabel("Interval", { exact: true }).fill(interval);
+      await inspector.getByLabel("Interval (seconds)", { exact: true }).fill(interval);
       await inspector.getByLabel("Name", { exact: true }).click();
       await expect
         .poll(async () => JSON.stringify(await design(page, id)))

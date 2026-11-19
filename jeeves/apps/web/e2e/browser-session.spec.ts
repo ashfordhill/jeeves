@@ -29,12 +29,14 @@ test("RG19 browser sign-in expiry/guest/offline controls, refusal and export par
     const inspector = page.locator(".studio-inspector");
     await expect(inspector.locator(".lane-module-status")).toHaveText("GeneratedBrowser sessions");
     await inspector.getByLabel("Sign-in", { exact: true }).selectOption("required");
-    await inspector.getByLabel("Idle expiry", { exact: true }).fill("3600");
+    await inspector.getByLabel("Sign out after inactivity (seconds)", { exact: true }).fill("3600");
     await inspector.getByLabel("Name", { exact: true }).click();
-    await inspector.getByLabel("Absolute expiry", { exact: true }).fill("86400");
+    await inspector.getByLabel("Maximum session length (seconds)", { exact: true }).fill("86400");
     await inspector.getByLabel("Name", { exact: true }).click();
-    await inspector.getByLabel("Guest cookie context", { exact: true }).selectOption("enabled");
-    await inspector.getByLabel("Request offline access", { exact: true }).selectOption("enabled");
+    await inspector.getByLabel("Remember guest visitors", { exact: true }).selectOption("enabled");
+    await inspector
+      .getByLabel("Refresh the login automatically", { exact: true })
+      .selectOption("enabled");
     await expect
       .poll(async () => JSON.stringify(await design(page, id)))
       .toContain('"offlineAccess":"enabled"');

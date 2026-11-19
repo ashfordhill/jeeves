@@ -946,7 +946,7 @@ function deriveOwnership(
       (authority && owners.some((owner) => owner !== authority))
     )
       throw new Error(
-        `${name(store)} has multiple writers. Choose Share logical owner with API (shareOwner) explicitly before connecting a worker; unrelated owners are never merged.`,
+        `${name(store)} has multiple writers. Under Database ownership, choose the API that owns the worker’s data (shareOwner) before connecting it.`,
       );
   }
 

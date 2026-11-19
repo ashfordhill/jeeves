@@ -26,7 +26,8 @@ test("chooses shared logical ownership and precise product permissions by mouse"
     await ready(page);
     const inspector = page.locator(".studio-inspector");
     await tile(page, "Visit worker").getByText("Visit worker", { exact: true }).first().click();
-    await inspector.getByLabel("Share logical owner with API").selectOption("links-api");
+    await inspector.getByText("Database ownership", { exact: true }).click();
+    await inspector.getByLabel("Who owns this worker’s data?").selectOption("links-api");
     await expect
       .poll(
         async () =>
@@ -35,9 +36,16 @@ test("chooses shared logical ownership and precise product permissions by mouse"
           )?.sharedWith,
       )
       .toBe("links-api");
-    await inspector.getByLabel("Product table", { exact: true }).fill("items");
-    await inspector.getByLabel("UPDATE", { exact: true }).check();
-    await inspector.getByRole("button", { name: "Save table access" }).click();
+    await expect(inspector.getByLabel("Table name", { exact: true })).toHaveCount(0);
+    const database = "Links database";
+    await tile(page, database).getByText(database, { exact: true }).first().click();
+    await inspector.getByText("Access for Visit worker", { exact: true }).click();
+    const grants = inspector
+      .locator("details[open]")
+      .filter({ hasText: "Access for Visit worker" });
+    await grants.getByLabel("Table name", { exact: true }).fill("items");
+    await grants.getByLabel("UPDATE", { exact: true }).check();
+    await grants.getByRole("button", { name: "Save table access" }).click();
     await expect
       .poll(
         async () =>
@@ -50,11 +58,15 @@ test("chooses shared logical ownership and precise product permissions by mouse"
         views: [],
       });
     const before = await design(page, id);
-    await inspector.getByLabel("Share logical owner with API").selectOption("stats-api");
-    await expect(page.getByRole("alert")).toContainText("conflicting owners");
+    await tile(page, "Visit worker").getByText("Visit worker", { exact: true }).first().click();
+    await inspector.getByText("Database ownership", { exact: true }).click();
+    await inspector.getByLabel("Who owns this worker’s data?").selectOption("stats-api");
+    await expect(page.getByRole("alert")).toContainText("already has data owned elsewhere");
     expect(await design(page, id)).toEqual(before);
-    await inspector.getByLabel("Published view", { exact: true }).fill("visible_items");
-    await inspector.getByRole("button", { name: "Allow named view" }).click();
+    await tile(page, database).getByText(database, { exact: true }).first().click();
+    await inspector.getByText("Access for Visit worker", { exact: true }).click();
+    await grants.getByLabel("Published view", { exact: true }).fill("visible_items");
+    await grants.getByRole("button", { name: "Allow named view" }).click();
     await expect
       .poll(
         async () =>

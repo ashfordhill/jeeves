@@ -19895,3 +19895,9 @@ workload settings the same way.
   interrupted first run, and the web build passed. The running Studio rendered TinyURL and both
   QRWTY projects. After refreshing its stale Vite catalog, mouse checks covered five template
   instances, both diagram views and the ZIP download.
+
+## 2026-11-18 — QRWTY inspector and diagram wording
+
+- Saved [the QRWTY proposal](http://127.0.0.1:4300/?project=8994962f-abc4-4903-a609-616d9c8b7409#/design) at revision 4 with shorter descriptions for all 16 tiles and 18 modules. The inspector names both ends of each connection and shows when Redirect uses the cache or the database. Database tiles now show each service’s permissions. Browser routes explains its service identity.
+- The [implementation notes](field-projects/qrwty/implementation-notes.md) specify Auth0, direct Stripe verification and configurable click retention. The saved design still uses the installed templates. The [owner feedback](HUMAN_FEEDBACK.md#2026-11-18--qrwty-inspector-and-template-review) preserves the original screenshots.
+- `pnpm check` passed 1,440 tests, `pnpm test:e2e` passed all 91 browser tests, and the web build passed. An earlier browser run lost Connect mode when Vite reloaded during a drag. Mouse checks in the running Studio covered TinyURL, both QRWTY views, database permissions and five template instances. The 151-file Studio and CLI exports matched byte for byte and the exported backend built offline.

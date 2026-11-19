@@ -1,0 +1,46 @@
+# QRWTY follow-up
+
+The [saved project](http://127.0.0.1:4300/?project=8994962f-abc4-4903-a609-616d9c8b7409#/design) uses today's installed templates. The three changes below are proposed work for the generator.
+
+## Sign in once with Auth0
+
+**What works today.** Browser API keeps the login in Sessions. The browser holds a secure cookie. When Browser API calls Account API, it sends proof of the user's identity and separate proof that Browser API made the call. Account API can carry the verified user into its declared call to Billing API. Each receiving service checks the user token and the calling service. Account API must still check that the requested link belongs to that person. A background worker cannot borrow that login.
+
+**Browser routes** has a line to Identity because it must identify the calling service. **Browser session → Sign-in** decides whether guests may enter Browser API. **Verify user → Sign-in** sets the rule at each receiving API. Optional admits a guest who supplies no credential. A bad credential is rejected. In a local test, two browser-service copies shared one session and refreshed its token only once. Secure HTTPS, issuer registration and credentials are still needed for a deployment. [Generated forwarding contract](../../plans/reliable-generation/evidence/rg21/protocol.md) · [Two-copy tests](../../plans/reliable-generation/evidence/rg23/results.md)
+
+QRWTY did use Keycloak, an open-source sign-in server, in local tests. The owner selected hosted Auth0 for staging after the field team tested Google's candidate against the required login flow. Jeeves currently expects Keycloak's issuer URL and audience when it forwards a browser login. Substituting an Auth0 URL in that setup would fail. [Field decision](https://github.com/ashfordhill/qrwty/blob/2ee2c1487838a94cf8824093d2c911d8df25737f/docs/plans/production-build/owner-decisions-2026-11-13.md#12-amendment-2026-11-14-night-the-managed-sign-in-provider-is-auth0-free-tier)
+
+**Implementation.** Offer **Keycloak** and **Auth0** on the Identity tile. Keep existing projects on their current issuer. For Auth0, accept the exact HTTPS tenant or custom issuer and registered API audience through deployment configuration. Support the browser login, refresh and the separate service credentials. Check the expected issuer, signature, audience, expiry and allowed calling service at each receiving API. Keep client secrets and refresh tokens outside application hooks. Use the same provider choice in the form, chat, blueprint and export. Verify a real test-tenant login through Browser → Account → Billing, a guest through Browser → Link, concurrent refresh across two copies, logout and rejection of a token for another API. [Auth0 access-token checks](https://auth0.com/docs/secure/tokens/access-tokens/validate-access-tokens)
+
+## Receive Stripe notifications directly
+
+A customer starts checkout while signed in. Later, Stripe calls QRWTY to say what happened, even if the customer has closed the tab. Stripe has its own signature and never has that customer's session cookie. The original Billing API handled both requests. Its sign-in rule therefore had to allow guests, and each customer route had to check the user itself. The finished field app already checked Stripe's signature and saved the notice. The other problem was that opening billing status could process old notices and contact Stripe. That made a page read perform background work. [Original event handler](https://github.com/ashfordhill/qrwty/blob/2ee2c1487838a94cf8824093d2c911d8df25737f/app/src/modules/billing-api/billing/events.ts) · [Original customer routes](https://github.com/ashfordhill/qrwty/blob/2ee2c1487838a94cf8824093d2c911d8df25737f/app/src/modules/billing-api/billing/customer.ts)
+
+The saved proposal gives Stripe its own inbox, keeps customer billing private, and lets a timer check unfinished payments. Today the generic webhook template recognizes a Jeeves signature. An edge adapter would have to verify Stripe and sign the message again.
+
+**Implementation.** Add **Stripe** as a signature format on Webhook receiver. Verify the `Stripe-Signature` header over the original bytes using Stripe's library and endpoint secret. Support QRWTY's 256 KiB limit. Save the verified event before returning success. Keep its event ID and digest for 35 days after successful processing. Keep failed events until repaired. A repeated delivery must produce one billing change across retries, a restart or two service copies. Test duplicate, altered, oversized and expired messages, and a lost acknowledgement after saving. This removes the need to sign a message twice. QRWTY's own code still decides which plan a payment buys. [Stripe signature checks](https://docs.stripe.com/events/manage-webhook-endpoints#signature-errors) · [Installed receiver](../../plans/reliable-generation/evidence/rg17/protocol.md)
+
+## Choose how long to keep clicks
+
+A **click receipt** is the ID of a click already counted. If a broker delivers the same click twice, the processor finds that ID and skips the second count. The daily total can remain useful long after that receipt expires.
+
+| Proposed setting | QRWTY value | What changing it would do |
+| --- | --- | --- |
+| Maximum time a click can be replayed (days) | 31 | Sets the promised replay window, including time waiting for repair. The broker and archive must cover it. |
+| Keep counted click IDs (days) | 35 | Keeps enough history to recognize a replay. The value must cover the whole replay window. |
+| Keep daily totals (months) | 13 | Deletes older reporting totals according to the product's calendar-month rule. |
+| Interval (seconds), already available | 60 | Checks for expired records every minute, including when no clicks arrive. |
+
+**Implementation.** Raise the checked consumer's 30-day maximum to cover this case in both validation and runtime. Let the consumer declare its replay and receipt periods. Give the analytics cleanup job a month setting consumed by its deletion query. A generic timer cannot know what an application's tables contain. Keep old defaults and honor the expiry promised to already accepted records. Verify replay on day 31, duplicate suppression through the receipt's expiry, and the 13-month boundary during idle cleanup. Test that editing the interval changes only when the job runs. Wire each setting through the form, chat, blueprint and generated code before offering it. [Click contract](https://github.com/ashfordhill/qrwty/blob/2ee2c1487838a94cf8824093d2c911d8df25737f/docs/plans/production-build/durable-clicks.md) · [Installed receipt limits](../../plans/reliable-generation/evidence/rg18/protocol.md)
+
+## Reading Redirect and Click processor
+
+Redirect first reads Hot routes. If it finds a usable destination, it skips the database. On a miss or an expired copy, it reads a fresh route from Links and refills the cache. For a normal GET, it waits for Click events to accept the click, checks that the route is still valid, then redirects. A HEAD request checks the route without recording a click. [Redirect’s connections](redirect-connections.png) · [Link API’s connections](link-api-connections.png)
+
+**Can cached records change?** is Yes for a short link because its owner can edit the destination. The cache uses a version so an older lookup cannot replace a newer entry that is still there. The other option fits a record whose value never changes. Both cache successful lookups. **How is this reader called?** is “Only inside this service” for Redirect. Choosing HTTP also gives the reader its own endpoint. “Immutable positive” was the old label for an unchanging, successfully found record.
+
+Redirect owns no SQL table. It can read one view in Links, which exposes the destination and status it needs. Click processor does need storage across restarts. It writes counted IDs and totals into Analytics. Open **Links → Access for Redirect** or **Analytics → Access for Click processor** to inspect those permissions. Editing them changes which existing tables or views a service can use. Table creation belongs in database migrations. **This worker** under Database ownership means the worker owns its data. Choose an API only when the worker helps maintain data owned by that API.
+
+## Could Click events use Kafka?
+
+Yes. A self-hosted Kafka cluster can keep a durable stream of clicks and let consumers replay it. QRWTY would still need an acknowledged publish before redirecting and one database transaction to record the click ID and count. Google operates the Pub/Sub broker and can send a subscription directly to Cloud Storage for archiving. With self-hosted Kafka, the operator manages replication, storage, monitoring and the archive connector. The two delivery and replay mechanisms need their own tests. Today Jeeves offers Google Cloud Pub/Sub and self-hosted RabbitMQ for this channel. Kafka needs its own generated adapter before it can be selected. [Apache Kafka](https://kafka.apache.org/intro/) · [Pub/Sub archive subscriptions](https://docs.cloud.google.com/pubsub/docs/create-cloudstorage-subscription) · [Installed channel choices](../../studio-settings.md#normal-feature-configuration)

@@ -635,7 +635,7 @@ describe("studio chat tools", () => {
       }),
     ).toMatchObject({
       ok: false,
-      error: expect.stringContaining("conflicting owners"),
+      error: expect.stringContaining("already has data owned elsewhere"),
     });
     expect(workspace.pending).toEqual(before);
     expect(description("applyStudioCommands")).toContain("named published views");

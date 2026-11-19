@@ -1954,3 +1954,7 @@ Compare the longest permitted redelivery with the lifetime of the receipt that p
 product effect. QRWTY can replay clicks for 31 days and requires 35-day receipts. Its Pub/Sub
 consumer remains a product stub even though the installed counter and checked consumer both
 deduplicate within shorter windows. [QRWTY review and saved diagram](field-projects/qrwty/README.md)
+
+## 2026-11-18 — Read the connections as sentences
+
+Show both ends and the verb in the order you would say them aloud. A cache reader checks and refills its cache. Its database supplies misses when the loader alone uses that connection. A user token and a service credential answer different questions, even when both wires end at Identity. Put table permissions on the database. Label a timer with how often it runs and a retention rule with what it deletes and when. [QRWTY review](field-projects/qrwty/implementation-notes.md)

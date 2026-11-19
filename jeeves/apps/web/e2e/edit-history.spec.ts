@@ -19,7 +19,7 @@ test("a historical preset design autosaves its useful TTL and pool controls thro
     // One page: the cache's Options follow its Description without a tab.
     await expect(inspector.getByRole("tablist")).toHaveCount(0);
     await expect(inspector.getByRole("heading", { name: "Options", exact: true })).toBeVisible();
-    const ttl = inspector.getByLabel("TTL", { exact: true });
+    const ttl = inspector.getByLabel("Cache lifetime (seconds)", { exact: true });
     await expect(ttl).toHaveValue("3600");
     await ttl.fill("420");
     await ttl.blur();
@@ -51,8 +51,8 @@ test("a historical preset design autosaves its useful TTL and pool controls thro
       "Name",
       "Description",
       "Options",
-      "Request timeout",
-      "Concurrency limit",
+      "Request timeout (milliseconds)",
+      "Concurrency limit (requests)",
       "Connections",
       "Modules",
     ]);
@@ -68,11 +68,11 @@ test("a historical preset design autosaves its useful TTL and pool controls thro
       "Name",
       "Description",
       "Options",
-      "Pool size",
-      "Statement timeout",
+      "Pool size (connections)",
+      "Statement timeout (milliseconds)",
       "Remove module",
     ]);
-    const pool = inspector.getByLabel("Pool size", { exact: true });
+    const pool = inspector.getByLabel("Pool size (connections)", { exact: true });
     const poolBefore = await pool.inputValue();
     await pool.fill("60");
     await expect
@@ -106,7 +106,7 @@ test("legacy unsupported settings stay hidden and unchanged while names/history 
   await expect(inspector.getByLabel("Language", { exact: true })).toHaveCount(0);
   await inspector.getByRole("button", { name: "Open Link writer", exact: true }).click();
   await expect(inspector.getByRole("heading", { name: "Options", exact: true })).toHaveCount(0);
-  await expect(inspector.getByLabel("Pool size", { exact: true })).toHaveCount(0);
+  await expect(inspector.getByLabel("Pool size (connections)", { exact: true })).toHaveCount(0);
   await inspector.getByLabel("Name", { exact: true }).fill("Preserved writer");
   await expect
     .poll(

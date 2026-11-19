@@ -39,9 +39,11 @@ test("RG12 edits the consumed limiter settings and connects new-work admission b
       .click();
     const inspector = page.locator(".studio-inspector");
     await expect(inspector.locator(".lane-module-status")).toHaveText("GeneratedRate limiter");
-    await expect(inspector.getByLabel("Limit per window", { exact: true })).toHaveValue("2");
-    await inspector.getByLabel("Limit per window", { exact: true }).fill("5");
-    await inspector.getByLabel("Window", { exact: true }).fill("120");
+    await expect(inspector.getByLabel("Limit per window (requests)", { exact: true })).toHaveValue(
+      "2",
+    );
+    await inspector.getByLabel("Limit per window (requests)", { exact: true }).fill("5");
+    await inspector.getByLabel("Window (seconds)", { exact: true }).fill("120");
     await inspector.getByLabel("Name", { exact: true }).click();
     await expect
       .poll(async () => JSON.stringify(await design(page, id)))

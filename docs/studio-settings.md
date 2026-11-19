@@ -19,22 +19,19 @@ Docker, TypeScript, exact providers, codecs, renditions, deadlines and event pol
 | Front door | Public runnable HTTP process, before routing/parsing/admission/sessions | Required or None |
 | Concurrency limit | HTTP admission: a template's, or (Runnable processes on) the tile's process | 1–100000 |
 | Worker concurrency | AMQP handler admission, except fixed media worker; (Runnable processes on) its stub loops too | 1–1024 |
-| TTL | Positive cache reader | 1–604800 seconds |
-| Freshness / Exposure | Cache reader mode and HTTP/in-process binding | Immutable-positive or versioned; HTTP or in-process |
+| Cache lifetime (seconds) | Cached records | 1–604800 seconds |
+| Can cached records change? / How is this reader called? | Cache reader | Values stay the same or can change. Called inside the service or also through an HTTP endpoint. |
 | Limit per window / Window | Shared Rate limiter | 1–10000 / 1–604800 seconds |
-| Interval | Scheduled task in Service or Worker | 1–604800 seconds |
+| Interval (seconds) | Scheduled task in Service or Worker | 1–604800 seconds |
 | Body limit / Signature window | Generic HMAC Webhook receiver | 1024, 16384 or 65536 bytes / 30–300 seconds |
-| Delivery horizon | Event counter receipt retention requirement | 1–604800 seconds |
-| Sign-in / Idle expiry / Absolute expiry / Guest cookie context / Request offline access | Browser session | Required or Optional; 60–86400 / 60–604800 seconds, idle ≤ absolute; disabled or enabled |
+| Maximum replay delay (seconds) | How late the Event counter expects a repeat delivery | 1–604800 seconds |
+| Sign-in / Sign out after inactivity / Maximum session length / Remember guest visitors / Refresh the login automatically | Browser session | Required or Optional; 60–86400 / 60–604800 seconds, idle ≤ absolute; disabled or enabled |
 | Sign-in | Bearer Auth guard | Required or Optional |
 | Pool size | SQL client of a Data access or Lifecycle writer | 1–1000 |
 | Statement timeout | SQL client of a Data access or Lifecycle writer | 1–300000 ms |
-| Provider (a Queue only stubs use) | (Runnable processes on) its stubs' processes: RabbitMQ, or a Google Cloud Pub/Sub topic | Unspecified, Self-hosted, Google Cloud |
+| Provider (a Queue only stubs use) | (Runnable processes on) its stubs' processes: RabbitMQ, or a Google Cloud Pub/Sub topic | Unspecified, Self-hosted RabbitMQ, Google Cloud Pub/Sub |
 
-Worker **shareOwner** and named product table/view access are also implemented authoring
-choices; credentials, retry/fence/refresh state and arbitrary setting-name declarations stay out
-of normal controls. See [logical ownership](studio.md#logical-owners-roles-and-access) and the
-[foundation handback](plans/reliable-generation/owner-handback.md) for boundaries/evidence.
+On a worker, **Database ownership** selects who owns its data. On a database, **Access for** each connected service lets you choose which tables or published views it can use. [Database ownership and permissions](studio.md#logical-owners-roles-and-access)
 
 Controls additionally require an authoritative saved source field and the installed template's
 matching consumer/output paths. A saved value outside its bound or its template's supported values
@@ -43,11 +40,11 @@ Options form or chat's `edit` puts it right; only a supported value is accepted.
 invalid, Generate project refuses and the design's other controls wait. Chat's review offers to
 clear a process's own setting (the process then runs its initial value).
 
-TTL is edited on the cache tile; its traced reader mirror changes in the same atomic command. Worker
+Set the cache lifetime on the cache tile. Saving it also updates the linked reader. Worker
 concurrency mirrors behave the same way. A mirror has no second editor. SQL settings are edited on
 the module that reads that database for the template: its bound Data access, or the Lifecycle
 writer, which is its lifecycle template's own SQL source. Normal controls never expose
-weights/mappings, IDs, exact versions, grants, arbitrary config, L1/negative caching, Go/tus/cloud
+weights/mappings, IDs, exact versions, infrastructure grants, arbitrary config, L1/negative caching, Go/tus/cloud
 alternatives, provider choices (apart from a stub-only Queue's, below) or media internals. A select
 offers only its control's supported values, as chat's `editableSettings` lists them. Historical modules remain inspectable and
 renameable; arbitrary module/kind replacement requires explicit custom source work.
@@ -459,10 +456,7 @@ The old binding `owner` and connection `access` remain the **legacy inferred wri
 approximation above. They are separate from explicit authority/grants and remain unchanged by
 feature attachment. Exact operation bindings remain typed source below; strict runtime authorization remains unavailable.
 
-On a module-authored design, the worker inspector offers **Share logical owner with API** (`shareOwner {worker, api}`), with
-atomic refusal when the worker already owns conflicting state. It never copies credentials.
-The process inspector offers **Product table**, four operation checkboxes, and **Published view**
-(`setDatabaseAccess {role, database, product}`). Empty product access grants nothing. Shared
+On a module-authored design, a worker's **Database ownership** section lets you choose the API that owns its data (`shareOwner {worker, api}`). Each keeps its own login. On the database tile, **Access for** each connected service opens its permission list. The owner can grant operations on named application tables. Other services can be granted read access to named published views. Editing permissions calls `setDatabaseAccess`. Shared
 membership and product grants survive later module commands and display renames. The source resource
 persists `productNamespace: owner` when private-table authoring or explicit worker sharing first selects
 owner-scoped product state; clearing/regranting allowlists never clears that namespace. Named-view
@@ -570,7 +564,7 @@ and a saved value is preserved intent.
 
 **A Queue's Provider (QG07).** While Runnable processes is on, a Queue or Topic whose every user is
 a stub (no template binds it) is provisioned by its stubs' processes, so its **Provider** is its
-normal control, offering only **Unspecified**, **Self-hosted** (both RabbitMQ) and **Google Cloud**
+normal control, offering only **Unspecified**, **Self-hosted RabbitMQ** (both RabbitMQ) and **Google Cloud Pub/Sub**
 (a Pub/Sub topic: its publishers use the official client, and locally the export runs the Pub/Sub
 emulator). It is consumed as `stub-channel.provider`; mouse and chat share it
 (`getDesign.editableSettings` rows with `input: queue.provider`), and it can't be cleared. A
@@ -628,9 +622,7 @@ Admission links require an independent product operation. A Data access used as 
 handle and refuses that link. Custom and standalone Data access modules remain supported; use
 one of those to compose new-work admission. Saved raw unconsumed part links also refuse export.
 
-RG13 Cache reader offers only **Freshness**, **Exposure** and **Shared cache TTL**. Freshness is
-`immutable-positive` (legacy/default) or `versioned`; Exposure is `http` (legacy/default) or
-`in-process`. The emitted runtime consumes both choices. Versioned policies must supply a canonical
+The Cache reader asks **Can cached records change?** A value that stays the same uses `immutable-positive`. A value that can change uses `versioned`. **How is this reader called?** selects a call inside the service (`in-process`) or adds an HTTP endpoint (`http`). **Cache lifetime (seconds)** sets the time limit. Existing defaults are `immutable-positive` and `http`. The emitted runtime consumes both choices. Versioned policies must supply a canonical
 uint64 decimal version and finite source expiry; cache TTL clamps absolute validity from the start
 of the authoritative lookup. Cached hits never renew it. L1, negative caching and other saved
 patterns remain schema-readable but unsupported. Both reader modes use the existing LRU store and
@@ -644,7 +636,7 @@ module. Public eligible-record HTTP exposure remains supported.
 
 ### Scheduled task (RG16)
 
-A Scheduled task in a Service or Worker has one normal setting: **Interval**, 1–604800 seconds
+A Scheduled task in a Service or Worker has one normal setting: **Interval (seconds)**, 1–604800
 (default 60). It requires a **state** link to a writable PostgreSQL database and Runnable
 processes. Missing state leaves an explicit handler scaffold; incompatible owner/write access
 refuses the connection. Worker ownership is declared with **shareOwner**, never inferred from a
@@ -662,7 +654,7 @@ The Service-only **Webhook receiver** exposes **Body limit** (`bodyLimitBytes`: 
 
 ### Consumer receipts (RG18)
 
-Event counter exposes **Delivery horizon** (`deliveryHorizonSeconds`:1–604800 seconds; default604800).
+Event counter exposes **Maximum replay delay (seconds)** (`deliveryHorizonSeconds`:1–604800 seconds; default604800).
 The declared maximum includes original delivery, retries, quarantine/operator delay and subsequent delivery together. Generated counter receipts
 retain identity for seven days after database-time completion. Dates and aggregation destinations
 never scope receipt identity. A repeat with different effect-relevant data conflicts.
@@ -674,7 +666,7 @@ See [the emitted extension contract](plans/reliable-generation/evidence/rg18/pro
 
 ### Browser session (RG19)
 
-Service-only **Browser session** requires an **identity** connection and writable owned **state**, with Runnable processes. Normal controls are **Sign-in** (`required`/`optional`, default optional), **Idle expiry** (60–86400s, default86400), **Absolute expiry** (60–604800s, default604800; idle must not exceed absolute), **Guest cookie context** and **Request offline access** (both disabled/enabled, default disabled). Every choice has schema, form, chat, blueprint and emitted consumers. Invalid supplied cookies always401 and clear; cookieless Optional operations stay anonymous. Offline access requests/stores sealed refresh material. Private refresh coordination uses that material when invoked by generated token-availability code; local identity lookup does not trigger refresh. There is no new normal control or public refresh route, and session forwarding uses declared matching-Identity bearer-guard callee operations with independent workload authentication.
+Service-only **Browser session** requires an **identity** connection and writable owned **state**, with Runnable processes. Normal controls are **Sign-in** (`required`/`optional`, default optional), **Sign out after inactivity** (60–86400s, default86400), **Maximum session length** (60–604800s, default604800; idle must not exceed absolute), **Remember guest visitors** and **Refresh the login automatically** (both disabled/enabled, default disabled). Every choice has schema, form, chat, blueprint and emitted consumers. Invalid supplied cookies always401 and clear; cookieless Optional operations stay anonymous. Offline access requests/stores sealed refresh material. Private refresh coordination uses that material when invoked by generated token-availability code; local identity lookup does not trigger refresh. There is no new normal control or public refresh route, and session forwarding uses declared matching-Identity bearer-guard callee operations with independent workload authentication.
 
 Bearer Auth guards, webhook ingress and JWT-only Required-user template combinations (Favorites, Rate limiter, Multipart uploads) refuse on that Service. The selected Keycloak Identity needs trusted HTTPS and exact compiled confidential-client/callback registration; export reports this required integration work, without a production insecure bypass. Secrets/issuer endpoints are private deployment configuration, outside inspector controls. [Protocol and configuration](plans/reliable-generation/evidence/rg19/protocol.md).
 

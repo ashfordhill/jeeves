@@ -290,7 +290,13 @@ function catalogSummary() {
       })),
     })),
     modules: studioComponentKinds.map((kind) => {
-      const { name, description, hosts, slots, generation } = studioComponentDefinitions[kind];
+      const {
+        name,
+        summary: description,
+        hosts,
+        slots,
+        generation,
+      } = studioComponentDefinitions[kind];
       const templates =
         generation.kind === "lead"
           ? [generation.template]
