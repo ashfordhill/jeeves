@@ -5,6 +5,7 @@ import {
   studioComponentDefinitions,
 } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
+import { auth0Prefix } from "./auth0.ts";
 import { browserSessionMount } from "./browser-session.ts";
 import { type OutboxTable, outboxSchema } from "./durability.ts";
 import { favoritesBounds, favoritesSchema } from "./favorites.ts";
@@ -500,17 +501,24 @@ function verifiedIdentity(
   const name = camel(id);
   const identity = selection.identity?.element;
   if (!identity) refuse("INVALID_LOCAL_CONTRIBUTION", id, "An Auth guard needs its identity.");
+  const auth0 = selection.identity?.provider === "auth0";
+  const settingsCall = auth0
+    ? `auth0UserSettings(${text(auth0Prefix(identity))})`
+    : "signInSettings()";
   const signIn = selection.inputs["guard.signIn"] === "optional" ? "optional" : "required";
   const url = `/modules/${lead.module}/me`;
   return {
     imports: [
       { from: "../runtime/identity.ts", name: "createPrincipalVerifier" },
       { from: "../runtime/tile-guard.ts", name: "createTileGuard" },
-      { from: "../runtime/tile-guard.ts", name: "signInSettings" },
+      auth0
+        ? { from: "../runtime/auth0.ts", name: "auth0UserSettings" }
+        : { from: "../runtime/tile-guard.ts", name: "signInSettings" },
     ],
     validation: [
-      "signInSettings();",
-      ...(processes.some((caller) =>
+      `${settingsCall};`,
+      ...(!auth0 &&
+      processes.some((caller) =>
         caller.serviceCalls?.some((call) => call.target === process.tile && call.sessionUser),
       )
         ? [
@@ -523,7 +531,7 @@ function verifiedIdentity(
       `const ${name} = (() => {`,
       `  const binding = config.templates[${text(id)}];`,
       "  // Its audience, issuer and key set are the deployment's, checked by signInSettings (tile-guard.ts).",
-      "  const settings = signInSettings();",
+      `  const settings = ${settingsCall};`,
       "  return createTileGuard({",
       "    signIn: binding.signIn,",
       "    verify: createPrincipalVerifier({",
@@ -532,6 +540,7 @@ function verifiedIdentity(
       "      jwksUrl: settings.jwksUrl,",
       `      algorithms: ["RS256"],`,
       "      jwksTimeoutMs: 3000,",
+      ...(auth0 ? ["      rejectPrincipal: settings.rejectPrincipal,"] : []),
       "    }),",
       "  });",
       "})();",

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { createRemoteJWKSet, customFetch, jwtVerify } from "jose";
+import { auth0ClientId, auth0Issuer, auth0MachineToken, auth0Value } from "./auth0.ts";
 import { readSecret } from "./local.ts";
 import { jsonBody } from "./hook-boundary.ts";
 import {
@@ -12,6 +13,7 @@ import {
   OperationError,
   verifiedBearer,
   sessionAccess,
+  requestSessionAccess,
   withEffect,
   withProcess,
   withWorkload,
@@ -68,12 +70,36 @@ function checkedSecret(secret: string): string {
   return value;
 }
 /** Configuration only, before any clients or requests. Validate the initial credential too. */
-export function workloadSettings(binding: Binding) {
+type Auth0Binding = {
+  issuer: string;
+  ownClient: string;
+  ownAudience: string;
+  userAudience: string;
+  callers: Readonly<Record<string, string>>;
+  targets: Readonly<Record<string, string>>;
+};
+export function workloadSettings(binding: Binding, external?: Auth0Binding) {
   if (!safeId(binding.identity) || !safeId(binding.client) || !safeId(binding.audience))
     throw new Error("Invalid workload binding");
-  const issuer = endpoint("JEEVES_WORKLOAD_ISSUER");
-  const tokenUrl = endpoint("JEEVES_WORKLOAD_TOKEN_URL");
-  const jwksUrl = endpoint("JEEVES_WORKLOAD_JWKS_URL");
+  const issuer = external ? auth0Issuer(external.issuer) : endpoint("JEEVES_WORKLOAD_ISSUER");
+  const tokenUrl = external ? new URL("oauth/token", issuer).href : endpoint("JEEVES_WORKLOAD_TOKEN_URL");
+  const jwksUrl = external ? new URL(".well-known/jwks.json", issuer).href : endpoint("JEEVES_WORKLOAD_JWKS_URL");
+  const auth0 = external ? {
+    client: auth0ClientId(external.ownClient),
+    audience: auth0Value(external.ownAudience),
+    callers: new Map(Object.entries(external.callers).map(([process, name]) => [auth0ClientId(name), process])),
+    targets: new Map(Object.entries(external.targets).map(([target, name]) => [target, auth0Value(name)])),
+  } : undefined;
+  if (auth0 && external) {
+    const userAudience = process.env[external.userAudience] === undefined
+      ? undefined : auth0Value(external.userAudience);
+    // A credential can carry only one target's authority and must never stand in for a user.
+    const audiences = [...auth0.targets.values()];
+    if (new Set(audiences).size !== audiences.length || audiences.includes(auth0.audience) ||
+      (userAudience !== undefined && audiences.includes(userAudience)) || auth0.audience === userAudience ||
+      auth0.callers.size !== Object.keys(external.callers).length || auth0.callers.has(auth0.client))
+      throw new Error("Invalid Auth0 workload binding");
+  }
   const secretFile = process.env.JEEVES_WORKLOAD_SECRET_FILE;
   if (
     secretFile !== undefined &&
@@ -89,7 +115,7 @@ export function workloadSettings(binding: Binding) {
       throw new Error("Invalid workload credential");
     }
   }
-  return Object.freeze({ ...binding, issuer, tokenUrl, jwksUrl, secret, secretFile });
+  return Object.freeze({ ...binding, issuer, tokenUrl, jwksUrl, secret, secretFile, auth0 });
 }
 type Settings = ReturnType<typeof workloadSettings>;
 /** One instance per independent process. 16 fixed compiled audiences, 64 KiB response bounds,
@@ -101,7 +127,9 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
   if (
     targets.length > 16 ||
     new Set(targets).size !== targets.length ||
-    targets.some((id) => !safeId(id))
+    targets.some((id) => !safeId(id)) ||
+    (settings.auth0 && (settings.auth0.targets.size !== targets.length ||
+      targets.some((id) => !settings.auth0!.targets.has(id))))
   )
     throw new Error("Invalid workload targets");
   const scope = currentProcess();
@@ -151,7 +179,9 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
           issuer: settings.issuer,
           audience,
           algorithms: ["RS256"],
-          requiredClaims: ["exp", "iat", "sub", "azp", "jeeves_workload"],
+          requiredClaims: settings.auth0
+            ? ["exp", "iat", "sub", "azp", "gty"]
+            : ["exp", "iat", "sub", "azp", "jeeves_workload"],
         });
       },
     );
@@ -160,19 +190,26 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
     try {
       const { payload } = await verify(token, audience);
       const caller = payload.jeeves_workload;
+      const client = payload.azp;
       if (
-        typeof caller !== "string" ||
-        !safeId(caller) ||
-        payload.azp !== `jeeves-workload-${caller}` ||
+        typeof client !== "string" ||
         typeof payload.sub !== "string" ||
         !payload.sub ||
+        (settings.auth0
+          ? !auth0MachineToken(payload) || payload.gty !== "client-credentials" ||
+            payload.sub !== `${client}@clients` || payload.aud !== audience
+          : typeof caller !== "string" || !safeId(caller) || client !== `jeeves-workload-${caller}`) ||
         typeof payload.exp !== "number" ||
         typeof payload.iat !== "number" ||
         payload.exp - payload.iat > 300 ||
         payload.iat > Date.now() / 1000 + 5
       )
         throw invalid();
-      return { caller, expires: payload.exp * 1000 };
+      return {
+        caller: settings.auth0 ? settings.auth0.callers.get(client) : caller as string,
+        client,
+        expires: payload.exp * 1000,
+      };
     } catch (error) {
       if (error instanceof HttpError || error instanceof OperationError) throw error;
       const code = (error as { code?: string })?.code;
@@ -195,6 +232,8 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
   async function acquire(target: string): Promise<string> {
     assertOperation();
     if (!targets.includes(target)) throw new OperationError("refused", "UNDECLARED_DESTINATION");
+    const audience = settings.auth0?.targets.get(target) ?? `jeeves-service-${target}`;
+    const client = settings.auth0?.client ?? settings.client;
     const cached = tokens.get(target);
     if (cached && valid(cached, 5000)) return cached.token;
     if ((next.get(target) ?? 0) > Date.now()) {
@@ -225,9 +264,9 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
                 headers: { "content-type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({
                   grant_type: "client_credentials",
-                  client_id: settings.client,
+                  client_id: client,
                   client_secret: secret,
-                  audience: `jeeves-service-${target}`,
+                  audience,
                 }),
               });
               if (!response.ok) {
@@ -245,9 +284,9 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
               return value.access_token;
             },
           );
-          const verified = await facts(token, `jeeves-service-${target}`);
+          const verified = await facts(token, audience);
           if (
-            `jeeves-workload-${verified.caller}` !== settings.client ||
+            verified.client !== client ||
             verified.expires <= Date.now()
           )
             throw invalid();
@@ -285,8 +324,8 @@ export function createWorkload(settings: Settings, targets: readonly string[]) {
       const token =
         typeof header === "string" ? /^Bearer (\S{1,16384})$/.exec(header)?.[1] : undefined;
       if (!token) throw invalid();
-      const verified = await facts(token, settings.audience);
-      if (!allowed.includes(verified.caller))
+      const verified = await facts(token, settings.auth0?.audience ?? settings.audience);
+      if (!verified.caller || !allowed.includes(verified.caller))
         throw new HttpError(403, "WORKLOAD_FORBIDDEN", "Service caller is not allowed.");
       return Object.freeze({ process: verified.caller });
     },
@@ -402,12 +441,12 @@ export function serviceTarget<const Operations extends readonly string[]>(bindin
       };
       // Session access is strictly request-scoped; durable work can never borrow its authority.
       if(background && binding.sessionUser)throw new OperationError("refused","SESSION_REQUEST_REQUIRED");
-      const initial=binding.sessionUser?await sessionAccess(binding.tile):undefined;
+      const initial=binding.sessionUser?await requestSessionAccess(binding.tile):undefined;
       let result=await dispatch(initial?.token ?? (!background && binding.forwardUser?verifiedBearer():undefined));
       // A read cannot perform a generated mutation. No retry on generic401, workload refusal,
       // transport/uncertain outcomes or POST, even if an arbitrary caller supplied a key.
-      if(binding.sessionUser && method==="GET" && result.authRefused){
-        const replacement=await sessionAccess(binding.tile,initial!.generation);
+      if(initial && method==="GET" && result.authRefused){
+        const replacement=await sessionAccess(binding.tile,initial.generation);
         result=await dispatch(replacement.token); // exactly one retry, using remaining budget
       }
       if(result.status===401 || result.status===403 || result.status>=500)throw serviceHttpFailure(result.status,result.headers);

@@ -55,7 +55,16 @@ export const verifiedBearer = () => { const context = currentOperation(); return
 /** Private request-only credential provider. Child budgets inherit it; independent process/work
  * scopes never do. Product contexts contain no provider, token or session identifier. */
 type SessionAccess = (target: string, rejectedGeneration?: string) => Promise<Readonly<{ token: string; generation: string }>>;
-const sessionAccessors = new WeakMap<OperationContext, SessionAccess>();
+const sessionAccessors = new WeakMap<OperationContext, SessionAccess | null>();
+export function rememberGuestSession(): void {
+  const context = currentOperation();
+  if (context) sessionAccessors.set(context, null);
+}
+export function requestSessionAccess(target: string) {
+  assertOperation();
+  const context = currentOperation();
+  return context && sessionAccessors.get(context) === null ? undefined : sessionAccess(target);
+}
 export function rememberSessionAccess(provider: SessionAccess): void {
   const context = currentOperation();
   if (context) sessionAccessors.set(context, provider);
@@ -138,7 +147,7 @@ export function operation(options: {
   contexts.add(context);
   const parentContext = currentOperation();
   const provider = parentContext && sessionAccessors.get(parentContext);
-  if (provider) sessionAccessors.set(context, provider);
+  if (provider !== undefined) sessionAccessors.set(context, provider);
   const bearer = verifiedBearer();
   if (bearer) verifiedBearers.set(context, bearer);
   return {

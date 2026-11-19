@@ -134,7 +134,7 @@ export const studioNotificationProviderSchema = z.enum([
   "aws-ses",
   "external",
 ]);
-export const studioIdentityProviderSchema = z.enum(["unspecified", "oidc", "external"]);
+export const studioIdentityProviderSchema = z.enum(["unspecified", "oidc", "auth0", "external"]);
 /**
  * How an upload's bytes travel; the diagram is the same either way (the user's action reaches the
  * upload service, which writes the store). `signed-url`: the service starts a multipart upload,
@@ -249,7 +249,7 @@ export const studioIdentitySettingsSchema = applicationSettings("identity", {
   frontDoor: z.enum(["required", "none"]).optional(),
   ...scalingFields,
   ...requestFields,
-  provider: studioIdentityProviderSchema,
+  provider: studioIdentityProviderSchema.optional(),
 });
 export const studioUploadsSettingsSchema = applicationSettings("uploads", {
   language: kindLanguageSchema("uploads"),

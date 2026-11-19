@@ -1,5 +1,6 @@
 import type { NormalizedGeneration } from "@jeeves/spec";
 import { jsonFile, refuse } from "../json.ts";
+import { auth0Prefix, auth0Workload, auth0WorkloadEnvironment } from "./auth0.ts";
 import { stubClients } from "./client-wiring.ts";
 import { httpMounts } from "./http-wiring.ts";
 import { endpointId, localEndpoints, type V2LocalContribution } from "./local-contract.ts";
@@ -99,8 +100,18 @@ function environment(model: NormalizedGeneration, runtime: Runtime) {
     (sharedSqlConstructors && importsConstructors)
   )
     names.push("JEEVES_DB_POOL_MAX");
-  if (service.identity) names.push("OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL");
-  if (process?.workload) names.push(...workloadEnv);
+  const guard = selections.find((s) => s.binding.kind === "verified-identity");
+  if (guard?.identity?.provider === "auth0") {
+    const prefix = auth0Prefix(guard.identity.element);
+    names.push(`${prefix}_ISSUER`, `${prefix}_AUDIENCE`);
+  } else if (service.identity) names.push("OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL");
+  if (process?.workload?.provider === "auth0")
+    names.push(
+      ...auth0WorkloadEnvironment(process),
+      secretVariable(`workload-${process.workload.client}`),
+      "SECRET_DIR",
+    );
+  else if (process?.workload) names.push(...workloadEnv);
   if (process?.frontDoor) names.push("JEEVES_EDGE_STAMP_KEY", "JEEVES_EDGE_STAMP_KEY_PREVIOUS");
   names.push(...(service.external ?? []).map((id) => `JEEVES_EXTERNAL_${endpointId(id)}_URL`));
   if (readSecrets.length) names.push("SECRET_DIR", ...readSecrets.map(secretVariable));
@@ -111,8 +122,17 @@ function environment(model: NormalizedGeneration, runtime: Runtime) {
       const prefix = `JEEVES_BROWSER_${endpointId(module)}`;
       names.push(
         `${prefix}_CALLBACK`,
-        `${prefix}_AUDIENCE`,
-        `JEEVES_BROWSER_IDENTITY_${endpointId(selection.identity?.element ?? "")}_ISSUER`,
+        ...(selection.identity?.provider === "auth0"
+          ? [
+              `${prefix}_CLIENT_ID`,
+              `${prefix}_LOGOUT_RETURN`,
+              `${auth0Prefix(selection.identity.element)}_ISSUER`,
+              `${auth0Prefix(selection.identity.element)}_AUDIENCE`,
+            ]
+          : [
+              `${prefix}_AUDIENCE`,
+              `JEEVES_BROWSER_IDENTITY_${endpointId(selection.identity?.element ?? "")}_ISSUER`,
+            ]),
         secretVariable(`${prefix}_KEYS`),
         secretVariable(`${prefix}_CLIENT_SECRET`),
         "SECRET_DIR",
@@ -271,20 +291,75 @@ export function deploymentFiles(
       };
     })
     .sort((a, b) => v2Compare(a.id, b.id));
-  const identity = (model.processes ?? []).some((p) => p.serviceCalls?.length)
-    ? {
-        identity: {
-          env: unique([
-            ...workloadEnv,
-            ...tls,
-            "SECRET_DIR",
-            ...(model.processes ?? []).flatMap((p) =>
-              p.workload ? [secretVariable(`workload-${p.workload.client}`)] : [],
-            ),
-          ]),
-        },
-      }
-    : {};
+  const workloadProcesses = (model.processes ?? []).filter((p) => p.workload);
+  const keycloakWorkload = workloadProcesses.some((p) => p.workload?.provider !== "auth0");
+  const auth0Processes = workloadProcesses.flatMap((p) => {
+    const binding = auth0Workload(p);
+    return binding && p.workload
+      ? [
+          {
+            process: p.tile,
+            ...binding,
+            secret: secretVariable(`workload-${p.workload.client}`),
+          },
+        ]
+      : [];
+  });
+  const auth0Browser = model.selections.flatMap((s) => {
+    if (
+      !model.processes?.length ||
+      s.binding.kind !== "browser-session" ||
+      s.identity?.provider !== "auth0"
+    )
+      return [];
+    const module = s.target.kind === "component" ? s.target.component : s.id;
+    const prefix = `JEEVES_BROWSER_${endpointId(module)}`;
+    return [
+      {
+        process: s.host,
+        client: `${prefix}_CLIENT_ID`,
+        issuer: `${auth0Prefix(s.identity.element)}_ISSUER`,
+        audience: `${auth0Prefix(s.identity.element)}_AUDIENCE`,
+        callback: `${prefix}_CALLBACK`,
+        logoutReturn: `${prefix}_LOGOUT_RETURN`,
+        secret: secretVariable(`${prefix}_CLIENT_SECRET`),
+        keys: secretVariable(`${prefix}_KEYS`),
+        offlineAccess: s.inputs["session.offlineAccess"] === "enabled",
+        callbackPath: `/modules/${module}/callback`,
+      },
+    ];
+  });
+  const auth0Guards = model.selections.flatMap((s) => {
+    if (
+      !model.processes?.length ||
+      s.binding.kind !== "verified-identity" ||
+      s.identity?.provider !== "auth0"
+    )
+      return [];
+    const prefix = auth0Prefix(s.identity.element);
+    return [{ process: s.host, issuer: `${prefix}_ISSUER`, audience: `${prefix}_AUDIENCE` }];
+  });
+  const hostedIdentity =
+    auth0Browser.length || auth0Guards.length || auth0Processes.length
+      ? { auth0: { browser: auth0Browser, userGuards: auth0Guards, workload: auth0Processes } }
+      : {};
+  const identity =
+    workloadProcesses.some((p) => p.serviceCalls?.length) || Object.keys(hostedIdentity).length
+      ? {
+          identity: {
+            ...hostedIdentity,
+            env: unique([
+              ...(keycloakWorkload ? workloadEnv : []),
+              ...workloadProcesses.flatMap(auth0WorkloadEnvironment),
+              ...tls,
+              "SECRET_DIR",
+              ...(model.processes ?? []).flatMap((p) =>
+                p.workload ? [secretVariable(`workload-${p.workload.client}`)] : [],
+              ),
+            ]),
+          },
+        }
+      : {};
   const contract = { version: 1 as const, processes, stores, ...identity };
   const code = (text: string) =>
     `\`${text.replaceAll("`", "&#96;").replace(/[\p{Cc}\u2028\u2029]/gu, " ")}\``;
@@ -361,9 +436,33 @@ export function deploymentFiles(
       ? [
           "## Workload identity",
           "",
-          "The issuer is the identity service answering the configured token and key endpoints. Tokens must still match JEEVES_WORKLOAD_ISSUER, the compiled audience, RS256 and the allowed caller claims.",
+          ...(keycloakWorkload
+            ? [
+                "Keycloak tokens must match JEEVES_WORKLOAD_ISSUER, the compiled audience, RS256 and the allowed caller claims.",
+              ]
+            : []),
           "JEEVES_WORKLOAD_SECRET_FILE optionally names an absolute credential path, validated before clients open and read again for each new token request. Replace its contents to rotate at the next refresh. Without it, the existing per-client secret file is read once at startup. A later unreadable or invalid file fails like an issuer request; a still-valid cached token survives only until its existing expiry bound.",
           `Workload identity environment names: ${list(contract.identity.env)}`,
+          "",
+        ]
+      : []),
+    ...(Object.keys(hostedIdentity).length
+      ? [
+          "## Auth0",
+          "",
+          "Set each Auth0 issuer to the exact HTTPS tenant or custom domain origin, with its trailing slash. Use that same domain for discovery, authorization, token exchange and JWKS. Use RS256 and the default Auth0 JWT access-token profile. Each user API audience must match the registered API Identifier exactly across all linked user guards and browser sessions. Auth0 and these registrations are supplied by deployment. Configure Auth0 values in the process environment or a private Compose override.",
+          "",
+          ...auth0Browser.flatMap((b) => [
+            `- Browser ${code(b.process)}: register a Regular Web Application with Authorization Code, S256 PKCE and the token endpoint authentication method client_secret_post${b.offlineAccess ? ". Enable Refresh Token Rotation, the Refresh Token grant and Allow Offline Access on the user API" : ""}. Set ${code(b.client)}, ${code(b.issuer)} and ${code(b.audience)}. Register the exact HTTPS callback in Allowed Callback URLs and set ${code(b.callback)} (must end in ${code(b.callbackPath)} and include any edge prefix). Register the exact same-origin HTTPS return in Allowed Logout URLs and set ${code(b.logoutReturn)}. Bind the client secret and shared session key ring through ${code(b.secret)} and ${code(b.keys)}. After the CSRF-protected logout POST revokes the shared local session, navigate the browser to the returned logoutUrl to end Auth0 SSO.`,
+          ]),
+          ...auth0Guards.map(
+            (g) =>
+              `- User guard ${code(g.process)} verifies ${code(g.issuer)} and ${code(g.audience)}. Grant user access to the user API and keep machine access disabled there. The guard refuses machine credentials independently of workload verification.`,
+          ),
+          ...auth0Processes.map(
+            (p) =>
+              `- Workload ${code(p.process)}: register a distinct Machine to Machine application with client credentials. Bind ${code(p.ownClient)}, ${code(p.secret)}, ${code(p.issuer)} and ${code(p.ownAudience)}. Register one machine-only RS256 API per recipient with distinct exact Identifiers and token lifetime at most 300 seconds. Authorize the process only for its declared target audiences ${list(Object.values(p.targets))}. Bind allowed caller application IDs ${list(Object.values(p.callers))} and keep the user API Identifier in ${code(p.userAudience)} separate. Use client credentials for these machine applications and keep user access disabled on machine APIs.`,
+          ),
           "",
         ]
       : []),

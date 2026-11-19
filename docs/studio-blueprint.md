@@ -40,6 +40,8 @@ explicit workload-operation opt-in. Its presence does not make an unfinished pro
 Durable-work declarations are application extension code, with no extra blueprint settings;
 see the [generator contract](../jeeves-generator/README.md#durable-work-contract-additive-extension-api-v8).
 
+Identity provider is retained as `settings.provider` on the Identity service. The normal choices are `oidc` (Keycloak) and `auth0` (Auth0). An older source may omit the field and still resolves to Keycloak. Tenant configuration and credentials remain in deployment bindings.
+
 An explicit component-link `slot: "workload"` distinguishes a module's Identity
 selector from their legacy generic Identity dependency. Blueprint v3 retains that finite tag;
 older untagged links keep their inferred use. The normalized process records the issuer, stable

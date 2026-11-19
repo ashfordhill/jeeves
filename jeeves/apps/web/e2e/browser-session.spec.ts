@@ -11,6 +11,11 @@ test("RG19 browser sign-in expiry/guest/offline controls, refusal and export par
   try {
     const source = browserSessionDesign(),
       generation = designGeneration(source);
+    const oldIdentity = source.architecture?.studio?.elements.find(
+      (row) => row.element === "identity",
+    );
+    if (oldIdentity?.settings.kind !== "identity") throw Error("Missing Identity");
+    delete oldIdentity.settings.provider;
     if (!generation) throw Error("Missing generation");
     const ops = studioStudySeedOperations(source);
     ops.push({ op: "setGeneration", generation });
@@ -56,6 +61,28 @@ test("RG19 browser sign-in expiry/guest/offline controls, refusal and export par
         (c) => c.settings.kind === "auth-guard",
       ),
     ).toBe(false);
+    await tile(page, "Identity").click();
+    const provider = inspector.getByLabel("Identity provider", { exact: true });
+    await expect(provider).toHaveValue("oidc");
+    await provider.selectOption({ label: "Auth0" });
+    await expect
+      .poll(async () => JSON.stringify(await design(page, id)))
+      .toContain('"provider":"auth0"');
+    await page.reload();
+    await ready(page);
+    await tile(page, "Identity").click();
+    await expect(inspector.getByLabel("Identity provider", { exact: true })).toHaveValue("auth0");
+    const updatedBlueprint = await (
+      await page.request.get(`/api/projects/${id}/blueprint?version=3`)
+    ).json();
+    expect(
+      updatedBlueprint.services.find((item: { id: string }) => item.id === "identity")?.settings
+        .provider,
+    ).toBe("auth0");
+    await page.screenshot({
+      path: testInfo.outputPath("mouse-auth0-identity.png"),
+      fullPage: true,
+    });
     await page.getByRole("button", { name: "Generate project", exact: true }).click();
     const preview = page.waitForResponse((r) =>
       r.url().endsWith("/experimental-generation/preview"),

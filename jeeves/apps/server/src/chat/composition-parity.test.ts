@@ -16,6 +16,7 @@ import {
   studioStudySeedOperations,
 } from "@jeeves/spec";
 import { expect, it } from "vitest";
+import { browserSessionDesign } from "../../../../../field-projects/generator-system/fixtures/rg-browser-session/design.ts";
 import { compositionCases } from "../../../../../field-projects/generator-system/fixtures/rg-composition/design.ts";
 import { foundationsDesign } from "../../../../../field-projects/generator-system/fixtures/rg-foundations/design.ts";
 import { workloadDesign } from "../../../../../field-projects/generator-system/fixtures/rg-workload/design.ts";
@@ -214,4 +215,31 @@ it("RG22 detects an additional caller requirement at an already-refused link", (
     ),
   ).toThrow("requires an end-user credential");
   expect(incomplete).toEqual(before);
+});
+
+it("offers Auth0 on a bound Identity and saves the same provider by chat or inspector", () => {
+  const before = browserSessionDesign();
+  const identity = before.architecture?.studio?.elements.find((row) => row.element === "identity");
+  if (identity?.settings.kind !== "identity") throw new Error("Missing fixture Identity");
+  delete identity.settings.provider;
+  const workspace = new Workspace(before);
+  const result = JSON.parse(workspace.run("getDesign", "{}"));
+  expect(JSON.stringify(result.editableSettings)).toContain("auth0");
+  const command = {
+    type: "edit" as const,
+    element: "identity",
+    settings: { ...identity.settings, provider: "auth0" as const },
+  };
+  const chat = JSON.parse(
+    workspace.run("applyStudioCommands", JSON.stringify({ commands: [command] })),
+  );
+  expect(chat.ok).toBe(true);
+  const mouse = buildSupportedAuthoringCommand(before, command, registry.installed);
+  const applied = applyOperations(before, mouse.ops);
+  if (!applied.ok) throw new Error(JSON.stringify(applied.errors));
+  expect(workspace.working).toEqual(applied.design);
+  expect(
+    designBlueprintV3(applied.design).services.find((row) => row.id === "identity")?.settings,
+  ).toMatchObject({ provider: "auth0" });
+  expect(generationExportBlockers(workspace.working, registry.installed)).toEqual([]);
 });

@@ -1,5 +1,6 @@
 import { type NormalizedProcess, studioDefinitions } from "@jeeves/spec";
 import { pointerPart, refuse } from "../json.ts";
+import { auth0Prefix, auth0Workload, auth0WorkloadEnvironment } from "./auth0.ts";
 import {
   type ClientSection,
   externalVariable,
@@ -9,7 +10,7 @@ import {
   stubTargetRows,
 } from "./client-wiring.ts";
 import { httpMounts, importLines, type ProcessMount } from "./http-wiring.ts";
-import { localEndpoints, type V2LocalContribution } from "./local-contract.ts";
+import { endpointId, localEndpoints, type V2LocalContribution } from "./local-contract.ts";
 import { loopMounts } from "./loop-wiring.ts";
 import type { V2Emitter, V2ProcessReport, V2RenderContext, V2TemplateFile } from "./registry.ts";
 
@@ -249,18 +250,40 @@ function serviceOf(process: NormalizedProcess, mounts: readonly ProcessMount[]) 
  * endpoints, QG06, a stub's Identity client's `JEEVES_IDENTITY_<ID>_URL` among them, QG20; a
  * sign-in's `OIDC_*`; what its templates read) and each External API's `JEEVES_EXTERNAL_<ID>_URL`,
  * which the application sets (QG26). */
-function environmentOf(service: ReturnType<typeof serviceOf>) {
+function environmentOf(
+  service: ReturnType<typeof serviceOf>,
+  process: NormalizedProcess,
+  selections: Parameters<typeof stubStoreRows>[1],
+) {
+  const auth0SignIn = selections.find(
+    (s) =>
+      s.host === process.tile &&
+      s.identity?.provider === "auth0" &&
+      ["verified-identity", "browser-session"].includes(s.binding.kind),
+  );
+  const prefix = auth0SignIn?.identity && auth0Prefix(auth0SignIn.identity.element);
+  const browser =
+    auth0SignIn?.binding.kind === "browser-session" && auth0SignIn.target.kind === "component"
+      ? `JEEVES_BROWSER_${endpointId(auth0SignIn.target.component)}`
+      : undefined;
   return unique([
     ...Object.keys(service.environment ?? {}),
-    ...(service.identity ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"] : []),
-    ...(service.workload
-      ? [
-          "JEEVES_WORKLOAD_ISSUER",
-          "JEEVES_WORKLOAD_TOKEN_URL",
-          "JEEVES_WORKLOAD_JWKS_URL",
-          "JEEVES_WORKLOAD_SECRET_FILE",
-        ]
-      : []),
+    ...(prefix
+      ? [`${prefix}_ISSUER`, `${prefix}_AUDIENCE`]
+      : service.identity
+        ? ["OIDC_AUDIENCE", "OIDC_ISSUER", "OIDC_JWKS_URL"]
+        : []),
+    ...(browser ? [`${browser}_CLIENT_ID`, `${browser}_CALLBACK`, `${browser}_LOGOUT_RETURN`] : []),
+    ...(service.workload?.provider === "auth0"
+      ? auth0WorkloadEnvironment(process)
+      : service.workload
+        ? [
+            "JEEVES_WORKLOAD_ISSUER",
+            "JEEVES_WORKLOAD_TOKEN_URL",
+            "JEEVES_WORKLOAD_JWKS_URL",
+            "JEEVES_WORKLOAD_SECRET_FILE",
+          ]
+        : []),
     ...Object.keys(localEndpoints(service)),
     ...(service.external ?? []).map(externalVariable),
   ]);
@@ -308,7 +331,7 @@ function reportRow(
     ...(http && process.exposure === "public" && { edge: `/api/${process.tile}/` }),
     entry: processPaths(process.tile).entry,
     environment: unique([
-      ...environmentOf(serviceOf(process, mounts)),
+      ...environmentOf(serviceOf(process, mounts), process, selections),
       ...(process.frontDoor ? ["JEEVES_EDGE_STAMP_KEY", "JEEVES_EDGE_STAMP_KEY_PREVIOUS"] : []),
     ]),
     ...(stubSettings.length && { stubSettings }),
@@ -510,7 +533,9 @@ function entryFile(process: NormalizedProcess, mounts: readonly ProcessMount[]):
         ]
       : []),
     ...(process.workload
-      ? ["const workloadConfiguration = workloadSettings(config.workload);"]
+      ? [
+          `const workloadConfiguration = workloadSettings(config.workload${process.workload.provider === "auth0" ? `, ${JSON.stringify(auth0Workload(process))}` : ""});`,
+        ]
       : []),
     ...mounts.flatMap((mount) => mount.validation ?? []),
     ...(mounts.some((mount) => mount.template) ? ["validateTemplateSettings(config.tile);"] : []),

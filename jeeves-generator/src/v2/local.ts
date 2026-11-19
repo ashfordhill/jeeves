@@ -186,7 +186,8 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
   const resourceMap = new Map<string, Resource>();
   const identityIds = new Set<string>();
   for (const process of model.processes ?? [])
-    if (process.workload) identityIds.add(process.workload.identity);
+    if (process.workload && process.workload.provider !== "auth0")
+      identityIds.add(process.workload.identity);
   const sourcePaths = ["/generation"];
   const provenance = (paths: readonly (readonly (string | number)[])[]) => {
     for (const parts of paths) {
@@ -224,7 +225,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       ...(selection.roleSourcePath ? [selection.roleSourcePath] : []),
     ]);
     if (selection.identity) provenance(selection.identity.sourcePaths);
-    if (selection.identity)
+    if (selection.identity && selection.identity.provider !== "auth0")
       identityIds.add(generationLocalIdentity(selection.identity.element).local);
     for (const binding of selection.resources) {
       const requirement = generationCapabilities[selection.binding.kind].resources.find(
@@ -1122,7 +1123,8 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       const credentials: string[] = [];
       const workload = model.processes?.find((p) => p.tile === service.host)?.workload;
       const workloadIssuer = workload && identity.find((i) => i.id === workload.identity);
-      if (workload) credentials.push(`workload-${workload.client}`);
+      if (workload && workload.provider !== "auth0")
+        credentials.push(`workload-${workload.client}`);
       for (const id of service.sql ?? []) {
         const login = logins.find((l) => l.resource === id && l.host === service.host);
         if (!login)
@@ -1177,7 +1179,15 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
               model.selections.some((s) => s.host === service.host && s.identity?.element === i.id),
           )
         : undefined;
-      if (service.identity && !identityBinding)
+      const hostedIdentity =
+        service.identity &&
+        model.selections.some(
+          (s) =>
+            s.host === service.host &&
+            s.identity?.element === service.identity &&
+            s.identity?.provider === "auth0",
+        );
+      if (service.identity && !identityBinding && !hostedIdentity)
         refuse(
           "INVALID_LOCAL_CONTRIBUTION",
           service.host,
@@ -1188,7 +1198,12 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
       const issuerBinding = service.issuer
         ? identity.find((i) => i.id === service.issuer)
         : undefined;
-      if (service.issuer && !issuerBinding)
+      const hostedIssuer =
+        service.issuer &&
+        model.selections.some(
+          (s) => s.identity?.element === service.issuer && s.identity?.provider === "auth0",
+        );
+      if (service.issuer && !issuerBinding && !hostedIssuer)
         refuse(
           "INVALID_LOCAL_CONTRIBUTION",
           service.host,
@@ -1234,7 +1249,7 @@ function renderFoundation(context: V2RenderContext, features: readonly V2Emitter
             OIDC_AUDIENCE: `${identityBinding.id}-web`,
             OIDC_JWKS_URL: `http://${identityBinding.service}:8080/realms/${identityBinding.id}/protocol/openid-connect/certs`,
           }),
-          ...localEndpoints(service),
+          ...localEndpoints(hostedIssuer ? { ...service, issuer: undefined } : service),
         },
         ...(service.readiness && {
           stop_grace_period: service.target === "media" ? "21m" : "6m",

@@ -254,7 +254,7 @@ const canvasNotes = [
 ];
 /** What new tiles start with and what they mean, for `listStudioDefinitions`. */
 const kindNotes = [
-  "Kinds come preconfigured: a new tile starts with its kind's defaults (Identity with OpenID Connect, Uploads with signed URLs, CDN with Cloudflare); the other choices stay selectable where editableSettings offer them.",
+  "Kinds come preconfigured: a new tile starts with its kind's defaults (Identity with Keycloak, Uploads with signed URLs, CDN with Cloudflare); the other choices stay selectable where editableSettings offer them.",
   "Large uploads go through an Uploads service that writes the storage; how bytes travel is a choice on that service, never a line from an action to storage.",
   "Each coded kind offers two languages, its default first; any other is refused. A CDN is a product, not code. External API tiles are for third parties no kind covers. Provider choices are intent: nothing is deployed, provisioned or verified because one was chosen.",
   "Never offer Go, cloud tus, custom FFmpeg, L1 or negative caching, or internal policies as supported choices. Existing source values are preserved intent, not availability.",

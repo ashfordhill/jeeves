@@ -1405,3 +1405,39 @@ it("RG21 request-only bridge keeps tokens private and coordinates rejected fresh
     code: "SESSION_REQUEST_REQUIRED",
   });
 });
+
+it("exports a saved browser Identity without a provider using the Keycloak default", () => {
+  const design = browserSessionDesign();
+  const identity = design.architecture?.studio?.elements.find((row) => row.element === "identity");
+  if (identity?.settings.kind !== "identity") throw new Error("Missing fixture Identity");
+  delete identity.settings.provider;
+  const bundle = assembleV2({ designJson: JSON.stringify(design) }, loadLocalV2Registry());
+  expect(bundle.report.findings).toEqual([]);
+  expect(bundle.report.settings).toContainEqual(
+    expect.objectContaining({
+      input: "identity.provider",
+      origin: "descriptor-default",
+      value: "oidc",
+      sourcePaths: [
+        [
+          "architecture",
+          "studio",
+          "elements",
+          design.architecture?.studio?.elements.indexOf(identity),
+          "settings",
+        ],
+      ],
+    }),
+  );
+  const compose = bundle.files.find((file) => file.path === "compose.yaml");
+  expect(JSON.parse(new TextDecoder().decode(compose?.bytes)).services).toHaveProperty(
+    "identity-identity",
+  );
+  const input = bundle.files.find((file) => file.path === ".jeeves/inputs/design.json");
+  const saved = JSON.parse(new TextDecoder().decode(input?.bytes));
+  expect(
+    saved.architecture.studio.elements.find(
+      (row: { element: string }) => row.element === "identity",
+    ).settings,
+  ).not.toHaveProperty("provider");
+});

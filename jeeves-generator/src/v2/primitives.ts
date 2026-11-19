@@ -60,7 +60,7 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       for (const process of model.processes ?? []) {
         if (process.frontDoor === "required") add(["front-door"], ["generation", "processes"]);
         if (process.workload)
-          add(["admission", "http", "work-integration"], ["generation", "processes"]);
+          add(["admission", "http", "work-integration", "auth0"], ["generation", "processes"]);
         if (process.shape === "http") add(["admission", "http"], ["generation", "processes"]);
         if (process.stubs.some((stub) => stub.consumes?.length))
           add(["delivery", "amqp"], ["generation", "processes"]);
@@ -95,13 +95,21 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
         add(["webhook"], ["generation", "processes"]);
       if (model.selections.some((s) => s.binding.kind === "browser-session"))
         add(
-          ["browser-session", "browser-settings", "browser-oidc", "browser-refresh", "transaction"],
+          [
+            "browser-session",
+            "browser-settings",
+            "browser-oidc",
+            "browser-refresh",
+            "transaction",
+            "auth0",
+          ],
           ["generation", "processes"],
         );
       for (const selection of model.selections) {
         if ("host.requestTimeoutMs" in selection.inputs)
           add(["admission", "http"], selection.sourcePath);
         if (selection.identity) add(["identity"], selection.sourcePath);
+        if (selection.identity?.provider === "auth0") add(["auth0"], selection.sourcePath);
         for (const resource of selection.resources) {
           const kind = generationCapabilities[selection.binding.kind].resources.find(
             (requirement) => requirement.field === resource.field,
@@ -127,16 +135,51 @@ export function createLocalRuntimePrimitives(sourcePaths: readonly string[]): V2
       // resource contributions so a SQL-only reader also gets the helper without two owners.
       if (model.selections.some((selection) => durableKinds.includes(selection.binding.kind)))
         modules.delete("transaction");
+      const hosted = new Map([
+        ...model.selections.flatMap((s) =>
+          s.identity?.provider === "auth0"
+            ? [[s.identity.element, s.identity.sourcePaths[0]] as const]
+            : [],
+        ),
+        ...(model.processes ?? []).flatMap((p) =>
+          p.workload?.provider === "auth0"
+            ? [[p.workload.identity, p.workload.sourcePaths[0]] as const]
+            : [],
+        ),
+      ]);
+      const hostedGaps = [...hosted].flatMap(([id, path]) =>
+        path &&
+        !model.selections.some(
+          (s) => s.binding.kind === "browser-session" && s.identity?.element === id,
+        )
+          ? [
+              {
+                id: `auth0-issuer-${id}`,
+                status: "custom" as const,
+                required: true,
+                description:
+                  "Register the Auth0 user and/or workload APIs and applications used by this export. Bind the exact HTTPS issuer, audiences and private workload credentials in deployment; see deploy/README.md.",
+                sourcePaths: [`/${path.join("/")}`],
+              },
+            ]
+          : [],
+      );
       return {
-        gaps: model.selections
-          .filter((s) => s.binding.kind === "browser-session")
-          .map((s) => ({
-            id: `browser-issuer-${s.id}`,
-            status: "custom" as const,
-            required: true,
-            sourcePaths: [`/${s.sourcePath.join("/")}`],
-            description: `Configure selected Keycloak Identity ${s.identity?.element} through a trusted HTTPS issuer at /realms/${s.identity?.element}, register confidential code+S256 client jeeves-browser-${s.host}-${s.target.kind === "component" ? s.target.component : s.id} with the exact HTTPS callback, and mount its private client secret/RG08 ring. Plain-HTTP local Keycloak/edge defaults cannot provide secure browser sessions. For declared session forwarding, configure caller and callee to the exact same HTTPS issuer and ${s.identity?.element}-web user audience, including the browser confidential client audience mapper. No production TLS bypass or automatic issuer provisioning is claimed; see .jeeves/extensions.md.`,
-          })),
+        gaps: [
+          ...hostedGaps,
+          ...model.selections
+            .filter((s) => s.binding.kind === "browser-session")
+            .map((s) => ({
+              id: `browser-issuer-${s.id}`,
+              status: "custom" as const,
+              required: true,
+              sourcePaths: [`/${s.sourcePath.join("/")}`],
+              description:
+                s.identity?.provider === "auth0"
+                  ? "Register the confidential Auth0 browser client, exact HTTPS callback/logout returns, user API audience and rotating offline access. Mount its private client secret and key ring. See deploy/README.md for this export's environment names."
+                  : `Configure selected Keycloak Identity ${s.identity?.element} through a trusted HTTPS issuer at /realms/${s.identity?.element}, register confidential code+S256 client jeeves-browser-${s.host}-${s.target.kind === "component" ? s.target.component : s.id} with the exact HTTPS callback, and mount its private client secret/RG08 ring. Plain-HTTP local Keycloak/edge defaults cannot provide secure browser sessions. For declared session forwarding, configure caller and callee to the exact same HTTPS issuer and ${s.identity?.element}-web user audience, including the browser confidential client audience mapper. No production TLS bypass or automatic issuer provisioning is claimed; see .jeeves/extensions.md.`,
+            })),
+        ],
         files: [...modules]
           .sort(([a], [b]) => v2Compare(a, b))
           .map(([name, paths]) => ({

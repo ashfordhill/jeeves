@@ -305,7 +305,9 @@ describe("WD09 deployment contract", () => {
           ...(process.id === "catalog"
             ? ["src/features/service-resources.ts", "src/runtime/valkey.ts"]
             : []),
-          ...(["catalog", "front"].includes(process.id) ? ["src/runtime/workload.ts"] : []),
+          ...(["catalog", "front"].includes(process.id)
+            ? ["src/runtime/auth0.ts", "src/runtime/workload.ts"]
+            : []),
         ].sort(),
       );
     }

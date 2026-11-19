@@ -1,0 +1,26 @@
+[
+  {
+    "source": "owned/account.ts",
+    "destination": "src/modules/browser-api/account.ts",
+    "role": "stub",
+    "module": "account"
+  },
+  {
+    "source": "owned/account-data.ts",
+    "destination": "src/modules/account-api/account-data.ts",
+    "role": "stub",
+    "module": "account-data"
+  },
+  {
+    "source": "owned/billing-data.ts",
+    "destination": "src/modules/billing-api/billing-data.ts",
+    "role": "stub",
+    "module": "billing-data"
+  },
+  {
+    "source": "owned/link-data.ts",
+    "destination": "src/modules/link-api/link-data.ts",
+    "role": "stub",
+    "module": "link-data"
+  }
+]

@@ -11,6 +11,7 @@ export const implementedSuites = [
   "pubsub",
   "rg-foundations",
   "rg-mechanisms",
+  "qr-auth0",
 ];
 
 /** Selected suites that contributed no scenario file to a run (a missing file is not a pass). */

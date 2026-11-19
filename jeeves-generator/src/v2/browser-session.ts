@@ -1,4 +1,5 @@
 import type { NormalizedGenerationSelection, NormalizedProcess } from "@jeeves/spec";
+import { auth0Prefix } from "./auth0.ts";
 import {
   camel,
   type Lead,
@@ -55,6 +56,8 @@ export function browserSessionMount(
     lead.module,
     selection.identity?.element,
   ]);
+  const externalIdentity =
+    selection.identity?.provider === "auth0" ? selection.identity.element : undefined;
   const policy = {
     signIn: selection.inputs["session.signIn"],
     idleSeconds: selection.inputs["session.idleSeconds"],
@@ -63,7 +66,7 @@ export function browserSessionMount(
     offlineAccess: selection.inputs["session.offlineAccess"],
   };
   const make = (pool: string, settings: string, issuer: string) =>
-    `createBrowserSession({namespace:${text(namespace)},module:${text(lead.module)},audience:${text(`${selection.identity?.element}-web`)},targets:${JSON.stringify([...new Set(process.serviceCalls?.filter((call) => call.sessionUser).map((call) => call.target) ?? [])])},scope,pool:${pool},settings:${settings},issuer:${issuer}})`;
+    `createBrowserSession({namespace:${text(namespace)},module:${text(lead.module)},audience:${externalIdentity ? `${settings}.audience` : text(`${selection.identity?.element}-web`)},targets:${JSON.stringify([...new Set(process.serviceCalls?.filter((call) => call.sessionUser).map((call) => call.target) ?? [])])},scope,pool:${pool},settings:${settings},issuer:${issuer}})`;
   return {
     imports: [
       { from: "../runtime/browser-session.ts", name: "createBrowserSession" },
@@ -73,8 +76,8 @@ export function browserSessionMount(
       { from: resources, name: "pool" },
     ],
     validation: [
-      `const ${name}Settings = browserSettings(${text(lead.module)}, ${JSON.stringify({ realm: selection.identity?.element, client: `jeeves-browser-${process.tile}-${lead.module}` })}, ${JSON.stringify(policy)});`,
-      ...(process.serviceCalls?.some((call) => call.sessionUser)
+      `const ${name}Settings = browserSettings(${text(lead.module)}, ${JSON.stringify({ realm: selection.identity?.element, client: `jeeves-browser-${process.tile}-${lead.module}`, ...(externalIdentity && { auth0: auth0Prefix(externalIdentity) }) })}, ${JSON.stringify(policy)});`,
+      ...(!externalIdentity && process.serviceCalls?.some((call) => call.sessionUser)
         ? [
             `if (${name}Settings.audience !== undefined && ${name}Settings.audience !== ${text(`${selection.identity?.element}-web`)}) throw new Error("Incompatible browser forwarding audience");`,
           ]
@@ -107,7 +110,9 @@ export function browserSessionMount(
       {
         method: "POST",
         path: `/modules/${lead.module}/logout`,
-        answers: "CSRF-protected local session revocation204",
+        answers: externalIdentity
+          ? "CSRF-protected local session revocation; signed-in Auth0 logout URL200, no session204"
+          : "CSRF-protected local session revocation204",
       },
     ],
     loops: [],

@@ -9,6 +9,7 @@ import {
   receiptLifecycleSchema,
   receiptSchema,
 } from "../../templates/local-v2/assets/src/runtime/durable-sql.ts";
+import { auth0Prefix } from "./auth0.ts";
 import {
   brokerState,
   camel,
@@ -568,8 +569,15 @@ export function stubClients(
   if (sections.has("broker")) secrets.add("broker-password");
   for (const secret of [...secrets].sort(v2Compare))
     checks.set(`readSecret(${text(secret)})`, { name: "readSecret", from: localPath });
-  if (selections.some((s) => s.host === process.tile && s.binding.kind === "verified-identity"))
-    checks.set("signInSettings()", { name: "signInSettings", from: guardPath });
+  const userGuard = selections.find(
+    (s) => s.host === process.tile && s.binding.kind === "verified-identity",
+  );
+  if (userGuard?.identity?.provider === "auth0")
+    checks.set(`auth0UserSettings(${text(auth0Prefix(userGuard.identity.element))})`, {
+      name: "auth0UserSettings",
+      from: "../runtime/auth0.ts",
+    });
+  else if (userGuard) checks.set("signInSettings()", { name: "signInSettings", from: guardPath });
   // Last, each stub's declared settings (QL05), in the order its dependencies are built.
   for (const read of settingReads)
     checks.set(read, { name: "createSettingsReader", from: settingsPath });

@@ -150,7 +150,7 @@ References are IDs of existing objects.
 | Lookup store / `S.lookupStoreConnection` | optional connection ref to a database | Redirect. Names the real service→store connection. |
 | Lookup cache / `S.lookupCacheConnection` | optional connection ref to a cache | Redirect. Same rule. |
 | Delivery provider / `S.provider` | `resend`, `unspecified`, `aws-ses`, `external` | Notification. |
-| Identity integration / `S.provider` | `oidc`, `unspecified`, `external` | Identity. No roles, grants or login screens. |
+| Identity provider / `S.provider` | `oidc` (Keycloak), `auth0` (Auth0); legacy `unspecified` and `external` remain readable | Identity. Keycloak is the default when older source omits the field. |
 | Transfer / `S.transfer` | `signed-url`, `tus` | Uploads. How an upload's bytes travel ([below](#uploads)). No size limits, file types or bucket names. |
 | Routing / `S.routing` | `path-prefix`, `host-name` | Gateway. No route table; downstream services are its outgoing connections. |
 | Gateway product / `S.provider` | `traefik`, `unspecified`, `envoy`, `kong`, `nginx`, `aws-api-gateway`, `external` | Gateway. |
@@ -584,7 +584,7 @@ field. Its installed exact input/output/version/effect contracts are compiled me
 no schema editor or Advanced setting. See [module connections](studio.md#adding-a-module).
 
 Server/worker modules have an optional **workload** link to an Identity, independent of user
-Sign-in. Select the same installed local OIDC/Keycloak issuer on each calling/called process.
+Sign-in. Select the same Keycloak or Auth0 Identity on each calling and receiving process.
 This is an implemented link choice, not an extra setting. New service calls on private networks
 need it too. Callee route stubs may export `allowedCallers` in product code to narrow the declared
 process callers; there is no audience/credential override control. An Auth guard first connects
@@ -668,7 +668,7 @@ See [the emitted extension contract](plans/reliable-generation/evidence/rg18/pro
 
 Service-only **Browser session** requires an **identity** connection and writable owned **state**, with Runnable processes. Normal controls are **Sign-in** (`required`/`optional`, default optional), **Sign out after inactivity** (60–86400s, default86400), **Maximum session length** (60–604800s, default604800; idle must not exceed absolute), **Remember guest visitors** and **Refresh the login automatically** (both disabled/enabled, default disabled). Every choice has schema, form, chat, blueprint and emitted consumers. Invalid supplied cookies always401 and clear; cookieless Optional operations stay anonymous. Offline access requests/stores sealed refresh material. Private refresh coordination uses that material when invoked by generated token-availability code; local identity lookup does not trigger refresh. There is no new normal control or public refresh route, and session forwarding uses declared matching-Identity bearer-guard callee operations with independent workload authentication.
 
-Bearer Auth guards, webhook ingress and JWT-only Required-user template combinations (Favorites, Rate limiter, Multipart uploads) refuse on that Service. The selected Keycloak Identity needs trusted HTTPS and exact compiled confidential-client/callback registration; export reports this required integration work, without a production insecure bypass. Secrets/issuer endpoints are private deployment configuration, outside inspector controls. [Protocol and configuration](plans/reliable-generation/evidence/rg19/protocol.md).
+Bearer Auth guards, webhook ingress and JWT-only Required-user template combinations (Favorites, Rate limiter, Multipart uploads) refuse on that Service. Keycloak and Auth0 both need trusted HTTPS and exact confidential-client and callback registration. Auth0 uses a registered user API audience and an allowed logout return. Configure its rotating refresh tokens when automatic refresh is enabled. The generated deployment contract names the required bindings. Secrets/issuer endpoints are private deployment configuration, outside inspector controls. [Protocol and configuration](plans/reliable-generation/evidence/rg19/protocol.md).
 
 
 RG21 session forwarding binds declared Service calls to generated route-operation handles. Browser session callers require a matching Identity bearer Auth guard on the callee and independent workload slots on both processes. Product routes compose immutable bounded JSON results through the public API; tokens stay private. Only a read can refresh/retry once after a generated user-authentication refusal; POST and uncertain outcomes are never automatically replayed. Finite conditional/request and ETag/Allow/JSON content-type/Retry-After response headers retain the request budget. No new normal setting, arbitrary proxy, background user authority or mutation replay contract is implied. See [the forwarding contract](plans/reliable-generation/evidence/rg21/protocol.md).

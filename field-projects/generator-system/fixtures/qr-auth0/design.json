@@ -1,0 +1,753 @@
+{
+  "schemaVersion": 3,
+  "revision": 35,
+  "elements": [
+    {
+      "id": "browser-api",
+      "name": "Browser API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "sessions",
+      "name": "Sessions",
+      "classification": {
+        "kind": "Data store"
+      }
+    },
+    {
+      "id": "identity",
+      "name": "Identity",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "account-api",
+      "name": "Account API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "billing-api",
+      "name": "Billing API",
+      "classification": {
+        "kind": "Application"
+      }
+    },
+    {
+      "id": "link-api",
+      "name": "Link API",
+      "classification": {
+        "kind": "Application"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "session-state",
+      "kind": "uses-database",
+      "from": {
+        "element": "browser-api"
+      },
+      "to": {
+        "element": "sessions"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "session-identity",
+      "kind": "calls",
+      "from": {
+        "element": "browser-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "browser-api-account-api",
+      "kind": "calls",
+      "from": {
+        "element": "browser-api"
+      },
+      "to": {
+        "element": "account-api"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-identity",
+      "kind": "calls",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-billing-api",
+      "kind": "calls",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "billing-api"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "billing-api-identity",
+      "kind": "calls",
+      "from": {
+        "element": "billing-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "browser-api-link-api",
+      "kind": "calls",
+      "from": {
+        "element": "browser-api"
+      },
+      "to": {
+        "element": "link-api"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "link-api-identity",
+      "kind": "calls",
+      "from": {
+        "element": "link-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "architecture": {
+    "system": {
+      "name": "Browser session proof",
+      "description": ""
+    },
+    "nodes": [],
+    "relationships": [],
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "browser-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "requestTimeoutMs": 1000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "sessions",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "browser-api"
+          }
+        },
+        {
+          "element": "identity",
+          "definition": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "language": "typescript",
+            "exposure": "public",
+            "provider": "auth0",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "account-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "billing-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "link-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "session-state",
+          "settings": {}
+        },
+        {
+          "connection": "session-identity",
+          "settings": {}
+        },
+        {
+          "connection": "browser-api-account-api",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-identity",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-billing-api",
+          "settings": {}
+        },
+        {
+          "connection": "billing-api-identity",
+          "settings": {}
+        },
+        {
+          "connection": "browser-api-link-api",
+          "settings": {}
+        },
+        {
+          "connection": "link-api-identity",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "sign-in",
+          "host": "browser-api",
+          "name": "Browser session",
+          "settings": {
+            "kind": "browser-session",
+            "signIn": "optional",
+            "idleSeconds": 3600,
+            "absoluteSeconds": 86400,
+            "guestContext": "enabled",
+            "offlineAccess": "enabled"
+          }
+        },
+        {
+          "id": "account",
+          "host": "browser-api",
+          "name": "Custom",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "account-api-user",
+          "host": "account-api",
+          "name": "Auth guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          }
+        },
+        {
+          "id": "account-data",
+          "host": "account-api",
+          "name": "Custom",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "billing-api-user",
+          "host": "billing-api",
+          "name": "Auth guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          }
+        },
+        {
+          "id": "billing-data",
+          "host": "billing-api",
+          "name": "Custom",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "link-api-user",
+          "host": "link-api",
+          "name": "Auth guard",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "optional"
+          }
+        },
+        {
+          "id": "link-data",
+          "host": "link-api",
+          "name": "Custom",
+          "settings": {
+            "kind": "custom"
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "sign-in-sessions",
+          "from": "sign-in",
+          "to": {
+            "kind": "element",
+            "id": "sessions",
+            "via": "session-state"
+          }
+        },
+        {
+          "id": "sign-in-identity",
+          "from": "sign-in",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "session-identity"
+          }
+        },
+        {
+          "id": "account-api-user-identity",
+          "from": "account-api-user",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "account-api-identity"
+          }
+        },
+        {
+          "id": "account-data-identity",
+          "from": "account-data",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "account-api-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "billing-api-user-identity",
+          "from": "billing-api-user",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "billing-api-identity"
+          }
+        },
+        {
+          "id": "billing-data-identity",
+          "from": "billing-data",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "billing-api-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "link-api-user-identity",
+          "from": "link-api-user",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "link-api-identity"
+          }
+        },
+        {
+          "id": "link-data-identity",
+          "from": "link-data",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "link-api-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "account-identity",
+          "from": "account",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "session-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "account-account-api",
+          "from": "account",
+          "to": {
+            "kind": "element",
+            "id": "account-api",
+            "via": "browser-api-account-api"
+          }
+        },
+        {
+          "id": "account-link-api",
+          "from": "account",
+          "to": {
+            "kind": "element",
+            "id": "link-api",
+            "via": "browser-api-link-api"
+          }
+        },
+        {
+          "id": "account-data-billing-api",
+          "from": "account-data",
+          "to": {
+            "kind": "element",
+            "id": "billing-api",
+            "via": "account-api-billing-api"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "id": "browser-entry",
+          "lane": "upload",
+          "element": "browser-api"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "upload",
+          "name": "Produce"
+        }
+      ]
+    }
+  },
+  "scope": {
+    "profile": null,
+    "requirements": [],
+    "customRequirements": []
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "sign-in",
+        "target": {
+          "kind": "component",
+          "component": "sign-in",
+          "host": "browser-api"
+        },
+        "template": {
+          "id": "browser-session",
+          "version": "0.1.0",
+          "sha256": "cd11b60199954c6e50b4da901782750e754857bc8d5e8257580e73f58a81feaa"
+        },
+        "binding": {
+          "kind": "browser-session",
+          "state": {
+            "resource": "sessions",
+            "connection": "session-state"
+          },
+          "identity": {
+            "element": "identity",
+            "guard": "sign-in"
+          }
+        }
+      },
+      {
+        "id": "account",
+        "target": {
+          "kind": "component",
+          "component": "account",
+          "host": "browser-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "account-api-user",
+        "target": {
+          "kind": "component",
+          "component": "account-api-user",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "identity",
+            "guard": "account-api-user"
+          }
+        }
+      },
+      {
+        "id": "account-data",
+        "target": {
+          "kind": "component",
+          "component": "account-data",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "billing-api-user",
+        "target": {
+          "kind": "component",
+          "component": "billing-api-user",
+          "host": "billing-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "identity",
+            "guard": "billing-api-user"
+          }
+        }
+      },
+      {
+        "id": "billing-data",
+        "target": {
+          "kind": "component",
+          "component": "billing-data",
+          "host": "billing-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "link-api-user",
+        "target": {
+          "kind": "component",
+          "component": "link-api-user",
+          "host": "link-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "identity",
+            "guard": "link-api-user"
+          }
+        }
+      },
+      {
+        "id": "link-data",
+        "target": {
+          "kind": "component",
+          "component": "link-data",
+          "host": "link-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "browser-api-owner",
+        "name": "Browser API"
+      },
+      {
+        "id": "identity-owner",
+        "name": "Identity"
+      },
+      {
+        "id": "account-api-owner",
+        "name": "Account API"
+      },
+      {
+        "id": "link-api-owner",
+        "name": "Link API"
+      },
+      {
+        "id": "billing-api-owner",
+        "name": "Billing API"
+      }
+    ],
+    "roles": [
+      {
+        "element": "browser-api",
+        "owner": "browser-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "account-api",
+        "owner": "account-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "link-api",
+        "owner": "link-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "billing-api",
+        "owner": "billing-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "identity",
+        "owner": "identity-owner",
+        "kind": "api"
+      }
+    ],
+    "resources": [
+      {
+        "element": "sessions",
+        "authority": "browser-api-owner",
+        "kind": "source"
+      }
+    ],
+    "grants": [
+      {
+        "role": "browser-api",
+        "resource": "sessions",
+        "access": "read-write"
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "session-state",
+        "access": "read-write"
+      }
+    ]
+  }
+}

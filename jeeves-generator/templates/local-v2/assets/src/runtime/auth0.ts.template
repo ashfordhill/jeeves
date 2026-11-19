@@ -1,0 +1,41 @@
+// Private Auth0 deployment bindings shared by browser, bearer and workload adapters.
+import type { JWTPayload } from "jose";
+
+export function auth0Value(name: string, maximum = 255): string {
+  const value = process.env[name];
+  if (!value || value.length > maximum || /[\s\p{Cc}]/u.test(value))
+    throw new Error(`Invalid setting ${name}`);
+  return value;
+}
+
+export function auth0Issuer(name: string): string {
+  const value = auth0Value(name, 1024);
+  const url = URL.parse(value);
+  if (!url || url.protocol !== "https:" || url.username || url.password ||
+    url.href !== value || url.href !== url.origin + "/")
+    throw new Error(`Invalid setting ${name}`);
+  const tls = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  if (tls !== undefined && tls !== "1")
+    throw new Error("Insecure endpoint NODE_TLS_REJECT_UNAUTHORIZED");
+  return value;
+}
+
+export const auth0MachineToken = (claims: JWTPayload): boolean =>
+  claims.gty === "client-credentials" ||
+  (typeof claims.sub === "string" && claims.sub.endsWith("@clients"));
+
+export function auth0UserSettings(prefix: string) {
+  const issuer = auth0Issuer(`${prefix}_ISSUER`);
+  return {
+    issuer,
+    audience: auth0Value(`${prefix}_AUDIENCE`),
+    jwksUrl: new URL(".well-known/jwks.json", issuer).href,
+    rejectPrincipal: auth0MachineToken,
+  };
+}
+
+export function auth0ClientId(name: string): string {
+  const value = auth0Value(name, 128);
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error(`Invalid setting ${name}`);
+  return value;
+}

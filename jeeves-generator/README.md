@@ -61,6 +61,25 @@ with cold adoption proved only.
 The rest of this page is reference. Sections describing frozen-v1 exports and private runtime
 internals do not authorize hook imports from `src/runtime/`; current application code uses API8.
 
+## Identity providers
+
+Keycloak is the default Identity. Choose Auth0 on the bound Identity tile to generate exact hosted
+issuer and audience bindings for Browser session, bearer Auth guard and declared workload calls.
+The generated deployment contract lists the process-specific registration and credential names. Use
+the same HTTPS tenant or custom domain, including its trailing slash, across linked processes. Use
+RS256 with the default Auth0 access-token profile, a user API separate from machine recipients and
+distinct Machine to Machine applications for the calling processes. Each machine token authorizes
+only its configured API audience. The receiving runtime maps its signed client identity to the
+compiled caller allowlist and independently verifies a user token when required.
+
+The Auth0 browser flow uses a confidential Regular Web Application, authorization code with S256
+PKCE, exact HTTPS callback, and an allowed same-origin HTTPS logout return. If automatic refresh is
+enabled, register the Refresh Token grant, enable Allow Offline Access for the user API, and turn on
+rotation. The browser POST revokes the shared local session. Use its returned provider logout URL to
+end the Auth0 browser session. Keep app credentials and the shared key ring in private files. The
+local Compose stack uses those externally supplied bindings for Auth0 and provisions Keycloak
+resources only for Keycloak selections. [Auth0 token validation](https://auth0.com/docs/secure/tokens/access-tokens/validate-access-tokens) · [Refresh rotation](https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation)
+
 ## Front-door stamp
 
 Public runnable HTTP tiles can set `frontDoor: "required" | "none"`. Normal new tiles store

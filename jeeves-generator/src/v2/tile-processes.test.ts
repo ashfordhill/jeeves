@@ -110,6 +110,7 @@ describe("local.tile-processes", () => {
       "src/processes/visit-worker.ts",
       "src/runtime/admission.ts",
       "src/runtime/amqp.ts",
+      "src/runtime/auth0.ts",
       "src/runtime/delivery.ts",
       "src/runtime/durable-sql.ts",
       "src/runtime/durable-work.ts",

@@ -84,7 +84,7 @@ export type NormalizedGenerationSelection = {
   identity?: {
     element: string;
     guard: string;
-    provider: "keycloak";
+    provider: "keycloak" | "auth0";
     credential: "jwt" | "session";
     sourcePaths: Path[];
   };
@@ -173,6 +173,7 @@ export type NormalizedProcess = {
   /** Explicit issuer selection, independent of user Sign-in. Client/audience IDs use stable IDs. */
   workload?: {
     identity: string;
+    provider?: "auth0";
     client: string;
     audience: string;
     sourcePaths: Path[];
@@ -577,6 +578,14 @@ export function resolveGeneration(
     studio?.components?.findIndex((entry) => entry.id === id) ?? -1,
     "settings",
   ];
+  const identityChoices = new Set<string>();
+  const keycloakOnlyIdentities = new Set<string>();
+  const providerFor = (id: string) => {
+    const binding = element(id);
+    return binding?.settings.kind === "identity"
+      ? (binding.settings.provider ?? "oidc")
+      : undefined;
+  };
   // A module with a module-level selection of its own is never part of another selection.
   const ownSelection = new Set(
     generation.selections.flatMap((item) =>
@@ -1110,7 +1119,7 @@ export function resolveGeneration(
           }
         }
     }
-    // The Identity a guard verifies runs as Keycloak. A module-level multipart's guard leads its
+    // Resolve the same Identity used by browser sessions and bearer verification. A module-level multipart's guard leads its
     // own sign-in selection, which checks it; tile-level multipart (frozen v2) checks it here.
     const verifies =
       selection.binding.kind === "verified-identity" ||
@@ -1136,16 +1145,18 @@ export function resolveGeneration(
           "Local verified-identity adapter supports JWT only.",
         );
       const identityBinding = element(identity.element);
+      const provider = providerFor(identity.element);
+      if (verifies && runtimeInstalled && implementation) identityChoices.add(identity.element);
       if (
         ((guard?.settings.kind === "auth-guard" && guard.settings.credential === "jwt") ||
           guard?.settings.kind === "browser-session") &&
         identityBinding?.settings.kind === "identity" &&
-        identityBinding.settings.provider === "oidc"
+        (provider === "oidc" || provider === "auth0")
       )
         row.identity = {
           element: identity.element,
           guard: guard.id,
-          provider: "keycloak",
+          provider: provider === "auth0" ? "auth0" : "keycloak",
           credential: guard.settings.kind === "browser-session" ? "session" : "jwt",
           sourcePaths: [
             [...base, "binding", "identity"],
@@ -1153,20 +1164,30 @@ export function resolveGeneration(
               ...componentPath(guard.id),
               guard.settings.kind === "browser-session" ? "kind" : "credential",
             ],
-            [...elementPath(identity.element), "provider"],
+            identityBinding.settings.provider === undefined
+              ? elementPath(identity.element)
+              : [...elementPath(identity.element), "provider"],
           ],
         };
       if (verifies && identityBinding?.settings.kind === "identity") {
-        for (const [key, expected] of [
-          ["execution", "docker"],
-          ["provider", "oidc"],
-        ] as const)
-          if (identityBinding.settings[key] !== expected)
-            report(
-              "NEEDS_TEMPLATE",
-              [...elementPath(identity.element), key],
-              `Identity vendor requires fixed ${expected}.`,
-            );
+        if (provider !== "oidc" && provider !== "auth0")
+          report(
+            "NEEDS_TEMPLATE",
+            [...elementPath(identity.element), "provider"],
+            "Select Keycloak or Auth0 for this Identity.",
+          );
+        if (identityBinding.settings.execution !== "docker")
+          report(
+            "NEEDS_TEMPLATE",
+            [...elementPath(identity.element), "execution"],
+            "Identity requires the Studio Docker setting; the Auth0 provider itself runs in a hosted tenant.",
+          );
+        if (provider === "auth0" && selection.target.kind === "element")
+          report(
+            "NEEDS_TEMPLATE",
+            [...elementPath(identity.element), "provider"],
+            "Auth0 requires the module-authored sign-in template; this tile-level recipe uses Keycloak.",
+          );
         const identityRole = ownership.roles.find((entry) => entry.element === identity.element);
         if (!identityRole)
           report(
@@ -1201,7 +1222,7 @@ export function resolveGeneration(
             report(
               "NEEDS_TEMPLATE",
               [...elementPath(identity.element), key],
-              "Identity setting has no local Keycloak consumer; only public exposure and one fixed vendor instance are supported.",
+              "Only public exposure and the Identity provider's own replica policy are supported.",
             );
         }
         // One note per Identity: every guard that verifies it shares the same Keycloak vendor.
@@ -1214,10 +1235,12 @@ export function resolveGeneration(
           localAdapterTreatments.push({
             sourcePath,
             declared: identityBinding.settings.language,
-            actual: "keycloak",
+            actual: provider === "auth0" ? "auth0" : "keycloak",
             classification: "unsupported-intent",
             reason:
-              "Fixed local OIDC vendor substitution. Source requires service-language metadata; neither TypeScript nor Go Identity implementation is provided or claimed.",
+              provider === "auth0"
+                ? "Hosted Auth0 supplies the Identity protocol. Service-language metadata does not configure the hosted provider."
+                : "Fixed local OIDC vendor substitution. Source requires service-language metadata; neither TypeScript nor Go Identity implementation is provided or claimed.",
           });
       }
     }
@@ -1393,23 +1416,34 @@ export function resolveGeneration(
       const issuer = issuers[0];
       if (!issuer) continue;
       const selected = element(issuer);
+      const provider = providerFor(issuer);
+      if (runtimeInstalled && installed.processes) identityChoices.add(issuer);
       if (
         selected?.settings.kind !== "identity" ||
-        selected.settings.provider !== "oidc" ||
+        (provider !== "oidc" && provider !== "auth0") ||
         selected.settings.execution !== "docker"
       ) {
         report(
           "NEEDS_TEMPLATE",
-          links[0]?.sourcePath ?? process.sourcePath,
-          "Workload identity requires the installed local OIDC/Keycloak Identity (Docker execution); select that Identity in the workload slot.",
+          [
+            ...elementPath(issuer),
+            selected?.settings.kind === "identity" && selected.settings.execution !== "docker"
+              ? "execution"
+              : "provider",
+          ],
+          "Workload identity requires an Identity with Keycloak or Auth0 and the Studio Docker setting.",
         );
         continue;
       }
       process.workload = {
         identity: issuer,
+        ...(provider === "auth0" && { provider }),
         client: `jeeves-workload-${process.tile}`,
         audience: `jeeves-service-${process.tile}`,
-        sourcePaths: links.map((link) => link.sourcePath),
+        sourcePaths: [
+          ...links.map((link) => link.sourcePath),
+          ...(provider === "auth0" ? [[...elementPath(issuer), "provider"]] : []),
+        ],
       };
     }
     for (const process of model.processes) {
@@ -1676,6 +1710,24 @@ export function resolveGeneration(
     model.capabilities.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const delivery = normalizedDelivery(design);
     if (delivery.length) model.delivery = delivery;
+  }
+  for (const id of identityChoices) {
+    if (keycloakOnlyIdentities.has(id)) continue;
+    const binding = element(id);
+    if (binding?.settings.kind !== "identity") continue;
+    const value = binding.settings.provider ?? "oidc";
+    settings.push({
+      input: "identity.provider",
+      sourcePaths: [[...elementPath(id), "provider"]],
+      origin: binding.settings.provider === undefined ? "descriptor-default" : "source",
+      value,
+      supported: { values: ["oidc", "auth0"] },
+      consumer: "identity.provider",
+      outputPaths: ["compose.yaml", "deploy/README.md", "deploy/contract.json"],
+      status: value === "oidc" || value === "auth0" ? "supported" : "unsupported",
+      userNeed: "Choose a sign-in and service-credential issuer.",
+      normalControl: studioDefinitionStatus(binding.definition, "identity") === "known",
+    });
   }
   const validModel = findings.some(isStructural) ? undefined : model;
   // A refused model hides every control, except one whose own saved value a finding names (out of

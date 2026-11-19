@@ -6,13 +6,14 @@ import type { HttpRoutes } from "./http.ts";
 import type { TileGuard, Caller, SignIn } from "./tile-guard.ts";
 import type { SigningKeys, SealingKeys } from "./keys.ts";
 import { transaction, type TransactionPool } from "./transaction.ts";
-import { assertOperation, operation, withOperation, rememberSessionAccess } from "./operation.ts";
+import { assertOperation, operation, withOperation, rememberGuestSession, rememberSessionAccess } from "./operation.ts";
 import { periodic, type ProcessScope } from "./process.ts";
 import type { BrowserIssuer } from "./browser-oidc.ts";
 import { browserRefresh } from "./browser-refresh.ts";
 
 export interface BrowserConfiguration {
   issuer:string; clientId:string; clientSecret:string; callback:string; origin:string;
+  provider?:"auth0"; logoutReturn?:string;
   audience?:string; offlineAccess:boolean; signIn:SignIn; idleSeconds:number; absoluteSeconds:number;
   guestContext:boolean; keys:{seal:SealingKeys;sign:SigningKeys};
 }
@@ -81,7 +82,11 @@ export function createBrowserSession(options:{namespace:string;module:string;aud
     if (request.headers.authorization!==undefined) throw refused(); // no mixed bearer/cookie authority
     let supplied:string|undefined;
     try {supplied=cookie(request,names.session);} catch(error) {if(reply)clear(reply,names.session);throw error;}
-    if (supplied===undefined) {const value=guest(request);return {signedIn:false,...(value?{guest:Object.freeze({id:hash(value)})}:{})};}
+    if (supplied===undefined) {
+      const value=guest(request);
+      if (s.signIn === "optional") rememberGuestSession();
+      return {signedIn:false,...(value?{guest:Object.freeze({id:hash(value)})}:{})};
+    }
     if (!valid(supplied)) {if(reply)clear(reply,names.session);throw refused();}
     const cookieHash=hash(supplied);
     const result=await transaction(pool,async tx=>{
@@ -206,7 +211,14 @@ export function createBrowserSession(options:{namespace:string;module:string;aud
         await protect(request,reply,false);
         const value=cookie(request,names.session);
         if(value)await transaction(pool,tx=>tx.query(`UPDATE jeeves.browser_sessions SET revoked_at=clock_timestamp(),access_sealed=NULL,refresh_sealed=NULL,id_sealed=NULL WHERE namespace=$1 AND cookie_hash=$2`,[namespace,hash(value)]));
-        clear(reply,names.session);clear(reply,names.guest);clear(reply,names.login);return reply.code(204).send();
+        clear(reply,names.session);clear(reply,names.guest);clear(reply,names.login);
+        if (value && s.provider === "auth0" && s.logoutReturn) {
+          const logout = new URL("oidc/logout", s.issuer);
+          logout.searchParams.set("client_id", s.clientId);
+          logout.searchParams.set("post_logout_redirect_uri", s.logoutReturn);
+          return reply.code(200).send({ logoutUrl: logout.href });
+        }
+        return reply.code(204).send();
       }});
     },
     /** Generated owning-service command only: no account-erasure policy or table authority. */

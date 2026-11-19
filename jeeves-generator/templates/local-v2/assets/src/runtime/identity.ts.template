@@ -7,6 +7,7 @@ export interface IdentityBinding {
   jwksUrl: string;
   algorithms: readonly string[];
   jwksTimeoutMs: number;
+  rejectPrincipal?(claims: JWTPayload): boolean;
 }
 export interface VerifiedPrincipal {
   subject: string;
@@ -52,7 +53,7 @@ export function createPrincipalVerifier(binding: IdentityBinding, keySet?: JWTVe
       throw new Error("Invalid identity subject");
     // A service-account JWT never establishes an independent end user, even when it also
     // carries the user audience. The finite issuer reserves this signed claim for workloads.
-    if ("jeeves_workload" in payload) throw new Error("Invalid identity token");
+    if ("jeeves_workload" in payload || binding.rejectPrincipal?.(payload)) throw new Error("Invalid identity token");
     return { subject: payload.sub, claims: payload };
   };
 }
