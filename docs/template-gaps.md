@@ -193,3 +193,10 @@ The original evaluation overstated bounded drain. Current generated shutdown has
 apps are preserved. Compatible stable-ID API8 stopped updates preserve hooks/data/session promises
 and pending work as recorded in [RG24](plans/reliable-generation/evidence/rg24/migration.md).
 No QRWTY rebuild, live legacy namespace conversion or rolling mixed-version proof is claimed.
+
+## QRWTY contract limits in the proposed diagram
+
+| Product requirement | Installed boundary and proposed treatment |
+| --- | --- |
+| Stripe-signed bodies up to 256 KiB and 35 days of completed-event deduplication | The generic receiver verifies Jeeves HMAC envelopes up to 64 KiB and keeps completed work seven days. The proposed edge adapter verifies Stripe, then signs a bounded canonical event. The billing owner must retain its own event ID and digest. [Payment ingress](field-projects/qrwty/README.md#where-generation-ends) |
+| Pub/Sub replay for 31 days with 35-day click receipts | The counter retains seven days and the checked consumer supports at most 30. The proposal keeps an Event consumer stub and an explicit atomic receipt/aggregate requirement. The longer window needs a compatible mechanism and replay evidence. [Click processing](field-projects/qrwty/README.md#where-generation-ends) |

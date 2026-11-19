@@ -19879,3 +19879,19 @@ workload settings the same way.
   read by the wire's shape. Exported PNGs change (paper, wires), so older evidence images no
   longer match a fresh export. An untracked `docs/field-projects/qrwty/` appeared during the
   work and is not part of it.
+
+## 2026-11-18 — QRWTY field review and proposed backend diagram
+
+- Compared A8's 41.52% finished backend with the measured r84 diagram, the owner's current r85
+  project and the installed templates. Saved the [proposal in Jeeves](http://127.0.0.1:4300/?project=8994962f-abc4-4903-a609-616d9c8b7409#/design)
+  as a separate revision-1 project. The [review, source and canvas exports](field-projects/qrwty/README.md)
+  cover session ownership, authenticated service calls, payment intake, routing, idle retention
+  and shared guest admission.
+- The Studio and CLI exported 151 identical files. The scaffold passed its offline extension
+  check and build. Nine module rows use templates and nine remain stubs. Native Stripe signatures,
+  35-day receipts, the production issuer and product policies still need application work.
+  Recount backend source after completing and testing those behaviors.
+- `pnpm check` passed 1,439 tests, native E2E passed 91/91 (5.8m) on a full repeat after an
+  interrupted first run, and the web build passed. The running Studio rendered TinyURL and both
+  QRWTY projects. After refreshing its stale Vite catalog, mouse checks covered five template
+  instances, both diagram views and the ZIP download.

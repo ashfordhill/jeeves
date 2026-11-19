@@ -1941,3 +1941,16 @@ the arrowheads are and run straight in. Picking a wire out by hovering the wire 
 because the pointer crosses many on its way anywhere: pick wires out from the tile or module row
 under the pointer. Preview layout options with the real layout engine; landing spacing alone
 changed how tightly ELK packed a column.
+
+## 2026-11-18 — Match the producer and replay window before selecting a template
+
+For each public entry, name the sender, the credential it presents, and what must be durable
+before the sender gets success. QRWTY's browser session, short-link redirect and Stripe callback
+have three different answers. A separate webhook ingress lets customer billing require a user.
+Where a provider must call back through an action lane, record the actual sender and adapter in
+the system context and the receiving tile.
+
+Compare the longest permitted redelivery with the lifetime of the receipt that protects the
+product effect. QRWTY can replay clicks for 31 days and requires 35-day receipts. Its Pub/Sub
+consumer remains a product stub even though the installed counter and checked consumer both
+deduplicate within shorter windows. [QRWTY review and saved diagram](field-projects/qrwty/README.md)

@@ -1,0 +1,2138 @@
+{
+  "schemaVersion": 3,
+  "revision": 1,
+  "architecture": {
+    "studio": {
+      "version": 1,
+      "elements": [
+        {
+          "element": "session-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "frontDoor": "required",
+            "requestTimeoutMs": 1000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "identity",
+          "definition": {
+            "id": "studio-identity",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "identity",
+            "language": "typescript",
+            "exposure": "public",
+            "provider": "oidc",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "sessions",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "session-api"
+          }
+        },
+        {
+          "element": "link-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "account-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "billing-api",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "internal",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "links",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "link-api"
+          }
+        },
+        {
+          "element": "reputation-api",
+          "definition": {
+            "id": "studio-external-api",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "external-api",
+            "category": "generic",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "element": "redirect-service",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "frontDoor": "required",
+            "requestTimeoutMs": 1000,
+            "concurrencyLimit": 1000,
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "hot-routes",
+          "definition": {
+            "id": "studio-cache",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "cache",
+            "engine": "redis-compatible",
+            "provider": "self-hosted",
+            "ttlSeconds": 30
+          },
+          "owner": {
+            "kind": "element",
+            "id": "redirect-service"
+          }
+        },
+        {
+          "element": "click-events",
+          "definition": {
+            "id": "studio-queue",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "queue",
+            "mode": "topic",
+            "provider": "google-cloud"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "redirect-service"
+          }
+        },
+        {
+          "element": "analytics-worker",
+          "definition": {
+            "id": "studio-worker",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "worker",
+            "language": "typescript",
+            "execution": "docker"
+          }
+        },
+        {
+          "element": "analytics",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "analytics-worker"
+          }
+        },
+        {
+          "element": "billing",
+          "definition": {
+            "id": "studio-database",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "database",
+            "engine": "postgresql",
+            "provider": "self-hosted"
+          },
+          "owner": {
+            "kind": "element",
+            "id": "billing-api"
+          }
+        },
+        {
+          "element": "stripe-api",
+          "definition": {
+            "id": "studio-external-api",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "external-api",
+            "category": "generic",
+            "provider": "unspecified"
+          }
+        },
+        {
+          "element": "payment-inbox",
+          "definition": {
+            "id": "studio-service",
+            "version": "1.0.0"
+          },
+          "settings": {
+            "kind": "service",
+            "language": "typescript",
+            "exposure": "public",
+            "frontDoor": "required",
+            "execution": "docker"
+          }
+        }
+      ],
+      "packages": [],
+      "connections": [
+        {
+          "connection": "session-api-identity",
+          "settings": {}
+        },
+        {
+          "connection": "session-api-sessions",
+          "settings": {}
+        },
+        {
+          "connection": "session-api-link-api",
+          "settings": {}
+        },
+        {
+          "connection": "session-api-account-api",
+          "settings": {}
+        },
+        {
+          "connection": "session-api-billing-api",
+          "settings": {}
+        },
+        {
+          "connection": "link-api-links",
+          "settings": {}
+        },
+        {
+          "connection": "link-api-identity",
+          "settings": {}
+        },
+        {
+          "connection": "link-api-reputation-api",
+          "settings": {}
+        },
+        {
+          "connection": "link-api-billing-api",
+          "settings": {}
+        },
+        {
+          "connection": "redirect-service-links",
+          "settings": {}
+        },
+        {
+          "connection": "redirect-service-hot-routes",
+          "settings": {}
+        },
+        {
+          "connection": "redirect-service-click-events",
+          "settings": {
+            "channelUse": "publish"
+          }
+        },
+        {
+          "connection": "click-events-analytics-worker",
+          "settings": {
+            "channelUse": "consume"
+          }
+        },
+        {
+          "connection": "analytics-worker-analytics",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-identity",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-links",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-analytics",
+          "settings": {}
+        },
+        {
+          "connection": "account-api-billing-api",
+          "settings": {}
+        },
+        {
+          "connection": "billing-api-identity",
+          "settings": {}
+        },
+        {
+          "connection": "billing-api-billing",
+          "settings": {}
+        },
+        {
+          "connection": "billing-api-stripe-api",
+          "settings": {}
+        },
+        {
+          "connection": "payment-inbox-billing",
+          "settings": {}
+        }
+      ],
+      "components": [
+        {
+          "id": "browser-session",
+          "host": "session-api",
+          "name": "Browser session",
+          "description": "One OIDC code and PKCE login, guest context, secure cookies, CSRF, revocation and coordinated refresh. Idle limit 24 hours, absolute limit seven days.",
+          "settings": {
+            "kind": "browser-session",
+            "signIn": "optional",
+            "idleSeconds": 86400,
+            "absoluteSeconds": 604800,
+            "guestContext": "enabled",
+            "offlineAccess": "enabled"
+          }
+        },
+        {
+          "id": "session-api-api-forwarding",
+          "host": "session-api",
+          "name": "Browser routes",
+          "description": "Map public routes and guest proof to bounded product DTOs. Forward the verified session only to declared callees. Account deletion needs durable progress and separate authority for later steps.",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "link-api-sign-in",
+          "host": "link-api",
+          "name": "Verify user",
+          "description": "Allow guest create and reports. Invalid credentials are refused. Owned mutations and moderation separately require the verified subject or operator permission.",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "optional"
+          }
+        },
+        {
+          "id": "link-api-link-operations",
+          "host": "link-api",
+          "name": "Create, claim & edit",
+          "description": "Recover account replay before admission, reputation and billing. Create, claim and edit in owner transactions. Guest claim proof, sealed guest replay and pseudonymous admission remain product policy.",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "link-api-abuse-and-moderation",
+          "host": "link-api",
+          "name": "Reports & moderation",
+          "description": "Rate-limit guest reports using a trusted pseudonymous address key. Only authorized operators change link state. An abuse report alone never disables a link.",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "account-api-sign-in",
+          "host": "account-api",
+          "name": "Verify user",
+          "description": "Require a verified account subject on these private operations.",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          }
+        },
+        {
+          "id": "account-api-my-links",
+          "host": "account-api",
+          "name": "My links",
+          "description": "List only the verified owner's links and usage. Bind the cursor to that subject and order by creation time and ID.",
+          "settings": {
+            "kind": "data-access",
+            "readRouting": "primary"
+          }
+        },
+        {
+          "id": "account-api-link-analytics",
+          "host": "account-api",
+          "name": "Analytics & export",
+          "description": "Check ownership, finite entitlement validity, export quota and pipeline freshness. Query daily counts and paid breakdowns. Product code renders bounded CSV and distinguishes delayed data from zero.",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "billing-api-sign-in",
+          "host": "billing-api",
+          "name": "Verify user",
+          "description": "Require a verified account subject on these private operations.",
+          "settings": {
+            "kind": "auth-guard",
+            "credential": "jwt",
+            "signIn": "required"
+          }
+        },
+        {
+          "id": "billing-api-customer-billing",
+          "host": "billing-api",
+          "name": "Plans & checkout",
+          "description": "Read the account's plan. Start provider Checkout or portal only on a mutation. A lost provider reply needs reconciliation with a stable request identity. Status reads do no background work.",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "billing-api-entitlements",
+          "host": "billing-api",
+          "name": "Entitlements",
+          "description": "Issue grants valid at most 60 seconds and atomically spend the export allowance for the verified subject. Restrict callers to Link API and Account API in the product operation.",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "billing-reconciliation",
+          "host": "billing-api",
+          "name": "Reconcile payments",
+          "description": "Every minute, select due inbox events and stuck checkouts under a fence. A nightly sweep is product policy. Fetching Stripe state needs an adapter outside the scheduled SQL completion.",
+          "settings": {
+            "kind": "scheduled-task",
+            "intervalSeconds": 60
+          }
+        },
+        {
+          "id": "verified-payment-event",
+          "host": "payment-inbox",
+          "name": "Verified payment event",
+          "description": "Accept only the normalized Jeeves HMAC envelope from the Stripe adapter. Durably queue before 202. The completion hook records a unique provider event in the billing ledger for downstream reconciliation.",
+          "settings": {
+            "kind": "webhook-receiver",
+            "bodyLimitBytes": "65536",
+            "replayWindowSeconds": 300
+          }
+        },
+        {
+          "id": "redirect-service-resolve-and-redirect",
+          "host": "redirect-service",
+          "name": "Resolve & record click",
+          "description": "GET uses the versioned route, waits for durable Pub/Sub acceptance, rechecks state, deadline and expiry, then sends 302. A missing or uncertain ACK returns 503 without Location. HEAD publishes nothing.",
+          "settings": {
+            "kind": "custom"
+          }
+        },
+        {
+          "id": "route-reader",
+          "host": "redirect-service",
+          "name": "Route cache",
+          "description": "Read an eligible versioned route by host and slug. Clamp validity to the original lookup and link expiry. No negative entries.",
+          "settings": {
+            "kind": "cache-reader",
+            "pattern": "cache-aside",
+            "freshness": "versioned",
+            "transport": "in-process",
+            "stampede": "single-flight"
+          }
+        },
+        {
+          "id": "route-source",
+          "host": "redirect-service",
+          "name": "Route lookup",
+          "description": "Load the canonical route version, state, destination and expiry from published.link_routes.",
+          "settings": {
+            "kind": "data-access",
+            "poolSize": 10,
+            "readRouting": "primary",
+            "statementTimeoutMs": 2000
+          }
+        },
+        {
+          "id": "analytics-worker-click-aggregator",
+          "host": "analytics-worker",
+          "name": "Aggregate clicks",
+          "description": "Consume Pub/Sub messages. Commit one receipt and aggregate effect per click ID, then ACK. QRWTY needs 31-day replay and 35-day receipts. The installed receipt window is shorter. Supply quarantine and backlog policy.",
+          "settings": {
+            "kind": "event-consumer"
+          }
+        },
+        {
+          "id": "analytics-retention",
+          "host": "analytics-worker",
+          "name": "Retention sweep",
+          "description": "Expire bounded batches on a timer even when the channel is idle. Keep click receipts 35 days and aggregates 13 months. Use last commit, heartbeat and broker lag separately when reporting freshness.",
+          "settings": {
+            "kind": "scheduled-task",
+            "intervalSeconds": 60
+          }
+        }
+      ],
+      "componentConnections": [
+        {
+          "id": "browser-session-identity",
+          "from": "browser-session",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "session-api-identity"
+          },
+          "label": "User sign-in"
+        },
+        {
+          "id": "browser-session-sessions",
+          "from": "browser-session",
+          "to": {
+            "kind": "element",
+            "id": "sessions",
+            "via": "session-api-sessions"
+          },
+          "label": "Owns session state"
+        },
+        {
+          "id": "session-api-api-forwarding-identity-workload",
+          "from": "session-api-api-forwarding",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "session-api-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "session-api-api-forwarding-link-api",
+          "from": "session-api-api-forwarding",
+          "to": {
+            "kind": "element",
+            "id": "link-api",
+            "via": "session-api-link-api"
+          }
+        },
+        {
+          "id": "session-api-api-forwarding-account-api",
+          "from": "session-api-api-forwarding",
+          "to": {
+            "kind": "element",
+            "id": "account-api",
+            "via": "session-api-account-api"
+          }
+        },
+        {
+          "id": "session-api-api-forwarding-billing-api",
+          "from": "session-api-api-forwarding",
+          "to": {
+            "kind": "element",
+            "id": "billing-api",
+            "via": "session-api-billing-api"
+          }
+        },
+        {
+          "id": "session-api-api-forwarding-sessions",
+          "from": "session-api-api-forwarding",
+          "to": {
+            "kind": "element",
+            "id": "sessions",
+            "via": "session-api-sessions"
+          }
+        },
+        {
+          "id": "link-api-sign-in-identity",
+          "from": "link-api-sign-in",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "link-api-identity"
+          },
+          "label": "User token issuer"
+        },
+        {
+          "id": "link-api-sign-in-identity-workload",
+          "from": "link-api-sign-in",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "link-api-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "link-api-link-operations-links",
+          "from": "link-api-link-operations",
+          "to": {
+            "kind": "element",
+            "id": "links",
+            "via": "link-api-links"
+          }
+        },
+        {
+          "id": "link-api-link-operations-reputation-api",
+          "from": "link-api-link-operations",
+          "to": {
+            "kind": "element",
+            "id": "reputation-api",
+            "via": "link-api-reputation-api"
+          }
+        },
+        {
+          "id": "link-api-link-operations-billing-api",
+          "from": "link-api-link-operations",
+          "to": {
+            "kind": "element",
+            "id": "billing-api",
+            "via": "link-api-billing-api"
+          }
+        },
+        {
+          "id": "link-api-abuse-and-moderation-links",
+          "from": "link-api-abuse-and-moderation",
+          "to": {
+            "kind": "element",
+            "id": "links",
+            "via": "link-api-links"
+          }
+        },
+        {
+          "id": "account-api-sign-in-identity",
+          "from": "account-api-sign-in",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "account-api-identity"
+          },
+          "label": "User token issuer"
+        },
+        {
+          "id": "account-api-sign-in-identity-workload",
+          "from": "account-api-sign-in",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "account-api-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "account-api-my-links-links",
+          "from": "account-api-my-links",
+          "to": {
+            "kind": "element",
+            "id": "links",
+            "via": "account-api-links"
+          }
+        },
+        {
+          "id": "account-api-link-analytics-links",
+          "from": "account-api-link-analytics",
+          "to": {
+            "kind": "element",
+            "id": "links",
+            "via": "account-api-links"
+          }
+        },
+        {
+          "id": "account-api-link-analytics-analytics",
+          "from": "account-api-link-analytics",
+          "to": {
+            "kind": "element",
+            "id": "analytics",
+            "via": "account-api-analytics"
+          }
+        },
+        {
+          "id": "account-api-link-analytics-billing-api",
+          "from": "account-api-link-analytics",
+          "to": {
+            "kind": "element",
+            "id": "billing-api",
+            "via": "account-api-billing-api"
+          }
+        },
+        {
+          "id": "billing-api-sign-in-identity",
+          "from": "billing-api-sign-in",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "billing-api-identity"
+          },
+          "label": "User token issuer"
+        },
+        {
+          "id": "billing-api-sign-in-identity-workload",
+          "from": "billing-api-sign-in",
+          "to": {
+            "kind": "element",
+            "id": "identity",
+            "via": "billing-api-identity"
+          },
+          "slot": "workload",
+          "label": "Workload identity"
+        },
+        {
+          "id": "billing-api-customer-billing-billing",
+          "from": "billing-api-customer-billing",
+          "to": {
+            "kind": "element",
+            "id": "billing",
+            "via": "billing-api-billing"
+          }
+        },
+        {
+          "id": "billing-api-customer-billing-stripe-api",
+          "from": "billing-api-customer-billing",
+          "to": {
+            "kind": "element",
+            "id": "stripe-api",
+            "via": "billing-api-stripe-api"
+          }
+        },
+        {
+          "id": "billing-api-entitlements-billing",
+          "from": "billing-api-entitlements",
+          "to": {
+            "kind": "element",
+            "id": "billing",
+            "via": "billing-api-billing"
+          }
+        },
+        {
+          "id": "billing-reconciliation-billing",
+          "from": "billing-reconciliation",
+          "to": {
+            "kind": "element",
+            "id": "billing",
+            "via": "billing-api-billing"
+          },
+          "label": "Leases due work"
+        },
+        {
+          "id": "verified-payment-event-billing",
+          "from": "verified-payment-event",
+          "to": {
+            "kind": "element",
+            "id": "billing",
+            "via": "payment-inbox-billing"
+          },
+          "label": "Records provider event"
+        },
+        {
+          "id": "redirect-service-resolve-and-redirect-route-reader",
+          "from": "redirect-service-resolve-and-redirect",
+          "to": {
+            "kind": "component",
+            "id": "route-reader"
+          }
+        },
+        {
+          "id": "redirect-service-resolve-and-redirect-click-events",
+          "from": "redirect-service-resolve-and-redirect",
+          "to": {
+            "kind": "element",
+            "id": "click-events",
+            "via": "redirect-service-click-events"
+          },
+          "label": "Waits for durable publish"
+        },
+        {
+          "id": "route-reader-route-source",
+          "from": "route-reader",
+          "to": {
+            "kind": "component",
+            "id": "route-source"
+          }
+        },
+        {
+          "id": "route-reader-hot-routes",
+          "from": "route-reader",
+          "to": {
+            "kind": "element",
+            "id": "hot-routes",
+            "via": "redirect-service-hot-routes"
+          },
+          "label": "Caches versioned routes"
+        },
+        {
+          "id": "route-source-links",
+          "from": "route-source",
+          "to": {
+            "kind": "element",
+            "id": "links",
+            "via": "redirect-service-links"
+          },
+          "label": "Reads link_routes"
+        },
+        {
+          "id": "analytics-worker-click-aggregator-click-events",
+          "from": "analytics-worker-click-aggregator",
+          "to": {
+            "kind": "element",
+            "id": "click-events",
+            "via": "click-events-analytics-worker"
+          },
+          "label": "Consumes click events"
+        },
+        {
+          "id": "analytics-worker-click-aggregator-analytics",
+          "from": "analytics-worker-click-aggregator",
+          "to": {
+            "kind": "element",
+            "id": "analytics",
+            "via": "analytics-worker-analytics"
+          },
+          "label": "Records clicks and progress"
+        },
+        {
+          "id": "analytics-retention-analytics",
+          "from": "analytics-retention",
+          "to": {
+            "kind": "element",
+            "id": "analytics",
+            "via": "analytics-worker-analytics"
+          },
+          "label": "Purges expired rows"
+        }
+      ],
+      "entries": [
+        {
+          "id": "upload-session-api",
+          "lane": "upload",
+          "element": "session-api"
+        },
+        {
+          "id": "download-redirect-service",
+          "lane": "download",
+          "element": "redirect-service"
+        },
+        {
+          "id": "upload-payment-inbox",
+          "lane": "upload",
+          "element": "payment-inbox"
+        }
+      ],
+      "actions": [
+        {
+          "lane": "download",
+          "name": "Open link"
+        },
+        {
+          "lane": "upload",
+          "name": "Manage links & payments"
+        }
+      ]
+    },
+    "system": {
+      "name": "QRWTY",
+      "description": "Open a short link or QR code without signing in. Guests create and claim links. Accounts manage destinations, moderation, analytics and paid plans. A GET redirects only after a durable click acknowledgement. The browser, redirect and payment callback have separate entry points. Stripe's native verification and the trusted admission key belong at QRWTY's edge. The diagram selects the installed Keycloak issuer for this proposal."
+    },
+    "nodes": [
+      {
+        "id": "visitor",
+        "kind": "person",
+        "name": "Visitor",
+        "description": "Opens a short URL or scans its QR code."
+      },
+      {
+        "id": "creator",
+        "kind": "person",
+        "name": "Link creator",
+        "description": "Creates links as a guest or signs in to manage links, analytics and plans."
+      },
+      {
+        "id": "stripe-sender",
+        "kind": "external-system",
+        "name": "Stripe",
+        "description": "Sends signed payment notifications to QRWTY's provider adapter at the edge."
+      }
+    ],
+    "relationships": [
+      {
+        "id": "visitor-opens",
+        "from": "visitor",
+        "to": "system",
+        "description": "Opens a short link or QR code.",
+        "container": "redirect-service"
+      },
+      {
+        "id": "creator-manages",
+        "from": "creator",
+        "to": "system",
+        "description": "Creates and claims guest links, signs in, manages owned links, reads analytics and manages billing.",
+        "container": "session-api"
+      },
+      {
+        "id": "stripe-callback",
+        "from": "stripe-sender",
+        "to": "system",
+        "description": "The edge verifies the native Stripe signature and forwards a separately signed, canonical event to Payment inbox.",
+        "container": "payment-inbox"
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "session-api",
+      "name": "Browser API",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "One same-origin entry for guest and account requests. Browser session owns login, cookies, CSRF and refresh. Browser routes call only declared operations on Links, Accounts and Billing."
+    },
+    {
+      "id": "identity",
+      "name": "Identity",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Installed Keycloak issuer for the proposal. Only Browser API starts user sign-in. Callees verify the user token and authenticate the calling workload separately. QRWTY's deployed Auth0 integration needs a provider decision."
+    },
+    {
+      "id": "sessions",
+      "name": "Sessions",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "Private session, revocation and refresh state. Browser API owns this database. Guest claim and account erasure policies remain product work."
+    },
+    {
+      "id": "link-api",
+      "name": "Link API",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Sole authority for routes, claims, abuse decisions and creation quotas. Replay committed requests first. Guest admission uses the Links transaction and a trusted pseudonymous key supplied through the browser boundary."
+    },
+    {
+      "id": "account-api",
+      "name": "Account API",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Signed-in list and analytics reads through named published views. Scope by verified owner. Ask Billing for short-lived entitlements and export allowance. Ordinary reads never change the subscription."
+    },
+    {
+      "id": "billing-api",
+      "name": "Billing API",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Private customer and entitlement operations. Requires a verified user and calling workload. Owns subscription and quota state. A scheduled task picks up due reconciliation independently of status reads."
+    },
+    {
+      "id": "links",
+      "name": "Links",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "PostgreSQL source for routes, claims, moderation and exact account quotas. Redirect can query link_routes only. Account API reads owned_links and account_usage."
+    },
+    {
+      "id": "reputation-api",
+      "name": "Web Risk",
+      "classification": {
+        "kind": "External system"
+      },
+      "description": "Product adapter for Google's URL reputation check on new links. A failed check defers creation. Existing short links do not call this provider."
+    },
+    {
+      "id": "redirect-service",
+      "name": "Redirect",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Public GET and HEAD. Read a versioned route from cache or the restricted route view. On eligible GET wait for Pub/Sub acknowledgement and recheck validity before 302. HEAD records no click."
+    },
+    {
+      "id": "hot-routes",
+      "name": "Hot routes",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "Positive route projection in Valkey. Use the route version and an absolute validity of at most 30 seconds from the authoritative lookup. A cache hit cannot extend that deadline."
+    },
+    {
+      "id": "click-events",
+      "name": "Click events",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "Google Cloud Pub/Sub on the redirect path. The publisher waits for durable acceptance. Analytics consumes at least once. QRWTY requires 31-day replay. The archive subscription is a deployment integration."
+    },
+    {
+      "id": "analytics-worker",
+      "name": "Click processor",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Consume Pub/Sub clicks. Commit the event ID and aggregate together before ACK. Maintain the 35-day deduplication ledger, quarantine and freshness. A timer handles retention even when no clicks arrive."
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "PostgreSQL click receipts, daily aggregates, breakdowns, quarantine and progress. Click processor writes. Account API reads only the four published reporting views."
+    },
+    {
+      "id": "billing",
+      "name": "Billing",
+      "classification": {
+        "kind": "Data store"
+      },
+      "description": "One billing domain with two credentials. Payment inbox can insert normalized Stripe events. Billing API owns customer, entitlement, quota and reconciliation changes. The product event ID remains unique for 35 days after success."
+    },
+    {
+      "id": "stripe-api",
+      "name": "Stripe",
+      "classification": {
+        "kind": "External system"
+      },
+      "description": "Outbound Checkout, portal, subscription and reconciliation calls need a Stripe adapter. Incoming test-mode events follow the separate Payment inbox path through QRWTY's signature-verifying edge."
+    },
+    {
+      "id": "payment-inbox",
+      "name": "Stripe event inbox",
+      "classification": {
+        "kind": "Application"
+      },
+      "description": "Machine ingress. QRWTY's edge verifies Stripe's signature over the original bytes, then signs a bounded event for the Jeeves Webhook receiver. Acknowledge Stripe only after durable acceptance. No customer or browser routes."
+    }
+  ],
+  "connections": [
+    {
+      "id": "session-api-identity",
+      "kind": "calls",
+      "from": {
+        "element": "session-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Signs in and authenticates browser calls",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "session-api-sessions",
+      "kind": "uses-database",
+      "from": {
+        "element": "session-api"
+      },
+      "to": {
+        "element": "sessions"
+      },
+      "planned": {
+        "label": "Reads and writes sessions",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "session-api-link-api",
+      "kind": "calls",
+      "from": {
+        "element": "session-api"
+      },
+      "to": {
+        "element": "link-api"
+      },
+      "planned": {
+        "label": "Guest and owned link operations",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "session-api-account-api",
+      "kind": "calls",
+      "from": {
+        "element": "session-api"
+      },
+      "to": {
+        "element": "account-api"
+      },
+      "planned": {
+        "label": "Reads account links and analytics",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "session-api-billing-api",
+      "kind": "calls",
+      "from": {
+        "element": "session-api"
+      },
+      "to": {
+        "element": "billing-api"
+      },
+      "planned": {
+        "label": "Manages plan and checkout",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "link-api-links",
+      "kind": "uses-database",
+      "from": {
+        "element": "link-api"
+      },
+      "to": {
+        "element": "links"
+      },
+      "planned": {
+        "label": "Writes links",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "link-api-identity",
+      "kind": "calls",
+      "from": {
+        "element": "link-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Verifies user and workload",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "link-api-reputation-api",
+      "kind": "calls",
+      "from": {
+        "element": "link-api"
+      },
+      "to": {
+        "element": "reputation-api"
+      },
+      "planned": {
+        "label": "Checks new destinations",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "link-api-billing-api",
+      "kind": "calls",
+      "from": {
+        "element": "link-api"
+      },
+      "to": {
+        "element": "billing-api"
+      },
+      "planned": {
+        "label": "Gets a bounded entitlement grant",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "redirect-service-links",
+      "kind": "uses-database",
+      "from": {
+        "element": "redirect-service"
+      },
+      "to": {
+        "element": "links"
+      },
+      "planned": {
+        "label": "Reads published.link_routes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "redirect-service-hot-routes",
+      "kind": "uses-database",
+      "from": {
+        "element": "redirect-service"
+      },
+      "to": {
+        "element": "hot-routes"
+      },
+      "planned": {
+        "label": "Reads routes, fills on a miss",
+        "protocol": "Redis",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "redirect-service-click-events",
+      "kind": "depends-on",
+      "from": {
+        "element": "redirect-service"
+      },
+      "to": {
+        "element": "click-events"
+      },
+      "planned": {
+        "label": "Publishes clicks and awaits the ACK",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "click-events-analytics-worker",
+      "kind": "depends-on",
+      "from": {
+        "element": "click-events"
+      },
+      "to": {
+        "element": "analytics-worker"
+      },
+      "planned": {
+        "label": "Delivers clicks",
+        "protocol": "Messaging",
+        "interaction": "Asynchronous",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "analytics-worker-analytics",
+      "kind": "uses-database",
+      "from": {
+        "element": "analytics-worker"
+      },
+      "to": {
+        "element": "analytics"
+      },
+      "planned": {
+        "label": "Writes aggregates",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-identity",
+      "kind": "calls",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Verifies user and workload",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-links",
+      "kind": "uses-database",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "links"
+      },
+      "planned": {
+        "label": "Reads owned_links and account_usage",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-analytics",
+      "kind": "uses-database",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "analytics"
+      },
+      "planned": {
+        "label": "Reads published click reports",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "account-api-billing-api",
+      "kind": "calls",
+      "from": {
+        "element": "account-api"
+      },
+      "to": {
+        "element": "billing-api"
+      },
+      "planned": {
+        "label": "Checks grants and export allowance",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "billing-api-identity",
+      "kind": "calls",
+      "from": {
+        "element": "billing-api"
+      },
+      "to": {
+        "element": "identity"
+      },
+      "planned": {
+        "label": "Verifies user and workload",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "billing-api-billing",
+      "kind": "uses-database",
+      "from": {
+        "element": "billing-api"
+      },
+      "to": {
+        "element": "billing"
+      },
+      "planned": {
+        "label": "Reads & writes",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "billing-api-stripe-api",
+      "kind": "calls",
+      "from": {
+        "element": "billing-api"
+      },
+      "to": {
+        "element": "stripe-api"
+      },
+      "planned": {
+        "label": "Calls the payment provider",
+        "protocol": "HTTP",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    },
+    {
+      "id": "payment-inbox-billing",
+      "kind": "uses-database",
+      "from": {
+        "element": "payment-inbox"
+      },
+      "to": {
+        "element": "billing"
+      },
+      "planned": {
+        "label": "Accepts verified events",
+        "protocol": "SQL",
+        "interaction": "Request / response",
+        "security": "Private network"
+      }
+    }
+  ],
+  "scope": {
+    "profile": null,
+    "requirements": [
+      {
+        "feature": "public-resolve",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "optional-expiry",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "mutable-destinations",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "disable-management",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "reputation-enforcement",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "quotas",
+        "disposition": "included",
+        "criticality": "required"
+      },
+      {
+        "feature": "exact-analytics",
+        "disposition": "included",
+        "criticality": "required"
+      }
+    ],
+    "customRequirements": [
+      {
+        "id": "guest-links",
+        "requirement": "Guests create without login. Keep the sealed claim proof and idempotent result for 24 hours. Hash the trusted address prefix at the edge. Enforce guest admission and exact account quotas across copies.",
+        "criticality": "required",
+        "element": "link-api"
+      },
+      {
+        "id": "account-access",
+        "requirement": "Only Browser API owns the browser session and initiates login. Preserve the 24-hour idle and seven-day absolute limits. Session forwarding and machine identity are separate. The selected Keycloak contract requires an Auth0 integration decision.",
+        "criticality": "required",
+        "element": "session-api"
+      },
+      {
+        "id": "erasure",
+        "requirement": "Revoke sessions and durably track account deletion across owners. Disable owned links within 60 seconds, never reuse their slugs and reconcile subscription cancellation without retaining user credentials.",
+        "criticality": "required",
+        "element": "session-api"
+      },
+      {
+        "id": "ack-before-redirect",
+        "requirement": "Eligible GET returns 302 only after confirmed durable publish and a final validity check. Unknown publish returns 503 without Location. HEAD emits no event. A route is valid for at most 30 seconds after its authoritative lookup.",
+        "criticality": "required",
+        "element": "redirect-service"
+      },
+      {
+        "id": "click-retention",
+        "requirement": "Replay Pub/Sub for 31 days and deduplicate click IDs for 35 days. Commit the product effect with its receipt, ACK after commit, quarantine bad input and distinguish a stopped consumer from a true zero. The installed 30-day receipt limit leaves a gap.",
+        "criticality": "required",
+        "element": "analytics-worker"
+      },
+      {
+        "id": "payment-authentication",
+        "requirement": "The edge must verify the native Stripe signature on unchanged input up to 256 KiB. Canonicalize a bounded event, sign it for the Jeeves receiver and wait for its durable 202. Store the unique Stripe event for 35 days after success. Retain failed events until repaired.",
+        "criticality": "required",
+        "element": "payment-inbox"
+      },
+      {
+        "id": "billing-policy",
+        "requirement": "Run test-mode Checkout and portal. A status read is side-effect free. Grants expire within 60 seconds. Reconcile pending events, stuck checkouts and uncertain Stripe effects. Downgrade never disables existing links.",
+        "criticality": "required",
+        "element": "billing-api"
+      },
+      {
+        "id": "adapters",
+        "requirement": "New destinations require the Google Web Risk adapter. Stripe, Auth0 compatibility, trusted client addresses and the managed Pub/Sub archive are external integration work.",
+        "criticality": "required",
+        "element": "reputation-api"
+      }
+    ]
+  },
+  "ownership": {
+    "owners": [
+      {
+        "id": "session-api-owner",
+        "name": "Sessions"
+      },
+      {
+        "id": "identity-owner",
+        "name": "Identity"
+      },
+      {
+        "id": "link-api-owner",
+        "name": "Links"
+      },
+      {
+        "id": "redirect-owner",
+        "name": "Redirect"
+      },
+      {
+        "id": "account-api-owner",
+        "name": "Accounts"
+      },
+      {
+        "id": "billing-api-owner",
+        "name": "Billing"
+      },
+      {
+        "id": "analytics-owner",
+        "name": "Analytics"
+      }
+    ],
+    "roles": [
+      {
+        "element": "session-api",
+        "owner": "session-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "identity",
+        "owner": "identity-owner",
+        "kind": "api"
+      },
+      {
+        "element": "link-api",
+        "owner": "link-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "redirect-service",
+        "owner": "redirect-owner",
+        "kind": "api"
+      },
+      {
+        "element": "account-api",
+        "owner": "account-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "billing-api",
+        "owner": "billing-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "payment-inbox",
+        "owner": "billing-api-owner",
+        "kind": "api"
+      },
+      {
+        "element": "analytics-worker",
+        "owner": "analytics-owner",
+        "kind": "worker"
+      }
+    ],
+    "resources": [
+      {
+        "element": "sessions",
+        "authority": "session-api-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      },
+      {
+        "element": "links",
+        "authority": "link-api-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      },
+      {
+        "element": "analytics",
+        "authority": "analytics-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      },
+      {
+        "element": "billing",
+        "authority": "billing-api-owner",
+        "kind": "source",
+        "productNamespace": "owner"
+      },
+      {
+        "element": "hot-routes",
+        "authority": "redirect-owner",
+        "kind": "projection",
+        "source": "links"
+      }
+    ],
+    "grants": [
+      {
+        "role": "session-api",
+        "resource": "sessions",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "erasure_requests",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "link-api",
+        "resource": "links",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "domains",
+              "operations": ["SELECT"]
+            },
+            {
+              "name": "links",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            },
+            {
+              "name": "link_versions",
+              "operations": ["SELECT", "INSERT"]
+            },
+            {
+              "name": "link_claims",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "guest_replays",
+              "operations": ["SELECT", "INSERT", "DELETE"]
+            },
+            {
+              "name": "guest_admission_windows",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "account_usage",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            },
+            {
+              "name": "account_erasures",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            },
+            {
+              "name": "abuse_reports",
+              "operations": ["SELECT", "INSERT", "DELETE"]
+            },
+            {
+              "name": "link_report_totals",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            },
+            {
+              "name": "operator_actions",
+              "operations": ["SELECT", "INSERT", "DELETE"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "redirect-service",
+        "resource": "links",
+        "access": "read",
+        "boundary": "published-read",
+        "product": {
+          "tables": [],
+          "views": ["link_routes"]
+        }
+      },
+      {
+        "role": "redirect-service",
+        "resource": "hot-routes",
+        "access": "read-write"
+      },
+      {
+        "role": "account-api",
+        "resource": "links",
+        "access": "read",
+        "boundary": "published-read",
+        "product": {
+          "tables": [],
+          "views": ["owned_links", "account_usage"]
+        }
+      },
+      {
+        "role": "account-api",
+        "resource": "analytics",
+        "access": "read",
+        "boundary": "published-read",
+        "product": {
+          "tables": [],
+          "views": ["click_daily", "click_breakdowns", "click_pipeline", "click_quarantine_open"]
+        }
+      },
+      {
+        "role": "analytics-worker",
+        "resource": "analytics",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "click_receipts",
+              "operations": ["SELECT", "INSERT", "DELETE"]
+            },
+            {
+              "name": "click_daily",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "click_breakdowns",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "click_quarantine",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "click_pipeline",
+              "operations": ["SELECT", "INSERT", "UPDATE"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "billing-api",
+        "resource": "billing",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "accounts",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "webhook_inbox",
+              "operations": ["SELECT", "UPDATE", "DELETE"]
+            },
+            {
+              "name": "export_usage",
+              "operations": ["SELECT", "INSERT", "UPDATE", "DELETE"]
+            }
+          ],
+          "views": []
+        }
+      },
+      {
+        "role": "payment-inbox",
+        "resource": "billing",
+        "access": "read-write",
+        "product": {
+          "tables": [
+            {
+              "name": "webhook_inbox",
+              "operations": ["SELECT", "INSERT"]
+            }
+          ],
+          "views": []
+        }
+      }
+    ],
+    "dependencies": [
+      {
+        "connection": "session-api-sessions",
+        "access": "read-write"
+      },
+      {
+        "connection": "link-api-links",
+        "access": "read-write"
+      },
+      {
+        "connection": "redirect-service-links",
+        "access": "read"
+      },
+      {
+        "connection": "redirect-service-hot-routes",
+        "access": "read-write"
+      },
+      {
+        "connection": "account-api-links",
+        "access": "read"
+      },
+      {
+        "connection": "account-api-analytics",
+        "access": "read"
+      },
+      {
+        "connection": "analytics-worker-analytics",
+        "access": "read-write"
+      },
+      {
+        "connection": "billing-api-billing",
+        "access": "read-write"
+      },
+      {
+        "connection": "payment-inbox-billing",
+        "access": "read-write"
+      }
+    ]
+  },
+  "generation": {
+    "version": 1,
+    "runtime": {
+      "id": "local-runtime",
+      "version": "0.1.0",
+      "sha256": "71dcdadd55b30121d87b5fbf89c77494ac56146bd6333a22e473c3ff4555eaec"
+    },
+    "processes": true,
+    "selections": [
+      {
+        "id": "browser-session",
+        "target": {
+          "kind": "component",
+          "component": "browser-session",
+          "host": "session-api"
+        },
+        "template": {
+          "id": "browser-session",
+          "version": "0.1.0",
+          "sha256": "cd11b60199954c6e50b4da901782750e754857bc8d5e8257580e73f58a81feaa"
+        },
+        "binding": {
+          "kind": "browser-session",
+          "state": {
+            "resource": "sessions",
+            "connection": "session-api-sessions"
+          },
+          "identity": {
+            "element": "identity",
+            "guard": "browser-session"
+          }
+        }
+      },
+      {
+        "id": "session-api-api-forwarding",
+        "target": {
+          "kind": "component",
+          "component": "session-api-api-forwarding",
+          "host": "session-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "link-api-sign-in",
+        "target": {
+          "kind": "component",
+          "component": "link-api-sign-in",
+          "host": "link-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "identity",
+            "guard": "link-api-sign-in"
+          }
+        }
+      },
+      {
+        "id": "link-api-link-operations",
+        "target": {
+          "kind": "component",
+          "component": "link-api-link-operations",
+          "host": "link-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "link-api-abuse-and-moderation",
+        "target": {
+          "kind": "component",
+          "component": "link-api-abuse-and-moderation",
+          "host": "link-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "account-api-sign-in",
+        "target": {
+          "kind": "component",
+          "component": "account-api-sign-in",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "identity",
+            "guard": "account-api-sign-in"
+          }
+        }
+      },
+      {
+        "id": "account-api-my-links",
+        "target": {
+          "kind": "component",
+          "component": "account-api-my-links",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "account-api-link-analytics",
+        "target": {
+          "kind": "component",
+          "component": "account-api-link-analytics",
+          "host": "account-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "billing-api-sign-in",
+        "target": {
+          "kind": "component",
+          "component": "billing-api-sign-in",
+          "host": "billing-api"
+        },
+        "template": {
+          "id": "verified-identity",
+          "version": "0.1.0",
+          "sha256": "c321a5d7392e9a9a15cf73d8cf2db427b5533150e33d716c47c5edb49ad7e492"
+        },
+        "binding": {
+          "kind": "verified-identity",
+          "identity": {
+            "element": "identity",
+            "guard": "billing-api-sign-in"
+          }
+        }
+      },
+      {
+        "id": "billing-api-customer-billing",
+        "target": {
+          "kind": "component",
+          "component": "billing-api-customer-billing",
+          "host": "billing-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "billing-api-entitlements",
+        "target": {
+          "kind": "component",
+          "component": "billing-api-entitlements",
+          "host": "billing-api"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "billing-reconciliation",
+        "target": {
+          "kind": "component",
+          "component": "billing-reconciliation",
+          "host": "billing-api"
+        },
+        "template": {
+          "id": "scheduled-task",
+          "version": "0.1.0",
+          "sha256": "cab15eb42e4a1e885afe656d3f4f5f98c1e839c6c618a5fb2fed8f76fc5ccbbf"
+        },
+        "binding": {
+          "kind": "scheduled-task",
+          "state": {
+            "resource": "billing",
+            "connection": "billing-api-billing"
+          }
+        }
+      },
+      {
+        "id": "verified-payment-event",
+        "target": {
+          "kind": "component",
+          "component": "verified-payment-event",
+          "host": "payment-inbox"
+        },
+        "template": {
+          "id": "webhook-receiver",
+          "version": "0.1.0",
+          "sha256": "e62566dba466a52da0278679441bd7c70586c0513583dcaca700b146fb7a7198"
+        },
+        "binding": {
+          "kind": "webhook-receiver",
+          "state": {
+            "resource": "billing",
+            "connection": "payment-inbox-billing"
+          }
+        }
+      },
+      {
+        "id": "redirect-service-resolve-and-redirect",
+        "target": {
+          "kind": "component",
+          "component": "redirect-service-resolve-and-redirect",
+          "host": "redirect-service"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "route-reader",
+        "target": {
+          "kind": "component",
+          "component": "route-reader",
+          "host": "redirect-service"
+        },
+        "template": {
+          "id": "positive-cache-read",
+          "version": "0.1.0",
+          "sha256": "0b72d5a1dfb6789a7f46932f4faf9f11e2fb8e8baac03e02c2989271463c274c"
+        },
+        "binding": {
+          "kind": "positive-cache-read",
+          "source": {
+            "resource": "links",
+            "connection": "redirect-service-links"
+          },
+          "cache": {
+            "resource": "hot-routes",
+            "connection": "redirect-service-hot-routes"
+          }
+        }
+      },
+      {
+        "id": "analytics-worker-click-aggregator",
+        "target": {
+          "kind": "component",
+          "component": "analytics-worker-click-aggregator",
+          "host": "analytics-worker"
+        },
+        "template": {
+          "id": "module-stub",
+          "version": "0.1.0",
+          "sha256": "07c32da0ca7211cd86c35ec521a7dbca94ebe2654560601e275d88ce8720cb1d"
+        },
+        "binding": {
+          "kind": "module-stub"
+        }
+      },
+      {
+        "id": "analytics-retention",
+        "target": {
+          "kind": "component",
+          "component": "analytics-retention",
+          "host": "analytics-worker"
+        },
+        "template": {
+          "id": "scheduled-task",
+          "version": "0.1.0",
+          "sha256": "cab15eb42e4a1e885afe656d3f4f5f98c1e839c6c618a5fb2fed8f76fc5ccbbf"
+        },
+        "binding": {
+          "kind": "scheduled-task",
+          "state": {
+            "resource": "analytics",
+            "connection": "analytics-worker-analytics"
+          }
+        }
+      }
+    ]
+  }
+}
