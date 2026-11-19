@@ -6,7 +6,7 @@ The Studio PNGs can be opened at full size for comparison. [Current Detailed](cu
 
 The follow-up explains sign-in across services, the original Stripe flow and the Kafka option. It specifies the Auth0, Stripe and retention changes. [Implementation notes](implementation-notes.md) · [Redirect’s connections](redirect-connections.png) · [Link API’s connections](link-api-connections.png)
 
-For QRWTY v2, first run the generator units, then build and evaluate the field application against the frozen independent backend. [Generator units](../../plans/qrwty-v2-generator/units.md) · [Coordinator launch prompt](../../plans/qrwty-v2-generator/coordinator-prompt.md) · [Field build and comparison plan](v2-build-plan.md)
+The generator team handed off the derived revision-10 export. Start the field coordinator to measure what it generates and compare QRWTY v2 with the frozen independent backend. [Generator handoff](../../plans/qrwty-v2-generator/evidence/combined/README.md) · [Field coordinator prompt](v2-coordinator-prompt.md) · [Field build and comparison plan](v2-build-plan.md)
 
 ## What the field run established
 

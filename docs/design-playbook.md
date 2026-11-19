@@ -1958,3 +1958,7 @@ deduplicate within shorter windows. [QRWTY review and saved diagram](field-proje
 ## 2026-11-18 — Read the connections as sentences
 
 Show both ends and the verb in the order you would say them aloud. A cache reader checks and refills its cache. Its database supplies misses when the loader alone uses that connection. A user token and a service credential answer different questions, even when both wires end at Identity. Put table permissions on the database. Label a timer with how often it runs and a retention rule with what it deletes and when. [QRWTY review](field-projects/qrwty/implementation-notes.md)
+
+## 2026-11-19 — Check the effect a customer can observe
+
+A valid catalog delivery once produced one receipt and zero product changes. A check that counted receipts would have passed. When two tiles together promise a result, name who observes it and how often it should happen. For a generated consumer, use a product hook that increments on every invocation. Withhold the acknowledgement after commit, observe redelivery to another worker and read the final value. For a paid purchase, check both the provider’s subscription history and an action the customer can now perform. Keep the claim tied to the diagram, provider and failure actually exercised. [Original receipt example](plans/wires-and-deployment/review.md) · [QRWTY black-box protocol](field-projects/qrwty/v2-black-box.md)
