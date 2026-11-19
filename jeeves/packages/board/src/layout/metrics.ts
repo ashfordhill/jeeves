@@ -113,10 +113,10 @@ export function newTileHint(
 export const LANE_GAP = 11;
 /** Lanes leaving one port are this far apart. */
 export const FAN_PITCH = 10;
-/** Lanes entering a tile's default port, and a named port. */
-export const ENTRY_PITCH = 22;
-export const ENTRY_PITCH_NAMED = 16;
+/** Lanes entering a tile's default port, and a named port: each runs straight to its arrowhead. */
+export const ENTRY_PITCH = 16;
+export const ENTRY_PITCH_NAMED = 12;
 /** A lane keeps this far from its tile's top and bottom. */
 export const LANE_EDGE = 6;
-/** Room ELK keeps between a column and the first upright run beside it: the fan and the gather. */
+/** Room ELK keeps between a column and the first upright run beside it: the fan and the arrowhead. */
 export const LANE_APPROACH = 48;

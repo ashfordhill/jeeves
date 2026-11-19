@@ -37,6 +37,7 @@
   .board:not(.board-snapshot)
   :is(.board-wire, .board-tile-dot, .lane-container) {
   --wire: var(--wire-dark);
+  --wire-edge: var(--wire-edge-dark, var(--board-wire-ink));
 }
 
 .lane-canvas {
@@ -274,7 +275,6 @@
   color: inherit;
   font: inherit;
   text-align: left;
-  cursor: pointer;
 }
 
 .lane-container-row:hover {
@@ -439,6 +439,11 @@
   box-shadow: 0 2px 0 var(--btn-shadow);
   cursor: pointer;
   pointer-events: auto;
+}
+
+/* On a tile it takes the arrow, as the tile and its rows do. */
+.board .lane-module-add {
+  cursor: default;
 }
 
 :root[data-theme="dark"] .lane-module-add {

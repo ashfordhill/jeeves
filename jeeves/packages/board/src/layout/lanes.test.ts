@@ -77,7 +77,7 @@ it("orders a source's lanes by the routes' upward, level and downward turns", ()
   expect(shifts.get("down")?.source).toBe(10);
 });
 
-it("spaces incoming lanes 22px at a default port and 16px at a named port", () => {
+it("spaces incoming lanes 16px at a default port and 12px at a named port", () => {
   const input: LayoutInput = {
     tiles: [
       { id: "above", w: 128, h: 128 },
@@ -114,8 +114,8 @@ it("spaces incoming lanes 22px at a default port and 16px at a named port", () =
     bounds: { x: 0, y: 0, w: 448, h: 256 },
   };
   const defaults = laneShifts(input, layout);
-  expect(defaults.get("above")?.target).toBe(-11);
-  expect(defaults.get("below")?.target).toBe(11);
+  expect(defaults.get("above")?.target).toBe(-8);
+  expect(defaults.get("below")?.target).toBe(8);
 
   const named: LayoutInput = {
     tiles: input.tiles.map((tile) =>
@@ -124,8 +124,8 @@ it("spaces incoming lanes 22px at a default port and 16px at a named port", () =
     lines: input.lines.map((line) => ({ ...line, targetPort: "row" })),
   };
   const rows = laneShifts(named, layout);
-  expect(rows.get("above")?.target).toBe(-8);
-  expect(rows.get("below")?.target).toBe(8);
+  expect(rows.get("above")?.target).toBe(-6);
+  expect(rows.get("below")?.target).toBe(6);
 });
 
 it("separates neighbouring source ports while keeping whole-pixel lanes 10px apart", () => {

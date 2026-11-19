@@ -53,21 +53,38 @@ test("both views draw coloured wires, retain slots on reload and leave saved sta
   expect({ designState: await saved(), blueprint: await blueprint() }).toEqual(before);
 });
 
-test("hover picks out the visible wire and paper restores every wire", async ({
+test("the pointer over a tile or a module's row picks out its wires, and over a wire nothing", async ({
   page,
   tinyurl: id,
 }) => {
   const before = await design(page, id);
   await showView(page, "Simple");
+  const wire = (line: string) => page.locator(`.react-flow__edge[data-id="${line}"] .board-wire`);
+  // A wire under the pointer fades nothing.
   const at = await linePoint(page, "redirect-db");
   await page.mouse.move(at.x, at.y);
-  const wire = page.locator('.react-flow__edge[data-id="redirect-db"] .board-wire');
-  const other = page.locator('.react-flow__edge[data-id="shorten-db"] .board-wire');
-  await expect(wire).toHaveCSS("opacity", "1");
-  await expect(other).toHaveCSS("opacity", "0.13");
+  await expect(wire("shorten-db")).toHaveCSS("opacity", "1");
+  // A tile picks out the wires that leave or enter it, under the arrow, not a hand.
+  const redirect = tile(page, "Redirect service");
+  await redirect.hover();
+  await expect(wire("redirect-db")).toHaveCSS("opacity", "1");
+  await expect(wire("shorten-db")).toHaveCSS("opacity", "0.13");
+  await expect(redirect).toHaveCSS("cursor", "default");
   const paper = await paperPoint(page);
   await page.mouse.move(paper.x, paper.y);
-  await expect(wire).toHaveCSS("opacity", "1");
-  await expect(other).toHaveCSS("opacity", "1");
+  await expect(wire("redirect-db")).toHaveCSS("opacity", "1");
+  await expect(wire("shorten-db")).toHaveCSS("opacity", "1");
+
+  // Detailed: a module's row picks out only that module's wires.
+  await showView(page, "Detailed");
+  const row = page.locator('.lane-container-row[data-module="redirect-data"]');
+  await row.hover();
+  await expect(wire("redirect-db/redirect-data")).toHaveCSS("opacity", "1");
+  await expect(wire("redirect-cache/redirect-cache-reader")).toHaveCSS("opacity", "0.13");
+  await expect(row.locator("button")).toHaveCSS("cursor", "default");
+  // The container's header picks out all of its tile's wires.
+  await redirect.locator(".lane-container-header").hover();
+  await expect(wire("redirect-cache/redirect-cache-reader")).toHaveCSS("opacity", "1");
+  await expect(wire("shorten-db/shorten-data")).toHaveCSS("opacity", "0.13");
   expect(await design(page, id)).toEqual(before);
 });

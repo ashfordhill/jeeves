@@ -24,6 +24,8 @@ describe("wire colours", () => {
     expect(tone.light).toMatch(/^#[0-9a-f]{6}$/);
     expect(tone.dark).toMatch(/^#[0-9a-f]{6}$/);
     expect(tone.light).not.toBe(tone.dark);
+    // The outline is the wire's own colour, darker, in each theme.
+    expect(tone.edge).toEqual({ light: "#800608", dark: "#9a3930" });
     const slate = wireTone(undefined, 0.5).light;
     const channels = [1, 3, 5].map((start) => Number.parseInt(slate.slice(start, start + 2), 16));
     expect(Math.max(...channels) - Math.min(...channels)).toBeLessThanOrEqual(40);

@@ -37,6 +37,18 @@ export const LINE_HIT_WIDTH = 44;
 export const LINE_WIDTH = 2.75;
 export const LINE_WIDTH_SELECTED = 4;
 
+/** A wire's colour in each theme, and its outline's; without `edge` the outline is the wire ink. */
+export type WireTone = { light: string; dark: string; edge?: { light: string; dark: string } };
+
+/** A wire's or a dot's colour variables (`board.css`). */
+export function wireVars(tone: WireTone): CSSProperties {
+  return {
+    "--wire-light": tone.light,
+    "--wire-dark": tone.dark,
+    ...(tone.edge && { "--wire-edge-light": tone.edge.light, "--wire-edge-dark": tone.edge.dark }),
+  } as CSSProperties;
+}
+
 export type BoardLineData = {
   dashed: boolean;
   directed?: boolean;
@@ -46,7 +58,9 @@ export type BoardLineData = {
   label?: string;
   chip?: ReactNode;
   bridges?: Point[][];
-  wire?: { light: string; dark: string };
+  wire?: WireTone;
+  /** The pointer is over another tile or end: this wire fades. */
+  faded?: boolean;
   /** Board-owned frame/port coordinates; independent of React Flow's DOM handle measurement. */
   anchors?: { source: Point; target: Point };
 };
@@ -106,20 +120,14 @@ export function BoardLine({
     const art = wireArt(
       points,
       data.anchors?.source ?? { x: sourceX, y: sourceY },
-      data.anchors?.target ?? { x: targetX, y: targetY },
       Boolean(data.directed),
     );
-    const edge = selected || data.linked ? "var(--board-select)" : "var(--board-wire-ink)";
+    const edge = selected || data.linked ? "var(--board-select)" : "var(--wire-edge)";
     const beads = dashed ? WIRE_BEADS : undefined;
     const round = { strokeLinecap: "round", strokeLinejoin: "round" } as const;
     return (
       <>
-        <g
-          className="board-wire"
-          style={
-            { "--wire-light": data.wire.light, "--wire-dark": data.wire.dark } as CSSProperties
-          }
-        >
+        <g className="board-wire" data-faded={data.faded || undefined} style={wireVars(data.wire)}>
           <path
             className="board-wire-edge"
             d={art.body}

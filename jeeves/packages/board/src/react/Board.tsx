@@ -63,7 +63,6 @@ import {
   useStore,
 } from "@xyflow/react";
 import {
-  type CSSProperties,
   type ReactNode,
   type Ref,
   type RefObject,
@@ -87,11 +86,12 @@ import {
   type Size,
   type SlotOrder,
 } from "../layout/metrics.ts";
-import { BoardLine, type BoardLineEdge } from "./BoardLine.tsx";
+import { BoardLine, type BoardLineEdge, type WireTone, wireVars } from "./BoardLine.tsx";
 import {
   ConnectOverlay,
   type ConnectRules,
   type EdgePanCamera,
+  endOf,
   useConnectDrag,
 } from "./ConnectDrag.tsx";
 import {
@@ -127,8 +127,6 @@ import { useBoardLayout } from "./useBoardLayout.ts";
 import { wirePolyline } from "./wireGeometry.ts";
 
 export type TileShape = "rect" | "pill";
-
-export type WireTone = { light: string; dark: string };
 
 export type TileSpec = {
   id: string;
@@ -172,6 +170,11 @@ export type LineSpec = {
   sourcePort?: string;
   /** The target's `in` port it enters; default: mid-height. */
   targetPort?: string;
+  /**
+   * The ends inside its tiles (`data-board-end`, such as a container's row) it leaves and enters.
+   * The pointer over such an end picks out only that end's wires.
+   */
+  ends?: { source?: string; target?: string };
   /**
    * Draw it as a wire in this colour. Called with its rank among the lines that leave the same
    * tile, top to bottom as they leave it, and how many there are.
@@ -282,12 +285,7 @@ function Tile({ data, selected }: NodeProps<TileNode>) {
           <PortHandle key={`${port.side}:${port.id}`} port={port} />
         ))}
       </div>
-      {data.dot ? (
-        <span
-          className="board-tile-dot"
-          style={{ "--wire-light": data.dot.light, "--wire-dark": data.dot.dark } as CSSProperties}
-        />
-      ) : null}
+      {data.dot ? <span className="board-tile-dot" style={wireVars(data.dot)} /> : null}
       {data.chrome}
     </div>
   );
@@ -433,6 +431,7 @@ function lineEdges(
   highlighted?: ReadonlySet<string>,
   tileLines = true,
   hovered?: string,
+  over?: { tile: string; end?: string },
 ): BoardLineEdge[] {
   /* Draw order at crossings: dashed under solid; the selected tile's lines (unless `tileLines`
      is false) and highlighted lines over the rest, then the hovered line (connect mode), and
@@ -445,6 +444,15 @@ function lineEdges(
   const rank = (l: LineSpec) =>
     (selected.line === l.id ? 6 : hovered === l.id ? 4 : linked(l) ? 2 : 0) + (l.dashed ? 0 : 1);
   const ordered = [...lines].sort((a, b) => rank(a) - rank(b));
+  // The pointer over a tile picks out its wires, and over an end inside it that end's: the rest
+  // fade. A tile or an end with no wire fades none.
+  const picked = (l: LineSpec) =>
+    over !== undefined &&
+    (over.end === undefined
+      ? l.source === over.tile || l.target === over.tile
+      : (l.source === over.tile && l.ends?.source === over.end) ||
+        (l.target === over.tile && l.ends?.target === over.end));
+  const fading = over !== undefined && lines.some((l) => l.wire && picked(l));
   const { routes } = layout;
   // A wire's rank among the lines leaving its tile, top to bottom where their routes start.
   const leaving = new Map<string, LineSpec[]>();
@@ -487,6 +495,7 @@ function lineEdges(
       ...(l.label ? { label: l.label } : {}),
       ...(l.chip ? { chip: l.chip.content } : {}),
       ...(anchors.has(l.id) ? { anchors: anchors.get(l.id) } : {}),
+      ...(fading && !picked(l) ? { faded: true } : {}),
       ...(l.wire ? { wire: l.wire(rankOf.get(l.id)?.rank ?? 0, rankOf.get(l.id)?.of ?? 1) } : {}),
       bridges: l.wire
         ? []
@@ -822,6 +831,16 @@ function Inner({
   // biome-ignore lint/correctness/useExhaustiveDependencies: leaving or entering connect mode forgets the hover
   useEffect(() => setHoverLine(undefined), [connectMode]);
   const hovered = connectMode && !connecting ? hoverLine : undefined;
+  /* The tile under the pointer, and the end inside it (`data-board-end`): its wires stay bright
+     and the rest fade. Not while a new line is being drawn. */
+  const [overTile, setOverTile] = useState<{ tile: string; end?: string }>();
+  const pointAt = useCallback((tile: string, target: EventTarget | null) => {
+    const end = hostRef.current ? endOf(hostRef.current, target) : undefined;
+    setOverTile((was) =>
+      was?.tile === tile && was.end === end ? was : { tile, ...(end !== undefined && { end }) },
+    );
+  }, []);
+  const over = connecting ? undefined : overTile;
   const refusal =
     connecting?.over != null && !connecting.targets.has(connecting.over)
       ? connectRefusal?.(connecting.from, connecting.over)
@@ -910,7 +929,7 @@ function Inner({
   function selectionRoutes() {
     if (!drawn.lines.some((line) => line.wire)) return routes;
     const measured = { ...routes };
-    // Read the actual artwork, including fans, gathers and corners, rather than raw layout lanes.
+    // Read the actual artwork, including fans and corners, rather than raw layout lanes.
     // Cache by element and shape: selection/theme/zoom do not change board-space geometry.
     for (const path of hostRef.current?.querySelectorAll<SVGPathElement>(".board-wire-fill") ??
       []) {
@@ -937,6 +956,7 @@ function Inner({
         highlight,
         selectedTileLines,
         hovered,
+        over,
       )
     : [];
 
@@ -1006,6 +1026,9 @@ function Inner({
             lastZoomRef.current = zoom;
             void rf.setViewport({ ...viewport, zoom });
           }}
+          onNodeMouseEnter={(event, node) => pointAt(node.id, event.target)}
+          onNodeMouseMove={(event, node) => pointAt(node.id, event.target)}
+          onNodeMouseLeave={() => setOverTile(undefined)}
           onEdgeMouseEnter={(_, edge) => {
             if (connectMode && !connecting) holdHover(edge.id);
           }}

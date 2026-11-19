@@ -1,6 +1,7 @@
 // The lane canvas: the design's lane graph (`laneGraph`) on the board. The actor, its actions and
 // every tile become board tiles; the user's lines to its actions, the entries and connections
-// become directed wires, beaded only when that relationship is asynchronous. Lines carry no words;
+// become directed wires, beaded only when that relationship is asynchronous. The pointer over a
+// tile picks out its wires, and over a module's row that module's (`ends`). Lines carry no words;
 // their accessible names say what they join. The selected tile's tabs come from `creation`, the
 // removal's confirmation from `removal`, and connect mode's rules and new links from `connect`. A
 // right-click on a tile or a line goes to `onTileMenu` or `onLineMenu`, which open the
@@ -246,9 +247,14 @@ export function LaneCanvas({
       };
     });
     // A relationship drawn as several lines is one entry in Choose relationship (`group`).
+    // A module's row is an end of its own: the pointer over it picks out only its wires.
     const detailedLines: LineSpec[] = projection.lines.map((line) => ({
       ...line,
       wire: wire(line.source),
+      ends: {
+        ...(line.sourceModule !== undefined && { source: line.sourceModule }),
+        ...(line.targetModule !== undefined && { target: line.targetModule }),
+      },
       group: line.connection,
       detail: design.connections.find((item) => item.id === line.connection)?.planned.label,
     }));

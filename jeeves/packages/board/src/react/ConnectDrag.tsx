@@ -91,7 +91,7 @@ function tileOf(host: HTMLElement, target: EventTarget | Element | null): string
 }
 
 /** The end inside a tile a DOM node belongs to, if any (`data-board-end`). */
-function endOf(host: HTMLElement, target: EventTarget | Element | null): string | undefined {
+export function endOf(host: HTMLElement, target: EventTarget | Element | null): string | undefined {
   const end = target instanceof Element ? target.closest<HTMLElement>("[data-board-end]") : null;
   return end && host.contains(end) ? end.dataset.boardEnd || undefined : undefined;
 }

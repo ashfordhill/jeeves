@@ -60,8 +60,9 @@
   cursor: var(--board-grabbing-cursor);
 }
 
+/* A tile takes the arrow, not a hand: the hand is for the paper (it pans). */
 .board .react-flow__node {
-  cursor: pointer;
+  cursor: default;
   overflow: visible;
 }
 
@@ -536,10 +537,12 @@
   font-size: 12px;
 }
 
-/* Wires (`BoardLine`): the colour comes from the line, light or dark; the caller's theme picks. */
+/* Wires (`BoardLine`): the colour and its outline come from the line, light or dark; the caller's
+   theme picks. A line without an outline of its own takes the wire ink. */
 .board-wire,
 .board-tile-dot {
   --wire: var(--wire-light);
+  --wire-edge: var(--wire-edge-light, var(--board-wire-ink));
 }
 .board-wire-fill {
   stroke: var(--wire);
@@ -556,17 +559,18 @@
   height: 11px;
   margin-top: -5.5px;
   box-sizing: border-box;
-  border: 1.7px solid var(--board-wire-ink);
+  border: 1.7px solid var(--wire-edge);
   border-radius: 50%;
   background: var(--wire);
   pointer-events: none;
 }
 
-/* Hovering a wire picks it out: the rest fade. */
+/* The pointer over a tile, or an end inside it, picks out its wires: the rest fade
+   (`Board.tsx`, `over`). */
 .board-wire {
   transition: opacity 120ms;
 }
-.board .react-flow__edges:has(.react-flow__edge:hover) .react-flow__edge:not(:hover) .board-wire {
+.board-wire[data-faded] {
   opacity: 0.13;
 }
 @media (prefers-reduced-motion: reduce) {

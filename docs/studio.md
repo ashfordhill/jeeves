@@ -76,8 +76,9 @@ future generator's frontend templates) which user flow each service serves.
   Search indexer and the Completion handler both get each completion event. A new channel is a
   work queue until a template derives a topic (or chat or source sets one); the mode has no
   normal form control.
-- **Wires** have a 3.5px colour stroke over a 6.4px dark outline and an individual soft triangle
-  arrowhead. Their colour comes from the tile they leave, with a distinct shade for each wire,
+- **Wires** have a 4.6px colour stroke over a 7.3px outline in a darker shade of their own
+  colour, and an individual soft triangle arrowhead; a sending tile's dot has the same outline.
+  Their colour comes from the tile they leave, with a distinct shade for each wire,
   alternating light and deep from top to bottom. The user and actions use slate. Twelve hue
   families repeat with intermediate hues, so larger diagrams still get new colours. A sending
   tile keeps its colour slot while it exists, in this project's browser preferences; colours
@@ -89,11 +90,14 @@ future generator's frontend templates) which user flow each service serves.
   carry no words or chips; select one for its label, interaction and direction in the inspector.
   Access declarations stay in diagnostics. The screen-sized legend shows only **Async** beads
   and lets the pointer through to the board. A Worker is reached only from a Queue or Topic.
-- Wires use separate lanes 11px apart, with 10px fans leaving one dot and 22px arrivals
-  (16px at a named module/header port). Each arrival gathers towards its own arrowhead.
+- Wires use separate lanes 11px apart, with 10px fans leaving one dot and 16px arrivals
+  (12px at a named module/header port). Each arrival runs straight in to its own arrowhead.
   Detailed module wires leave the dot on their row, following the port mark to the frame before
-  fanning out. Crossings have no bridge or gap. Hovering a wire leaves it bright and fades the
-  others; empty paper restores them. Near a shared dot, equally close wires can still open
+  fanning out. Crossings have no bridge or gap. The pointer over a tile leaves the wires that
+  leave or enter it bright and fades the others; over a module's row it is that module's wires
+  only. A tile or row with no wire fades nothing, the pointer over a wire itself changes
+  nothing, and leaving the tile restores them. Over a tile, its rows and its `+` the pointer is
+  the arrow; the hand is for the paper, which pans. Near a shared dot, equally close wires can still open
   **Choose relationship**, listing each canonical relationship once for explicit mouse choice.
 - Click a tile or a line to select it and open the inspector; click empty paper to clear.
   In Pointer mode the selected tile shows its tabs
@@ -1361,10 +1365,10 @@ and all twenty components, with nothing omitted and no findings.
 - Adding tiles never zooms. A long chain built at 100% pans the canvas along with it, so the user
   and the first tiles can leave the view; Fit brings everything back. A Connect drag's end must
   be on screen, so linking to a tile that has left the view needs Fit (or a pan) first.
-- Wire lanes are checked on TinyURL, Marketplace and YouTube in both views. The short fans and
-  gathers deliberately converge, so the nominal spacing does not hold inside those approaches.
-  The prescribed arrowhead outline leaves about 1px before the tile frame. Neither trait is
-  an unintended shared trunk. A very crowded fixed-size tile can exceed the prescribed arrival
+- Wire lanes are checked on TinyURL, Marketplace and YouTube in both views. The short fans
+  deliberately converge, so the nominal spacing does not hold inside them. Arrowheads at one
+  named port sit 12px apart and are about 14.5px tall, so neighbours overlap by their outlines.
+  Neither trait is an unintended shared trunk. A very crowded fixed-size tile can exceed the prescribed arrival
   pitch: ten default-port arrivals on a 128px synthetic tile collapse under the current clamping.
   The three studies do not exceed capacity; no automatic pitch compression or tile growth ships.
 - New links get the link table's default action ("Calls", "Reads & writes"), and a new resource

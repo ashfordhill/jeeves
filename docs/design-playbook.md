@@ -1931,3 +1931,13 @@ and let colour say which tile it left. Keep module dots on their rows, fan at th
 highlight the visible curve when selecting it. Hit testing must follow cubic fans and rounded
 corners; treating curve control points as vertices picks the wrong relationship. Check decoded
 PNG colours against the actual export artwork, since an animating live view has different geometry.
+
+## 2026-11-18: wire outline, straight arrivals and hover
+
+A black outline on a coloured wire is a second drawing style beside navy-framed tiles: outline
+each wire in a darker shade of its own colour. A sideways step to the arrowhead needs room;
+squeezed into the last few pixels of a 48px approach it reads as a kink, so put the lanes where
+the arrowheads are and run straight in. Picking a wire out by hovering the wire itself flickers,
+because the pointer crosses many on its way anywhere: pick wires out from the tile or module row
+under the pointer. Preview layout options with the real layout engine; landing spacing alone
+changed how tightly ELK packed a column.

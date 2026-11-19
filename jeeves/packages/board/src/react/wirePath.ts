@@ -1,26 +1,24 @@
-// A wire's drawn shape, from its route and its two ports. The route starts and ends on the line's
-// own lane (`lanes.ts`); the wire leaves its port and fans out to that lane, rounds each corner,
-// and gathers in to an arrowhead that sits closer to its neighbours than the lanes do.
+// A wire's drawn shape, from its route and the port it leaves. The route starts and ends on the
+// line's own lane (`lanes.ts`); the wire leaves its port and fans out to that lane, rounds each
+// corner, and runs straight in to its arrowhead.
 import type { Point } from "../layout/metrics.ts";
 
-export const WIRE_WIDTH = 3.5;
-export const WIRE_EDGE_WIDTH = 6.4;
+export const WIRE_WIDTH = 4.6;
+export const WIRE_EDGE_WIDTH = 7.3;
 /** The pointer band of a wire: narrower than a line's, because lanes are 11px apart. */
 export const WIRE_HIT_WIDTH = 12;
 /** An async wire: beads. */
 export const WIRE_BEADS = "0.01 12";
 /** Widths of the arrowhead's two strokes. */
-export const WIRE_HEAD_EDGE = 5.1;
-export const WIRE_HEAD_FILL = 2.2;
+export const WIRE_HEAD_EDGE = 5.6;
+export const WIRE_HEAD_FILL = 2.9;
 
 const FAN = 36;
-const GATHER = 28;
+/** The level run an arrowhead needs after the last corner. */
 const STUB = 18;
 const RADIUS = 9;
-/** Arrowheads at one port sit this much closer together than their lanes. */
-const HEAD_RATIO = 0.75;
 /** The soft triangle, measured back from the line's end. `body` is where the wire's stroke stops. */
-const HEAD = { tip: 3.6, base: 10.6, half: 3.4, body: 9 };
+const HEAD = { tip: 4.7, base: 13.9, half: 4.5, body: 11.8 };
 
 const n = (v: number) => Math.round(v * 10) / 10;
 const at = (p: Point) => `${n(p.x)} ${n(p.y)}`;
@@ -28,29 +26,17 @@ const at = (p: Point) => `${n(p.x)} ${n(p.y)}`;
 export type WireArt = { body: string; head?: string };
 
 /**
- * `route` is the line's lane route; `port` and `entry` are the ports it leaves and enters. The
- * fan and the gather are drawn only on a level first or last run (a route in motion has neither).
+ * `route` is the line's lane route; `port` is the port it leaves. The fan is drawn only on a
+ * level first run (a route in motion has none).
  */
-export function wireArt(
-  route: readonly Point[],
-  port: Point,
-  entry: Point,
-  directed: boolean,
-): WireArt {
+export function wireArt(route: readonly Point[], port: Point, directed: boolean): WireArt {
   const [first, second] = [route[0], route[1]];
   const [before, last] = [route[route.length - 2], route[route.length - 1]];
   if (!first || !second || !before || !last) return { body: "" };
   const out = second.y === first.y && second.x > first.x;
   const fan = out ? Math.min(FAN, (second.x - first.x) / 2) : 0;
   const into = before.y === last.y && before.x < last.x;
-  const reach = into ? Math.min(GATHER + STUB, (last.x - before.x) / 2) : 0;
-  const stub = Math.min(STUB, reach);
-  const headY = reach > stub ? entry.y + (last.y - entry.y) * HEAD_RATIO : last.y;
-  const points: Point[] = [
-    { x: first.x + fan, y: first.y },
-    ...route.slice(1, -1),
-    { x: last.x - reach, y: last.y },
-  ];
+  const points: Point[] = [{ x: first.x + fan, y: first.y }, ...route.slice(1)];
 
   const start = points[0] as Point;
   let d = `M ${at(out ? port : first)}`;
@@ -62,10 +48,7 @@ export function wireArt(
   }
   for (let i = 1; i < points.length; i++) {
     const [p, q, r] = [points[i - 1] as Point, points[i] as Point, points[i + 1]];
-    if (!r) {
-      d += ` L ${at(q)}`;
-      break;
-    }
+    if (!r) break;
     const [l1, l2] = [Math.hypot(q.x - p.x, q.y - p.y), Math.hypot(r.x - q.x, r.y - q.y)];
     const radius = Math.min(RADIUS, l1 / 2, l2 / 2);
     if (radius < 0.5) {
@@ -76,24 +59,16 @@ export function wireArt(
     const b = { x: q.x + ((r.x - q.x) / l2) * radius, y: q.y + ((r.y - q.y) / l2) * radius };
     d += ` L ${at(a)} Q ${at(q)} ${at(b)}`;
   }
-  const gather = points[points.length - 1] as Point;
-  const level = { x: last.x - stub, y: headY };
-  if (reach > stub && Math.abs(headY - gather.y) >= 0.5) {
-    const mid = (gather.x + level.x) / 2;
-    d += ` C ${n(mid)} ${n(gather.y)} ${n(mid)} ${n(headY)} ${at(level)}`;
-  } else if (reach > 0) d += ` L ${at(level)}`;
 
-  // The arrowhead points along the last run: level after a gather, else as the route arrives.
+  // The arrowhead points along the last run. After a corner into a level run it needs half that
+  // run, so it never meets the corner.
   const length = Math.hypot(last.x - before.x, last.y - before.y);
-  const dir = into
-    ? { x: 1, y: 0 }
-    : { x: (last.x - before.x) / length, y: (last.y - before.y) / length };
-  const end = { x: last.x, y: into ? headY : last.y };
-  const room = into ? stub : length;
-  if (!directed || !(room >= HEAD.base)) return { body: `${d} L ${at(end)}` };
+  const dir = { x: (last.x - before.x) / length, y: (last.y - before.y) / length };
+  const room = into ? Math.min(STUB, length / 2) : length;
+  if (!directed || !(room >= HEAD.base)) return { body: `${d} L ${at(last)}` };
   const back = (by: number, side = 0) => ({
-    x: end.x - dir.x * by - dir.y * side,
-    y: end.y - dir.y * by + dir.x * side,
+    x: last.x - dir.x * by - dir.y * side,
+    y: last.y - dir.y * by + dir.x * side,
   });
   return {
     body: `${d} L ${at(back(HEAD.body))}`,

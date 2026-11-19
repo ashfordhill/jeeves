@@ -65,7 +65,7 @@ it("uses Board anchors even when React Flow supplies unsettled handle coordinate
       </BoardContext>
     </ReactFlowProvider>,
   );
-  const art = wireArt(route, anchors.source, anchors.target, true);
+  const art = wireArt(route, anchors.source, true);
   expect(container.querySelector(".board-wire-fill")?.getAttribute("d")).toBe(art.body);
   expect(container.querySelector(".board-wire-head")?.getAttribute("d")).toBe(art.head);
 });
@@ -107,12 +107,7 @@ for (const named of [false, true])
       layout,
     };
     const { container } = render(<BoardSnapshotView snapshot={snapshot} bounds={layout.bounds} />);
-    const art = wireArt(
-      route,
-      { x: 288, y: named ? 96 : 128 },
-      { x: 512, y: named ? 288 : 320 },
-      true,
-    );
+    const art = wireArt(route, { x: 288, y: named ? 96 : 128 }, true);
     expect(container.querySelector(".board-wire-fill")?.getAttribute("d")).toBe(art.body);
     expect(container.querySelector(".board-wire-head")?.getAttribute("d")).toBe(art.head);
   });

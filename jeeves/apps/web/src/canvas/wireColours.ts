@@ -1,5 +1,6 @@
 // The wires' colours. A tile that sends lines holds a colour slot for life; the slot gives a hue,
 // and each of the tile's lines takes its own shade of it. The user and the actions are slate.
+// A wire's outline is its own colour, darker (`EDGE`).
 // Twelve hues sit evenly round the OKLCH wheel without the 50 degrees round sky blue, which the
 // studio keeps for service tiles and selection. Slot 12 starts a second round halfway between
 // the first twelve hues, slot 24 a third a quarter step off, and so on: it never runs out.
@@ -8,6 +9,8 @@ import type { WireTone } from "@jeeves/board";
 const STEP = 310 / 12;
 const SLATE = { hue: 245, chroma: 0.035 };
 const CHROMA = 0.17;
+/** The outline: this much darker than the wire (never below `floor`), a little less vivid. */
+const EDGE = { darker: 0.27, floor: 0.24, chroma: 0.9 };
 
 /** 0, 1/2, 1/4, 3/4, 1/8 ...: how far each later round sits from the first. */
 function roundOffset(round: number): number {
@@ -35,10 +38,9 @@ function oklchToRgb(l: number, c: number, h: number): [number, number, number] {
   ];
 }
 
-function shade(hue: number, chroma: number, t: number, dark: boolean, drift: boolean): string {
-  const l = dark ? 0.9 - 0.3 * t : 0.82 - 0.34 * t;
-  const h = drift ? hue + (t - 0.5) * 16 : hue;
-  let c = chroma * (0.62 + 0.38 * (1 - Math.min(1, Math.abs(l - 0.66) / 0.34)));
+/** The sRGB hex of an OKLCH colour, its chroma lowered until it fits, and the chroma it kept. */
+function inGamut(l: number, chroma: number, h: number): { hex: string; c: number } {
+  let c = chroma;
   let rgb = oklchToRgb(l, c, h);
   for (let i = 0; i < 80 && !rgb.every((v) => v >= -0.0005 && v <= 1.0005); i++) {
     c *= 0.96;
@@ -51,14 +53,30 @@ function shade(hue: number, chroma: number, t: number, dark: boolean, drift: boo
       .toString(16)
       .padStart(2, "0");
   };
-  return `#${rgb.map(hex).join("")}`;
+  return { hex: `#${rgb.map(hex).join("")}`, c };
+}
+
+/** A shade and its outline. */
+function shade(
+  hue: number,
+  chroma: number,
+  t: number,
+  dark: boolean,
+  drift: boolean,
+): { fill: string; edge: string } {
+  const l = dark ? 0.9 - 0.3 * t : 0.82 - 0.34 * t;
+  const h = drift ? hue + (t - 0.5) * 16 : hue;
+  const fill = inGamut(l, chroma * (0.62 + 0.38 * (1 - Math.min(1, Math.abs(l - 0.66) / 0.34))), h);
+  const edge = inGamut(Math.max(EDGE.floor, l - EDGE.darker), fill.c * EDGE.chroma, h);
+  return { fill: fill.hex, edge: edge.hex };
 }
 
 /** Shade `t` (0 lightest, 1 deepest) of the tile in `slot`; slate when it has none. */
 export function wireTone(slot: number | undefined, t: number): WireTone {
   const [hue, chroma, drift] =
     slot === undefined ? [SLATE.hue, SLATE.chroma, false] : [wireHue(slot), CHROMA, true];
-  return { light: shade(hue, chroma, t, false, drift), dark: shade(hue, chroma, t, true, drift) };
+  const [light, dark] = [shade(hue, chroma, t, false, drift), shade(hue, chroma, t, true, drift)];
+  return { light: light.fill, dark: dark.fill, edge: { light: light.edge, dark: dark.edge } };
 }
 
 /** The shade step of the `rank`-th of `of` lines: light and deep by turns down the tile. */

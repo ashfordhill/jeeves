@@ -8,7 +8,7 @@
  */
 :root,
 :root[data-theme="light"] {
-  --paper: #e8f4fa;
+  --paper: #e0eef6;
   --paper-deep: color-mix(in srgb, var(--paper) 88%, var(--chrome));
   --ink: #071c28;
   --ink-soft: #123a50;

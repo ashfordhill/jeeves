@@ -19854,3 +19854,28 @@ workload settings the same way.
   changes, old apps/exports/evidence/frozen v1 stay untouched. No branch/worktree/stash/delegation,
   live/paid call, push or deployment. One explicit-path local commit follows:
   `Finish studio wire rendering and interaction`. Stop for coordinator acceptance.
+
+
+## 2026-11-18 — Wire look from the owner's picks, tile hover
+
+- The owner picked `1c 2a 3a 4a 5c 6a 7a 8b 9a` from the
+  [wire picker preview](https://claude.ai/artifact/CJAcHYup1FphraHB435THE) and asked for darker
+  light paper, hover from tiles and the arrow pointer ([feedback](HUMAN_FEEDBACK.md)). Not a
+  numbered unit.
+- Wires: outline in the wire's own colour, darker (`WireTone.edge`, `wireColours.ts` `EDGE`;
+  the tile dot too); 4.6px over 7.3px with the arrowhead scaled to match; arrivals straight in
+  (`wireArt(route, port, directed)`, no gather; `ENTRY_PITCH` 16, `ENTRY_PITCH_NAMED` 12).
+  Colours, shades, fans, corners, beads and selection are unchanged.
+- Hover: the pointer over a tile fades every wire that neither leaves nor enters it; over a
+  module's row, every wire but that module's (`LineSpec.ends`, `Board.tsx` `over`). A tile or
+  row with no wire fades nothing; the pointer over a wire does nothing. Tiles, rows and the
+  board's `+` take the arrow cursor. Light `--paper` is `#e0eef6`, in exports too.
+- Checked: `pnpm check` 155 files / 1,439 tests; native E2E 91/91 (7.2m), with the hover test
+  rewritten for a tile, a row and a header; web build passes. The running studio was opened on
+  QRWTY r84 and TinyURL in light: wires, a row hover and the cursors read back as intended.
+  Existing eight lint warnings / twelve infos and the chunk warning remain.
+- Notes: arrowheads at one named port are 12px apart and about 14.5px tall, so neighbours
+  overlap by their outlines; the owner saw this in the preview. `anchors.target` is no longer
+  read by the wire's shape. Exported PNGs change (paper, wires), so older evidence images no
+  longer match a fresh export. An untracked `docs/field-projects/qrwty/` appeared during the
+  work and is not part of it.

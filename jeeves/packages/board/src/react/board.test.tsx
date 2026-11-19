@@ -1229,7 +1229,7 @@ describe("Board", () => {
       const { container, rerender } = render(<Board {...props} />);
       await ready(container);
       const arrow = () => container.querySelector<SVGElement>(".board-line-arrow");
-      expect(arrow()?.style.stroke).toBe("var(--board-wire-ink)");
+      expect(arrow()?.style.stroke).toBe("var(--wire-edge)");
       const hit = container.querySelector(".react-flow__edge-interaction");
       if (!hit) throw new Error("Missing wire hit target");
       fireEvent.click(hit);
@@ -1248,6 +1248,60 @@ describe("Board", () => {
       expect(container.querySelector<SVGElement>(".board-wire-fill")?.style.strokeDasharray).toBe(
         "0.01 12",
       );
+    });
+
+    it("fades the other wires while the pointer is over a tile or an end inside it", async () => {
+      const row = (
+        <span>
+          Redirect <b data-board-end="resolve">Resolve</b> <b data-board-end="idle">Idle</b>
+        </span>
+      );
+      const wires: LineSpec[] = [
+        { id: "in", source: "actor", target: "redirect", dashed: false, wire: () => tone },
+        {
+          id: "out",
+          source: "redirect",
+          target: "events",
+          dashed: false,
+          wire: () => tone,
+          ends: { source: "resolve" },
+        },
+      ];
+      const { container } = render(
+        <Board
+          {...wireProps()}
+          tiles={[
+            tiles[0] as TileSpec,
+            { ...(tiles[1] as TileSpec), content: row },
+            tiles[2] as TileSpec,
+          ]}
+          lines={wires}
+        />,
+      );
+      await ready(container);
+      const node = (id: string) =>
+        container.querySelector(`.react-flow__node[data-id="${id}"]`) as HTMLElement;
+      const faded = () =>
+        [...container.querySelectorAll(".react-flow__edge")]
+          .filter((edge) => edge.querySelector(".board-wire[data-faded]"))
+          .map((edge) => edge.getAttribute("data-id"));
+      expect(faded()).toEqual([]);
+      // A tile: the wires that leave or enter it stay.
+      fireEvent.mouseEnter(node("actor"));
+      expect(faded()).toEqual(["out"]);
+      fireEvent.mouseLeave(node("actor"));
+      expect(faded()).toEqual([]);
+      // An end inside a tile: only that end's wires stay; an end with none fades nothing.
+      fireEvent.mouseEnter(node("redirect"));
+      expect(faded()).toEqual([]);
+      fireEvent.mouseMove(container.querySelector('[data-board-end="resolve"]') as Element);
+      expect(faded()).toEqual(["in"]);
+      fireEvent.mouseMove(container.querySelector('[data-board-end="idle"]') as Element);
+      expect(faded()).toEqual([]);
+      // The pointer over a wire itself fades nothing.
+      fireEvent.mouseLeave(node("redirect"));
+      fireEvent.mouseEnter(container.querySelector(".react-flow__edge") as Element);
+      expect(faded()).toEqual([]);
     });
 
     it("calls three wires with their route ranks 0, 1 and 2 and of 3", async () => {

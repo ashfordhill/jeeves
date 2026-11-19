@@ -1069,7 +1069,7 @@ describe("lanes", () => {
     }
   });
 
-  it("puts three arrivals at a default port 22px apart", async () => {
+  it("puts three arrivals at a default port 16px apart", async () => {
     const input: LayoutInput = {
       ...board(["a", "b", "c", "d"], ["a>d", "b>d", "c>d"]),
       lanes: true,
@@ -1078,8 +1078,8 @@ describe("lanes", () => {
     const ends = input.lines
       .map((l) => layout.routes[l.id]?.at(-1)?.y ?? Number.NaN)
       .sort((a, b) => a - b);
-    expect((ends[1] as number) - (ends[0] as number)).toBe(22);
-    expect((ends[2] as number) - (ends[1] as number)).toBe(22);
+    expect((ends[1] as number) - (ends[0] as number)).toBe(16);
+    expect((ends[2] as number) - (ends[1] as number)).toBe(16);
   });
 
   it("leaks nothing to the same input without lanes", async () => {

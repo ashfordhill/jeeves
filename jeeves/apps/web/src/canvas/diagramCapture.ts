@@ -3,7 +3,7 @@ import type { BoardSnapshot, Rect } from "@jeeves/board";
 
 export const CAPTURE_SCALE = 2;
 export const CAPTURE_MARGIN = 32;
-export const CAPTURE_BACKGROUND = "#e8f4fa";
+export const CAPTURE_BACKGROUND = "#e0eef6";
 export const CAPTURE_MAX_SIDE = 16_384;
 export const CAPTURE_MAX_PIXELS = 40_000_000;
 
