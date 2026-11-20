@@ -1,21 +1,64 @@
 # Jeeves <!-- omit from toc -->
 
-- [Current](#current)
+- [v1](#v1)
+  - [Metrics to Record](#metrics-to-record)
+    - [Compare Build Iterations](#compare-build-iterations)
+  - [UI Updates](#ui-updates)
+    - [QRWTY diagram updates](#qrwty-diagram-updates)
+    - [Inspector](#inspector)
+    - [Claude Artifacts](#claude-artifacts)
 - [README Archives](#readme-archives)
   - [Jeeves v0](#jeeves-v0)
 
-## Current
+## v1
 
-Jeeves going through next iteration of improvements. 
+Jeeves going through next iteration of improvements, mostly UI in order to better see what's going on in conjunction with the codegen.
 
-TODO:
+### Metrics to Record
 
-- Regen QRWTY with new diagramming. 
-  - Reanalyze finished project before deploying this time. Get feedback from variety of LLMs
-  - Trial run the deployment contract that will be part of Jeeves v1. Does it help?
-  - Compare this new iteration with the QRWTY generation that didn't use Jeeves (don't regenerate it)
+#### Compare Build Iterations
 
-Depending on results from there, may start to work on the Jeeves Chat Agent and getting it 'smart' about Jeeves diagramming.
+- Prompt-only QRWTY
+    
+    1. Prompt with Codex/Claude directly
+    2. Prompt with Jeeves Chat Agent, using same model as `#1`. 
+
+- Prompt + Jeeves diagram (no Jeeves codegen)
+- Prompt + Jeeves diagram + Jeeves codegen
+
+
+>Use same prompt across all. Compare lines of code, tokens used, build/design quality by analyzing with 2 different frontier models
+
+### UI Updates
+
+#### QRWTY diagram updates
+
+Based on feedback from `B` (the non-Jeeves implementation of v0 QRWTY), some more templates were extracted into Jeeves. `A` was analyzed for issues and after Jeeves updates, a QRWTY diagram was remade.
+
+Arrow styles have been updated in order to better see dense connections.
+
+**Before**
+<p align="left"><img src=".docs/readme/v0/qrwty/qrwty-diagram.png" width="400"/></p>
+
+**After**
+<p align="left"><img src=".docs/readme/qrwty-diagram-v2.png" width="400"/></p>
+
+
+#### Inspector 
+
+A lot of the descriptive text on the UI was in AI-speak. Improvements there as well as displaying the connection flow between tiles. 
+
+New modules can now be added to microservices via the inspector view as well, instead of just within the diagram canvas.
+
+<p align="left"><img src=".docs/readme/module-menu.png" width="400"/></p>
+
+
+#### Claude Artifacts
+
+Claude's artifacts are still pretty awesome; the interactive nature helps me make UI design decisions quicker.
+
+<p align="left"><img src=".docs/readme/claude-interactive-artifact.gif" width="400"/></p>
+
 
 ## README Archives
 
