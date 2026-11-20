@@ -12,6 +12,8 @@
 
 ## v1
 
+- Reading [DORA: ROI of AI-assisted Software Development report](https://cloud.google.com/resources/content/dora-roi-of-ai-assisted-software-development)
+
 Jeeves going through next iteration of improvements, mostly UI in order to better see what's going on in conjunction with the codegen.
 
 ### Metrics to Record
